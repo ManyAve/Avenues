@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, type ReactNode } from "react";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@ui-sdk/react/field";
 import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
 
@@ -50,7 +50,7 @@ function Labelled({
   className?: string;
 }) {
   return (
-    <Field invalid={invalid} className={cn("w-64", className)}>
+    <Field {...(invalid ? { invalid: true } : {})} className={cn("w-64", className)}>
       <FieldLabel>{label}</FieldLabel>
       {children}
       {description && <FieldDescription>{description}</FieldDescription>}

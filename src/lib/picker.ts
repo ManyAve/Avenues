@@ -38,3 +38,10 @@ export const listPopup = cn(
 /** One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). */
 export const listItem =
   "grid cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
+
+/** Drops undefined props, for ui-sdk's types under exactOptionalPropertyTypes. */
+export function defined<T extends Record<string, unknown>>(props: T) {
+  return Object.fromEntries(Object.entries(props).filter(([, v]) => v !== undefined)) as {
+    [K in keyof T]?: Exclude<T[K], undefined>;
+  };
+}

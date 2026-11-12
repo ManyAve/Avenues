@@ -3,7 +3,7 @@ import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
-import { Field, FieldError, FieldLabel } from "#avenue/components/field";
+import { Field, FieldError, FieldLabel } from "@ui-sdk/react/field";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
 // All households, owners and IDs are fictional.
@@ -37,7 +37,7 @@ function Picker({
 }) {
   const [value, setValue] = useState(initial);
   return (
-    <Field invalid={invalid} className="w-80">
+    <Field {...(invalid ? { invalid: true } : {})} className="w-80">
       <FieldLabel>{label}</FieldLabel>
       <Combobox {...props} invalid={invalid} value={value} onValueChange={setValue} />
       {error && <FieldError>{error}</FieldError>}
@@ -91,8 +91,7 @@ export const WithNone: Story = {
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Applies to" });
     await expect(input).toHaveValue("Neighborhood");
-    // Inside a Field, the chevron button takes the Field's label too.
-    await userEvent.click(canvas.getByRole("button", { name: "Applies to" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
     await expect(await screen.findByRole("option", { name: "Neighborhood" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
     await expect(canvas.getByTestId("value")).toHaveTextContent("h3");
@@ -123,6 +122,12 @@ export const Invalid: Story = {
 
 export const Disabled: Story = {
   render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} disabled />,
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Household" });
+    await expect(input).toBeDisabled();
+    // The whole field dims, not just the text: the wrapper carries the disabled look.
+    await expect(input.closest("[data-slot=combobox]")).toHaveAttribute("data-disabled");
+  },
 };
 
 export const Empty: Story = {
@@ -136,7 +141,7 @@ export const Empty: Story = {
     />
   ),
   play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Household" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
     await expect(await screen.findByText("No households yet. Add one on the Households tab first.")).toBeVisible();
   },
 };

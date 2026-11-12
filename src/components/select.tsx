@@ -1,8 +1,15 @@
-import { Field } from "@base-ui/react/field";
-import { Select as SelectPrimitive } from "@base-ui/react/select";
+import { FieldControl } from "@ui-sdk/react/field";
+import {
+  Select as SelectRoot,
+  SelectContent,
+  SelectItem,
+  SelectItemIndicator,
+  SelectTrigger,
+  SelectValue,
+} from "@ui-sdk/react/select";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { useSyncExternalStore } from "react";
-import { fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
+import { useSyncExternalStore, type ChangeEvent } from "react";
+import { defined, fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 export interface SelectOption<V extends string = string> {
@@ -37,7 +44,7 @@ export interface SelectProps<V extends string = string> {
   onValueChange?: ((value: V) => void) | undefined;
   /** Shown while nothing is chosen. */
   placeholder?: string | undefined;
-  /** The control's id. Inside a Base UI Field, leave it out: the Field labels the control itself. */
+  /** The control's id. Inside a Field, leave it out: the Field labels the control itself. */
   id?: string | undefined;
   name?: string | undefined;
   /** Only when there is no visible label (the year select beside "Account summary"). */
@@ -55,7 +62,7 @@ export interface SelectProps<V extends string = string> {
 }
 
 /**
- * Pick one value from a short, fixed list (a year, a payment method, a role). Built on Base UI Select: Enter, Space
+ * Pick one value from a short, fixed list (a year, a payment method, a role). Built on ui-sdk's Select: Enter, Space
  * or the arrows open it, typing jumps to a match, Escape closes and keeps the old value. For long or searchable lists
  * use Combobox.
  */
@@ -80,34 +87,22 @@ export function Select<V extends string = string>({
   const chevron = <ChevronDownIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />;
 
   if (useNative) {
-    // The OS picker opens; the closed control is still Avenue's (same height, corner, border, chevron).
-    // Field.Control registers it with an enclosing Base UI Field, so Field.Label and invalid state still wire up.
+    // FieldControl is ui-sdk's seat for a native control: it joins the Field around it (label, description, invalid).
+    // Agents can't fill it, so it only renders where the OS picker is the better list.
     const placeholderShown = (value ?? defaultValue ?? null) === null;
     return (
       <span data-slot="select" className={cn("relative inline-flex w-full min-w-0", className)}>
-        <Field.Control
-          render={
-            <select>
-              {placeholder !== undefined && (
-                <option value="" disabled>
-                  {placeholder}
-                </option>
-              )}
-              {options.map((o) => (
-                <option key={o.value} value={o.value} disabled={o.disabled}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          }
+        <FieldControl
+          // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- FieldControl joins it to the Field's label.
+          render={<select />}
           id={id}
           name={name}
           disabled={disabled}
           required={required}
           {...(value !== undefined ? { value: value ?? "" } : {})}
           {...(defaultValue !== undefined ? { defaultValue: defaultValue ?? "" } : {})}
-          onValueChange={(next) => {
-            const found = options.find((o) => o.value === next);
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const found = options.find((o) => o.value === event.currentTarget.value);
             if (found) onValueChange?.(found.value);
           }}
           aria-invalid={invalid || undefined}
@@ -117,59 +112,64 @@ export function Select<V extends string = string>({
             fieldControl({ size }),
             "appearance-none truncate pe-8 data-placeholder:text-muted-foreground dark:[color-scheme:dark]",
           )}
-        />
-        <span className="pointer-events-none absolute inset-y-0 end-2 flex items-center">{chevron}</span>
+        >
+          {placeholder !== undefined && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options.map((o) => (
+            <option key={o.value} value={o.value} disabled={o.disabled}>
+              {o.label}
+            </option>
+          ))}
+        </FieldControl>
+        <span className="pointer-events-none absolute inset-y-0 end-2 flex items-center">
+          {chevron}
+        </span>
       </span>
     );
   }
 
   return (
-    <SelectPrimitive.Root<V>
-      items={options}
+    <SelectRoot<V>
+      items={options.map((o) =>
+        o.disabled
+          ? { value: o.value, label: o.label, disabled: true }
+          : { value: o.value, label: o.label },
+      )}
       {...(value !== undefined ? { value } : {})}
       {...(defaultValue !== undefined ? { defaultValue } : {})}
-      onValueChange={(next) => {
-        if (next !== null) onValueChange?.(next);
+      onValueChange={(next: V | V[] | null) => {
+        if (typeof next === "string") onValueChange?.(next);
       }}
-      id={id}
-      name={name}
-      disabled={disabled}
-      required={required}
+      {...defined({ placeholder, name, disabled, required })}
     >
-      <SelectPrimitive.Trigger
-        data-slot="select"
+      <SelectTrigger
+        id={id}
         aria-invalid={invalid || undefined}
         {...aria}
         className={cn(fieldControl({ size }), "justify-between text-start", className)}
       >
-        <SelectPrimitive.Value
-          placeholder={placeholder}
-          className="min-w-0 flex-1 truncate data-placeholder:text-muted-foreground"
-        />
-        <SelectPrimitive.Icon className="flex">{chevron}</SelectPrimitive.Icon>
-      </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
-        <SelectPrimitive.Positioner
-          sideOffset={4}
-          alignItemWithTrigger={false}
-          align="start"
-          className="isolate z-50 outline-none"
-        >
-          <SelectPrimitive.Popup data-slot="select-content" className={listPopup}>
-            <SelectPrimitive.List>
-              {options.map((o) => (
-                <SelectPrimitive.Item key={o.value} value={o.value} disabled={o.disabled} className={listItem}>
-                  <SelectPrimitive.ItemIndicator className="col-start-1 flex">
-                    <CheckIcon aria-hidden className="size-4" />
-                  </SelectPrimitive.ItemIndicator>
-                  <SelectPrimitive.ItemText className="col-start-2 min-w-0">{o.label}</SelectPrimitive.ItemText>
-                </SelectPrimitive.Item>
-              ))}
-            </SelectPrimitive.List>
-          </SelectPrimitive.Popup>
-        </SelectPrimitive.Positioner>
-      </SelectPrimitive.Portal>
-    </SelectPrimitive.Root>
+        <SelectValue className="min-w-0 flex-1 truncate data-placeholder:text-muted-foreground" />
+        {chevron}
+      </SelectTrigger>
+      <SelectContent side="bottom" align="start" sideOffset={4} className={listPopup}>
+        {options.map((o) => (
+          <SelectItem
+            key={o.value}
+            value={o.value}
+            label={o.label}
+            className={listItem}
+            {...(o.disabled ? { disabled: true } : {})}
+          >
+            <SelectItemIndicator className="col-start-1 flex">
+              <CheckIcon aria-hidden className="size-4" />
+            </SelectItemIndicator>
+            <span className="col-start-2 min-w-0">{o.label}</span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
   );
 }
-

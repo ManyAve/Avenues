@@ -1,29 +1,42 @@
-import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
+import {
+  Combobox as ComboboxRoot,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@ui-sdk/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
+import { defined, fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 /** One choice a Combobox offers. `value` is the stored id; `label` is what the field shows once it is chosen. */
 export interface ComboboxOption {
   value: string;
   label: string;
+  /** More words the search matches without showing them, like a spreadsheet ID. */
+  keywords?: string[] | undefined;
   /** Muted text after the label in the list, e.g. "$120.00 owing". Display only; the default search ignores it. */
   hint?: string | undefined;
   /** Right-aligned muted text in the list, e.g. "ID 1042". */
   meta?: string | undefined;
 }
 
-const NONE = "";
+// ui-sdk treats an empty value as nothing chosen, so the "none" option carries its own value inside the component.
+const NONE = "\u0000none";
 
-/** Default search: every word typed appears somewhere in the label (case- and accent-insensitive). */
-function matchLabel<T extends ComboboxOption>(options: readonly T[], query: string): T[] {
-  const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-  const words = fold(query).split(/\s+/).filter(Boolean);
-  return options.filter((o) => {
-    const label = fold(o.label);
-    return words.every((w) => label.includes(w));
-  });
+const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+/** Default search: every word typed appears in the label or a keyword (case- and accent-insensitive). */
+function matchWords(option: ComboboxOption, query: string): boolean {
+  const text = fold([option.label, ...(option.keywords ?? [])].join(" "));
+  return fold(query)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((w) => text.includes(w));
 }
 
 export interface ComboboxProps<T extends ComboboxOption> {
@@ -37,11 +50,14 @@ export interface ComboboxProps<T extends ComboboxOption> {
   placeholder?: string | undefined;
   /** What the list says when nothing matches. Gets the trimmed query. */
   emptyMessage?: ((query: string) => ReactNode) | undefined;
-  /** Replaces the default label search, e.g. the household matcher that ranks an exact spreadsheet ID first. */
-  filter?: ((options: readonly T[], query: string) => T[]) | undefined;
+  /**
+   * Replaces the default word search. True keeps an option; a number keeps it and ranks it (higher first), e.g. the
+   * household matcher that puts an exact spreadsheet ID first.
+   */
+  filter?: ((option: T, query: string) => boolean | number) | undefined;
   /** A leading icon (house, globe). Decorative. */
   icon?: ReactNode | undefined;
-  /** The input's id, for its label. Inside a Base UI Field, leave it out. */
+  /** The input's id, for its label. Inside a Field, leave it out. */
   id?: string | undefined;
   "aria-label"?: string | undefined;
   "aria-describedby"?: string | undefined;
@@ -53,9 +69,8 @@ export interface ComboboxProps<T extends ComboboxOption> {
 }
 
 /**
- * A field that searches as you type, for long lists (households, time zones). Arrow keys and Enter choose; Escape
- * closes and restores the current choice. Built on Base UI Combobox, so the input, list and options carry the
- * combobox roles and the highlighted option is announced.
+ * A field that searches as you type, for long lists (households, time zones). Arrow keys and Enter choose; Escape,
+ * or leaving the field, closes the list and puts the current choice back in the field. Built on ui-sdk's Combobox.
  */
 export function Combobox<T extends ComboboxOption>({
   options,
@@ -64,7 +79,7 @@ export function Combobox<T extends ComboboxOption>({
   noneLabel,
   placeholder,
   emptyMessage = (query) => (query ? `Nothing matches “${query}”.` : "Nothing to choose from yet."),
-  filter = matchLabel,
+  filter = matchWords,
   icon,
   id,
   triggerLabel = "Show options",
@@ -74,58 +89,38 @@ export function Combobox<T extends ComboboxOption>({
   className,
   ...aria
 }: ComboboxProps<T>) {
-  const none = useMemo<ComboboxOption | undefined>(
-    () => (noneLabel ? { value: NONE, label: noneLabel } : undefined),
-    [noneLabel],
+  const byValue = useMemo(() => new Map(options.map((o) => [o.value, o])), [options]);
+  const rows = useMemo<ComboboxOption[]>(
+    () => (noneLabel ? [{ value: NONE, label: noneLabel }, ...options] : [...options]),
+    [noneLabel, options],
   );
-  const all = useMemo<ComboboxOption[]>(() => (none ? [none, ...options] : [...options]), [none, options]);
-  const selected = (value ? options.find((o) => o.value === value) : none) ?? null;
-  const selectedLabel = selected?.label ?? "";
-  const [query, setQuery] = useState(selectedLabel);
-  // The field always shows the current choice once the list closes: after a pick, Escape, or leaving the field with
-  // half-typed text. The choice itself never changes unless an option is picked.
-  const [labelShown, setLabelShown] = useState(selectedLabel);
-  if (labelShown !== selectedLabel) {
-    setLabelShown(selectedLabel);
-    setQuery(selectedLabel);
-  }
-  // A click that focuses the input would otherwise drop the selection its focus made.
+  const selected = value ? (byValue.has(value) ? value : null) : noneLabel ? NONE : null;
+  const [query, setQuery] = useState("");
+  // The popup matches the whole field (icon, input and chevron), not just the input.
+  const [anchor, setAnchor] = useState<HTMLDivElement | null>(null);
+  // Focus selects the whole label so typing replaces it; the click that focused must not undo that selection.
   const focusing = useRef(false);
-  // Base UI keeps the list open when Tab moves focus out of the field, so the field controls it and closes on blur.
-  const [open, setOpen] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
-  const close = () => {
-    setOpen(false);
-    setQuery(selectedLabel);
-  };
-  // While the input still shows the chosen label, list everything; once something is typed, filter.
-  const typed = query !== selectedLabel;
-  const matched = useMemo<ComboboxOption[]>(() => {
-    const found = typed ? filter(options, query) : [...options];
-    return none && !typed ? [none, ...found] : found;
-  }, [filter, none, options, query, typed]);
 
   return (
-    <ComboboxPrimitive.Root<ComboboxOption>
-      items={all}
-      filteredItems={matched}
+    <ComboboxRoot<string>
       value={selected}
-      // Base UI reports null when the text is cleared; that is still typing, not a choice. Only a picked option (the
-      // none option included) changes the value, so Escape or leaving the field always restores the last choice.
-      onValueChange={(item) => {
-        if (item) onValueChange(item.value);
+      onValueChange={(next: string | string[] | null) => {
+        // Clearing the text is still typing, not a choice: only a picked option changes the value.
+        if (typeof next === "string") onValueChange(next === NONE ? "" : next);
       }}
-      inputValue={query}
-      onInputValueChange={setQuery}
-      open={open}
-      onOpenChange={(next) => (next ? setOpen(true) : close())}
-      isItemEqualToValue={(a, b) => a.value === b.value}
-      itemToStringLabel={(item) => item.label}
+      onQueryChange={(next: string) => setQuery(next)}
+      filter={(item: { value: string; label: string }, text: string) => {
+        if (item.value === NONE) return text.trim() === "";
+        const option = byValue.get(item.value);
+        return option ? filter(option, text) : false;
+      }}
       autoHighlight
-      disabled={disabled}
+      {...defined({ disabled })}
     >
-      <ComboboxPrimitive.InputGroup
+      <div
+        ref={setAnchor}
         data-slot="combobox"
+        data-disabled={disabled || undefined}
         className={cn(fieldControl({ size }), "gap-0 pe-0", icon ? "ps-2" : "ps-0", className)}
       >
         {icon && (
@@ -133,12 +128,11 @@ export function Combobox<T extends ComboboxOption>({
             {icon}
           </span>
         )}
-        <ComboboxPrimitive.Input
+        <ComboboxInput
           id={id}
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
           {...aria}
-          // Selecting the whole label on focus lets typing replace it in one keystroke.
           onFocus={(e) => {
             focusing.current = true;
             e.currentTarget.select();
@@ -147,53 +141,55 @@ export function Combobox<T extends ComboboxOption>({
             if (focusing.current) e.preventDefault();
             focusing.current = false;
           }}
-          onBlur={(e) => {
+          onBlur={() => {
             focusing.current = false;
-            if (!popupRef.current?.contains(e.relatedTarget)) close();
           }}
           className="h-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         />
-        <ComboboxPrimitive.Trigger
+        <ComboboxTrigger
           aria-label={triggerLabel}
           className="flex h-full w-8 shrink-0 items-center justify-center text-muted-foreground outline-none disabled:cursor-not-allowed"
         >
           <ChevronsUpDownIcon aria-hidden className="size-4" />
-        </ComboboxPrimitive.Trigger>
-      </ComboboxPrimitive.InputGroup>
-      <ComboboxPrimitive.Portal>
-        <ComboboxPrimitive.Positioner align="start" sideOffset={4} className="isolate z-50 outline-none">
-          <ComboboxPrimitive.Popup ref={popupRef} data-slot="combobox-content" className={cn(listPopup, "data-empty:p-0")}>
-            <ComboboxPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground empty:hidden">
-              {emptyMessage(query.trim())}
-            </ComboboxPrimitive.Empty>
-            <ComboboxPrimitive.List className="scroll-py-1 outline-none">
-              {(item: ComboboxOption) => {
-                const option = item as ComboboxOption;
-                return (
-                  <ComboboxPrimitive.Item
-                    key={option.value || "none"}
-                    value={option}
-                    className={cn(listItem, option.meta && "grid-cols-[1rem_1fr_auto]")}
-                  >
-                    <ComboboxPrimitive.ItemIndicator className="col-start-1 flex">
-                      <CheckIcon aria-hidden className="size-4" />
-                    </ComboboxPrimitive.ItemIndicator>
-                    <span className="col-start-2 min-w-0">
-                      <span className={option.value ? undefined : "text-muted-foreground"}>{option.label}</span>
-                      {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
-                    </span>
-                    {option.meta && (
-                      <span className="col-start-3 ps-3 text-control text-muted-foreground tabular-nums">
-                        {option.meta}
-                      </span>
-                    )}
-                  </ComboboxPrimitive.Item>
-                );
-              }}
-            </ComboboxPrimitive.List>
-          </ComboboxPrimitive.Popup>
-        </ComboboxPrimitive.Positioner>
-      </ComboboxPrimitive.Portal>
-    </ComboboxPrimitive.Root>
+        </ComboboxTrigger>
+      </div>
+      <ComboboxContent
+        anchor={anchor}
+        side="bottom"
+        align="start"
+        sideOffset={4}
+        className={cn(listPopup, "has-data-empty:p-0")}
+      >
+        <ComboboxEmpty className="px-3 py-2 text-sm text-muted-foreground not-data-empty:hidden">
+          {emptyMessage(query.trim())}
+        </ComboboxEmpty>
+        <ComboboxList className="scroll-py-1 outline-none">
+          {rows.map((option) => (
+            <ComboboxItem
+              key={option.value}
+              value={option.value}
+              label={option.label}
+              className={cn(listItem, option.meta && "grid-cols-[1rem_1fr_auto]")}
+              {...defined({ keywords: option.keywords })}
+            >
+              <ComboboxItemIndicator className="col-start-1 flex">
+                <CheckIcon aria-hidden className="size-4" />
+              </ComboboxItemIndicator>
+              <span className="col-start-2 min-w-0">
+                <span className={option.value === NONE ? "text-muted-foreground" : undefined}>
+                  {option.label}
+                </span>
+                {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
+              </span>
+              {option.meta && (
+                <span className="col-start-3 ps-3 text-control text-muted-foreground tabular-nums">
+                  {option.meta}
+                </span>
+              )}
+            </ComboboxItem>
+          ))}
+        </ComboboxList>
+      </ComboboxContent>
+    </ComboboxRoot>
   );
 }
