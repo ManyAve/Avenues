@@ -17,7 +17,7 @@
   --ui-ring-border: var(--ring); /* shadcn's focus-visible:border-ring */
   --ui-overlay: rgb(0 0 0 / 0.1); /* the dialog overlay's bg-black/10 */
   --ui-shadow: var(--shadow-popover);
-  --ui-radius: calc(var(--radius) * 0.8); /* rounded-md, 8px: AVE-2's corner for md controls and popups */
+  --ui-radius: var(--radius); /* rounded-lg, 10px: AVE-2's corner for md and lg controls, menus and popovers */
   --ui-spacing: 0.25rem; /* Tailwind's 4px grid, which AVE-2 keeps */
   --ui-font-size: var(--text-control);
   --ui-line-height: var(--text-control--line-height);

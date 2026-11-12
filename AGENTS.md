@@ -44,7 +44,8 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
 
 1. **Docs and skill first**, as above.
 2. **Import each component from its own entry**, like `@ui-sdk/react/select`. There is no root import,
-   and never import `@ui-sdk/core/internal/*`.
+   and never import `@ui-sdk/core/internal/*`; oxlint fails both. Bare `@ui-sdk/core` is allowed: it is
+   where `definePrimitive` and the other core behaviors live.
 3. **One shape.** A root and its parts, nested as the component page's Composition shows. Change a
    part's element with `render`, never an `as` prop. For a part of Avenue's own, use `renderElement`
    and `mergeProps` from `@ui-sdk/react/primitive` so it takes `render` like every other part.
@@ -69,8 +70,9 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
    not a trigger's `onClick`; anything an agent must not do alone (delete, pay, send) carries
    `data-agent-confirm="<what it does>"`, and fields an agent may fill but not read carry
    `data-agent-secret`. `Foundations/Agents` in Storybook is the worked example and its play function
-   is the agent test to copy. Avenue never creates the bridge itself; turning `createAgent` on in the
-   ManyAve app is a later decision.
+   is the agent test to copy. Avenue never creates the bridge itself (oxlint fails `@ui-sdk/react/agent` in
+   `src/components`, `src/lib` and `src/hooks`); turning `createAgent` on in the ManyAve app is a later
+   decision.
 
 ## Proving a change looks the same
 
