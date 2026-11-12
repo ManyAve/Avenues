@@ -136,9 +136,13 @@ export const Form: Story = {
     </FieldSet>
   ),
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("group", { name: "Household" })).toBeVisible();
+    // ui-sdk names a set whose legend is a div through aria-labelledby, wired after mount, so wait for it.
+    await expect(await canvas.findByRole("group", { name: "Household" })).toBeVisible();
     const paper = canvas.getByRole("checkbox", { name: "Mail dues notices on paper" });
     await userEvent.click(canvas.getByText("Mail dues notices on paper"));
+    await expect(paper).not.toBeChecked();
+    // Still unchecked a moment later: one click on the label toggles the box once, not twice.
+    await new Promise((resolve) => setTimeout(resolve, 300));
     await expect(paper).not.toBeChecked();
     await expect(canvas.getByRole("switch", { name: "Email receipts" })).toHaveAccessibleDescription(
       "Sent when a payment is recorded.",
