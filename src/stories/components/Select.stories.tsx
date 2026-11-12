@@ -4,6 +4,7 @@ import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@ui-sdk/react/field";
 import { Select, type SelectOption } from "#avenue/components/select";
+import { createAgent } from "@ui-sdk/react/agent";
 import { cn } from "#avenue/lib/utils";
 
 // AVE-7. One Select for the app's 20 native selects. md (32px, lg corner) by default; sm (28px, md corner) in a card
@@ -352,4 +353,38 @@ export const YearSelectBeforeAfter: Story = {
       </Figure>
     </div>
   ),
+};
+
+function AgentForm() {
+  const [method, setMethod] = useState<string | null>("check");
+  const [role, setRole] = useState<string | null>(null);
+  return (
+    <div className="flex flex-col gap-group">
+      <Labelled label="Payment method">
+        <Select options={methods} value={method} onValueChange={setMethod} native="never" />
+      </Labelled>
+      <Labelled label="Board role">
+        <Select options={roles} value={role} onValueChange={setRole} placeholder="Choose a role" native="never" />
+      </Labelled>
+      <output data-testid="value" className="text-meta text-muted-foreground">
+        {method ?? "(none)"} / {role ?? "(none)"}
+      </output>
+    </div>
+  );
+}
+
+/** An agent finds each Select by its Field label, reads its value and items, and changes it. */
+export const Agent: Story = {
+  tags: ["agent"],
+  render: () => <AgentForm />,
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    const selects = agent.snapshot().filter((entry) => !entry.offPage && entry.component === "select");
+    await expect(selects.map((entry) => entry.label)).toEqual(["Payment method", "Board role"]);
+    const method = selects.find((entry) => entry.label === "Payment method");
+    await expect(method?.["value"]).toBe("check");
+    const result = await agent.act({ steps: [{ ref: "Board role", action: "setValue", args: ["Treasurer"] }] });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent("check / treasurer"));
+  },
 };

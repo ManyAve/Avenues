@@ -3,6 +3,7 @@ import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
+import { checkPattern } from "@ui-sdk/core/testing";
 import { Field, FieldError, FieldLabel } from "@ui-sdk/react/field";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
@@ -213,5 +214,20 @@ export const Keyboard: Story = {
       await expect(canvas.getByTestId("value")).toHaveTextContent("h2");
       await expect(input).toHaveValue("14 Lantern Row · Bram Hollis");
     });
+  },
+};
+
+/**
+ * Avenue changes how the Combobox leaves (Tab away restores the last choice), so it is checked against the WAI-ARIA
+ * combobox pattern itself, not only through ui-sdk's own tests (AVE-18).
+ */
+export const Pattern: Story = {
+  name: "Combobox pattern",
+  tags: ["pattern:combobox"],
+  render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} />,
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Household" });
+    await checkPattern(input.closest("[data-slot=combobox]")!, "combobox");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("h1");
   },
 };
