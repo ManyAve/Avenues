@@ -146,6 +146,18 @@
   }
 }
 
+/* Reduced motion on every surface (AVE-5, Foundations/Motion): animations and transitions finish at once, so things
+   appear in place. Copied from ManyAve Management's src/desktop.css at e01cc90, where only the desktop app had it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Decorative tints for avatars and street bars, hashed from a name (copied from the app's src/index.css).
    Teal, plum, iris and stone carry no status meaning. */
 [data-tint] {

@@ -111,7 +111,7 @@ Controls and the Docs args table.
 | Path                     | Holds                                                          |
 | ------------------------ | -------------------------------------------------------------- |
 | `src/styles/tokens.css`  | Palette, type scale, semantic colours, shadows and tints, light and dark (copied from the app). |
-| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale. |
+| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale, and the reduced-motion rule for every surface. |
 | `src/styles/ui-sdk.css`  | Generated: ui-sdk's default stylesheet with its rules scoped to `[data-ui-sdk-skin]`, loaded first by `avenue.css` (see `scripts/ui-sdk-css.ts`). |
 | `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
 | `scripts/`               | The token comparison, the class check, the visual diff and the ui-sdk stylesheet generator. |
@@ -125,7 +125,8 @@ Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components u
 `group` (8), `row-y` (12), `inset` (16), `page` (16, 20 from 640px) and `section` (24), as in `p-inset` or
 `gap-group`. Controls use `h-control-xs/sm/md/lg` (24/28/32/40) and controls in one row share a height. Corners
 are `rounded-xs/sm/md/lg/xl` (4/6/8/10/14) and `rounded-full` for labels and tokens only; `2xl` to `4xl` are
-retired. Each is shown under Tokens in Storybook.
+retired. Each is shown under Tokens in Storybook. Foundations in Storybook says how to use them: colour and status,
+type and the 14px floor, spacing, corners, elevation, icons, motion and theming, each with a do and a don't.
 
 ## Imports inside Avenue
 
