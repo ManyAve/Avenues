@@ -85,9 +85,9 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
 
 ## Proving a change looks the same
 
-`bun run visual:diff [base-ref]` builds Storybook at the base ref (default `main`) and from the
-working tree, captures every story in light and dark and in the web and desktop type scales, and
-compares them pixel by pixel. It fails on any changed, missing or broken story and writes the
+`bun run visual:diff [base-ref]` builds Storybook at the base ref (default `main`, or `origin/main`
+in a clone without it) and from the working tree, captures every story in light and dark and in the
+web and desktop type scales, and compares them pixel by pixel. It fails on any changed, missing or broken story and writes the
 captures and diffs to `.visual-diff/report/`. Use it for any change that could move pixels you
 didn't mean to move: a stylesheet, a dependency, a token. It needs Playwright's Chromium, or
 `AVENUE_CHROMIUM` pointing at one.
