@@ -31,6 +31,8 @@ function FieldLegend({
 }: ComponentProps<typeof FieldPrimitive.FieldLegend> & { variant?: "legend" | "label" | undefined }) {
   return (
     <FieldPrimitive.FieldLegend
+      // A native <legend> sits outside the fieldset's flex flow; a div keeps the app's spacing and still names the set.
+      render={<div />}
       data-slot="field-legend"
       data-variant={variant}
       className={cn(

@@ -1,10 +1,9 @@
 # Avenue
 
 Avenue is ManyAve's design system: tokens, foundations, components and composites, built on
-[Base UI](https://base-ui.com) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and shown in
-Storybook 11. Component behavior comes from [ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`), which replaces
-Base UI wherever it has an equivalent; Base UI stays only where ui-sdk has nothing yet. The look stays
-shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule and how to read ui-sdk's docs.
+[ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and
+shown in Storybook 11. Component behavior comes from ui-sdk, which replaces Base UI wherever it has an
+equivalent; today no component needs Base UI. The look stays shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule and how to read ui-sdk's docs.
 
 All example data is fictional. Avenue imports nothing from outside this package; npm
 dependencies are fine.
@@ -81,7 +80,7 @@ Controls and the Docs args table.
 | `scripts/`               | The token comparison, the class check, the visual diff and the ui-sdk stylesheet generator. |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
 | `src/lib/control.ts`     | The shared field look (`controlSurface`) and AVE-2 control sizes (`controlSize`) for inputs, textareas and select triggers. |
-| `src/components/`        | One file per component: the shadcn primitives on Base UI, styled to the app (AVE-6). Stories in `src/stories/components/`. |
+| `src/components/`        | One file per component: the shadcn primitives on ui-sdk, styled to the app (AVE-6, AVE-17). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Spacing and corners

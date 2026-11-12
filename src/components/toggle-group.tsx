@@ -13,6 +13,7 @@ import { cn } from "#avenue/lib/utils";
  * A single-choice group (the default) is a radio group, ui-sdk's SegmentedControl: `value` is one string, the
  * arrow keys move and select together, and Tab lands on the chosen item. Pass `multiple` for independent on/off
  * items, ui-sdk's ToggleGroup of pressed buttons: `value` is a list, arrows move and Space or Enter presses.
+ * The parts keep ui-sdk's data-slot names: segmented-control(-item), or toggle-group and toggle.
  */
 type GroupStyle = VariantProps<typeof toggleVariants> & {
   spacing?: number | undefined;
@@ -40,7 +41,6 @@ function ToggleGroup({
   ...props
 }: (SingleProps | MultipleProps) & GroupStyle) {
   const shared = {
-    "data-slot": "toggle-group",
     "data-variant": variant,
     "data-size": size,
     "data-spacing": spacing,
@@ -85,7 +85,6 @@ function ToggleGroupItem({
 } & VariantProps<typeof toggleVariants>) {
   const context = useContext(ToggleGroupContext);
   const itemProps = {
-    "data-slot": "toggle-group-item",
     "data-variant": context.variant || variant,
     "data-size": context.size || size,
     "data-spacing": context.spacing,
@@ -93,11 +92,12 @@ function ToggleGroupItem({
     className: cn(
       "shrink-0 focus:z-10 focus-visible:z-10",
       toggleVariants({ variant: context.variant || variant, size: context.size || size }),
-      // Joined (spacing 0): square inner corners, outer corners match the group, shared borders.
+      // Joined (spacing 0): square inner corners, outer corners match the group, shared borders. first/last-of-type,
+      // because a single-choice group also holds ui-sdk's hidden native input.
       "group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2",
-      "group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first:rounded-l-lg group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last:rounded-r-lg group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first:rounded-t-lg group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last:rounded-b-lg",
-      "group-data-[size=sm]/toggle-group:group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first:rounded-l-md group-data-[size=sm]/toggle-group:group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last:rounded-r-md group-data-[size=sm]/toggle-group:group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first:rounded-t-md group-data-[size=sm]/toggle-group:group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last:rounded-b-md",
-      "group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
+      "group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first-of-type:rounded-l-lg group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last-of-type:rounded-r-lg group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first-of-type:rounded-t-lg group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last-of-type:rounded-b-lg",
+      "group-data-[size=sm]/toggle-group:group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first-of-type:rounded-l-md group-data-[size=sm]/toggle-group:group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last-of-type:rounded-r-md group-data-[size=sm]/toggle-group:group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first-of-type:rounded-t-md group-data-[size=sm]/toggle-group:group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last-of-type:rounded-b-md",
+      "group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:first-of-type:border-l group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:first-of-type:border-t",
       className,
     ),
   };

@@ -19,7 +19,6 @@ const executablePath = process.env.AVENUE_CHROMIUM;
 // Pre-bundle every dependency the stories import, so Vite never discovers one mid-run and reloads the page under
 // a running test ("Vite unexpectedly reloaded a test").
 const prebundle = [
-  "@base-ui/react/**",
   "@ui-sdk/react/avatar",
   "@ui-sdk/react/button",
   "@ui-sdk/react/checkbox",

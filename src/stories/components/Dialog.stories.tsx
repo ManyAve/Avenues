@@ -55,6 +55,7 @@ export const Open: Story = {
   render: () => <PaymentForm defaultOpen />,
   play: async () => {
     const dialog = await screen.findByRole("dialog", { name: "Record payment" });
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
     const close = screen.getByRole("button", { name: "Close" });
     const box = dialog.getBoundingClientRect();
     const button = close.getBoundingClientRect();
