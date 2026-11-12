@@ -40,7 +40,13 @@ const preview: Preview = {
   parameters: {
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
-    a11y: { test: "todo" },
+    // axe runs on every story in `bun run test:stories`, and any violation fails it. The rule set is
+    // WCAG 2.2 AA plus axe's best practices. A story may turn one rule off only with a written reason
+    // beside it: `a11y: { config: { rules: [{ id, enabled: false }] } }` under an `a11y-exception:` comment.
+    a11y: {
+      test: "error",
+      options: { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] },
+    },
     options: {
       storySort: { order: ["Introduction", "Tokens", "Foundations", "Components", "Composites"] },
     },

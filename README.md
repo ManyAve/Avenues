@@ -13,7 +13,10 @@ Needs [Bun](https://bun.sh) 1.4.4 or newer.
 
 ```sh
 bun install
+bunx playwright install chromium   # once: the browser the story tests run in
 ```
+
+To use a Chromium that is already installed instead, point `AVENUE_CHROMIUM` at its executable.
 
 ## Checks
 
@@ -24,7 +27,9 @@ There is no CI. Run these locally before opening a pull request.
 | `bun run typecheck`       | Type-checks `src` and `.storybook` with TypeScript 7.           |
 | `bun run lint`            | Lints with oxlint; any warning fails.                           |
 | `bun run check:classes`   | Fails on retired corners (`rounded-2xl/3xl/4xl`) or off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`). |
+| `bun run check:a11y-exceptions` | Fails when a story turns an axe rule off without an `a11y-exception:` reason, or switches axe off for a whole story. |
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
+| `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
@@ -32,8 +37,25 @@ There is no CI. Run these locally before opening a pull request.
 
 The toolbar's theme switch flips the `.dark` class on `<html>`, the same switch the ManyAve app
 uses, so every story can be checked in light and dark. The type-scale switch loads `desktop.css`, the
-desktop app's 14/13px scale. The Accessibility panel runs axe on the
-open story.
+desktop app's 14/13px scale. `bun run test:stories` runs every story under each combination of the two
+switches, and the Accessibility panel shows axe's results for the open story.
+
+### Story tests and accessibility
+
+Every story is a test, with nothing extra to write: it must render, its `play` function (if it has one)
+must pass, and axe must find nothing, in all four combinations. Put interaction checks in `play`.
+
+A story may turn off one axe rule, and only with a reason in a comment right above it:
+
+```tsx
+parameters: {
+  // a11y-exception: the swatches are decorative; each value is written beside it.
+  a11y: { config: { rules: [{ id: "color-contrast", enabled: false }] } },
+},
+```
+
+`bun run check:a11y-exceptions` fails on a rule turned off without that comment, and on a story that
+switches axe off or back to a warning.
 
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
