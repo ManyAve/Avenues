@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
+import { Button } from "#avenue/components/button";
 import {
   Field,
   FieldContent,
@@ -63,28 +64,31 @@ export const Invalid: Story = {
 };
 
 /**
- * A required field emptied by the user: Base UI's native check marks it invalid on blur and shows the matching error.
- * A field the user never touched isn't flagged until the form is submitted.
+ * A required field in a form: nothing is flagged while the user fills it in. Submitting it empty shows the matching
+ * error and moves focus to the field; the error clears as soon as the value is fixed.
  */
-export const RequiredOnBlur: Story = {
+export const RequiredOnSubmit: Story = {
   render: () => (
-    <Field validationMode="onBlur">
-      <FieldLabel>Street address</FieldLabel>
-      <Input required />
-      <FieldError match="valueMissing">Enter the street address.</FieldError>
-    </Field>
+    <form className="flex flex-col items-start gap-group" onSubmit={(event) => event.preventDefault()}>
+      <Field>
+        <FieldLabel>Street address</FieldLabel>
+        <Input required />
+        <FieldError match="valueMissing">Enter the street address.</FieldError>
+      </Field>
+      <Button type="submit">Save household</Button>
+    </form>
   ),
   play: async ({ canvas }) => {
     const input = canvas.getByRole("textbox", { name: "Street address" });
     await expect(canvas.queryByRole("alert")).toBeNull();
-    await userEvent.type(input, "1");
-    await userEvent.clear(input);
-    await userEvent.tab();
+    await userEvent.click(canvas.getByRole("button", { name: "Save household" }));
     await expect(await canvas.findByRole("alert")).toHaveTextContent("Enter the street address.");
     await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(input).toHaveFocus();
+    await expect(input).toHaveAccessibleDescription(expect.stringContaining("Enter the street address."));
     await userEvent.type(input, "14 Larkspur Lane");
-    await userEvent.tab();
     await expect(input).not.toHaveAttribute("aria-invalid", "true");
+    await expect(canvas.queryByRole("alert")).toBeNull();
   },
 };
 

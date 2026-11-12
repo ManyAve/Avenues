@@ -1,4 +1,5 @@
-import { Input as InputPrimitive } from "@base-ui/react/input";
+import { Input as InputPrimitive } from "@ui-sdk/react/input";
+import type { ComponentProps } from "react";
 import { controlSize, controlSurface, type ControlSize } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
@@ -13,7 +14,7 @@ function Input({
   className,
   size = "md",
   ...props
-}: Omit<InputPrimitive.Props, "size"> & { size?: ControlSize | undefined }) {
+}: Omit<ComponentProps<typeof InputPrimitive>, "size"> & { size?: ControlSize | undefined }) {
   return (
     <InputPrimitive
       data-slot="input"

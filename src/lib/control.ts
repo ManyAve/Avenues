@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
  * triggers. Border, background, focus ring, invalid ring and disabled state, copied from the app's input
  * (app/ui/components/ui/input.tsx at e01cc90). Height and corner come from `controlSize`.
  *
- * Invalid styling keys off aria-invalid, which Base UI's Field sets on its control, so a screen never
+ * Invalid styling keys off aria-invalid, which ui-sdk's Field sets on its control, so a screen never
  * styles an error by hand.
  */
 export const controlSurface =
