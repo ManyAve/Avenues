@@ -1,6 +1,6 @@
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { CircleHelpIcon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -61,7 +61,8 @@ function TooltipContent({
 /**
  * Help text for something that isn't itself a control, such as a status label. Renders a small focusable help
  * button that shows the text on hover, on keyboard focus and on tap (a tap opens it; tapping elsewhere or Esc
- * closes it). `label` is the button's accessible name; the help text becomes its description while shown.
+ * closes it). `label` is the button's accessible name and the help text is its description, so a screen reader reads
+ * both on focus whether or not the popup is showing (Base UI tooltips add no ARIA of their own).
  * Replaces the app's tooltip on a plain span, which keyboard and touch users could never open.
  */
 function InfoTip({
@@ -78,11 +79,16 @@ function InfoTip({
   className?: string | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  const descriptionId = useId();
   return (
     <Tooltip open={open} onOpenChange={setOpen}>
+      <span id={descriptionId} hidden>
+        {children}
+      </span>
       <TooltipTrigger
         data-slot="info-tip"
         aria-label={label}
+        aria-describedby={descriptionId}
         closeOnClick={false}
         onClick={() => setOpen(true)}
         className={cn(

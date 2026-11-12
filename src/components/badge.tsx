@@ -23,7 +23,8 @@ const badgeVariants = cva(
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
-        link: "text-primary underline-offset-4 hover:underline",
+        // Dark: as Button link, the subtle-foreground tone, because primary text is 3.2:1 on the dark page.
+        link: "text-primary underline-offset-4 hover:underline dark:text-primary-subtle-foreground",
       },
     },
     defaultVariants: {

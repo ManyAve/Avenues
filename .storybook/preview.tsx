@@ -4,9 +4,7 @@ import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
 import { TooltipProvider } from "#avenue/components/tooltip";
-
-// Story tests (vitest.config.ts) run every story once per theme and set VITE_AVENUE_THEME for each run.
-const testTheme = import.meta.env.VITE_AVENUE_THEME;
+import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
 
 // Under test (Playwright sets navigator.webdriver), skip enter and exit animations, so a popup that is open is
 // visible at once instead of fading in from opacity 0 while a play function or axe checks it. Storybook keeps them.
@@ -42,7 +40,11 @@ const preview: Preview = {
       toolbar: { icon: "paragraph", items: ["web", "desktop"], dynamicTitle: true },
     },
   },
-  initialGlobals: { theme: testTheme ?? "light", typeScale: "web" },
+  initialGlobals: { theme: "light", typeScale: "web" },
+  beforeEach: ({ parameters, globals, title, name }) => {
+    const problems = a11yGuardProblems(parameters, globals);
+    if (problems.length > 0) throw new Error(`${title} / ${name} weakens the accessibility check:\n- ${problems.join("\n- ")}`);
+  },
   decorators: [
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
@@ -57,8 +59,10 @@ const preview: Preview = {
   parameters: {
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
-    // axe fails a story test on any violation (`bun run test:stories`), in both themes.
-    a11y: { test: "error" },
+    // axe runs on every story in `bun run test:stories`, and any violation fails it: WCAG 2.2 AA plus
+    // axe's best practices. The beforeEach below fails a story that weakens this; see a11y-guard.ts for
+    // the one allowed exception (a rule turned off with a written reason).
+    a11y: { test: "error", options: { runOnly: AXE_TAGS } },
     options: {
       storySort: { order: ["Introduction", "Tokens", "Foundations", "Components", "Composites"] },
     },
