@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { cn } from "../../lib/utils";
-import { Code, Page, Section, useComputed } from "./token-docs";
+import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
 
 // AVE-2 sections 1 and 2: one 4px grid, named aliases, and four control heights.
 
@@ -65,28 +65,19 @@ function SpacingScale() {
 }
 
 const heights = [
-  ["xs", "h-control-xs", "rounded-md", "Inside table rows and dense lists"],
-  ["sm", "h-control-sm", "rounded-md", "In a card or dialog header"],
-  ["md", "h-control-md", "rounded-lg", "Default: buttons, inputs, selects, toolbars"],
-  ["lg", "h-control-lg", "rounded-lg", "Primary actions on mobile and in empty states"],
+  ["xs", "Inside table rows and dense lists"],
+  ["sm", "In a card or dialog header"],
+  ["md", "Default: buttons, inputs, selects, toolbars"],
+  ["lg", "Primary actions on mobile and in empty states"],
 ] as const;
 
-function Control({ size, cls, corner, use }: { size: string; cls: string; corner: string; use: string }) {
-  const [ref, height] = useComputed<HTMLDivElement>((s) => `${s.height}, ${s.borderTopLeftRadius} corner`);
+function Control({ size, use }: { size: (typeof heights)[number][0]; use: string }) {
+  const [ref, height] = useComputed<HTMLSpanElement>((s) => `${s.height}, ${s.borderTopLeftRadius} corner`);
   return (
     <div className="grid grid-cols-[3rem_9rem_8rem_1fr] items-center gap-4 border-b py-row-y">
       <Code className="text-foreground">{size}</Code>
       <Code>{height}</Code>
-      <div
-        ref={ref}
-        className={cn(
-          "flex items-center border border-input bg-card px-3 text-control shadow-control",
-          cls,
-          corner,
-        )}
-      >
-        2026
-      </div>
+      <SelectMock ref={ref} size={size} />
       <span className="text-meta text-muted-foreground">{use}</span>
     </div>
   );
@@ -100,8 +91,8 @@ function ControlHeights() {
         note="h-control-xs to h-control-lg (also size- and min-h-). Controls that share a row share a height. Text inside a control stays at text-control (14px), so xs is the smallest control that holds text. Touch targets reach 44px by extending the hit area, not the drawn control."
       >
         <div>
-          {heights.map(([size, cls, corner, use]) => (
-            <Control key={size} size={size} cls={cls} corner={corner} use={use} />
+          {heights.map(([size, use]) => (
+            <Control key={size} size={size} use={use} />
           ))}
         </div>
       </Section>
@@ -111,9 +102,7 @@ function ControlHeights() {
             Owing
           </span>
           <span className="flex h-control-md items-center rounded-full border px-3 text-control">Paid</span>
-          <span className="flex h-control-md items-center rounded-lg border border-input bg-card px-3 text-control shadow-control">
-            2026
-          </span>
+          <SelectMock size="md" />
           <span className="flex size-control-md items-center justify-center rounded-lg border border-input text-control">
             <span aria-hidden="true">⋯</span>
             <span className="sr-only">More</span>

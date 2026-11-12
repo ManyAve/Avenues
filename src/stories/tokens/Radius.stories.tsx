@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { cn } from "../../lib/utils";
-import { Code, Page, Section, useComputed } from "./token-docs";
+import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
 
 // AVE-2 sections 3 to 6: five corner steps from --radius (10px), pills only for labels and tokens,
 // and rounded things inside rounded things.
@@ -48,14 +48,15 @@ function NestedCorners() {
     <Page title="Rounded inside rounded">
       <Section
         title="Concentric when tight"
-        note="When the gap to the container's edge is smaller than its corner, the inner corner is the outer corner minus the gap, rounded down to a step. A 10px segmented control with 2px padding gives 8px: md."
+        note="When the gap to the container's edge is smaller than its corner, the inner corner is the outer corner minus the gap, rounded down to a step. The app's segmented control is 10px with 3px padding: 7px rounds down to sm (6px), never up to md, which would be rounder than the container allows."
       >
-        <div className="inline-flex w-fit gap-0.5 rounded-lg border bg-muted p-0.5">
+        {/* 3px is the app's segmented-control padding, an optical inset inside a control (AVE-2 allows these). */}
+        <div className="inline-flex w-fit gap-0.5 rounded-lg border bg-muted p-[3px]">
           {["Month", "Quarter", "Year"].map((label, i) => (
             <span
               key={label}
               className={cn(
-                "flex h-control-sm items-center rounded-md px-3 text-control",
+                "flex h-control-sm items-center rounded-sm px-3 text-control",
                 i === 2 ? "bg-card shadow-control" : "text-muted-foreground",
               )}
             >
@@ -66,17 +67,15 @@ function NestedCorners() {
       </Section>
       <Section
         title="A control in a card's corner"
-        note="The Dues card after AVE-2: an sm select (28px, md corner) 16px from the card's top and right edges, vertically centred on the title, 8px from its label. Never a pill inside a card's corner zone."
+        note="The Dues card after AVE-2, in the app's header layout: DUES on the left; Account summary and an sm year select (28px, md corner) on the right, the select 8px from its label, 16px from the card's top and right edges and vertically centred on the header line. Never a pill inside a card's corner zone."
       >
         <div className="w-full max-w-md rounded-xl border bg-card shadow-card">
           <div className="flex items-center justify-between gap-group border-b px-inset py-row-y">
-            <div className="flex items-baseline gap-group">
-              <span className="text-meta font-semibold tracking-wide text-muted-foreground uppercase">Dues</span>
-              <span className="text-compact font-medium">Account summary</span>
+            <h3 className="text-meta font-semibold tracking-wide text-muted-foreground uppercase">Dues</h3>
+            <div className="flex items-center gap-group text-meta text-muted-foreground">
+              <span>Account summary ·</span>
+              <SelectMock size="sm" />
             </div>
-            <span className="flex h-control-sm items-center rounded-md border border-input bg-card px-2 text-control shadow-control">
-              2026
-            </span>
           </div>
           <div className="flex flex-col gap-2 p-inset text-compact">
             <div className="flex justify-between">
