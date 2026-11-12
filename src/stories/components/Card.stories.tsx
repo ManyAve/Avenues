@@ -40,41 +40,48 @@ export const Default: Story = {
 };
 
 /**
- * The card header with an action (AVE-2 section 6, the year select in the Dues card): the sm control (28px, 8px
- * corner) sits on the title's line, centred on it, 16px from the card's top and right edges.
- * The select itself comes from AVE-7; this story uses a button with the same size.
+ * The card header with an action: the agreed Dues layout from AVE-2 section 6 (Tokens/Radius, "A control in a
+ * card's corner"). DUES on the left in uppercase meta; "Account summary ·" and an sm year select on the right, the
+ * select 8px from its label, 16px from the card's top and right edges and centred on the header line.
+ * The select itself comes from AVE-7; this story uses a button with the same size and corner.
  */
 export const HeaderWithAction: Story = {
   render: () => (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>Dues</CardTitle>
-        <CardDescription>Account summary</CardDescription>
-        <CardAction>
-          <Button variant="outline" size="sm" aria-label="Year, 2026">
+        <CardTitle className="text-meta font-semibold tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
+        <CardAction className="gap-group text-meta text-muted-foreground">
+          <span>Account summary ·</span>
+          <Button variant="outline" size="sm" className="pr-1" aria-label="Year, 2026">
             2026
             <ChevronDownIcon aria-hidden />
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-y-2 tabular-nums">
-        <span className="text-muted-foreground">Assessed</span>
-        <span className="text-right">$480.00</span>
-        <span className="text-muted-foreground">Paid</span>
-        <span className="text-right">$240.00</span>
-        <span className="font-medium">Balance</span>
-        <span className="text-right font-medium">$240.00</span>
+      <CardContent className="flex flex-col gap-2 text-compact">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Billed</span>
+          <span className="font-mono tabular-nums">$240.00</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Paid</span>
+          <span className="font-mono tabular-nums">$120.00</span>
+        </div>
       </CardContent>
     </Card>
   ),
   play: async ({ canvasElement, canvas }) => {
     const card = canvasElement.querySelector("[data-slot=card]")!.getBoundingClientRect();
     const action = canvas.getByRole("button", { name: "Year, 2026" }).getBoundingClientRect();
-    const title = canvas.getByText("Dues").getBoundingClientRect();
+    const label = canvas.getByText("Account summary ·").getBoundingClientRect();
+    const title = canvas.getByText("Dues");
+    const box = title.getBoundingClientRect();
+    await expect(getComputedStyle(title).textTransform).toBe("uppercase");
     await expect(action.height).toBe(28);
+    await expect(Math.round(action.left - label.right)).toBe(8);
     await expect(Math.round(action.top - card.top)).toBe(16);
     await expect(Math.round(card.right - action.right)).toBe(16);
-    await expect(Math.round(title.top + title.height / 2)).toBe(Math.round(action.top + action.height / 2));
+    await expect(Math.round(box.top + box.height / 2)).toBe(Math.round(action.top + action.height / 2));
   },
 };
 

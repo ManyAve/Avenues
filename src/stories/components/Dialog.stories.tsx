@@ -55,6 +55,7 @@ export const Open: Story = {
   render: () => <PaymentForm defaultOpen />,
   play: async () => {
     const dialog = await screen.findByRole("dialog", { name: "Record payment" });
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
     const close = screen.getByRole("button", { name: "Close" });
     const box = dialog.getBoundingClientRect();
     const button = close.getBoundingClientRect();
@@ -67,6 +68,7 @@ export const Open: Story = {
 
 /** Focus goes to the first field on open and back to the trigger on close; Esc closes. */
 export const FocusOnOpenAndClose: Story = {
+  tags: ["agent"],
   render: () => <PaymentForm />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Record payment" });

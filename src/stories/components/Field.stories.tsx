@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, screen, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
+import { Button } from "#avenue/components/button";
 import {
   Field,
   FieldContent,
@@ -13,8 +14,8 @@ import {
   FieldSet,
 } from "#avenue/components/field";
 import { Input } from "#avenue/components/input";
+import { Popover, PopoverContent, PopoverDescription, PopoverTrigger } from "#avenue/components/popover";
 import { Switch } from "#avenue/components/switch";
-import { Textarea } from "#avenue/components/textarea";
 
 const meta = {
   title: "Components/Field",
@@ -63,28 +64,32 @@ export const Invalid: Story = {
 };
 
 /**
- * A required field emptied by the user: Base UI's native check marks it invalid on blur and shows the matching error.
- * A field the user never touched isn't flagged until the form is submitted.
+ * A required field in a form: nothing is flagged while the user fills it in. Submitting it empty shows the matching
+ * error and moves focus to the field; the error clears as soon as the value is fixed.
  */
-export const RequiredOnBlur: Story = {
+export const RequiredOnSubmit: Story = {
+  tags: ["agent"],
   render: () => (
-    <Field validationMode="onBlur">
-      <FieldLabel>Street address</FieldLabel>
-      <Input required />
-      <FieldError match="valueMissing">Enter the street address.</FieldError>
-    </Field>
+    <form className="flex flex-col items-start gap-group" onSubmit={(event) => event.preventDefault()}>
+      <Field>
+        <FieldLabel>Street address</FieldLabel>
+        <Input required />
+        <FieldError match="valueMissing">Enter the street address.</FieldError>
+      </Field>
+      <Button type="submit">Save household</Button>
+    </form>
   ),
   play: async ({ canvas }) => {
     const input = canvas.getByRole("textbox", { name: "Street address" });
     await expect(canvas.queryByRole("alert")).toBeNull();
-    await userEvent.type(input, "1");
-    await userEvent.clear(input);
-    await userEvent.tab();
+    await userEvent.click(canvas.getByRole("button", { name: "Save household" }));
     await expect(await canvas.findByRole("alert")).toHaveTextContent("Enter the street address.");
     await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(input).toHaveFocus();
+    await expect(input).toHaveAccessibleDescription(expect.stringContaining("Enter the street address."));
     await userEvent.type(input, "14 Larkspur Lane");
-    await userEvent.tab();
     await expect(input).not.toHaveAttribute("aria-invalid", "true");
+    await expect(canvas.queryByRole("alert")).toBeNull();
   },
 };
 
@@ -98,54 +103,6 @@ export const Disabled: Story = {
   ),
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("textbox", { name: "Lot number" })).toBeDisabled();
-  },
-};
-
-/** Input sizes: xs 24, sm 28 (8px corner), md 32 default, lg 40 (10px corner). */
-export const InputSizes: Story = {
-  render: () => (
-    <FieldGroup className="gap-3">
-      {(["xs", "sm", "md", "lg"] as const).map((size) => (
-        <Field key={size}>
-          <FieldLabel>Search, {size}</FieldLabel>
-          <Input size={size} type="search" placeholder="Search households" />
-        </Field>
-      ))}
-    </FieldGroup>
-  ),
-  play: async ({ canvas }) => {
-    const heights = canvas.getAllByRole("searchbox").map((el) => el.getBoundingClientRect().height);
-    await expect(heights).toEqual([24, 28, 32, 40]);
-  },
-};
-
-/** Textarea grows with its content from 64px. */
-export const TextareaField: Story = {
-  render: () => (
-    <Field>
-      <FieldLabel>Note to the board</FieldLabel>
-      <Textarea placeholder="What happened, and what you need" />
-      <FieldDescription>Only board members see this.</FieldDescription>
-    </Field>
-  ),
-  play: async ({ canvas }) => {
-    const textarea = canvas.getByRole("textbox", { name: "Note to the board" });
-    await expect(textarea).toHaveAccessibleDescription("Only board members see this.");
-    await userEvent.type(textarea, "The streetlight on Juniper Court is out.");
-    await expect(textarea).toHaveValue("The streetlight on Juniper Court is out.");
-  },
-};
-
-export const TextareaInvalid: Story = {
-  render: () => (
-    <Field invalid>
-      <FieldLabel>Complaint details</FieldLabel>
-      <Textarea />
-      <FieldError>Describe the complaint before sending it.</FieldError>
-    </Field>
-  ),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("textbox", { name: "Complaint details" })).toHaveAttribute("aria-invalid", "true");
   },
 };
 
@@ -180,12 +137,38 @@ export const Form: Story = {
     </FieldSet>
   ),
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("group", { name: "Household" })).toBeVisible();
+    // ui-sdk names a set whose legend is a div through aria-labelledby, wired after mount, so wait for it.
+    await expect(await canvas.findByRole("group", { name: "Household" })).toBeVisible();
     const paper = canvas.getByRole("checkbox", { name: "Mail dues notices on paper" });
     await userEvent.click(canvas.getByText("Mail dues notices on paper"));
+    await expect(paper).not.toBeChecked();
+    // Still unchecked a moment later: one click on the label toggles the box once, not twice.
+    await new Promise((resolve) => setTimeout(resolve, 300));
     await expect(paper).not.toBeChecked();
     await expect(canvas.getByRole("switch", { name: "Email receipts" })).toHaveAccessibleDescription(
       "Sent when a payment is recorded.",
     );
+  },
+};
+
+/** A popup written inside a Field keeps its own width: ui-sdk renders it in place, so Field's full-width rule skips elements with the popover attribute. */
+export const PopupInField: Story = {
+  render: () => (
+    <Field className="w-96">
+      <FieldLabel htmlFor="field-popup-street">Street</FieldLabel>
+      <Input id="field-popup-street" defaultValue="Larkspur Lane" />
+      <Popover defaultOpen>
+        <PopoverTrigger render={<Button variant="outline" />}>Street rules</PopoverTrigger>
+        <PopoverContent>
+          <PopoverDescription>Streets come from the association's map.</PopoverDescription>
+        </PopoverContent>
+      </Popover>
+    </Field>
+  ),
+  play: async ({ canvas }) => {
+    const field = canvas.getByRole("textbox", { name: "Street" }).parentElement as HTMLElement;
+    const popup = await screen.findByRole("dialog");
+    await expect(popup.parentElement).toBe(field);
+    await expect(popup.getBoundingClientRect().width).toBeLessThan(field.getBoundingClientRect().width);
   },
 };

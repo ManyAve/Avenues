@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, type ReactNode } from "react";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@ui-sdk/react/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
 import { Select, type SelectOption } from "#avenue/components/select";
 import { createAgent } from "@ui-sdk/react/agent";
 import { cn } from "#avenue/lib/utils";
@@ -337,6 +337,93 @@ export const InCardHeader: Story = {
     await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(192));
     await userEvent.click(await screen.findByRole("option", { name: "2025" }));
     await expect(trigger).toHaveTextContent("2025");
+  },
+};
+
+/** True when the point is painted by `el` or something inside it, so nothing (a card's overflow) cuts it there. */
+function paintedAt(el: Element, x: number, y: number) {
+  const hit = document.elementFromPoint(x, y);
+  return !!hit && (hit === el || el.contains(hit));
+}
+
+/**
+ * Each corner of the box is painted by the element itself. Chromium hit-tests rounded corners, so each point sits
+ * on the straight edge just past the element's own radius, 2px in.
+ */
+async function expectUncut(el: Element) {
+  const r = el.getBoundingClientRect();
+  const dx = Math.max(2, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0) + 1;
+  for (const [x, y] of [
+    [r.left + dx, r.top + 2],
+    [r.right - dx, r.top + 2],
+    [r.left + dx, r.bottom - 2],
+    [r.right - dx, r.bottom - 2],
+  ] as const) {
+    await expect(paintedAt(el, x, y), `${el.getAttribute("data-slot")} is cut at ${x},${y}`).toBe(
+      true,
+    );
+  }
+}
+
+/**
+ * Management's dues year picker (Architect, AVE-7): in a rounded, overflow-hidden card at the right edge of the 900px
+ * minimum window, the closed sm Select is not cut by the card's corner, and its open list is not clipped by the card.
+ */
+export const InClippedCardAtEdge: Story = {
+  name: "In a clipped card at the window edge",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <div className="flex w-[900px] justify-end p-inset">
+      <Card className="w-80 overflow-hidden rounded-xl shadow-card ring-border" data-testid="card">
+        <CardHeader className="border-b pb-3">
+          <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+            <h2>Dues</h2>
+          </CardTitle>
+          <CardAction>
+            <Select
+              options={years}
+              defaultValue="2026"
+              size="sm"
+              aria-label="Dues year"
+              native="never"
+              className="w-auto"
+            />
+          </CardAction>
+        </CardHeader>
+        <CardContent>{balance}</CardContent>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvas, step }) => {
+    const card = canvas.getByTestId("card");
+    const trigger = canvas.getByRole("combobox", { name: "Dues year" });
+
+    await step("the closed select sits inside the card, uncut", async () => {
+      await expect(getComputedStyle(card).overflow).toBe("hidden");
+      const c = card.getBoundingClientRect();
+      const t = trigger.getBoundingClientRect();
+      // Clear of the card's rounded corner on both axes, so the radius can't clip it.
+      const radius = parseFloat(getComputedStyle(card).borderTopRightRadius);
+      await expect(c.right - t.right).toBeGreaterThanOrEqual(radius / 2);
+      await expect(t.top - c.top).toBeGreaterThanOrEqual(radius / 2);
+      await expectUncut(trigger);
+    });
+
+    await step("the open list is not clipped by the card or the window", async () => {
+      await userEvent.click(trigger);
+      const list = await screen.findByRole("listbox");
+      const popup = list.closest("[data-slot=select-content]") ?? list;
+      await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(192));
+      const p = popup.getBoundingClientRect();
+      // It reaches past the card, and still shows whole.
+      await expect(p.bottom).toBeGreaterThan(card.getBoundingClientRect().top + 60);
+      await expect(p.left).toBeGreaterThanOrEqual(0);
+      await expect(p.right).toBeLessThanOrEqual(window.innerWidth);
+      await expectUncut(popup);
+      for (const name of ["2027", "2026", "2025"])
+        await expectUncut(screen.getByRole("option", { name }));
+      await userEvent.keyboard("{Escape}");
+    });
   },
 };
 

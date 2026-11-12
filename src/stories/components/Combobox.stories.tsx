@@ -3,8 +3,7 @@ import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
-import { checkPattern } from "@ui-sdk/core/testing";
-import { Field, FieldError, FieldLabel } from "@ui-sdk/react/field";
+import { Field, FieldError, FieldLabel } from "#avenue/components/field";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
 // All households, owners and IDs are fictional.
@@ -143,7 +142,8 @@ export const Empty: Story = {
   ),
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
-    await expect(await screen.findByText("No households yet. Add one on the Households tab first.")).toBeVisible();
+    // The list fades in from opacity 0 (data-starting-style), so wait for it to finish appearing.
+    await waitFor(() => expect(screen.getByText("No households yet. Add one on the Households tab first.")).toBeVisible());
   },
 };
 
@@ -180,7 +180,8 @@ export const Keyboard: Story = {
     await step("no match says so", async () => {
       await userEvent.clear(input);
       await userEvent.keyboard("zzz");
-      await expect(await screen.findByText("No household matches “zzz”.")).toBeVisible();
+      // The list fades in from opacity 0 (data-starting-style), so wait for it to finish appearing.
+      await waitFor(() => expect(screen.getByText("No household matches “zzz”.")).toBeVisible());
     });
 
     await step("Escape closes the list and restores the previous choice", async () => {
@@ -226,8 +227,8 @@ export const Pattern: Story = {
   tags: ["pattern:combobox"],
   render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} />,
   play: async ({ canvas }) => {
-    const input = canvas.getByRole("combobox", { name: "Household" });
-    await checkPattern(input.closest("[data-slot=combobox]")!, "combobox");
+    // The story runner runs checkPattern(…, "combobox") after this play function, from the tag.
+    await expect(canvas.getByRole("combobox", { name: "Household" })).toHaveValue("12 Lantern Row · Ada Okafor");
     await expect(canvas.getByTestId("value")).toHaveTextContent("h1");
   },
 };

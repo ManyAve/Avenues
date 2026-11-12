@@ -1,6 +1,7 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button";
+import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
-import { useId, type ReactNode } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
+import { controlShape } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -14,15 +15,14 @@ const buttonVariants = cva(
   {
     variants: {
       size: {
-        default:
-          "h-control-md gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-control-xs gap-1 rounded-md px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-control-sm gap-1 rounded-md px-2 text-control [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-control-lg gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-control-md rounded-lg",
-        "icon-xs": "size-control-xs rounded-md [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-control-sm rounded-md",
-        "icon-lg": "size-control-lg rounded-lg",
+        default: `${controlShape({ size: "md" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
+        xs: `${controlShape({ size: "xs" })} gap-1 px-2 text-xs [&_svg:not([class*='size-'])]:size-3`,
+        sm: `${controlShape({ size: "sm" })} gap-1 px-2 text-control [&_svg:not([class*='size-'])]:size-3.5`,
+        lg: `${controlShape({ size: "lg" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
+        icon: `${controlShape({ size: "md" })} w-control-md`,
+        "icon-xs": `${controlShape({ size: "xs" })} w-control-xs [&_svg:not([class*='size-'])]:size-3`,
+        "icon-sm": `${controlShape({ size: "sm" })} w-control-sm`,
+        "icon-lg": `${controlShape({ size: "lg" })} w-control-lg`,
       },
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
@@ -48,7 +48,7 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = ButtonPrimitive.Props &
+type ButtonProps = ComponentProps<typeof ButtonPrimitive> &
   VariantProps<typeof buttonVariants> & {
     /**
      * Why the action is unavailable. Disables the button but keeps it focusable, shows the reason as one muted
@@ -70,7 +70,7 @@ function Button({ className, variant = "default", size = "default", disabledReas
         ? {
             disabled: true,
             focusableWhenDisabled: true,
-            "aria-describedby": cn(props["aria-describedby"], reasonId),
+            "aria-describedby": [props["aria-describedby"], reasonId].filter(Boolean).join(" "),
           }
         : {})}
     />

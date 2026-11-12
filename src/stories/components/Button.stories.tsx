@@ -120,6 +120,7 @@ export const States: Story = {
  * reason, so keyboard and screen-reader users learn it too; touch users see the line. Replaces title tooltips.
  */
 export const DisabledWithReason: Story = {
+  tags: ["agent"],
   args: { onClick: fn() },
   render: (args) => (
     <Rows>

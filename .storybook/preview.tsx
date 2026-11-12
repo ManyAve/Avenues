@@ -3,8 +3,12 @@
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
-import { TooltipProvider } from "#avenue/components/tooltip";
 import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
+import { runAccessibilityChecks } from "./pattern-check";
+
+// ui-sdk's development warnings (a missing name, a part outside its root, ...) throw instead of logging,
+// so a story that misuses ui-sdk fails the story tests (the ui-sdk skill, references/testing.md).
+Object.assign(globalThis, { ["__UI_SDK_STRICT__"]: true });
 
 // Under test (Playwright sets navigator.webdriver), skip enter and exit animations, so a popup that is open is
 // visible at once instead of fading in from opacity 0 while a play function or axe checks it. Storybook keeps them.
@@ -45,15 +49,16 @@ const preview: Preview = {
     const problems = a11yGuardProblems(parameters, globals);
     if (problems.length > 0) throw new Error(`${title} / ${name} weakens the accessibility check:\n- ${problems.join("\n- ")}`);
   },
+  // After the play function: ui-sdk's pattern check for stories tagged `pattern:<name>`, and the agent
+  // test for stories tagged `agent` (AVE-18, .storybook/pattern-check.ts).
+  afterEach: async ({ tags, parameters }) => {
+    await runAccessibilityChecks(tags, parameters["patternRoot"]);
+  },
   decorators: [
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
       setDesktopScale(globals.typeScale === "desktop");
-      return (
-        <TooltipProvider>
-          <Story />
-        </TooltipProvider>
-      );
+      return <Story />;
     },
   ],
   parameters: {

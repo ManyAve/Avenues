@@ -1,5 +1,5 @@
 import { controlSize, controlSurface, type ControlSize } from "#avenue/lib/control";
-import { popupMotion } from "#avenue/components/popover";
+import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 // Internal to Avenue: the shared look of Select and Combobox. lib/ is not a package export, so none of this is

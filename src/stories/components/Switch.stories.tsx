@@ -30,6 +30,7 @@ export const States: Story = {
 
 /** A settings row: label and description on the left, the switch on the right. Space toggles it. */
 export const SettingsRow: Story = {
+  tags: ["agent"],
   render: () => (
     <Rows>
       <Field orientation="horizontal" className="max-w-sm">

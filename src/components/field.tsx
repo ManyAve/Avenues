@@ -1,20 +1,19 @@
-import { Field as FieldPrimitive } from "@base-ui/react/field";
-import { Fieldset as FieldsetPrimitive } from "@base-ui/react/fieldset";
+import * as FieldPrimitive from "@ui-sdk/react/field";
 import { cva, type VariantProps } from "class-variance-authority";
 import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * Ported from the app's app/ui/components/ui/field.tsx (e01cc90), with the app's Label folded in.
- * Built on Base UI's Field and Fieldset, so the wiring is Field's job, not each screen's: FieldLabel labels the
- * control, FieldDescription and FieldError are added to its aria-describedby, and `invalid` sets aria-invalid on
- * the control and shows FieldError. Off-grid steps move to the 4px grid (AVE-2): 6px to 8px, 10px to 12px,
+ * Built on ui-sdk's Field, so the wiring is Field's job, not each screen's: FieldLabel labels the control,
+ * FieldDescription and FieldError are added to its aria-describedby, and `invalid` sets aria-invalid on the control
+ * and shows FieldError. Off-grid steps move to the 4px grid (AVE-2): 6px to 8px, 10px to 12px,
  * and the 2px gap between label and description to 4px.
  */
 
-function FieldSet({ className, ...props }: FieldsetPrimitive.Root.Props) {
+function FieldSet({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldSet>) {
   return (
-    <FieldsetPrimitive.Root
+    <FieldPrimitive.FieldSet
       data-slot="field-set"
       className={cn(
         "flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
@@ -29,9 +28,11 @@ function FieldLegend({
   className,
   variant = "legend",
   ...props
-}: FieldsetPrimitive.Legend.Props & { variant?: "legend" | "label" | undefined }) {
+}: ComponentProps<typeof FieldPrimitive.FieldLegend> & { variant?: "legend" | "label" | undefined }) {
   return (
-    <FieldsetPrimitive.Legend
+    <FieldPrimitive.FieldLegend
+      // A native <legend> sits outside the fieldset's flex flow; a div keeps the app's spacing and still names the set.
+      render={<div />}
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
@@ -43,9 +44,9 @@ function FieldLegend({
   );
 }
 
-function FieldGroup({ className, ...props }: ComponentProps<"div">) {
+function FieldGroup({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldGroup>) {
   return (
-    <div
+    <FieldPrimitive.FieldGroup
       data-slot="field-group"
       className={cn(
         "group/field-group @container/field-group flex w-full flex-col gap-5 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
@@ -59,11 +60,11 @@ function FieldGroup({ className, ...props }: ComponentProps<"div">) {
 const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground", {
   variants: {
     orientation: {
-      vertical: "flex-col *:w-full [&>.sr-only]:w-auto",
+      vertical: "flex-col *:not-[[popover]]:w-full [&>.sr-only]:w-auto",
       horizontal:
         "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=switch]]:mt-px",
       responsive:
-        "flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=switch]]:mt-px",
+        "flex-col *:not-[[popover]]:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:not-[[popover]]:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=switch]]:mt-px",
     },
   },
   defaultVariants: { orientation: "vertical" },
@@ -71,20 +72,20 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destr
 
 /**
  * One labelled control. Pass `invalid` (with a FieldError child) to mark it invalid; `disabled` dims the label and
- * disables the control. Base UI also runs native constraint validation (required, type=email, ...): on submit by
- * default, or on blur with validationMode="onBlur".
+ * disables the control. ui-sdk also runs native constraint validation (required, type=email, ...): errors show
+ * once a submit finds the control invalid, then update as the value changes.
  */
-/** Whether a part sits inside a Field, and whether that Field was marked invalid by the screen. */
+/** Whether a part sits inside a Field that the screen marked invalid. */
 const FieldContext = createContext<{ invalid: boolean } | null>(null);
 
 function Field({
   className,
   orientation = "vertical",
   ...props
-}: FieldPrimitive.Root.Props & VariantProps<typeof fieldVariants>) {
+}: ComponentProps<typeof FieldPrimitive.Field> & VariantProps<typeof fieldVariants>) {
   return (
     <FieldContext.Provider value={{ invalid: !!props.invalid }}>
-      <FieldPrimitive.Root
+      <FieldPrimitive.Field
         data-slot="field"
         data-orientation={orientation}
         className={cn(fieldVariants({ orientation }), className)}
@@ -105,9 +106,9 @@ function FieldContent({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** The control's label (the app's Label, folded in). Wrap a Checkbox or Switch in it for a choice card. */
-function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
+function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldLabel>) {
   return (
-    <FieldPrimitive.Label
+    <FieldPrimitive.FieldLabel
       data-slot="field-label"
       className={cn(
         "group/field-label peer/field-label flex w-fit items-center gap-2 text-sm leading-snug font-medium select-none group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
@@ -133,11 +134,10 @@ function FieldTitle({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-/** Describes the field's control. Outside a Field (under a FieldLegend, say) it is a plain paragraph. */
-function FieldDescription({ className, ...props }: FieldPrimitive.Description.Props) {
-  const Part = useContext(FieldContext) ? FieldPrimitive.Description : "p";
+/** Describes the field's control, or the field set it sits in. */
+function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldDescription>) {
   return (
-    <Part
+    <FieldPrimitive.FieldDescription
       data-slot="field-description"
       className={cn(
         "text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2",
@@ -145,7 +145,7 @@ function FieldDescription({ className, ...props }: FieldPrimitive.Description.Pr
         "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className,
       )}
-      {...(props as ComponentProps<"p">)}
+      {...props}
     />
   );
 }
@@ -181,12 +181,12 @@ function FieldError({
   children,
   errors,
   ...props
-}: FieldPrimitive.Error.Props & {
+}: ComponentProps<typeof FieldPrimitive.FieldError> & {
   errors?: Array<{ message?: string | undefined } | undefined> | undefined;
 }) {
-  // A Field the screen marked invalid always shows its error; otherwise Base UI shows it on a failed native check.
+  // A Field the screen marked invalid always shows its error; otherwise ui-sdk shows it on a failed native check.
   const invalid = useContext(FieldContext)?.invalid;
-  let content: ReactNode = children;
+  let content: typeof children = children;
   if (!content && errors?.length) {
     const unique = [...new Set(errors.map((error) => error?.message).filter(Boolean))] as string[];
     content =
@@ -201,7 +201,7 @@ function FieldError({
       );
   }
   return (
-    <FieldPrimitive.Error
+    <FieldPrimitive.FieldError
       // role=alert announces the message when it appears; aria-describedby repeats it when the control is focused.
       role="alert"
       data-slot="field-error"
@@ -210,7 +210,7 @@ function FieldError({
       {...props}
     >
       {content}
-    </FieldPrimitive.Error>
+    </FieldPrimitive.FieldError>
   );
 }
 

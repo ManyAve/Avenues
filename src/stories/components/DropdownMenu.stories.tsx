@@ -60,7 +60,7 @@ function Menu({ defaultOpen }: { defaultOpen?: boolean }) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuLabel>Show</DropdownMenuLabel>
-          <DropdownMenuCheckboxItem defaultChecked>Archived households</DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem value="archived" defaultChecked>Archived households</DropdownMenuCheckboxItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -93,6 +93,7 @@ export const Open: Story = {
 
 /** Enter opens with the first item highlighted; arrows move; typing jumps; Esc closes and returns focus. */
 export const Keyboard: Story = {
+  tags: ["agent"],
   render: () => <Menu />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Actions" });
@@ -108,5 +109,18 @@ export const Keyboard: Story = {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
     await expect(trigger).toHaveFocus();
+  },
+};
+
+/** A click opens the menu with focus inside it, and no item looks chosen until the pointer or a key highlights one. */
+export const OpenByClick: Story = {
+  render: () => <Menu />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Actions" }));
+    const menu = await screen.findByRole("menu");
+    await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+    await expect(menu.querySelector("[data-highlighted]")).toBeNull();
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(menu.querySelector("[data-highlighted]")).not.toBeNull());
   },
 };

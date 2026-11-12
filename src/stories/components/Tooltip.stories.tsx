@@ -5,8 +5,8 @@ import { Badge } from "#avenue/components/badge";
 import { Button } from "#avenue/components/button";
 import { InfoTip, Tooltip, TooltipContent, TooltipTrigger } from "#avenue/components/tooltip";
 
-// Base UI's tooltip popup has no role, so tests find it by its slot.
-const queryTip = () => document.querySelector<HTMLElement>("[data-slot=tooltip-content]");
+// ui-sdk keeps the tooltip in the page while closed, hidden, so "open" means present and not hidden.
+const queryTip = () => document.querySelector<HTMLElement>("[data-slot=tooltip-content]:not([hidden])");
 const findTip = () => waitFor(() => queryTip() ?? Promise.reject(new Error("tooltip not open")));
 
 const meta = {
@@ -53,9 +53,10 @@ export const OnFocus: Story = {
 
 /**
  * Help on a label that isn't a control (the Status help). The ? is a real button: hover, keyboard focus and a tap
- * all open the text, and a screen reader reads it as the button's description.
+ * all open the text, a second tap closes it, and a screen reader reads it as the button's description.
  */
 export const HelpOnALabel: Story = {
+  tags: ["agent"],
   render: () => (
     <span className="inline-flex items-center gap-1">
       <Badge variant="secondary">Past due</Badge>
@@ -67,13 +68,14 @@ export const HelpOnALabel: Story = {
     await userEvent.tab();
     await expect(help).toHaveFocus();
     await expect(await findTip()).toHaveTextContent("Dues were not paid by the due date, March 1.");
+    await expect(await findTip()).toHaveAttribute("role", "tooltip");
     await expect(help).toHaveAccessibleDescription("Dues were not paid by the due date, March 1.");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(queryTip()).toBeNull());
-    // A tap (a click without hover first) opens it too, and a second tap keeps it open rather than closing it.
+    // A press or tap opens it too, and a second press closes it (ui-sdk's toggleable tooltip).
     await userEvent.click(help);
     await expect(await findTip()).toBeVisible();
     await userEvent.click(help);
-    await expect(queryTip()).toBeVisible();
+    await waitFor(() => expect(queryTip()).toBeNull());
   },
 };
