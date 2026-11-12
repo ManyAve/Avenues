@@ -109,18 +109,20 @@ Controls and the Docs args table.
 ## Publishing Storybook
 
 The built Storybook is published at **https://avenues.manyave.com**, a Cloudflare Worker that serves
-only static files (`wrangler.jsonc`; no Worker code, no bindings, no secrets). There is no CI, so
-publishing is a command run by hand from a clean checkout of `main`:
+only static files (`cloudflare.config.ts`; no Worker code, no bindings, no secrets). It deploys with
+Cloudflare's `cf` CLI, which needs Node.js 22.18 or newer on the machine. There is no CI, so publishing
+is a command run by hand from a clean checkout of `main`:
 
 ```sh
-bunx wrangler login   # once per machine: signs in to ManyAve's Cloudflare account in the browser
+bunx cf auth whoami   # must show ManyAve's account; if not, `bunx cf auth login` once per machine
 bun run check         # the same gate as a pull request
-bun run deploy        # builds storybook-static/ and uploads it
+bun run deploy        # builds storybook-static/ and uploads it with `cf deploy storybook-static`
 ```
 
-The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the route
-is a custom domain on the `manyave.com` zone. Every story uses fictional data, so the whole Storybook is
-safe to publish; keep it that way. To roll back, `bunx wrangler rollback` restores the previous upload.
+The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the domain
+is on the `manyave.com` zone in the same account. Every story uses fictional data, so the whole
+Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the previous commit of
+`main` again.
 
 ## Layout
 

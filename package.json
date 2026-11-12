@@ -31,7 +31,7 @@
     "tokens:compare": "bun scripts/compare-tokens.ts",
     "visual:diff": "bun scripts/visual-diff.ts",
     "ui-sdk:css": "bun scripts/ui-sdk-css.ts",
-    "deploy": "bun run build-storybook && wrangler deploy",
+    "deploy": "bun run build-storybook && cf deploy storybook-static",
     "check": "bun run typecheck && bun run lint && bun run check:classes && bun run test:scripts && bun run test:stories && bun run build-storybook && bun run check:story-coverage"
   },
   "peerDependencies": {
@@ -60,6 +60,7 @@
     "@types/react-dom": "^19.3.0",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/browser-playwright": "5.1.0",
+    "cf": "1.0.0-beta.31",
     "oxlint": "^1.93.0",
     "pixelmatch": "^8.0.0",
     "playwright": "1.65.0",
@@ -71,8 +72,7 @@
     "tailwindcss": "^4.3.5",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0",
-    "wrangler": "4.128.0"
+    "vitest": "^5.1.0"
   },
   "engines": {
     "bun": ">=1.4.4"
