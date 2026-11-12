@@ -3,7 +3,11 @@
 Avenue is ManyAve's design system: tokens, foundations, components and composites, built on
 [ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and
 shown in Storybook 11. Component behavior comes from ui-sdk, which replaces Base UI wherever it has an
-equivalent; today no component needs Base UI. The look stays shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule and how to read ui-sdk's docs.
+equivalent; today no component needs Base UI. The look stays
+shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule, how to read ui-sdk's docs, and the nine ui-sdk practices every component
+follows (per-part imports, styling from state attributes, enter and exit animation, tokens, primitives
+for what ui-sdk doesn't ship, its test kit, agent-readiness); `Foundations/Agents` in Storybook is the
+worked example.
 
 All example data is fictional. Avenue imports nothing from outside this package; npm
 dependencies are fine.
@@ -33,7 +37,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
 | `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
-| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`). |
+| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility proof (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
@@ -65,6 +69,39 @@ area it checks without a reason (`a11yExceptions.context`), however that is writ
 `.storybook/a11y-guard.ts`. Every story must also stay in the tests: removing its `test` tag fails
 `check:story-coverage`.
 
+### Accessibility proof for each component (ui-sdk)
+
+`scripts/component-patterns.ts` lists every component in `src/components` and how its accessibility is
+proven, as one of three kinds. The rule follows ui-sdk's own testing guide: its components are tested
+already, so Avenue tests what it wired, and runs the pattern check only where it changes behavior.
+
+| Kind | When | Tag a story in the component's own stories file | What the story tests then run, after `play` |
+| ---- | ---- | ---- | ---- |
+| `pattern` | An Avenue-built primitive, or a component that changes a ui-sdk part's keys, roles or ARIA (today: Combobox) | `pattern:<name>` | `checkPattern` from `@ui-sdk/core/testing`: roles, names, states, references between parts, keyboard |
+| `upstream` | A ui-sdk component Avenue styles and wires | `agent` | a `createAgent` snapshot: it fails when it finds no control or a control without a name |
+| `none` | Plain markup (Card, Table, Badge, Inline message) | nothing | nothing extra |
+
+```tsx
+export const Agent: Story = {
+  tags: ["agent"],
+  play: async () => { /* act on the controls the way an agent would; the runner checks the names */ },
+};
+```
+
+`check:story-coverage` fails when a component isn't listed, when its story with the required tag is
+missing or untested, or when a `pattern:` tag names a pattern the kit doesn't know. The pattern list is
+tied to the kit's own type, so a ui-sdk upgrade that changes patterns fails `typecheck`. Both checks
+only run under the story tests, never while you browse Storybook. The pattern check looks at the whole
+page by default, because dialogs and menus render outside the story; `parameters.patternRoot` (a CSS
+selector) narrows it. Open a dialog or menu in `play` before it runs, and tag a story whose state
+really changes, because the check presses keys.
+
+When a pattern check and an older story assertion disagree, the pattern wins and the UX Engineer signs
+off the changed assertion on the card. One documented deviation: ui-sdk's Select moves focus into its
+list, which ui-sdk's own combobox check rejects. Avenue ships it as is (UX Engineer, AVE-17) and
+revisits it when ui-sdk leaves beta. The kit is a beta: reproduce a pattern failure by hand before
+calling it a bug (false alarms are logged on AVE-17).
+
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
 Controls and the Docs args table.
@@ -74,13 +111,13 @@ Controls and the Docs args table.
 | Path                     | Holds                                                          |
 | ------------------------ | -------------------------------------------------------------- |
 | `src/styles/tokens.css`  | Palette, type scale, semantic colours, shadows and tints, light and dark (copied from the app). |
-| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale. |
+| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale, and the reduced-motion rule for every surface. |
 | `src/styles/ui-sdk.css`  | Generated: ui-sdk's default stylesheet with its rules scoped to `[data-ui-sdk-skin]`, loaded first by `avenue.css` (see `scripts/ui-sdk-css.ts`). |
 | `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
 | `scripts/`               | The token comparison, the class check, the visual diff and the ui-sdk stylesheet generator. |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
-| `src/lib/control.ts`     | The shared field look (`controlSurface`) and AVE-2 control sizes (`controlSize`) for inputs, textareas and select triggers. |
-| `src/components/`        | One file per component: the shadcn primitives on ui-sdk, styled to the app (AVE-6, AVE-17). Stories in `src/stories/components/`. |
+| `src/lib/control.ts`     | The shared field look (`controlSurface`), the AVE-2 height-and-corner pairing (`controlShape`) Button and Toggle use, and control sizes (`controlSize`) for inputs, textareas and select triggers. |
+| `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Spacing and corners
@@ -89,7 +126,8 @@ Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components u
 `group` (8), `row-y` (12), `inset` (16), `page` (16, 20 from 640px) and `section` (24), as in `p-inset` or
 `gap-group`. Controls use `h-control-xs/sm/md/lg` (24/28/32/40) and controls in one row share a height. Corners
 are `rounded-xs/sm/md/lg/xl` (4/6/8/10/14) and `rounded-full` for labels and tokens only; `2xl` to `4xl` are
-retired. Each is shown under Tokens in Storybook.
+retired. Each is shown under Tokens in Storybook. Foundations in Storybook says how to use them: colour and status,
+type and the 14px floor, spacing, corners, elevation, icons, motion and theming, each with a do and a don't.
 
 ## Imports inside Avenue
 

@@ -1,10 +1,87 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "react", "jsx-a11y", "import"],
-  "categories": { "correctness": "error", "suspicious": "warn" },
+  "plugins": [
+    "typescript",
+    "react",
+    "jsx-a11y",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }]
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": [
+          "**/*.css"
+        ]
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@ui-sdk/react",
+            "message": "ui-sdk has no root import: import each component from its own entry, like @ui-sdk/react/select (AGENTS.md)."
+          }
+        ],
+        "patterns": [
+          {
+            "group": [
+              "@ui-sdk/core/internal",
+              "@ui-sdk/core/internal/*"
+            ],
+            "message": "Never import ui-sdk's internals (AGENTS.md)."
+          }
+        ]
+      }
+    ]
   },
-  "ignorePatterns": ["storybook-static", "node_modules"]
+  "ignorePatterns": [
+    "storybook-static",
+    "node_modules"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "src/components/**",
+        "src/lib/**",
+        "src/hooks/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@ui-sdk/react",
+                "message": "ui-sdk has no root import: import each component from its own entry, like @ui-sdk/react/select (AGENTS.md)."
+              },
+              {
+                "name": "@ui-sdk/react/agent",
+                "message": "Avenue never creates the agent bridge; only stories may (AGENTS.md, practice 9)."
+              },
+              {
+                "name": "@ui-sdk/core/agent",
+                "message": "Avenue never creates the agent bridge; only stories may (AGENTS.md, practice 9)."
+              }
+            ],
+            "patterns": [
+              {
+                "group": [
+                  "@ui-sdk/core/internal",
+                  "@ui-sdk/core/internal/*"
+                ],
+                "message": "Never import ui-sdk's internals (AGENTS.md)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
