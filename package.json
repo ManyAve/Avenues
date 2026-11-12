@@ -25,11 +25,11 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p scripts",
     "lint": "oxlint --deny-warnings",
     "check:classes": "bun scripts/check-classes.ts",
-    "check:a11y-exceptions": "bun scripts/check-a11y-exceptions.ts",
+    "check:story-coverage": "bun scripts/check-story-coverage.ts",
     "test:scripts": "bun test scripts",
     "test:stories": "vitest run",
     "tokens:compare": "bun scripts/compare-tokens.ts",
-    "check": "bun run typecheck && bun run lint && bun run check:classes && bun run check:a11y-exceptions && bun run test:scripts && bun run test:stories && bun run build-storybook"
+    "check": "bun run typecheck && bun run lint && bun run check:classes && bun run test:scripts && bun run test:stories && bun run build-storybook && bun run check:story-coverage"
   },
   "peerDependencies": {
     "react": "^19.3.0",

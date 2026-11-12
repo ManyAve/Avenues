@@ -3,6 +3,7 @@
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
+import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
 
 // Avenue's dark theme is the `.dark` class on <html>, as in the ManyAve app; the toolbar switch flips it.
 // The type-scale switch loads desktop.css, the opt-in desktop type scale, the way the desktop app does.
@@ -30,6 +31,10 @@ const preview: Preview = {
     },
   },
   initialGlobals: { theme: "light", typeScale: "web" },
+  beforeEach: ({ parameters, globals, title, name }) => {
+    const problems = a11yGuardProblems(parameters, globals);
+    if (problems.length > 0) throw new Error(`${title} / ${name} weakens the accessibility check:\n- ${problems.join("\n- ")}`);
+  },
   decorators: [
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
@@ -40,13 +45,10 @@ const preview: Preview = {
   parameters: {
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
-    // axe runs on every story in `bun run test:stories`, and any violation fails it. The rule set is
-    // WCAG 2.2 AA plus axe's best practices. A story may turn one rule off only with a written reason
-    // beside it: `a11y: { config: { rules: [{ id, enabled: false }] } }` under an `a11y-exception:` comment.
-    a11y: {
-      test: "error",
-      options: { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] },
-    },
+    // axe runs on every story in `bun run test:stories`, and any violation fails it: WCAG 2.2 AA plus
+    // axe's best practices. The beforeEach below fails a story that weakens this; see a11y-guard.ts for
+    // the one allowed exception (a rule turned off with a written reason).
+    a11y: { test: "error", options: { runOnly: AXE_TAGS } },
     options: {
       storySort: { order: ["Introduction", "Tokens", "Foundations", "Components", "Composites"] },
     },
