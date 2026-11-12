@@ -27,6 +27,20 @@ function storiesIn(theme: "light" | "dark") {
   };
 }
 
+// Pre-bundle every dependency the stories import, so Vite never discovers one mid-run and reloads the page under
+// a running test ("Vite unexpectedly reloaded a test").
+const prebundle = [
+  "@base-ui/react/**",
+  "class-variance-authority",
+  "cn/config",
+  "lucide-react",
+  "react",
+  "react-dom",
+  "react/jsx-dev-runtime",
+  "storybook/test",
+];
+
 export default defineConfig({
+  optimizeDeps: { include: prebundle },
   test: { projects: [storiesIn("light"), storiesIn("dark")] },
 });

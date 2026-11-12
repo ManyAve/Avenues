@@ -1,7 +1,7 @@
 import { Field as FieldPrimitive } from "@base-ui/react/field";
 import { Fieldset as FieldsetPrimitive } from "@base-ui/react/fieldset";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { ComponentProps, ReactNode } from "react";
+import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -71,20 +71,26 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destr
 
 /**
  * One labelled control. Pass `invalid` (with a FieldError child) to mark it invalid; `disabled` dims the label and
- * disables the control. Base UI also runs native constraint validation (required, type=email, ...) on blur.
+ * disables the control. Base UI also runs native constraint validation (required, type=email, ...): on submit by
+ * default, or on blur with validationMode="onBlur".
  */
+/** Whether a part sits inside a Field, and whether that Field was marked invalid by the screen. */
+const FieldContext = createContext<{ invalid: boolean } | null>(null);
+
 function Field({
   className,
   orientation = "vertical",
   ...props
 }: FieldPrimitive.Root.Props & VariantProps<typeof fieldVariants>) {
   return (
-    <FieldPrimitive.Root
-      data-slot="field"
-      data-orientation={orientation}
-      className={cn(fieldVariants({ orientation }), className)}
-      {...props}
-    />
+    <FieldContext.Provider value={{ invalid: !!props.invalid }}>
+      <FieldPrimitive.Root
+        data-slot="field"
+        data-orientation={orientation}
+        className={cn(fieldVariants({ orientation }), className)}
+        {...props}
+      />
+    </FieldContext.Provider>
   );
 }
 
@@ -127,9 +133,11 @@ function FieldTitle({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
+/** Describes the field's control. Outside a Field (under a FieldLegend, say) it is a plain paragraph. */
 function FieldDescription({ className, ...props }: FieldPrimitive.Description.Props) {
+  const Part = useContext(FieldContext) ? FieldPrimitive.Description : "p";
   return (
-    <FieldPrimitive.Description
+    <Part
       data-slot="field-description"
       className={cn(
         "text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2",
@@ -137,7 +145,7 @@ function FieldDescription({ className, ...props }: FieldPrimitive.Description.Pr
         "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className,
       )}
-      {...props}
+      {...(props as ComponentProps<"p">)}
     />
   );
 }
@@ -176,6 +184,8 @@ function FieldError({
 }: FieldPrimitive.Error.Props & {
   errors?: Array<{ message?: string | undefined } | undefined> | undefined;
 }) {
+  // A Field the screen marked invalid always shows its error; otherwise Base UI shows it on a failed native check.
+  const invalid = useContext(FieldContext)?.invalid;
   let content: ReactNode = children;
   if (!content && errors?.length) {
     const unique = [...new Set(errors.map((error) => error?.message).filter(Boolean))] as string[];
@@ -196,6 +206,7 @@ function FieldError({
       role="alert"
       data-slot="field-error"
       className={cn("text-sm font-normal text-destructive-subtle-foreground", className)}
+      {...(invalid && props.match === undefined ? { match: true } : {})}
       {...props}
     >
       {content}
