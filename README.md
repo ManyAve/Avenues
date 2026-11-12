@@ -40,7 +40,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility proof (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
-| `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
+| `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`; `origin/<ref>` when there is no local branch of that name) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
