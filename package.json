@@ -29,6 +29,8 @@
     "test:scripts": "bun test scripts",
     "test:stories": "vitest run",
     "tokens:compare": "bun scripts/compare-tokens.ts",
+    "visual:diff": "bun scripts/visual-diff.ts",
+    "ui-sdk:css": "bun scripts/ui-sdk-css.ts",
     "check": "bun run typecheck && bun run lint && bun run check:classes && bun run test:scripts && bun run test:stories && bun run build-storybook && bun run check:story-coverage"
   },
   "peerDependencies": {
@@ -38,6 +40,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@ui-sdk/core": "0.1.0-beta.1",
+    "@ui-sdk/react": "0.1.0-beta.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "lucide-react": "^1.69.0",
@@ -50,12 +54,15 @@
     "@storybook/react-vite": "11.0.0-beta.2",
     "@tailwindcss/vite": "^4.3.5",
     "@types/bun": "^1.4.4",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/browser-playwright": "5.1.0",
     "oxlint": "^1.93.0",
+    "pixelmatch": "^8.0.0",
     "playwright": "1.65.0",
+    "pngjs": "^7.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "shadcn": "^4.23.0",
