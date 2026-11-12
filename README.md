@@ -106,6 +106,26 @@ TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 a
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
 Controls and the Docs args table.
 
+## Publishing Storybook
+
+The built Storybook is published at **https://avenues.manyave.com**, a Cloudflare Worker that serves
+only static files (`cloudflare.config.ts`; no Worker code, no bindings, no secrets). It deploys with
+Cloudflare's `cf` CLI, which needs Node.js 22.18 or newer on the machine. There is no CI, so publishing
+is a command run by hand from a clean checkout of `main`:
+
+```sh
+bunx cf auth whoami   # must show ManyAve's account; if not, `bunx cf auth login` once per machine
+bun run check         # the same gate as a pull request
+bun run deploy        # builds storybook-static/ and uploads it with `cf deploy storybook-static`
+```
+
+The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the domain
+is on the `manyave.com` zone in the same account. The config also claims the route
+`avenues.manyave.com/*`: the zone sends every other subdomain to the neighborhood-sites Worker with a
+`*.manyave.com/*` route, which would otherwise answer here instead of Storybook. Every story uses fictional data, so the whole
+Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the previous commit of
+`main` again.
+
 ## Layout
 
 | Path                     | Holds                                                          |
