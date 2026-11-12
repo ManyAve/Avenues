@@ -42,6 +42,7 @@ export const Open: Story = {
  * preview shows, as the register's cells do. Keyboard, touch and screen-reader users reach it this way.
  */
 export const SameContentWithoutHover: Story = {
+  tags: ["agent"],
   render: function WithoutHover() {
     const [open, setOpen] = useState(false);
     return (

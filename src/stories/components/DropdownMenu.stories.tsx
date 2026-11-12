@@ -93,6 +93,7 @@ export const Open: Story = {
 
 /** Enter opens with the first item highlighted; arrows move; typing jumps; Esc closes and returns focus. */
 export const Keyboard: Story = {
+  tags: ["agent"],
   render: () => <Menu />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Actions" });

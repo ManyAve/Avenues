@@ -56,6 +56,7 @@ export const OnFocus: Story = {
  * all open the text, a second tap closes it, and a screen reader reads it as the button's description.
  */
 export const HelpOnALabel: Story = {
+  tags: ["agent"],
   render: () => (
     <span className="inline-flex items-center gap-1">
       <Badge variant="secondary">Past due</Badge>

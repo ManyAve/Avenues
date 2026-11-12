@@ -44,6 +44,7 @@ const rows = ["14 Larkspur Lane", "9 Juniper Court", "301 Sorrel Way"];
 
 /** Select all over a list: indeterminate while some rows are chosen (ui-sdk's `parent` checkbox group does this for a form). Space toggles the focused box. */
 export const SelectAll: Story = {
+  tags: ["agent"],
   render: function SelectAllStory() {
     const [chosen, setChosen] = useState<string[]>(["9 Juniper Court"]);
     const all = chosen.length === rows.length;

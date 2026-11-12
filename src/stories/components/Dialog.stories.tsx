@@ -68,6 +68,7 @@ export const Open: Story = {
 
 /** Focus goes to the first field on open and back to the trigger on close; Esc closes. */
 export const FocusOnOpenAndClose: Story = {
+  tags: ["agent"],
   render: () => <PaymentForm />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Record payment" });

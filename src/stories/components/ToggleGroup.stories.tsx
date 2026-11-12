@@ -77,6 +77,7 @@ export const Variants: Story = {
  * select together, wrapping at the ends.
  */
 export const Keyboard: Story = {
+  tags: ["agent"],
   render: () => (
     <Rows>
       <button type="button">Before the group</button>

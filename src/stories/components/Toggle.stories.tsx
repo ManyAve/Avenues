@@ -41,6 +41,7 @@ export const Variants: Story = {
 
 /** Space and Enter press and release; aria-pressed tells a screen reader the state. */
 export const Keyboard: Story = {
+  tags: ["agent"],
   render: () => (
     <Rows>
       <Toggle variant="outline">Show archived</Toggle>

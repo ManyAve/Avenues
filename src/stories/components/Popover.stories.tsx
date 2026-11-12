@@ -52,6 +52,7 @@ export const Open: Story = {
 
 /** Enter opens it and focus moves inside; Esc closes it and focus returns to the trigger. */
 export const Keyboard: Story = {
+  tags: ["agent"],
   render: () => <DisplayOptions />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Display" });
