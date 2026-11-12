@@ -46,7 +46,7 @@ export const COMPONENT_PATTERNS: Record<string, Pattern | NoPattern> = {
   "radio-group": "radio-group",
   "segmented-control": "radio-group",
   slider: "slider",
-  "toggle-group": "toolbar", // a multi-select group of toggles; UX Engineer to confirm on AVE-17
+  "toggle-group": "radio-group", // UX Engineer, AVE-17: follows ui-sdk segmented-control (radio group)
   toolbar: "toolbar",
   listbox: "listbox",
   tree: "tree",

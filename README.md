@@ -91,7 +91,10 @@ narrows it. When a pattern check and an older story assertion disagree, the patt
 Engineer signs off the changed assertion on the card.
 
 The testing kit is a beta: before treating a pattern failure as a bug, reproduce it by hand. Known false
-alarm: it counts Base UI's hidden (`aria-hidden`) form inputs as unnamed checkboxes.
+alarms, logged on AVE-17: it can report a Combobox input as not a Tab stop when a real Tab reaches it,
+and it counts Base UI's hidden (`aria-hidden`) form inputs as unnamed checkboxes. Tag a story whose state
+really changes (a controlled select-all, not a static gallery of fixed states), because the check presses
+keys and expects them to work.
 
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
