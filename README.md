@@ -23,12 +23,16 @@ There is no CI. Run these locally before opening a pull request.
 | ------------------------- | --------------------------------------------------------------- |
 | `bun run typecheck`       | Type-checks `src` and `.storybook` with TypeScript 7.           |
 | `bun run lint`            | Lints with oxlint; any warning fails.                           |
+| `bun run check:classes`   | Fails on retired corners (`rounded-2xl/3xl/4xl`) or off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`). |
+| `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
-| `bun run check`           | Runs the three above in order and stops at the first failure.   |
+| `bun run check`           | Runs everything above in order and stops at the first failure.  |
+| `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
 The toolbar's theme switch flips the `.dark` class on `<html>`, the same switch the ManyAve app
-uses, so every story can be checked in light and dark. The Accessibility panel runs axe on the
+uses, so every story can be checked in light and dark. The type-scale switch loads `desktop.css`, the
+desktop app's 14/13px scale. The Accessibility panel runs axe on the
 open story.
 
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
@@ -39,11 +43,21 @@ Controls and the Docs args table.
 
 | Path                     | Holds                                                          |
 | ------------------------ | -------------------------------------------------------------- |
-| `src/styles/tokens.css`  | Palette and semantic colours for light and dark.                |
-| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities.    |
+| `src/styles/tokens.css`  | Palette, type scale, semantic colours, shadows and tints, light and dark (copied from the app). |
+| `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale. |
+| `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
+| `scripts/`               | The token comparison and the class check.                       |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
 | `src/components/`        | Components (empty until the component cards land).              |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
+
+## Spacing and corners
+
+Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components use the aliases `inline` (4),
+`group` (8), `row-y` (12), `inset` (16), `page` (16, 20 from 640px) and `section` (24), as in `p-inset` or
+`gap-group`. Controls use `h-control-xs/sm/md/lg` (24/28/32/40) and controls in one row share a height. Corners
+are `rounded-xs/sm/md/lg/xl` (4/6/8/10/14) and `rounded-full` for labels and tokens only; `2xl` to `4xl` are
+retired. Each is shown under Tokens in Storybook.
 
 ## Imports inside Avenue
 
@@ -66,6 +80,7 @@ The package is source-shipped (no build step) and exposes:
 - `@manyave/avenue/styles.css`: Tailwind, the base layer and the tokens. Its Tailwind source
   covers the package's own files, so the consumer needs no extra content paths.
 - `@manyave/avenue/tokens.css`: the tokens alone.
+- `@manyave/avenue/desktop.css`: the desktop type scale; load it after `styles.css` on desktop surfaces.
 - `@manyave/avenue/components/*`: one entry per component.
 - `@manyave/avenue/utils`: `cn`.
 

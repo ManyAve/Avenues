@@ -2,19 +2,38 @@
 /// <reference path="./css.d.ts" />
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
+import desktopCss from "../src/styles/desktop.css?inline";
 
 // Avenue's dark theme is the `.dark` class on <html>, as in the ManyAve app; the toolbar switch flips it.
+// The type-scale switch loads desktop.css, the opt-in desktop type scale, the way the desktop app does.
+function setDesktopScale(on: boolean) {
+  const existing = document.getElementById("avenue-desktop-scale");
+  if (on && !existing) {
+    const style = document.createElement("style");
+    style.id = "avenue-desktop-scale";
+    style.textContent = desktopCss;
+    document.head.append(style);
+  } else if (!on && existing) {
+    existing.remove();
+  }
+}
+
 const preview: Preview = {
   globalTypes: {
     theme: {
       description: "Color scheme",
       toolbar: { icon: "mirror", items: ["light", "dark"], dynamicTitle: true },
     },
+    typeScale: {
+      description: "Type scale",
+      toolbar: { icon: "paragraph", items: ["web", "desktop"], dynamicTitle: true },
+    },
   },
-  initialGlobals: { theme: "light" },
+  initialGlobals: { theme: "light", typeScale: "web" },
   decorators: [
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
+      setDesktopScale(globals.typeScale === "desktop");
       return <Story />;
     },
   ],
