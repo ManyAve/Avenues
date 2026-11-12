@@ -29,7 +29,8 @@ describe("check:a11y-exceptions", () => {
     expect(lines(`a11y: { disable: true }`)).toEqual([1]);
   });
 
-  test("allows the default setting", () => {
+  test("allows the default setting and other addons' disable flags", () => {
     expect(lines(`a11y: { test: "error" }`)).toEqual([]);
+    expect(lines(`backgrounds: { disable: true },`)).toEqual([]);
   });
 });

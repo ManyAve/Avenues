@@ -6,7 +6,7 @@
  *
  * Flags a rule turned off (`enabled: false`) without an `a11y-exception:` comment that gives a reason on
  * the same line or one of the two lines above, and any story that switches axe off or back to a warning
- * (`test: "off"` / `test: "todo"`, `disable: true`), which no reason allows.
+ * (`test: "off"` / `test: "todo"`, `a11y: { disable: true }`), which no reason allows.
  *
  *   bun run check:a11y-exceptions [paths...]   (default: src)
  */
@@ -20,7 +20,8 @@ export interface Finding {
 
 const REASON = /a11y-exception:\s*\S.{9,}/;
 const RULE_OFF = /\benabled\s*:\s*false\b/;
-const CHECK_OFF = /\btest\s*:\s*["'](?:off|todo)["']|\bdisable\s*:\s*true\b/;
+// `disable: true` only counts beside `a11y`, so `backgrounds: { disable: true }` is left alone.
+const CHECK_OFF = /\btest\s*:\s*["'](?:off|todo)["']|\ba11y\s*:\s*\{[^}]*\bdisable\s*:\s*true\b/;
 
 export function findProblems(file: string, text: string): Finding[] {
   const lines = text.split("\n");
