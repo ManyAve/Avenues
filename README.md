@@ -4,7 +4,10 @@ Avenue is ManyAve's design system: tokens, foundations, components and composite
 [Base UI](https://base-ui.com) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and shown in
 Storybook 11. Component behavior comes from [ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`), which replaces
 Base UI wherever it has an equivalent; Base UI stays only where ui-sdk has nothing yet. The look stays
-shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule and how to read ui-sdk's docs.
+shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule, how to read ui-sdk's docs, and the nine ui-sdk practices every component
+follows (per-part imports, styling from state attributes, enter and exit animation, tokens, primitives
+for what ui-sdk doesn't ship, its test kit, agent-readiness); `Foundations/Agents` in Storybook is the
+worked example.
 
 All example data is fictional. Avenue imports nothing from outside this package; npm
 dependencies are fine.
