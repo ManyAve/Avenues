@@ -8,6 +8,8 @@
  * When the pattern and an older story assertion disagree, the pattern wins and the UX Engineer signs off
  * the changed assertion on the card (decided 2026-11-12, AVE-17).
  */
+import type { Pattern as KitPattern } from "@ui-sdk/core/testing";
+
 export const PATTERNS = [
   "accordion",
   "alertdialog",
@@ -24,8 +26,14 @@ export const PATTERNS = [
   "tabs",
   "toolbar",
   "tree",
-] as const;
+] as const satisfies readonly KitPattern[];
 export type Pattern = (typeof PATTERNS)[number];
+
+// Tied to the testing kit's own type in both directions, so a ui-sdk upgrade that adds, renames or drops
+// a pattern fails typecheck instead of drifting: the line above rejects a name the kit doesn't know, and
+// this one rejects a kit pattern missing from the list.
+type MissingFromList = Exclude<KitPattern, Pattern>;
+export const listCoversKit: [MissingFromList] extends [never] ? true : MissingFromList = true;
 
 type NoPattern = { none: string };
 
