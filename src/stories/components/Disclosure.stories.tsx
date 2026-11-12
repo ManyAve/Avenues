@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent } from "storybook/test";
 import { Disclosure } from "#avenue/components/disclosure";
+import { createAgent } from "@ui-sdk/react/agent";
 
 // AVE-7. One Disclosure for the app's five native details/summary blocks (Advanced, follow-up, dues notice,
 // workbook). All values are fictional.
@@ -75,5 +76,19 @@ export const Keyboard: Story = {
       await userEvent.keyboard(" ");
       await expect(button).toHaveAttribute("aria-expanded", "false");
     });
+  },
+};
+
+/** An agent finds the Disclosure by its summary, reads that it is closed, and opens it. */
+export const Agent: Story = {
+  tags: ["agent"],
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    const found = agent.snapshot().filter((entry) => !entry.offPage && entry.label === "Advanced");
+    await expect(found).toHaveLength(1);
+    await expect(found[0]?.["open"]).toBe(false);
+    const result = await agent.act({ steps: [{ ref: "Advanced", action: "setOpen", args: [true] }] });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await expect(canvas.getByRole("button", { name: "Advanced" })).toHaveAttribute("aria-expanded", "true");
   },
 };
