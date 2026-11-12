@@ -13,6 +13,9 @@
     "./components/*": "./src/components/*.tsx",
     "./utils": "./src/lib/utils.ts"
   },
+  "imports": {
+    "#avenue/*": "./src/*"
+  },
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -21,9 +24,9 @@
     "check": "bun run typecheck && bun run lint && bun run build-storybook"
   },
   "peerDependencies": {
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "tailwindcss": "^4.3.5"
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.0"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

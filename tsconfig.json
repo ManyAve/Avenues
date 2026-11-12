@@ -14,8 +14,8 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": [],
-    "paths": { "@/*": ["./src/*"] }
+    "allowImportingTsExtensions": true,
+    "types": []
   },
   "include": ["src", ".storybook"]
 }

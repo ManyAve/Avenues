@@ -45,6 +45,14 @@ Controls and the Docs args table.
 | `src/components/`        | Components (empty until the component cards land).              |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
+## Imports inside Avenue
+
+Files inside the package import each other through the package's own `#avenue/*` subpath
+(`package.json` "imports"), with the file extension, for example
+`import { cn } from "#avenue/lib/utils.ts"`. Never use an `@/` alias: Avenue ships its source, and
+in an app that maps `@/` to its own folder, that import would resolve to the app's file instead.
+`components.json` uses the same form, so `bunx shadcn add <component>` writes these imports.
+
 ## Using Avenue from another package
 
 The package is source-shipped (no build step) and exposes:
