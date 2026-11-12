@@ -75,7 +75,8 @@ Controls and the Docs args table.
 | `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
 | `scripts/`               | The token comparison and the class check.                       |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
-| `src/components/`        | Components (empty until the component cards land).              |
+| `src/lib/control.ts`     | The shared field look (`controlSurface`) and AVE-2 control sizes (`controlSize`) for inputs, textareas and select triggers. |
+| `src/components/`        | One file per component: the shadcn primitives on Base UI, styled to the app (AVE-6). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Spacing and corners
