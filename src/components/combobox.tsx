@@ -178,7 +178,7 @@ export function Combobox<T extends ComboboxOption>({
                     <ComboboxPrimitive.ItemIndicator className="col-start-1 flex">
                       <CheckIcon aria-hidden className="size-4" />
                     </ComboboxPrimitive.ItemIndicator>
-                    <span className="col-start-2 min-w-0 truncate">
+                    <span className="col-start-2 min-w-0">
                       <span className={option.value ? undefined : "text-muted-foreground"}>{option.label}</span>
                       {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
                     </span>

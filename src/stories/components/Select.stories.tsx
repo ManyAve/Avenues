@@ -54,7 +54,7 @@ function Labelled({
       <FieldLabel>{label}</FieldLabel>
       {children}
       {description && <FieldDescription>{description}</FieldDescription>}
-      {error && <FieldError match>{error}</FieldError>}
+      {error && <FieldError>{error}</FieldError>}
     </Field>
   );
 }

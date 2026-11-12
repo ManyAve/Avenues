@@ -40,7 +40,7 @@ function Picker({
     <Field invalid={invalid} className="w-80">
       <FieldLabel>{label}</FieldLabel>
       <Combobox {...props} invalid={invalid} value={value} onValueChange={setValue} />
-      {error && <FieldError match>{error}</FieldError>}
+      {error && <FieldError>{error}</FieldError>}
       <output data-testid="value" className="text-meta text-muted-foreground">
         {value || "(none)"}
       </output>

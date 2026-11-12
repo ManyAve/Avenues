@@ -1,4 +1,5 @@
 import { controlSize, controlSurface, type ControlSize } from "#avenue/lib/control";
+import { popupMotion } from "#avenue/components/popover";
 import { cn } from "#avenue/lib/utils";
 
 // Internal to Avenue: the shared look of Select and Combobox. lib/ is not a package export, so none of this is
@@ -29,9 +30,10 @@ export function fieldControl({ size = "md" }: { size?: PickerSize | null | undef
  * The open list's frame: the app's menu look (lg corner, popover colours, ring). As wide as its field, never narrower
  * than 192px (UI Designer, AVE-7); long options wrap.
  */
-export const listPopup =
-  "max-h-[min(20rem,var(--available-height))] w-(--anchor-width) min-w-48 max-w-(--available-width) origin-(--transform-origin) overflow-y-auto overscroll-contain rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none " +
-  "duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95";
+export const listPopup = cn(
+  popupMotion,
+  "max-h-[min(20rem,var(--available-height))] w-(--anchor-width) min-w-48 max-w-(--available-width) overflow-y-auto overscroll-contain rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none",
+);
 
 /** One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). */
 export const listItem =
