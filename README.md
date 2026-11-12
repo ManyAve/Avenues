@@ -13,14 +13,16 @@ Needs [Bun](https://bun.sh) 1.4.4 or newer.
 
 ```sh
 bun install
-bunx playwright install chromium   # once: the browser the story tests run in
+bunx playwright install chromium   # once, and again after a Playwright upgrade: the browser the story tests run in
 ```
 
 To use a Chromium that is already installed instead, point `AVENUE_CHROMIUM` at its executable.
 
 ## Checks
 
-There is no CI. Run these locally before opening a pull request.
+There is no CI. Run these locally before opening a pull request. `bun run check` renders every story in
+a real browser, so it needs Chromium installed first (`bunx playwright install chromium`, see Setup);
+without it, the story step stops with Playwright's "install" message, which is not a failing story.
 
 | Command                   | What it does                                                    |
 | ------------------------- | --------------------------------------------------------------- |
