@@ -120,7 +120,9 @@ bun run deploy        # builds storybook-static/ and uploads it with `cf deploy 
 ```
 
 The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the domain
-is on the `manyave.com` zone in the same account. Every story uses fictional data, so the whole
+is on the `manyave.com` zone in the same account. The config also claims the route
+`avenues.manyave.com/*`: the zone sends every other subdomain to the neighborhood-sites Worker with a
+`*.manyave.com/*` route, which would otherwise answer here instead of Storybook. Every story uses fictional data, so the whole
 Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the previous commit of
 `main` again.
 
