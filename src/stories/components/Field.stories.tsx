@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, screen, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Button } from "#avenue/components/button";
 import {
@@ -14,6 +14,7 @@ import {
   FieldSet,
 } from "#avenue/components/field";
 import { Input } from "#avenue/components/input";
+import { Popover, PopoverContent, PopoverDescription, PopoverTrigger } from "#avenue/components/popover";
 import { Switch } from "#avenue/components/switch";
 
 const meta = {
@@ -147,5 +148,27 @@ export const Form: Story = {
     await expect(canvas.getByRole("switch", { name: "Email receipts" })).toHaveAccessibleDescription(
       "Sent when a payment is recorded.",
     );
+  },
+};
+
+/** A popup written inside a Field keeps its own width: ui-sdk renders it in place, so Field's full-width rule skips elements with the popover attribute. */
+export const PopupInField: Story = {
+  render: () => (
+    <Field className="w-96">
+      <FieldLabel htmlFor="field-popup-street">Street</FieldLabel>
+      <Input id="field-popup-street" defaultValue="Larkspur Lane" />
+      <Popover defaultOpen>
+        <PopoverTrigger render={<Button variant="outline" />}>Street rules</PopoverTrigger>
+        <PopoverContent>
+          <PopoverDescription>Streets come from the association's map.</PopoverDescription>
+        </PopoverContent>
+      </Popover>
+    </Field>
+  ),
+  play: async ({ canvas }) => {
+    const field = canvas.getByRole("textbox", { name: "Street" }).parentElement as HTMLElement;
+    const popup = await screen.findByRole("dialog");
+    await expect(popup.parentElement).toBe(field);
+    await expect(popup.getBoundingClientRect().width).toBeLessThan(field.getBoundingClientRect().width);
   },
 };
