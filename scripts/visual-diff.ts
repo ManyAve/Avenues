@@ -12,7 +12,8 @@
  *   bun run visual:diff main --reuse      # skip both builds, reuse .visual-diff/build-*
  *   bun run visual:diff main --allow-new  # stories added on this branch are listed, not failures
  *
- * Needs Chromium for Playwright (see the README), or AVENUE_CHROMIUM pointing at one.
+ * A ref that doesn't exist locally falls back to origin/<ref>, so `main` works in a fresh clone that
+ * only has origin/main. Needs Chromium for Playwright (see the README), or AVENUE_CHROMIUM pointing at one.
  */
 import { mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -48,6 +49,11 @@ const root = resolve(import.meta.dir, "..");
 const out = join(root, ".visual-diff");
 // Hide what legitimately differs between two identical renders: motion, the blinking caret.
 const FREEZE = `*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}`;
+// Chromium re-rasterizes only the invalidated part of a tile by default, so an element repainted by a
+// play function (a checkbox ticked by keyboard) can get edge pixels a channel value off from a full
+// raster, differently from run to run. A full raster of every tile gives the same pixels each time
+// (AVE-19: 7 of 72 repeat captures differed with partial raster, 0 of 72 without).
+const CHROMIUM_ARGS = ["--disable-partial-raster"];
 
 export function comboName(c: Combo): string {
   return `${c.theme}-${c.typeScale}`;
@@ -72,6 +78,19 @@ export function comparePngs(a: Buffer, b: Buffer): { changed: number; diff: Buff
   // threshold 0: any change in any channel counts. The bar is zero changed pixels.
   const changed = pixelmatch(pa.data, pb.data, diff.data, pa.width, pa.height, { threshold: 0 });
   return { changed, diff: changed > 0 ? PNG.sync.write(diff) : undefined };
+}
+
+/**
+ * The commit to build for `ref`: the ref itself when it names a commit here, else `origin/<ref>`.
+ * Undefined when neither exists.
+ */
+export function resolveRef(ref: string, exists: (candidate: string) => boolean): string | undefined {
+  return [ref, `origin/${ref}`].find(exists);
+}
+
+function isCommit(candidate: string): boolean {
+  const proc = Bun.spawnSync(["git", "rev-parse", "--verify", "--quiet", `${candidate}^{commit}`], { cwd: root });
+  return proc.exitCode === 0;
 }
 
 async function run(cmd: string[], cwd: string): Promise<void> {
@@ -156,7 +175,10 @@ async function main() {
   const args = process.argv.slice(2);
   const reuse = args.includes("--reuse");
   const allowNew = args.includes("--allow-new");
-  const ref = args.find((a) => !a.startsWith("--")) ?? "main";
+  const asked = args.find((a) => !a.startsWith("--")) ?? "main";
+  const ref = reuse ? asked : resolveRef(asked, isCommit);
+  if (ref === undefined) throw new Error(`${asked} is not a commit here, and neither is origin/${asked}; fetch it first`);
+  if (ref !== asked) console.log(`${asked} isn't a local ref; using ${ref}.`);
   const baseDir = join(out, "build-base");
   const headDir = join(out, "build-head");
   const reportDir = join(out, "report");
@@ -175,7 +197,7 @@ async function main() {
   const baseIds = storyIds(await Bun.file(join(baseDir, "index.json")).json());
   const headIds = storyIds(await Bun.file(join(headDir, "index.json")).json());
   const executablePath = process.env.AVENUE_CHROMIUM;
-  const browser = await chromium.launch(executablePath ? { executablePath } : {});
+  const browser = await chromium.launch({ args: CHROMIUM_ARGS, ...(executablePath ? { executablePath } : {}) });
   let baseShots: Map<string, Buffer | Error>;
   let headShots: Map<string, Buffer | Error>;
   try {
