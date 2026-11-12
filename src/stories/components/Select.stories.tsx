@@ -113,6 +113,17 @@ export const DisabledOption: Story = {
       <Select options={roles} defaultValue="treasurer" native="never" />
     </Labelled>
   ),
+  play: async ({ canvas }) => {
+    // The list is as wide as its field (UI Designer, AVE-7); a long option wraps instead of widening it.
+    const trigger = canvas.getByRole("combobox", { name: "Board role" });
+    await userEvent.click(trigger);
+    const list = await screen.findByRole("listbox");
+    const popup = list.closest("[data-slot=select-content]") ?? list;
+    await waitFor(() =>
+      expect(Math.round(popup.getBoundingClientRect().width)).toBe(Math.round(trigger.getBoundingClientRect().width)),
+    );
+    await expect(screen.getByRole("option", { name: /Past president/ })).toHaveAttribute("aria-disabled", "true");
+  },
 };
 
 export const Invalid: Story = {
@@ -319,6 +330,10 @@ export const InCardHeader: Story = {
     await expect(trigger.getBoundingClientRect().height).toBe(28);
     await expect(style.borderTopLeftRadius).toBe("8px");
     await userEvent.click(trigger);
+    // A narrow field's list is never narrower than 192px.
+    const list = await screen.findByRole("listbox");
+    const popup = list.closest("[data-slot=select-content]") ?? list;
+    await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(192));
     await userEvent.click(await screen.findByRole("option", { name: "2025" }));
     await expect(trigger).toHaveTextContent("2025");
   },

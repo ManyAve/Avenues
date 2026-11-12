@@ -62,14 +62,16 @@ export const Announcing: Story = {
     );
   },
   play: async ({ canvas, step }) => {
-    const region = canvas.getByRole("alert", { hidden: true });
+    const region = canvas.getByRole("alert");
     const changes: MutationRecord[] = [];
     const observer = new MutationObserver((records) => changes.push(...records));
     observer.observe(region, { childList: true, subtree: true, characterData: true });
 
-    await step("empty region is in the DOM but silent and hidden", async () => {
+    await step("empty region stays in the accessibility tree, visually hidden", async () => {
       await expect(region).toBeEmptyDOMElement();
-      await expect(region).not.toBeVisible();
+      // display:none would drop it from the accessibility tree, and screen readers miss the next polite message.
+      await expect(getComputedStyle(region).display).not.toBe("none");
+      await expect(region.getBoundingClientRect().width).toBeLessThanOrEqual(1);
     });
 
     await step("a new message fills the same region", async () => {
@@ -89,7 +91,7 @@ export const Announcing: Story = {
 
     await step("clearing empties it without removing it", async () => {
       await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
-      await expect(canvas.getByRole("alert", { hidden: true })).toBe(region);
+      await expect(canvas.getByRole("alert")).toBe(region);
       await expect(region).toBeEmptyDOMElement();
     });
 

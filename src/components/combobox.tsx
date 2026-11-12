@@ -1,7 +1,7 @@
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { fieldControl, listItem, listPopup, type PickerSize } from "#avenue/components/select";
+import { fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 /** One choice a Combobox offers. `value` is the stored id; `label` is what the field shows once it is chosen. */
@@ -162,7 +162,7 @@ export function Combobox<T extends ComboboxOption>({
       </ComboboxPrimitive.InputGroup>
       <ComboboxPrimitive.Portal>
         <ComboboxPrimitive.Positioner align="start" sideOffset={4} className="isolate z-50 outline-none">
-          <ComboboxPrimitive.Popup ref={popupRef} data-slot="combobox-content" className={cn(listPopup, "w-max data-empty:p-0")}>
+          <ComboboxPrimitive.Popup ref={popupRef} data-slot="combobox-content" className={cn(listPopup, "data-empty:p-0")}>
             <ComboboxPrimitive.Empty className="px-3 py-2 text-sm text-muted-foreground empty:hidden">
               {emptyMessage(query.trim())}
             </ComboboxPrimitive.Empty>

@@ -17,7 +17,10 @@ export interface InlineMessageProps {
    * announced politely (role="status") when the reader is free.
    */
   tone?: InlineMessageTone | undefined;
-  /** The message. Empty (null, false, "") keeps the region in place but silent and invisible. */
+  /**
+   * The message. Empty (null, false, "") keeps the region mounted and in the accessibility tree, visually hidden
+   * (sr-only, not display:none), so the next message's polite announcement is still read.
+   */
   children?: ReactNode;
   /** Hides the leading icon, for a message under a field where the field's own invalid ring already signals it. */
   hideIcon?: boolean | undefined;
@@ -45,7 +48,7 @@ export function InlineMessage({ tone = "error", children, hideIcon, id, classNam
       data-slot="inline-message"
       data-tone={tone}
       data-empty={empty || undefined}
-      className={cn("flex items-start gap-1 text-meta data-empty:hidden", text, className)}
+      className={cn("flex items-start gap-1 text-meta data-empty:sr-only", text, className)}
     >
       {!empty && (
         <>
