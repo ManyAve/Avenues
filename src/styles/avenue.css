@@ -2,11 +2,18 @@
    The colour, type and shadow mapping is copied from ManyAve Management's src/index.css at e01cc90 (2026-11-12).
    Spacing aliases, control heights and the corner scale follow AVE-2 ("Avenue spacing and corner rules").
    For the desktop type scale, also load desktop.css. */
+/* ui-sdk's default stylesheet (@ui-sdk/core/web.css), first, so its cascade layer is declared before
+   Tailwind's and every Avenue rule outranks it. Its variables are global; its rules apply only inside
+   [data-ui-sdk-skin], because globally they restyle Avenue (scripts/ui-sdk-css.ts says how). */
+@layer ui-sdk;
+@import "./ui-sdk.css";
 @import "tailwindcss" source("..");
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 /* Palette, semantic colours, light and dark. */
 @import "./tokens.css";
+/* ui-sdk's --ui-* tokens, from Avenue's. */
+@import "./ui-sdk-theme.css";
 
 @custom-variant dark (&:is(.dark *));
 

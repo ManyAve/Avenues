@@ -2,7 +2,9 @@
 
 Avenue is ManyAve's design system: tokens, foundations, components and composites, built on
 [Base UI](https://base-ui.com) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and shown in
-Storybook 11.
+Storybook 11. Component behavior comes from [ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`), which replaces
+Base UI wherever it has an equivalent; Base UI stays only where ui-sdk has nothing yet. The look stays
+shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule and how to read ui-sdk's docs.
 
 All example data is fictional. Avenue imports nothing from outside this package; npm
 dependencies are fine.
@@ -35,6 +37,8 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
+| `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
+| `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
 The toolbar's theme switch flips the `.dark` class on `<html>`, the same switch the ManyAve app
@@ -72,8 +76,9 @@ Controls and the Docs args table.
 | ------------------------ | -------------------------------------------------------------- |
 | `src/styles/tokens.css`  | Palette, type scale, semantic colours, shadows and tints, light and dark (copied from the app). |
 | `src/styles/avenue.css`  | Tailwind, the shadcn base layer and the tokens as utilities, with AVE-2's spacing aliases, control heights and corner scale. |
+| `src/styles/ui-sdk.css`  | Generated: ui-sdk's default stylesheet with its rules scoped to `[data-ui-sdk-skin]`, loaded first by `avenue.css` (see `scripts/ui-sdk-css.ts`). |
 | `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
-| `scripts/`               | The token comparison and the class check.                       |
+| `scripts/`               | The token comparison, the class check, the visual diff and the ui-sdk stylesheet generator. |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
 | `src/lib/control.ts`     | The shared field look (`controlSurface`) and AVE-2 control sizes (`controlSize`) for inputs, textareas and select triggers. |
 | `src/components/`        | One file per component: the shadcn primitives on Base UI, styled to the app (AVE-6). Stories in `src/stories/components/`. |

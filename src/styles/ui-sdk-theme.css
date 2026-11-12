@@ -1,0 +1,26 @@
+/* ui-sdk's theme tokens, set from Avenue's. ui-sdk.css (its web.css) reads only these `--ui-*` tokens for
+   colour, corners, spacing and type; setting them here, unlayered, is the themed path ui-sdk documents
+   (the ui-sdk skill, references/styles.md). Each maps to an Avenue token that tokens.css already switches
+   under `.dark`, so ui-sdk follows Avenue's theme switch, not the operating system's. web.css's
+   `color-scheme: light dark` loses the same way, to tokens.css's per-theme color-scheme. */
+:root {
+  --ui-background: var(--background);
+  --ui-foreground: var(--foreground);
+  --ui-muted: var(--muted);
+  --ui-muted-foreground: var(--muted-foreground);
+  --ui-border: var(--border);
+  --ui-input: var(--input);
+  --ui-primary: var(--primary);
+  --ui-primary-foreground: var(--primary-foreground);
+  --ui-destructive: var(--destructive);
+  --ui-ring: color-mix(in oklab, var(--ring) 50%, transparent); /* shadcn's focus-visible:ring-ring/50 */
+  --ui-ring-border: var(--ring); /* shadcn's focus-visible:border-ring */
+  --ui-overlay: rgb(0 0 0 / 0.1); /* the dialog overlay's bg-black/10 */
+  --ui-shadow: var(--shadow-popover);
+  --ui-radius: calc(var(--radius) * 0.8); /* rounded-md, 8px: AVE-2's corner for md controls and popups */
+  --ui-spacing: 0.25rem; /* Tailwind's 4px grid, which AVE-2 keeps */
+  --ui-font-size: var(--text-control);
+  --ui-line-height: var(--text-control--line-height);
+  --ui-font-sans: var(--font-geist-sans);
+  --ui-font-mono: var(--font-geist-mono);
+}
