@@ -46,7 +46,7 @@ export const Default: Story = {
       <TableHeader>
         <TableRow>
           <TableHead>
-            <Checkbox aria-label="Select all households" indeterminate />
+            <Checkbox aria-label="Select all households" defaultChecked="indeterminate" />
           </TableHead>
           <TableHead>Address</TableHead>
           <TableHead>Owner</TableHead>

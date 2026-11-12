@@ -1,6 +1,6 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button";
+import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
-import { useId, type ReactNode } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
 import { controlShape } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
@@ -48,7 +48,7 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = ButtonPrimitive.Props &
+type ButtonProps = ComponentProps<typeof ButtonPrimitive> &
   VariantProps<typeof buttonVariants> & {
     /**
      * Why the action is unavailable. Disables the button but keeps it focusable, shows the reason as one muted

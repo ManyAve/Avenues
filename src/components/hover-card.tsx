@@ -1,21 +1,22 @@
-import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
+import * as HoverCardPrimitive from "@ui-sdk/react/hover-card";
+import type { ComponentProps } from "react";
 import { popupMotion } from "#avenue/components/popover";
 import { cn } from "#avenue/lib/utils";
 
 /**
- * Ported from the app's app/ui/components/ui/hover-card.tsx (e01cc90): a preview that opens while a pointer rests on
- * the trigger (the app uses 500ms on register cells). lg corner as in the app; padding 10px to the 16px inset.
+ * Ported from the app's app/ui/components/ui/hover-card.tsx (e01cc90): a preview of where a link goes, shown while a
+ * pointer rests on it or keyboard focus stays on it (the app uses 500ms on register cells). lg corner as in the app;
+ * padding 10px to the 16px inset. The trigger is a link: give it an href.
  *
- * Hover only: Base UI keeps the preview out of the keyboard, touch and screen-reader paths. Whatever it shows must
- * also be reachable another way, usually by activating the trigger (the register's cells open a dialog with the
- * same content). The stories show that pairing.
+ * Touch and screen-reader users may never see the preview, so everything in it must also be on the page the link
+ * opens (the register's cells open a dialog with the same content). The stories show that pairing.
  */
-function HoverCard(props: PreviewCardPrimitive.Root.Props) {
-  return <PreviewCardPrimitive.Root data-slot="hover-card" {...props} />;
+function HoverCard(props: ComponentProps<typeof HoverCardPrimitive.HoverCard>) {
+  return <HoverCardPrimitive.HoverCard {...props} />;
 }
 
-function HoverCardTrigger(props: PreviewCardPrimitive.Trigger.Props) {
-  return <PreviewCardPrimitive.Trigger data-slot="hover-card-trigger" {...props} />;
+function HoverCardTrigger(props: ComponentProps<typeof HoverCardPrimitive.HoverCardTrigger>) {
+  return <HoverCardPrimitive.HoverCardTrigger data-slot="hover-card-trigger" {...props} />;
 }
 
 function HoverCardContent({
@@ -25,28 +26,21 @@ function HoverCardContent({
   align = "center",
   alignOffset = 4,
   ...props
-}: PreviewCardPrimitive.Popup.Props &
-  Pick<PreviewCardPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">) {
+}: ComponentProps<typeof HoverCardPrimitive.HoverCardContent>) {
   return (
-    <PreviewCardPrimitive.Portal data-slot="hover-card-portal">
-      <PreviewCardPrimitive.Positioner
-        align={align}
-        alignOffset={alignOffset}
-        side={side}
-        sideOffset={sideOffset}
-        className="isolate z-50"
-      >
-        <PreviewCardPrimitive.Popup
-          data-slot="hover-card-content"
-          className={cn(
-            "z-50 w-64 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
-            popupMotion,
-            className,
-          )}
-          {...props}
-        />
-      </PreviewCardPrimitive.Positioner>
-    </PreviewCardPrimitive.Portal>
+    <HoverCardPrimitive.HoverCardContent
+      data-slot="hover-card-content"
+      align={align}
+      alignOffset={alignOffset}
+      side={side}
+      sideOffset={sideOffset}
+      className={cn(
+        "w-64 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
+        popupMotion,
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

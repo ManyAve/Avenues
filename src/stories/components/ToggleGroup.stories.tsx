@@ -19,7 +19,7 @@ export const Variants: Story = {
     <Rows>
       {(["sm", "default", "lg"] as const).map((size) => (
         <Row key={size} label={`outline, ${size}`}>
-          <ToggleGroup variant="outline" size={size} defaultValue={["Comfortable"]} aria-label={`Row height ${size}`}>
+          <ToggleGroup variant="outline" size={size} defaultValue="Comfortable" aria-label={`Row height ${size}`}>
             {densities.map((d) => (
               <ToggleGroupItem key={d} value={d}>
                 {d}
@@ -30,7 +30,7 @@ export const Variants: Story = {
             variant="outline"
             size={size}
             spacing={0}
-            defaultValue={["light"]}
+            defaultValue="light"
             aria-label={`Theme ${size}`}
           >
             <ToggleGroupItem value="light" aria-label="Light">
@@ -54,13 +54,13 @@ export const Variants: Story = {
         </ToggleGroup>
       </Row>
       <Row label="vertical">
-        <ToggleGroup variant="outline" orientation="vertical" defaultValue={["print"]} aria-label="Mailing mode">
+        <ToggleGroup variant="outline" orientation="vertical" defaultValue="print" aria-label="Mailing mode">
           <ToggleGroupItem value="print">Print and mail</ToggleGroupItem>
           <ToggleGroupItem value="email">Email only</ToggleGroupItem>
         </ToggleGroup>
       </Row>
       <Row label="disabled">
-        <ToggleGroup variant="outline" disabled defaultValue={["Compact"]} aria-label="Row height disabled">
+        <ToggleGroup variant="outline" disabled defaultValue="Compact" aria-label="Row height disabled">
           {densities.map((d) => (
             <ToggleGroupItem key={d} value={d}>
               {d}
@@ -72,11 +72,15 @@ export const Variants: Story = {
   ),
 };
 
-/** One Tab stop for the group; arrow keys move between items and wrap; Space or Enter presses. */
+/**
+ * A single-choice group is a radio group: one Tab stop that lands on the chosen item, and the arrow keys move and
+ * select together, wrapping at the ends.
+ */
 export const Keyboard: Story = {
   render: () => (
     <Rows>
-      <ToggleGroup variant="outline" size="sm" defaultValue={["Comfortable"]} aria-label="Row height">
+      <button type="button">Before the group</button>
+      <ToggleGroup variant="outline" size="sm" defaultValue="Comfortable" aria-label="Row height">
         {densities.map((d) => (
           <ToggleGroupItem key={d} value={d}>
             {d}
@@ -87,19 +91,44 @@ export const Keyboard: Story = {
     </Rows>
   ),
   play: async ({ canvas }) => {
-    const [compact, comfortable, roomy] = densities.map((d) => canvas.getByRole("button", { name: d }));
-    // Tab enters the group on its first item (Base UI's roving focus), arrows move and wrap.
+    await expect(canvas.getByRole("radiogroup", { name: "Row height" })).toBeInTheDocument();
+    const [compact, comfortable, roomy] = densities.map((d) => canvas.getByRole("radio", { name: d }));
+    await userEvent.click(canvas.getByRole("button", { name: "Before the group" }));
     await userEvent.tab();
-    await expect(compact).toHaveFocus();
-    await userEvent.keyboard("{ArrowRight}");
     await expect(comfortable).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
     await expect(roomy).toHaveFocus();
+    await expect(roomy).toBeChecked();
+    await expect(comfortable).not.toBeChecked();
     await userEvent.keyboard("{ArrowRight}");
     await expect(compact).toHaveFocus();
+    await expect(compact).toBeChecked();
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "After the group" })).toHaveFocus();
+  },
+};
+
+/** Independent on/off items (`multiple`): one Tab stop, arrows move, Space or Enter presses without moving others. */
+export const KeyboardMultiple: Story = {
+  render: () => (
+    <Rows>
+      <ToggleGroup multiple variant="outline" size="sm" defaultValue={["unpaid"]} aria-label="Show">
+        <ToggleGroupItem value="unpaid">Unpaid</ToggleGroupItem>
+        <ToggleGroupItem value="archived">Archived</ToggleGroupItem>
+      </ToggleGroup>
+      <button type="button">After the group</button>
+    </Rows>
+  ),
+  play: async ({ canvas }) => {
+    const unpaid = canvas.getByRole("button", { name: "Unpaid" });
+    const archived = canvas.getByRole("button", { name: "Archived" });
+    await userEvent.tab();
+    await expect(unpaid).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(archived).toHaveFocus();
     await userEvent.keyboard(" ");
-    await expect(compact).toHaveAttribute("aria-pressed", "true");
-    await expect(comfortable).toHaveAttribute("aria-pressed", "false");
+    await expect(archived).toHaveAttribute("aria-pressed", "true");
+    await expect(unpaid).toHaveAttribute("aria-pressed", "true");
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "After the group" })).toHaveFocus();
   },

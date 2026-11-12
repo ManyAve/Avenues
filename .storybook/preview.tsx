@@ -3,7 +3,6 @@
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
-import { TooltipProvider } from "#avenue/components/tooltip";
 import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
 
 // Under test (Playwright sets navigator.webdriver), skip enter and exit animations, so a popup that is open is
@@ -49,11 +48,7 @@ const preview: Preview = {
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
       setDesktopScale(globals.typeScale === "desktop");
-      return (
-        <TooltipProvider>
-          <Story />
-        </TooltipProvider>
-      );
+      return <Story />;
     },
   ],
   parameters: {

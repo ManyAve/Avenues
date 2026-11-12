@@ -23,7 +23,7 @@ export const States: Story = {
         <Checkbox aria-label="Checked" defaultChecked />
       </Row>
       <Row label="indeterminate">
-        <Checkbox aria-label="Indeterminate" indeterminate />
+        <Checkbox aria-label="Indeterminate" defaultChecked="indeterminate" />
       </Row>
       <Row label="invalid">
         <Checkbox aria-label="Invalid" aria-invalid="true" />
@@ -42,7 +42,7 @@ export const States: Story = {
 
 const rows = ["14 Larkspur Lane", "9 Juniper Court", "301 Sorrel Way"];
 
-/** Select all over a list: indeterminate while some rows are chosen. Space toggles the focused box. */
+/** Select all over a list: indeterminate while some rows are chosen (ui-sdk's `parent` checkbox group does this for a form). Space toggles the focused box. */
 export const SelectAll: Story = {
   render: function SelectAllStory() {
     const [chosen, setChosen] = useState<string[]>(["9 Juniper Court"]);
@@ -51,8 +51,7 @@ export const SelectAll: Story = {
       <Rows>
         <Field orientation="horizontal">
           <Checkbox
-            checked={all}
-            indeterminate={chosen.length > 0 && !all}
+            checked={all ? true : chosen.length > 0 ? "indeterminate" : false}
             onCheckedChange={(on) => setChosen(on ? rows : [])}
           />
           <FieldLabel>Select all households</FieldLabel>
