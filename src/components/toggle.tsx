@@ -1,5 +1,6 @@
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { cva, type VariantProps } from "class-variance-authority";
+import { controlShape } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -16,9 +17,9 @@ const toggleVariants = cva(
         outline: "border border-input bg-transparent hover:bg-muted",
       },
       size: {
-        default: "h-control-md min-w-control-md rounded-lg px-2",
-        sm: "h-control-sm min-w-control-sm rounded-md px-2 text-control [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-control-lg min-w-control-lg rounded-lg px-2",
+        default: `${controlShape({ size: "md" })} min-w-control-md px-2`,
+        sm: `${controlShape({ size: "sm" })} min-w-control-sm px-2 text-control [&_svg:not([class*='size-'])]:size-3.5`,
+        lg: `${controlShape({ size: "lg" })} min-w-control-lg px-2`,
       },
     },
     defaultVariants: { variant: "default", size: "default" },

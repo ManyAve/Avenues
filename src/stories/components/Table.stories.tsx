@@ -28,6 +28,16 @@ const rows = [
   { address: "301 Sorrel Way", owner: "Lee Marchetti", status: "Paid", due: "$0.00" },
 ];
 
+/** The app's status look: an outlined label with a coloured dot. The dot is decoration; the word carries the meaning. */
+function Status({ status }: { status: string }) {
+  return (
+    <Badge variant="outline" className="bg-background text-muted-foreground">
+      <span aria-hidden className={`size-1.5 rounded-full ${status === "Paid" ? "bg-success" : "bg-warning"}`} />
+      {status}
+    </Badge>
+  );
+}
+
 /** Header, rows with a selected row, a footer total and a caption. 40px header row, 8px cell padding. */
 export const Default: Story = {
   render: () => (
@@ -53,16 +63,16 @@ export const Default: Story = {
             <TableCell className="font-medium">{row.address}</TableCell>
             <TableCell>{row.owner}</TableCell>
             <TableCell>
-              <Badge variant={row.status === "Paid" ? "secondary" : "destructive"}>{row.status}</Badge>
+              <Status status={row.status} />
             </TableCell>
-            <TableCell className="text-right tabular-nums">{row.due}</TableCell>
+            <TableCell className="text-right font-mono whitespace-nowrap tabular-nums">{row.due}</TableCell>
           </TableRow>
         ))}
       </TableBody>
       <TableFooter>
         <TableRow>
           <TableCell colSpan={4}>Total outstanding</TableCell>
-          <TableCell className="text-right tabular-nums">$240.00</TableCell>
+          <TableCell className="text-right font-mono whitespace-nowrap tabular-nums">$240.00</TableCell>
         </TableRow>
       </TableFooter>
     </Table>
@@ -72,5 +82,8 @@ export const Default: Story = {
       await expect(header).toHaveAttribute("scope", "col");
     }
     await expect(canvas.getAllByRole("columnheader")[1]!.getBoundingClientRect().height).toBe(40);
+    const money = canvas.getAllByText("$240.00")[0]!;
+    await expect(getComputedStyle(money).fontVariantNumeric).toContain("tabular-nums");
+    await expect(getComputedStyle(money).fontFamily).toMatch(/mono/i);
   },
 };
