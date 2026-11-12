@@ -1,7 +1,7 @@
 import * as MenuPrimitive from "@ui-sdk/react/menu";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import { useId, type ComponentProps, type ReactNode } from "react";
-import { popupMotion } from "#avenue/components/popover";
+import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**

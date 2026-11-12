@@ -1,7 +1,7 @@
 import * as TooltipPrimitive from "@ui-sdk/react/tooltip";
 import { CircleHelpIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
-import { popupMotion } from "#avenue/components/popover";
+import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**

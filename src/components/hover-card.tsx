@@ -1,6 +1,6 @@
 import * as HoverCardPrimitive from "@ui-sdk/react/hover-card";
 import type { ComponentProps } from "react";
-import { popupMotion } from "#avenue/components/popover";
+import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**

@@ -1,5 +1,6 @@
 import * as PopoverPrimitive from "@ui-sdk/react/popover";
 import type { ComponentProps } from "react";
+import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -16,12 +17,6 @@ function PopoverTrigger(props: ComponentProps<typeof PopoverPrimitive.PopoverTri
   return <PopoverPrimitive.PopoverTrigger data-slot="popover-trigger" {...props} />;
 }
 
-/**
- * Shared by Popover, Hover card, Select and Combobox: how a popup enters and leaves. ui-sdk marks the first frame
- * with data-starting-style and the exit with data-ending-style, and keeps the popup mounted until the exit ends.
- */
-const popupMotion =
-  "origin-(--transform-origin) transition-[opacity,scale,translate] duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-2 data-[side=left]:data-starting-style:translate-x-2 data-[side=right]:data-starting-style:-translate-x-2 data-[side=top]:data-starting-style:translate-y-2 motion-reduce:transition-none";
 
 function PopoverContent({
   className,
@@ -72,4 +67,4 @@ function PopoverDescription({ className, ...props }: ComponentProps<typeof Popov
   );
 }
 
-export { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger, popupMotion };
+export { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger };

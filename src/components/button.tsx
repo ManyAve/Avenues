@@ -70,7 +70,7 @@ function Button({ className, variant = "default", size = "default", disabledReas
         ? {
             disabled: true,
             focusableWhenDisabled: true,
-            "aria-describedby": cn(props["aria-describedby"], reasonId),
+            "aria-describedby": [props["aria-describedby"], reasonId].filter(Boolean).join(" "),
           }
         : {})}
     />

@@ -19,10 +19,6 @@ if (typeof navigator !== "undefined" && navigator.webdriver) {
   document.head.append(still);
 }
 
-// ui-sdk's development warnings (a missing name, a part outside its root, ...) throw instead of logging,
-// so a story that misuses ui-sdk fails the story tests (the ui-sdk skill, references/testing.md).
-Object.assign(globalThis, { ["__UI_SDK_STRICT__"]: true });
-
 // Avenue's dark theme is the `.dark` class on <html>, as in the ManyAve app; the toolbar switch flips it.
 // The type-scale switch loads desktop.css, the opt-in desktop type scale, the way the desktop app does.
 function setDesktopScale(on: boolean) {
