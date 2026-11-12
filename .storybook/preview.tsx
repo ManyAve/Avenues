@@ -10,6 +10,15 @@ import { runAccessibilityChecks } from "./pattern-check";
 // so a story that misuses ui-sdk fails the story tests (the ui-sdk skill, references/testing.md).
 Object.assign(globalThis, { ["__UI_SDK_STRICT__"]: true });
 
+// Under test (Playwright sets navigator.webdriver), skip enter and exit animations, so a popup that is open is
+// visible at once instead of fading in from opacity 0 while a play function or axe checks it. Storybook keeps them.
+if (typeof navigator !== "undefined" && navigator.webdriver) {
+  const still = document.createElement("style");
+  still.textContent =
+    "*, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }";
+  document.head.append(still);
+}
+
 // Avenue's dark theme is the `.dark` class on <html>, as in the ManyAve app; the toolbar switch flips it.
 // The type-scale switch loads desktop.css, the opt-in desktop type scale, the way the desktop app does.
 function setDesktopScale(on: boolean) {

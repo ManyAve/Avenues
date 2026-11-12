@@ -34,6 +34,13 @@ comments when ui-sdk is upgraded. Hand-rolled behavior is the last resort, built
 shadcn component structure, `data-slot` names, Avenue's tokens and Tailwind classes. ui-sdk supplies
 behavior, not appearance; prove it with `bun run visual:diff`.
 
+**`data-slot` names.** On a ui-sdk part, ui-sdk's `data-slot` wins (`menu-item`, `dialog-backdrop`,
+`segmented-control-item`), because its behavior reads it; don't pass Avenue's own name to a ui-sdk part.
+Avenue's own parts (plain markup such as `card-header` or `dialog-footer`) keep the shadcn names. Style a
+ui-sdk part by its state attributes and Avenue's classes, not by its `data-slot`; a parent may select
+a ui-sdk part by `data-slot` only for layout (as Field and Avatar group do), and only by the name ui-sdk
+documents for it.
+
 ui-sdk's default stylesheet, `@ui-sdk/core/web.css`, is loaded first by `avenue.css` as the generated `src/styles/ui-sdk.css`: its `--ui-*` variables are global, but its rules only apply inside
 an element with `data-ui-sdk-skin`, because globally they restyle Avenue (they style every `code` and
 `a`, and use the same `data-slot` names as shadcn). Don't add `data-ui-sdk-skin` to an Avenue

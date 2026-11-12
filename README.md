@@ -1,9 +1,9 @@
 # Avenue
 
 Avenue is ManyAve's design system: tokens, foundations, components and composites, built on
-[Base UI](https://base-ui.com) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and shown in
-Storybook 11. Component behavior comes from [ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`), which replaces
-Base UI wherever it has an equivalent; Base UI stays only where ui-sdk has nothing yet. The look stays
+[ui-sdk](https://ui-sdk.dev) (`@ui-sdk/react`) and [shadcn](https://ui.shadcn.com) with Tailwind 4, and
+shown in Storybook 11. Component behavior comes from ui-sdk, which replaces Base UI wherever it has an
+equivalent; today no component needs Base UI. The look stays
 shadcn's structure with Avenue's tokens. `AGENTS.md` has the rule, how to read ui-sdk's docs, and the nine ui-sdk practices every component
 follows (per-part imports, styling from state attributes, enter and exit animation, tokens, primitives
 for what ui-sdk doesn't ship, its test kit, agent-readiness); `Foundations/Agents` in Storybook is the
@@ -136,7 +136,8 @@ Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the
 | `src/styles/desktop.css` | The opt-in desktop type scale (compact 14px, meta 13px).        |
 | `scripts/`               | The token comparison, the class check, the visual diff and the ui-sdk stylesheet generator. |
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
-| `src/components/`        | Components (empty until the component cards land).              |
+| `src/lib/control.ts`     | The shared field look (`controlSurface`), the AVE-2 height-and-corner pairing (`controlShape`) Button and Toggle use, and control sizes (`controlSize`) for inputs, textareas and select triggers. |
+| `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Spacing and corners

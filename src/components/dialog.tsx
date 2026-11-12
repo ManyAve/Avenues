@@ -1,0 +1,152 @@
+import * as DialogPrimitive from "@ui-sdk/react/dialog";
+import { XIcon } from "lucide-react";
+import type { ComponentProps, ReactNode } from "react";
+import { Button } from "#avenue/components/button";
+import { cn } from "#avenue/lib/utils";
+
+/**
+ * Ported from the app's app/ui/components/ui/dialog.tsx (e01cc90). xl corner (14px) and 16px inset as in the app.
+ *
+ * ui-sdk's modal dialog: the page behind is inert and focus is trapped. On open, focus goes to the first focusable
+ * element in the content, so put the first field first, or, in a confirmation, the safe button (Cancel) before the
+ * risky one. Pass `initialFocus` to DialogContent to choose another. On close, focus returns to the trigger. Esc closes unless the dialog passes
+ * `closeOnEscape={false}` (for a step that must finish, like a payment being sent).
+ *
+ * The close button moves from 8px to 16px from the corner and shrinks from 28 to 24px, so it sits outside the
+ * 14px corner's curve (AVE-2 section 4) and centres on the title's line; its hit area stays 40px.
+ */
+function Dialog({
+  closeOnEscape = true,
+  onOpenChange,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.Dialog> & { closeOnEscape?: boolean | undefined }) {
+  return (
+    <DialogPrimitive.Dialog
+      onOpenChange={(open, details) => {
+        if (!open && !closeOnEscape && details.reason === "escape-key") {
+          details.cancel();
+          return;
+        }
+        onOpenChange?.(open, details);
+      }}
+      {...props}
+    />
+  );
+}
+
+function DialogTrigger(props: ComponentProps<typeof DialogPrimitive.DialogTrigger>) {
+  return <DialogPrimitive.DialogTrigger data-slot="dialog-trigger" {...props} />;
+}
+
+function DialogClose(props: ComponentProps<typeof DialogPrimitive.DialogClose>) {
+  return <DialogPrimitive.DialogClose data-slot="dialog-close" {...props} />;
+}
+
+function DialogOverlay({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogBackdrop>) {
+  return (
+    <DialogPrimitive.DialogBackdrop
+      className={cn(
+        "fixed inset-0 isolate z-50 bg-black/10 transition-opacity duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function DialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  ...props
+}: ComponentProps<typeof DialogPrimitive.DialogContent> & { showCloseButton?: boolean | undefined }) {
+  return (
+    <>
+      <DialogOverlay />
+      <DialogPrimitive.DialogContent
+        data-slot="dialog-content"
+        className={cn(
+          "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl bg-popover p-inset text-sm text-popover-foreground ring-1 ring-foreground/10 m-0 transition-[opacity,scale] duration-100 outline-none backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
+          className,
+        )}
+        {...props}
+      >
+        {children as ReactNode}
+        {showCloseButton && (
+          <DialogPrimitive.DialogClose
+            data-slot="dialog-close"
+            render={
+              <Button variant="ghost" size="icon-xs" className="absolute top-4 right-4 after:absolute after:-inset-2" />
+            }
+          >
+            <XIcon aria-hidden />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.DialogClose>
+        )}
+      </DialogPrimitive.DialogContent>
+    </>
+  );
+}
+
+/** Title and description. Leaves room on the right for the close button. */
+function DialogHeader({ className, ...props }: ComponentProps<"div">) {
+  return <div data-slot="dialog-header" className={cn("flex flex-col gap-2 pe-8", className)} {...props} />;
+}
+
+/** Actions, on a muted strip. Put Cancel first: it is then the safe default focus and sits on the left. */
+function DialogFooter({
+  className,
+  showCloseButton = false,
+  children,
+  ...props
+}: ComponentProps<"div"> & { showCloseButton?: boolean | undefined }) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(
+        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+        className,
+      )}
+      {...props}
+    >
+      {showCloseButton && <DialogPrimitive.DialogClose render={<Button variant="outline" />}>Close</DialogPrimitive.DialogClose>}
+      {children}
+    </div>
+  );
+}
+
+/** Line height is the close button's 24px, so the title and the button share a centre line. */
+function DialogTitle({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogTitle>) {
+  return (
+    <DialogPrimitive.DialogTitle
+      data-slot="dialog-title"
+      className={cn("text-base leading-6 font-medium", className)}
+      {...props}
+    />
+  );
+}
+
+function DialogDescription({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogDescription>) {
+  return (
+    <DialogPrimitive.DialogDescription
+      data-slot="dialog-description"
+      className={cn(
+        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+  DialogTrigger,
+};
