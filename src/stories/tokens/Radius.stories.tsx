@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
 
 // AVE-2 sections 3 to 6: five corner steps from --radius (10px), pills only for labels and tokens,

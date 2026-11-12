@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
 
 // AVE-2 sections 1 and 2: one 4px grid, named aliases, and four control heights.

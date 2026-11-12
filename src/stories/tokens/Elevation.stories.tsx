@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section } from "./token-docs";
 
 // Shadows and surface levels. Light surfaces are white and lift with a close shadow; dark ones step up in onyx.

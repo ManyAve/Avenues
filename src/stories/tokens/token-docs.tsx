@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { type ReactNode, type Ref, useLayoutEffect, useRef, useState } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 
 // Small building blocks shared by the token stories. Story-only: nothing here is exported from the package.
 

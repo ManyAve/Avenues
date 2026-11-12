@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "./token-docs";
 
 // The type scale as the browser renders it. Switch "Type scale" in the toolbar to desktop to load desktop.css,

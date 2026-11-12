@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { cn } from "../../lib/utils";
+import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section } from "./token-docs";
 
 // Every colour token, light and dark (toolbar). Values come from src/styles/tokens.css, copied from the app.
