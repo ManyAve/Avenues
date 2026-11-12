@@ -1,0 +1,132 @@
+/* Avenue stylesheet: Tailwind 4, the shadcn base layer and Avenue's tokens as utilities.
+   The @theme mapping is copied from ManyAve Management (src/index.css) on 2026-11-12; AVE-3 owns it from here. */
+@import "tailwindcss" source("..");
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/* Palette, semantic colours, light and dark. */
+@import "./tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Expose the semantic tokens as Tailwind utilities (bg-primary, text-muted-foreground, ...). */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --text-meta: var(--text-meta);
+  --text-meta--line-height: var(--text-meta--line-height);
+  --text-compact: var(--text-compact);
+  --text-compact--line-height: var(--text-compact--line-height);
+  --text-control: var(--text-control);
+  --text-control--line-height: var(--text-control--line-height);
+  --text-post: var(--text-post);
+  --text-post--line-height: var(--text-post--line-height);
+  --text-title: var(--text-title);
+  --text-title--line-height: var(--text-title--line-height);
+  --text-heading: var(--text-heading);
+  --text-heading--line-height: var(--text-heading--line-height);
+  --text-display: var(--text-display);
+  --text-display--line-height: var(--text-display--line-height);
+  /* shadcn primitives (badges, buttons, inputs, menus) size with text-xs / text-sm: follow the app scale. */
+  --text-xs: var(--text-meta);
+  --text-xs--line-height: var(--text-meta--line-height);
+  --text-sm: var(--text-compact);
+  --text-sm--line-height: var(--text-compact--line-height);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-subtle-foreground: var(--success-subtle-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-subtle-foreground: var(--warning-subtle-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-subtle-foreground: var(--info-subtle-foreground);
+  --color-slate-subtle: var(--slate-subtle);
+  --color-slate-subtle-foreground: var(--slate-subtle-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-control: var(--shadow-control);
+  --shadow-card: var(--shadow-card);
+  --shadow-popover: var(--shadow-popover);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  /* The root stays at the browser's 16px so every rem token matches the mockup (meta 12px … display 28px);
+     the 13px reading size is set on body. */
+  html {
+    @apply antialiased font-sans;
+    font-feature-settings: "ss01";
+  }
+  body {
+    @apply bg-background text-compact text-foreground;
+  }
+}
+
+/* Decorative tints for avatars and street bars, hashed from a name.
+   Teal, plum, iris and stone carry no status meaning. */
+[data-tint] {
+  --tint-bg: oklch(var(--tint-bg-l) calc(var(--tint-bg-c) * var(--tint-k, 1)) var(--tint-hue));
+  --tint-fg: oklch(var(--tint-fg-l) calc(var(--tint-fg-c) * var(--tint-k, 1)) var(--tint-hue));
+  --tint-solid: oklch(
+    var(--tint-solid-l) calc(var(--tint-solid-c) * var(--tint-k, 1)) var(--tint-hue)
+  );
+}
+[data-tint="teal"] {
+  --tint-hue: 200;
+}
+[data-tint="plum"] {
+  --tint-hue: 335;
+}
+[data-tint="iris"] {
+  --tint-hue: 285;
+}
+[data-tint="stone"] {
+  --tint-hue: 70;
+  --tint-k: 0.3;
+}

@@ -1,0 +1,294 @@
+/* Copied from ManyAve Management (src/tokens.css) on 2026-11-12 as Avenue's starting palette. Not imported: Avenue owns this copy. AVE-3 turns it into Avenue's token set. */
+/* Values copied from ManyAve design tokens and app theme for this isolated mockup. */
+:root {
+  --color-onyx-25: oklch(98.8% 0.002 280);
+  --color-onyx-50: oklch(96.4% 0.004 280);
+  --color-onyx-100: oklch(92.4% 0.006 280);
+  --color-onyx-200: oklch(84.4% 0.008 280);
+  --color-onyx-300: oklch(76% 0.01 280);
+  --color-onyx-400: oklch(67% 0.012 280);
+  --color-onyx-500: oklch(58% 0.014 280);
+  --color-onyx-600: oklch(49% 0.014 280);
+  --color-onyx-700: oklch(39.5% 0.013 280);
+
+  --color-onyx-750: oklch(34% 0.0125 280);
+  --color-onyx-800: oklch(29.5% 0.012 280);
+  --color-onyx-850: oklch(24% 0.011 280);
+  --color-onyx-900: oklch(19.5% 0.01 280);
+  --color-onyx-950: oklch(13% 0.008 280);
+
+  --color-teal-50: oklch(96.4% 0.005 145.54);
+  --color-teal-100: oklch(92.58% 0.009 145.51);
+  --color-teal-200: oklch(85.12% 0.021 145.39);
+  --color-teal-300: oklch(77.41% 0.03 145.28);
+  --color-teal-400: oklch(69.53% 0.04 145.13);
+  --color-teal-500: oklch(61.6% 0.054 144.88);
+  --color-teal-600: oklch(52.42% 0.043 144.93);
+  --color-teal-700: oklch(42.97% 0.035 144.94);
+  --color-teal-800: oklch(32.96% 0.026 144.95);
+  --color-teal-900: oklch(21.93% 0.012 145.15);
+  --color-teal-950: oklch(18.53% 0.01 145.15);
+
+  --color-slate-50: oklch(96.05% 0.005 258.32);
+  --color-slate-100: oklch(91.98% 0.01 252.82);
+  --color-slate-200: oklch(84.05% 0.018 248.04);
+  --color-slate-300: oklch(75.7% 0.028 249.93);
+  --color-slate-400: oklch(67.2% 0.038 251);
+  --color-slate-500: oklch(58.66% 0.049 249.68);
+  --color-slate-600: oklch(49.93% 0.041 251.2);
+  --color-slate-700: oklch(41.01% 0.033 250.29);
+  --color-slate-800: oklch(31.61% 0.023 248.54);
+  --color-slate-900: oklch(21.1% 0.014 253.14);
+  --color-slate-950: oklch(17.93% 0.009 240.46);
+
+  --color-grape-50: oklch(95.37% 0.011 303.11);
+  --color-grape-100: oklch(90.89% 0.021 301.12);
+  --color-grape-200: oklch(81.6% 0.043 300.64);
+  --color-grape-300: oklch(72.12% 0.066 300);
+  --color-grape-400: oklch(62.29% 0.094 299.22);
+  --color-grape-500: oklch(52.48% 0.12 297.7);
+  --color-grape-600: oklch(44.87% 0.101 297.84);
+  --color-grape-700: oklch(37.06% 0.077 297.91);
+  --color-grape-800: oklch(28.67% 0.055 298.23);
+  --color-grape-900: oklch(19.62% 0.03 298.9);
+  --color-grape-950: oklch(16.53% 0.023 300.57);
+
+  /* App UI type scale: six steps, 14px floor. */
+  --text-meta: 0.875rem;
+  --text-meta--line-height: 1.25rem;
+  --text-compact: 1rem;
+  --text-compact--line-height: 1.5rem;
+  /* Controls, row actions and spreadsheet IDs: 14px on every surface, even where desktop meta drops to 13px. */
+  --text-control: 0.875rem;
+  --text-control--line-height: 1.25rem;
+
+  --text-post: 1.125rem;
+  --text-post--line-height: 1.75rem;
+
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.875rem;
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
+
+  /* Public-site preview (Georgia) keeps its own display scale; body and meta reuse the steps above. */
+  --text-web-card: 1.0625rem;
+  --text-web-section: 1.5rem;
+  --text-web-hero: 2.375rem;
+  --text-web-hero-narrow: 2.125rem;
+  --text-web-glyph: 3.4375rem;
+
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.75rem;
+
+  --light-success: oklch(0.51 0.11 146);
+  --light-success-foreground: oklch(0.98 0.01 146);
+  --light-success-subtle: oklch(0.95 0.025 146);
+  --light-success-subtle-foreground: oklch(0.42 0.08 146);
+  --light-info: oklch(0.52 0.11 250);
+  --light-info-foreground: oklch(0.98 0.01 250);
+  --light-info-subtle: oklch(0.95 0.025 250);
+  --light-info-subtle-foreground: oklch(0.42 0.09 250);
+  --light-warning: oklch(0.74 0.12 78);
+  --light-warning-foreground: oklch(0.3 0.05 78);
+  --light-warning-subtle: oklch(0.95 0.035 80);
+  --light-warning-subtle-foreground: oklch(0.42 0.07 72);
+  --light-destructive: oklch(0.53 0.15 18);
+  --light-destructive-foreground: oklch(0.98 0.01 18);
+  --light-destructive-subtle: oklch(0.94 0.03 18);
+  --light-destructive-subtle-foreground: oklch(0.44 0.13 18);
+  --light-primary-subtle: oklch(0.95 0.028 298.85);
+  --light-primary-subtle-foreground: oklch(0.42 0.11 297.84);
+  --light-slate-subtle: oklch(0.95 0.012 250);
+  --light-slate-subtle-foreground: oklch(0.42 0.035 250);
+
+  --radius: 0.625rem;
+  --font-geist-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-geist-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --elevated-0: var(--color-onyx-100);
+  --elevated-1: var(--color-onyx-50);
+  --elevated-2: var(--color-onyx-25);
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.04);
+
+  --background: var(--elevated-1);
+  --foreground: var(--color-onyx-950);
+  --card: var(--elevated-2);
+  --card-foreground: var(--color-onyx-950);
+  --popover: var(--elevated-2);
+  --popover-foreground: var(--color-onyx-950);
+
+  --primary: var(--color-grape-600);
+  --primary-foreground: var(--color-onyx-50);
+  --secondary: var(--color-slate-200);
+  --secondary-foreground: var(--color-onyx-900);
+  --muted: var(--color-onyx-100);
+
+  --muted-foreground: var(--color-onyx-700);
+  --accent: var(--color-onyx-100);
+  --accent-foreground: var(--color-onyx-900);
+
+  --success: var(--light-success);
+  --success-foreground: var(--light-success-foreground);
+  --success-subtle: var(--light-success-subtle);
+  --success-subtle-foreground: var(--light-success-subtle-foreground);
+
+  --info: var(--light-info);
+  --info-foreground: var(--light-info-foreground);
+  --info-subtle: var(--light-info-subtle);
+  --info-subtle-foreground: var(--light-info-subtle-foreground);
+
+  --warning: var(--light-warning);
+  --warning-foreground: var(--light-warning-foreground);
+  --warning-subtle: var(--light-warning-subtle);
+  --warning-subtle-foreground: var(--light-warning-subtle-foreground);
+
+  --destructive: var(--light-destructive);
+  --destructive-foreground: var(--light-destructive-foreground);
+  --destructive-subtle: var(--light-destructive-subtle);
+  --destructive-subtle-foreground: var(--light-destructive-subtle-foreground);
+
+  --primary-subtle: var(--light-primary-subtle);
+  --primary-subtle-foreground: var(--light-primary-subtle-foreground);
+
+  --slate-subtle: var(--light-slate-subtle);
+  --slate-subtle-foreground: var(--light-slate-subtle-foreground);
+
+  /* Decorative tints for avatars and street bars, hashed from a name (tintFor in mockup.js).
+     Teal, plum, iris and stone carry no status meaning; green, amber and blue stay for paid, owing and processing. */
+  --tint-bg-l: 0.95;
+  --tint-bg-c: 0.03;
+  --tint-fg-l: 0.42;
+  --tint-fg-c: 0.09;
+  --tint-solid-l: 0.55;
+  --tint-solid-c: 0.1;
+
+  --border: var(--color-onyx-200);
+  --input: var(--color-onyx-200);
+  --ring: var(--color-grape-500);
+
+  --chart-1: var(--color-grape-500);
+  --chart-2: var(--color-teal-600);
+  --chart-3: var(--color-slate-500);
+  --chart-4: var(--color-grape-300);
+  --chart-5: var(--color-teal-400);
+
+  --sidebar: var(--elevated-0);
+  --sidebar-foreground: var(--color-onyx-900);
+  --sidebar-primary: var(--color-grape-600);
+  --sidebar-primary-foreground: var(--color-onyx-50);
+  --sidebar-accent: var(--color-onyx-200);
+  --sidebar-accent-foreground: var(--color-onyx-900);
+  --sidebar-border: var(--color-onyx-200);
+  --sidebar-ring: var(--color-grape-500);
+}
+.dark {
+  --elevated-0: var(--color-onyx-950);
+  --elevated-1: var(--color-onyx-900);
+  --elevated-2: var(--color-onyx-850);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 1px 3px 0 rgb(0 0 0 / 0.2);
+
+  --background: var(--elevated-1);
+  --foreground: var(--color-onyx-100);
+  --card: var(--elevated-2);
+  --card-foreground: var(--color-onyx-100);
+  --popover: var(--elevated-2);
+  --popover-foreground: var(--color-onyx-100);
+
+  --primary: var(--color-grape-500);
+  --primary-foreground: var(--color-onyx-50);
+
+  --secondary: var(--color-onyx-800);
+  --secondary-foreground: var(--color-onyx-100);
+  --muted: var(--color-onyx-800);
+  --muted-foreground: var(--color-onyx-300);
+  --accent: var(--color-onyx-750);
+  --accent-foreground: var(--color-onyx-100);
+
+  --success: oklch(0.62 0.11 146);
+  --success-foreground: oklch(0.18 0.03 146);
+  --success-subtle: oklch(0.27 0.04 146);
+  --success-subtle-foreground: oklch(0.8 0.1 146);
+
+  --info: oklch(0.6 0.12 250);
+  --info-foreground: oklch(0.98 0.01 250);
+  --info-subtle: oklch(0.27 0.04 250);
+  --info-subtle-foreground: oklch(0.8 0.1 250);
+
+  --warning: oklch(0.77 0.12 80);
+  --warning-foreground: oklch(0.24 0.05 78);
+  --warning-subtle: oklch(0.28 0.04 80);
+  --warning-subtle-foreground: oklch(0.82 0.1 80);
+
+  --destructive: oklch(0.58 0.15 20);
+  --destructive-foreground: oklch(0.98 0.01 20);
+  --destructive-subtle: oklch(0.27 0.06 18);
+  --destructive-subtle-foreground: oklch(0.8 0.12 18);
+
+  --primary-subtle: oklch(0.27 0.05 297.7);
+  --primary-subtle-foreground: oklch(0.8 0.117 298.16);
+
+  --slate-subtle: oklch(0.27 0.02 250);
+  --slate-subtle-foreground: oklch(0.8 0.04 250);
+
+  --tint-bg-l: 0.27;
+  --tint-bg-c: 0.04;
+  --tint-fg-l: 0.8;
+  --tint-fg-c: 0.1;
+  --tint-solid-l: 0.68;
+  --tint-solid-c: 0.1;
+
+  --border: var(--color-onyx-700);
+  --input: var(--color-onyx-700);
+  --ring: var(--color-grape-400);
+
+  --chart-1: var(--color-grape-400);
+  --chart-2: var(--color-teal-500);
+  --chart-3: var(--color-slate-400);
+  --chart-4: var(--color-grape-200);
+  --chart-5: var(--color-teal-300);
+
+  --sidebar: var(--elevated-0);
+  --sidebar-foreground: var(--color-onyx-100);
+  --sidebar-primary: var(--color-grape-500);
+  --sidebar-primary-foreground: var(--color-onyx-50);
+
+  --sidebar-accent: var(--color-onyx-750);
+  --sidebar-accent-foreground: var(--color-onyx-100);
+  --sidebar-border: var(--color-onyx-700);
+  --sidebar-ring: var(--color-grape-400);
+}
+
+/* White surfaces; elevation comes from a close shadow, not a tinted canvas. */
+:root:not(.dark) {
+  color-scheme: light;
+  --surface-white: oklch(1 0 0);
+  --background: var(--surface-white);
+  --card: var(--surface-white);
+  --popover: var(--surface-white);
+  --sidebar: var(--surface-white);
+  --primary-foreground: var(--surface-white);
+  --muted: oklch(0.977 0 0);
+  --accent: oklch(0.965 0 0);
+  --border: oklch(0.919 0 0);
+  --input: oklch(0.87 0 0);
+  --shadow-control: 0 1px 1px 0 rgb(0 0 0 / 0.045);
+  --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.12);
+  --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 3px -1px rgb(0 0 0 / 0.08);
+}
+
+/* Dark surfaces use the same close elevation, with quiet borders. */
+:root.dark {
+  color-scheme: dark;
+  --muted: var(--color-onyx-850);
+  --accent: var(--color-onyx-800);
+  --border: var(--color-onyx-800);
+  --input: var(--color-onyx-750);
+  --shadow-control: 0 1px 1px rgb(0 0 0 / 0.25);
+  --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.25), 0 2px 3px -1px rgb(0 0 0 / 0.3);
+}
