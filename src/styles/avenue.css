@@ -132,6 +132,31 @@
   }
 }
 
+/* Hit area (AVE-22, AVE-2 "touch targets stay at least 44px by extending the hit area invisibly"): every control
+   composes `hit-area`. An invisible ::after, centred on the control, makes the tappable box at least 44 x 44px
+   on a coarse pointer (a phone or tablet) and at least 24 x 24px on a fine one (WCAG 2.2 target size, 2.5.8),
+   and never smaller than the control. Nothing is drawn and layout doesn't move. A Tailwind utility, not a class
+   string in src/lib, so a variant can scope it: a badge is only a control when it is a link (`[a&]:hit-area`).
+   The control must be positioned (Button, Checkbox and the rest are `relative`) and must not clip its own
+   overflow. The `touch` story-test project measures the result (.storybook/touch-targets.ts). */
+@utility hit-area {
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 1.5rem);
+    height: max(100%, 1.5rem);
+    translate: -50% -50%;
+  }
+  @media (pointer: coarse) {
+    &::after {
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

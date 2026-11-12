@@ -33,7 +33,12 @@ export const controlShape = cva("", {
 
 export type ControlSize = NonNullable<VariantProps<typeof controlShape>["size"]>;
 
-/** The field size: controlShape plus the field's side padding. Fields are never pills. */
+/**
+ * The field size: controlShape plus the field's side padding. Fields are never pills.
+ *
+ * On a phone (coarse pointer) every field is at least 44px tall (AVE-22). A text input is a replaced element, so it
+ * can't carry the invisible `hit-area` that buttons and toggles use; the field grows instead. Desktop is unchanged.
+ */
 export function controlSize({ size = "md" }: { size?: ControlSize | undefined } = {}) {
-  return `${controlShape({ size })} ${size === "lg" ? "px-3" : "px-2"}`;
+  return `${controlShape({ size })} ${size === "lg" ? "px-3" : "px-2"} pointer-coarse:min-h-11`;
 }

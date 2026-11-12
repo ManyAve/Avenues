@@ -91,6 +91,9 @@ function ToggleGroupItem({
     value,
     className: cn(
       "shrink-0 focus:z-10 focus-visible:z-10",
+      // On a phone, items sit closer than their 44px hit areas allow (joined, or 8px apart), so each grows to 44px
+      // along the group's axis instead (AVE-22). Desktop is unchanged.
+      "pointer-coarse:group-data-[orientation=horizontal]/toggle-group:min-w-11 pointer-coarse:group-data-[orientation=vertical]/toggle-group:min-h-11",
       toggleVariants({ variant: context.variant || variant, size: context.size || size }),
       // Joined (spacing 0): square inner corners, outer corners match the group, shared borders. first/last-of-type,
       // because a single-choice group also holds ui-sdk's hidden native input.

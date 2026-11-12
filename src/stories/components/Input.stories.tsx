@@ -43,7 +43,9 @@ export const Sizes: Story = {
     await userEvent.type(canvas.getByRole("searchbox", { name: "Search, md" }), "Larkspur");
     await expect(canvas.getByRole("searchbox", { name: "Search, md" })).toHaveValue("Larkspur");
     const heights = canvas.getAllByRole("searchbox").map((el) => el.getBoundingClientRect().height);
-    await expect(heights).toEqual([24, 28, 32, 40]);
+    // On a phone (the touch story-test project) every field is 44px tall (AVE-22).
+    const phone = matchMedia("(pointer: coarse)").matches;
+    await expect(heights).toEqual(phone ? [44, 44, 44, 44] : [24, 28, 32, 40]);
   },
 };
 

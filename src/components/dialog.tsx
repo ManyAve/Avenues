@@ -14,7 +14,7 @@ import { cn } from "#avenue/lib/utils";
  * `closeOnEscape={false}` (for a step that must finish, like a payment being sent).
  *
  * The close button moves from 8px to 16px from the corner and shrinks from 28 to 24px, so it sits outside the
- * 14px corner's curve (AVE-2 section 4) and centres on the title's line; its hit area stays 40px.
+ * 14px corner's curve (AVE-2 section 4) and centres on the title's line; Button's shared hit area makes it 44px on phones.
  */
 function Dialog({
   closeOnEscape = true,

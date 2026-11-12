@@ -85,6 +85,14 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
    `src/components`, `src/lib` and `src/hooks`); turning `createAgent` on in the ManyAve app is a later
    decision.
 
+## Touch targets
+
+Every control composes the shared `hit-area` utility (`src/styles/avenue.css`): 44px on a phone, 24px with a
+mouse, invisible, never hand-written `after:-inset-*` (AVE-22, README "Touch targets"). Where neighbours are too
+close for that, the control grows on `pointer-coarse:` only, never at fine pointer, so `visual:diff` stays
+identical. The `touch` story-test project measures every control in the Components and Composites stories and
+fails on a tap area under 44px or two that overlap; fix the control or the layout, not the measure.
+
 ## Proving a change looks the same
 
 `bun run visual:diff [base-ref]` builds Storybook at the base ref (default `main`, or `origin/main`

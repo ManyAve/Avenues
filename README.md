@@ -35,7 +35,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run lint`            | Lints with oxlint; any warning fails.                           |
 | `bun run check:classes`   | Fails on retired corners (`rounded-2xl/3xl/4xl`) or off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`). |
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
-| `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
+| `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice), then a fifth time as a phone (`touch`), where it also measures every control's tap area (below). A crash, a failed play function, any axe violation or a tap area under 44px fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
 | `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility proof (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
@@ -168,6 +168,24 @@ Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components u
 are `rounded-xs/sm/md/lg/xl` (4/6/8/10/14) and `rounded-full` for labels and tokens only; `2xl` to `4xl` are
 retired. Each is shown under Tokens in Storybook. Foundations in Storybook says how to use them: colour and status,
 type and the 14px floor, spacing, corners, elevation, icons, motion and theming, each with a do and a don't.
+
+## Touch targets
+
+Every control takes a 44 x 44px tap on a phone without being drawn bigger (AVE-22). A new control composes the
+shared `hit-area` utility (defined in `src/styles/avenue.css`) on a positioned element that doesn't clip its own
+overflow, in place of hand-written `after:-inset-*`: an invisible `::after`, centred, makes the tappable box at
+least 44px on a coarse pointer and 24px on a fine one (WCAG 2.2 target size), and never smaller than the control.
+Scope it with a variant when a part is only sometimes a control (Badge: `[a]:hit-area`).
+
+Where neighbours sit too close for an invisible extension, the control grows on coarse pointers only, so desktop
+doesn't move: text fields (an `<input>` can't carry `::after`), menu rows, toggle-group items along the group's
+axis, table rows and fields that hold a checkbox or switch are at least 44px there.
+
+The `touch` story-test project proves it. It runs the Components and Composites stories with Playwright's
+`hasTouch` (so `(pointer: coarse)` matches) and, after each story, hit-tests a grid of points over the 44px area
+centred on every enabled control (`.storybook/touch-targets.ts`). Each point must land on that control or a label
+of it; a point that lands on the page misses (too small), and one that lands on another control fails both
+(overlap). A story's `play` that measures sizes reads `matchMedia("(pointer: coarse)")` for the phone values.
 
 ## Imports inside Avenue
 

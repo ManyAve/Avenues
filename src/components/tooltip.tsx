@@ -76,7 +76,7 @@ function InfoTip({
         data-slot="info-tip"
         aria-label={label}
         className={cn(
-          "relative inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none after:absolute after:-inset-2 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-open:text-foreground [&_svg]:size-3.5",
+          "relative inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none hit-area hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-open:text-foreground [&_svg]:size-3.5",
           className,
         )}
       >

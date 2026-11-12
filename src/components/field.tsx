@@ -57,7 +57,11 @@ function FieldGroup({ className, ...props }: ComponentProps<typeof FieldPrimitiv
   );
 }
 
-const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground", {
+// On a phone (coarse pointer), a field holding a checkbox or switch is at least 44px tall, so a list of them keeps
+// each control's 44px hit area its own (AVE-22). Desktop is unchanged.
+const fieldVariants = cva(
+  "group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground pointer-coarse:has-[>[role=checkbox]]:min-h-11 pointer-coarse:has-[>[role=switch]]:min-h-11",
+  {
   variants: {
     orientation: {
       vertical: "flex-col *:not-[[popover]]:w-full [&>.sr-only]:w-auto",
@@ -68,7 +72,8 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destr
     },
   },
   defaultVariants: { orientation: "vertical" },
-});
+  },
+);
 
 /**
  * One labelled control. Pass `invalid` (with a FieldError child) to mark it invalid; `disabled` dims the label and
