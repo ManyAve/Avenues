@@ -14,7 +14,9 @@
     "./utils": "./src/lib/utils.ts"
   },
   "imports": {
-    "#avenue/*": "./src/*"
+    "#avenue/lib/*": "./src/lib/*.ts",
+    "#avenue/hooks/*": "./src/hooks/*.ts",
+    "#avenue/components/*": "./src/components/*.tsx"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",

@@ -47,11 +47,17 @@ Controls and the Docs args table.
 
 ## Imports inside Avenue
 
-Files inside the package import each other through the package's own `#avenue/*` subpath
-(`package.json` "imports"), with the file extension, for example
-`import { cn } from "#avenue/lib/utils.ts"`. Never use an `@/` alias: Avenue ships its source, and
-in an app that maps `@/` to its own folder, that import would resolve to the app's file instead.
-`components.json` uses the same form, so `bunx shadcn add <component>` writes these imports.
+Files inside the package import each other through the package's own subpaths
+(`package.json` "imports"), without a file extension:
+
+- `#avenue/lib/*` for `src/lib/*.ts`, for example `import { cn } from "#avenue/lib/utils"`
+- `#avenue/hooks/*` for `src/hooks/*.ts`
+- `#avenue/components/*` for `src/components/*.tsx`
+
+Never use an `@/` alias: Avenue ships its source, and in an app that maps `@/` to its own folder,
+that import would resolve to the app's file instead. Don't add a `.ts` or `.tsx` ending either: the
+app's TypeScript settings reject it. `components.json` uses the same subpaths, so
+`bunx shadcn add <component>` writes these imports as they should be.
 
 ## Using Avenue from another package
 
