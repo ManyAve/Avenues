@@ -37,7 +37,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
 | `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
-| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility pattern check (below). |
+| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility proof (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
@@ -69,32 +69,38 @@ area it checks without a reason (`a11yExceptions.context`), however that is writ
 `.storybook/a11y-guard.ts`. Every story must also stay in the tests: removing its `test` tag fails
 `check:story-coverage`.
 
-### Accessibility pattern checks (ui-sdk)
+### Accessibility proof for each component (ui-sdk)
 
-Components that follow a WAI-ARIA pattern (dialog, menu, select, combobox, checkbox, switch, disclosure
-and so on) are also checked with `checkPattern` from ui-sdk's testing kit (`@ui-sdk/core/testing`):
-roles, names, states, the references between parts and the pattern's keyboard behavior. Tag a story
-with the pattern and the story tests run the check after its `play` function:
+`scripts/component-patterns.ts` lists every component in `src/components` and how its accessibility is
+proven, as one of three kinds. The rule follows ui-sdk's own testing guide: its components are tested
+already, so Avenue tests what it wired, and runs the pattern check only where it changes behavior.
+
+| Kind | When | Tag a story in the component's own stories file | What the story tests then run, after `play` |
+| ---- | ---- | ---- | ---- |
+| `pattern` | An Avenue-built primitive, or a component that changes a ui-sdk part's keys, roles or ARIA (today: Combobox) | `pattern:<name>` | `checkPattern` from `@ui-sdk/core/testing`: roles, names, states, references between parts, keyboard |
+| `upstream` | A ui-sdk component Avenue styles and wires | `agent` | a `createAgent` snapshot: it fails when it finds no control or a control without a name |
+| `none` | Plain markup (Card, Table, Badge, Inline message) | nothing | nothing extra |
 
 ```tsx
-export const Open: Story = {
-  tags: ["pattern:dialog"],
-  play: async ({ canvas }) => { /* open it first: a dialog or menu is checked while open */ },
+export const Agent: Story = {
+  tags: ["agent"],
+  play: async () => { /* act on the controls the way an agent would; the runner checks the names */ },
 };
 ```
 
-`scripts/component-patterns.ts` lists every component in `src/components` with its pattern, or the reason
-it has none. `check:story-coverage` fails when a component isn't listed, or when a component with a
-pattern has no tested story with that tag in its own stories file. The check looks at the whole page by
-default, because dialogs and menus render outside the story; `parameters.patternRoot` (a CSS selector)
-narrows it. When a pattern check and an older story assertion disagree, the pattern wins and the UX
-Engineer signs off the changed assertion on the card.
+`check:story-coverage` fails when a component isn't listed, when its story with the required tag is
+missing or untested, or when a `pattern:` tag names a pattern the kit doesn't know. The pattern list is
+tied to the kit's own type, so a ui-sdk upgrade that changes patterns fails `typecheck`. Both checks
+only run under the story tests, never while you browse Storybook. The pattern check looks at the whole
+page by default, because dialogs and menus render outside the story; `parameters.patternRoot` (a CSS
+selector) narrows it. Open a dialog or menu in `play` before it runs, and tag a story whose state
+really changes, because the check presses keys.
 
-The testing kit is a beta: before treating a pattern failure as a bug, reproduce it by hand. Known false
-alarms, logged on AVE-17: it can report a Combobox input as not a Tab stop when a real Tab reaches it,
-and it counts Base UI's hidden (`aria-hidden`) form inputs as unnamed checkboxes. Tag a story whose state
-really changes (a controlled select-all, not a static gallery of fixed states), because the check presses
-keys and expects them to work.
+When a pattern check and an older story assertion disagree, the pattern wins and the UX Engineer signs
+off the changed assertion on the card. One documented deviation: ui-sdk's Select moves focus into its
+list, which ui-sdk's own combobox check rejects. Avenue ships it as is (UX Engineer, AVE-17) and
+revisits it when ui-sdk leaves beta. The kit is a beta: reproduce a pattern failure by hand before
+calling it a bug (false alarms are logged on AVE-17).
 
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for

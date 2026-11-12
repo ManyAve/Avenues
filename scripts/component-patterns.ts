@@ -1,12 +1,18 @@
 /**
- * Which ui-sdk accessibility pattern each Avenue component must pass (AVE-18). Every file in
- * src/components must be listed: a pattern name, or `null` with the reason no pattern applies. A new
- * component that isn't listed fails `check:story-coverage`, so the decision is made on purpose.
+ * How each Avenue component's accessibility is proven in the story tests (AVE-18). Every file in
+ * src/components must be listed, as one of three kinds, and `check:story-coverage` enforces the tag:
  *
- * The pattern names are the ones `checkPattern` from `@ui-sdk/core/testing` accepts. A component with a
- * pattern needs at least one story tagged `pattern:<name>`; the story tests then run the check on it.
- * When the pattern and an older story assertion disagree, the pattern wins and the UX Engineer signs off
- * the changed assertion on the card (decided 2026-11-12, AVE-17).
+ * - `{ pattern, why }`: the component is a primitive Avenue builds, or it changes the keys, roles or ARIA
+ *   of a ui-sdk part. A story in its own stories file is tagged `pattern:<pattern>`, and the story tests
+ *   run `checkPattern` from `@ui-sdk/core/testing` on it after `play`.
+ * - `{ upstream }`: a ui-sdk component Avenue styles and wires without changing its behavior. ui-sdk's
+ *   testing guide says its components are tested already, so don't run `checkPattern` on them; test what
+ *   Avenue wired instead, plus the agent test. A story in its own stories file is tagged `agent`, and the
+ *   story tests take a `createAgent` snapshot after `play` and fail on an empty one or an unnamed control.
+ * - `{ none }`: plain markup with no behavior to check, with the reason.
+ *
+ * Rule from the Architect on AVE-18 (2026-11-12), following ui-sdk's own testing guide. When a pattern
+ * and an older story assertion disagree, the pattern wins and the UX Engineer signs off on the card.
  */
 import type { Pattern as KitPattern } from "@ui-sdk/core/testing";
 
@@ -35,44 +41,62 @@ export type Pattern = (typeof PATTERNS)[number];
 type MissingFromList = Exclude<KitPattern, Pattern>;
 export const listCoversKit: [MissingFromList] extends [never] ? true : MissingFromList = true;
 
-type NoPattern = { none: string };
+export type Proof =
+  | { pattern: Pattern; why: string }
+  | { upstream: string; note?: string }
+  | { none: string };
 
-export const COMPONENT_PATTERNS: Record<string, Pattern | NoPattern> = {
-  // Popups and pickers
-  select: "combobox", // select-only combobox (ui-sdk select)
-  combobox: "combobox",
-  "dropdown-menu": "menu",
-  dialog: "dialog",
-  "alert-dialog": "alertdialog",
-  popover: "dialog", // ui-sdk popover follows the (non-modal) dialog pattern
-  // Controls
-  checkbox: "checkbox",
-  switch: "switch",
-  disclosure: "disclosure",
-  accordion: "accordion",
-  tabs: "tabs",
-  "radio-group": "radio-group",
-  "segmented-control": "radio-group",
-  slider: "slider",
-  "toggle-group": "radio-group", // UX Engineer, AVE-17: follows ui-sdk segmented-control (radio group)
-  toolbar: "toolbar",
-  listbox: "listbox",
-  tree: "tree",
-  menubar: "menubar",
-  // No matching pattern in the testing kit; their behavior is covered by story tests.
-  tooltip: { none: "The testing kit has no tooltip pattern; focus and Esc are covered by the Tooltip stories." },
-  "hover-card": { none: "No APG pattern; the stories prove the same content is reachable without hover." },
-  button: { none: "A native button; no composite keyboard pattern." },
-  toggle: { none: "A single toggle button (aria-pressed); no composite keyboard pattern." },
-  input: { none: "A native text input." },
-  textarea: { none: "A native textarea." },
-  field: { none: "Labelling and error wiring, covered by the Field stories." },
+export const COMPONENT_PROOF: Record<string, Proof> = {
+  // Changes a ui-sdk part's behavior: checkPattern.
+  combobox: {
+    pattern: "combobox",
+    why: "Changes keys: leaving the field with half-typed text restores the last choice.",
+  },
+
+  // ui-sdk components, styled and wired: wiring tests plus the agent test.
+  button: {
+    upstream: "button",
+    note: "disabledReason keeps a disabled button focusable and describes it; the testing kit has no button pattern, so the Button stories test that wiring.",
+  },
+  select: {
+    upstream: "select",
+    note: "Documented deviation (UX Engineer, AVE-17): ui-sdk's Select moves focus into the list, which its own combobox check rejects. Avenue ships it as is; revisit when ui-sdk leaves beta.",
+  },
+  dialog: { upstream: "dialog" },
+  "alert-dialog": { upstream: "alert-dialog" },
+  "dropdown-menu": { upstream: "trigger-menu" },
+  popover: { upstream: "popover" },
+  tooltip: { upstream: "tooltip" },
+  "hover-card": { upstream: "hover-card" },
+  checkbox: { upstream: "checkbox" },
+  switch: { upstream: "switch" },
+  toggle: { upstream: "toggle" },
+  "toggle-group": { upstream: "segmented-control", note: "UX Engineer, AVE-17: the radio-group pattern." },
+  disclosure: { upstream: "collapsible" },
+  accordion: { upstream: "accordion" },
+  tabs: { upstream: "tabs" },
+  "radio-group": { upstream: "radio" },
+  slider: { upstream: "slider" },
+  input: { upstream: "input" },
+  textarea: { upstream: "textarea" },
+  field: { upstream: "field" },
+  avatar: { upstream: "avatar" },
+
+  // Plain markup.
   card: { none: "Layout only." },
   table: { none: "A static data table, not an interactive grid." },
-  avatar: { none: "An image with a text fallback." },
   badge: { none: "Static text." },
-  "inline-message": { none: "A live region; its announcements are covered by the Inline message stories." },
+  "inline-message": {
+    none: "A live region; its announcements are covered by the Inline message stories.",
+  },
 };
+
+/** The tag a component's story must carry, or undefined when none is needed. */
+export function requiredTag(proof: Proof): string | undefined {
+  if ("pattern" in proof) return `pattern:${proof.pattern}`;
+  if ("upstream" in proof) return "agent";
+  return undefined;
+}
 
 /** `Select.stories.tsx` -> `select`, `DropdownMenu.stories.tsx` -> `dropdown-menu`. */
 export function componentForStoryFile(importPath: string): string | undefined {

@@ -5,14 +5,15 @@
  * 1. Storybook's Vitest addon only runs stories that carry the `test` tag, which every story has unless
  *    it (or its meta, or the preview) removes it with `!test`; a story removed that way would never
  *    render in a test and nothing would say so.
- * 2. AVE-18: every file in src/components must be listed in scripts/component-patterns.ts, and a
- *    component listed with a pattern needs a tested story tagged `pattern:<that pattern>` in its own
- *    stories file. The story tests run the check (.storybook/pattern-check.ts).
+ * 2. AVE-18: every file in src/components must be listed in scripts/component-patterns.ts. A component
+ *    with a pattern needs a tested story tagged `pattern:<that pattern>` in its own stories file; an
+ *    upstream ui-sdk component needs one tagged `agent`. The story tests run those checks
+ *    (.storybook/pattern-check.ts).
  *
  *   bun run check:story-coverage [index.json]
  */
 import { basename, resolve } from "node:path";
-import { COMPONENT_PATTERNS, PATTERNS, componentForStoryFile } from "./component-patterns";
+import { COMPONENT_PROOF, PATTERNS, componentForStoryFile, requiredTag } from "./component-patterns";
 
 interface Entry {
   id: string;
@@ -34,7 +35,7 @@ export function untestedStories(index: Index): string[] {
 export function patternProblems(
   components: readonly string[],
   index: Index,
-  map: typeof COMPONENT_PATTERNS = COMPONENT_PATTERNS,
+  map: typeof COMPONENT_PROOF = COMPONENT_PROOF,
 ): string[] {
   const problems: string[] = [];
   const stories = Object.values(index.entries).filter((e) => e.type === "story");
@@ -49,20 +50,21 @@ export function patternProblems(
   }
 
   for (const component of components) {
-    const rule = map[component];
-    if (rule === undefined) {
-      problems.push(`src/components/${component}.tsx  isn't in scripts/component-patterns.ts; give it a pattern or a reason it has none`);
+    const proof = map[component];
+    if (proof === undefined) {
+      problems.push(`src/components/${component}.tsx  isn't in scripts/component-patterns.ts; say how its accessibility is proven`);
       continue;
     }
-    if (typeof rule !== "string") continue;
+    const tag = requiredTag(proof);
+    if (tag === undefined) continue;
     const covered = stories.some(
       (s) =>
         tested(s) &&
         s.importPath !== undefined &&
         componentForStoryFile(s.importPath) === component &&
-        (s.tags ?? []).includes(`pattern:${rule}`),
+        (s.tags ?? []).includes(tag),
     );
-    if (!covered) problems.push(`${component}  needs a story tagged "pattern:${rule}" in its stories file`);
+    if (!covered) problems.push(`${component}  needs a story tagged "${tag}" in its stories file`);
   }
   return problems;
 }

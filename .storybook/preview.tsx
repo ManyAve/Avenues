@@ -4,7 +4,7 @@ import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
 import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
-import { runPatternChecks } from "./pattern-check";
+import { runAccessibilityChecks } from "./pattern-check";
 
 // ui-sdk's development warnings (a missing name, a part outside its root, ...) throw instead of logging,
 // so a story that misuses ui-sdk fails the story tests (the ui-sdk skill, references/testing.md).
@@ -40,9 +40,10 @@ const preview: Preview = {
     const problems = a11yGuardProblems(parameters, globals);
     if (problems.length > 0) throw new Error(`${title} / ${name} weakens the accessibility check:\n- ${problems.join("\n- ")}`);
   },
-  // ui-sdk's pattern check for stories tagged `pattern:<name>` (AVE-18), after the play function.
+  // After the play function: ui-sdk's pattern check for stories tagged `pattern:<name>`, and the agent
+  // test for stories tagged `agent` (AVE-18, .storybook/pattern-check.ts).
   afterEach: async ({ tags, parameters }) => {
-    await runPatternChecks(tags, parameters["patternRoot"]);
+    await runAccessibilityChecks(tags, parameters["patternRoot"]);
   },
   decorators: [
     (Story, { globals }) => {

@@ -61,9 +61,11 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
 7. **Missing component → a ui-sdk primitive**, built from `@ui-sdk/core` behaviors with
    `definePrimitive` (the skill's create-component path), with an `agent` key naming its actions.
 8. **Test with ui-sdk's kit.** Story tests run with `__UI_SDK_STRICT__` set, so ui-sdk's development
-   warnings fail them. Put `checkPattern` from `@ui-sdk/core/testing` in the play function of each
-   interactive component's story (`await checkPattern(root, "switch")`; patterns are listed in the
-   skill's testing reference), and press every control by keyboard in the play function.
+   warnings fail them. Press every control by keyboard in the play function. List the component in
+   `scripts/component-patterns.ts` and tag its story (README, "Accessibility proof for each component"):
+   `pattern:<name>` runs `checkPattern` for a primitive Avenue builds or a component that changes a
+   ui-sdk part's keys, roles or ARIA; `agent` runs the agent test for a ui-sdk component Avenue only
+   styles and wires. Don't run `checkPattern` on unchanged ui-sdk components; ui-sdk tests those itself.
 9. **Keep it agent-ready** (`docs/agents.md`, the skill's agent-ready reference): every control is a
    ui-sdk part with an accessible name that is unique where it sits; state changes go through
    `on<Key>Change` callbacks, not DOM listeners; what a popup shows comes from its payload or state,
