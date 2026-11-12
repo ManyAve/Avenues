@@ -106,6 +106,22 @@ TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 a
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
 Controls and the Docs args table.
 
+## Publishing Storybook
+
+The built Storybook is published at **https://avenues.manyave.com**, a Cloudflare Worker that serves
+only static files (`wrangler.jsonc`; no Worker code, no bindings, no secrets). There is no CI, so
+publishing is a command run by hand from a clean checkout of `main`:
+
+```sh
+bunx wrangler login   # once per machine: signs in to ManyAve's Cloudflare account in the browser
+bun run check         # the same gate as a pull request
+bun run deploy        # builds storybook-static/ and uploads it
+```
+
+The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the route
+is a custom domain on the `manyave.com` zone. Every story uses fictional data, so the whole Storybook is
+safe to publish; keep it that way. To roll back, `bunx wrangler rollback` restores the previous upload.
+
 ## Layout
 
 | Path                     | Holds                                                          |
