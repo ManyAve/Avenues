@@ -31,10 +31,10 @@ export function useComputed<T extends HTMLElement>(read: (style: CSSStyleDeclara
 
 export function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background p-page text-foreground">
+    <main className="min-h-screen bg-background p-page text-foreground">
       <h1 className="mb-section text-heading font-semibold">{title}</h1>
       <div className="flex flex-col gap-8">{children}</div>
-    </div>
+    </main>
   );
 }
 
@@ -55,7 +55,7 @@ export function Code({ children, className }: { children: ReactNode; className?:
 }
 
 /**
- * A drawn select (value plus chevron) for showing heights and corners. Not the Select component: that is AVE-5's.
+ * A drawn select (value plus chevron) for showing heights and corners. Not the Select component: that is AVE-7's.
  * xs and sm take rounded-md, md and lg take rounded-lg (AVE-2 section 2).
  */
 export function SelectMock({

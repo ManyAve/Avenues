@@ -30,7 +30,7 @@ function Step({ name, cls, sample }: { name: string; cls: string; sample: string
 
 function TypeScale() {
   const [ref, scale] = useComputed<HTMLDivElement>((s) =>
-    s.getPropertyValue("--text-compact").trim() === "0.875rem" ? "desktop" : "web",
+    Number.parseFloat(s.getPropertyValue("--text-compact")) === 0.875 ? "desktop" : "web",
   );
   return (
     <Page title="Type scale">
