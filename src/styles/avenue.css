@@ -1,5 +1,7 @@
 /* Avenue stylesheet: Tailwind 4, the shadcn base layer and Avenue's tokens as utilities.
-   The @theme mapping is copied from ManyAve Management (src/index.css) on 2026-11-12; AVE-3 owns it from here. */
+   The colour, type and shadow mapping is copied from ManyAve Management's src/index.css at e01cc90 (2026-11-12).
+   Spacing aliases, control heights and the corner scale follow AVE-2 ("Avenue spacing and corner rules").
+   For the desktop type scale, also load desktop.css. */
 @import "tailwindcss" source("..");
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -84,21 +86,50 @@
   --shadow-control: var(--shadow-control);
   --shadow-card: var(--shadow-card);
   --shadow-popover: var(--shadow-popover);
+
+  /* Corners (AVE-2 section 3): five steps derived from --radius (10px), plus rounded-full for pills.
+     The namespace is cleared first so Tailwind's own 2xl, 3xl and 4xl corners (and its 2px xs) don't come back;
+     a retired class produces no CSS, so `bun run check:classes` is what catches one. */
+  --radius-*: initial;
+  --radius-xs: calc(var(--radius) * 0.4);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Spacing (AVE-2 section 1): Tailwind's 4px base stays (p-1 = 4px … p-12 = 48px). Components pick an alias,
+     not a raw step: p-inset, gap-group, py-row-y, px-page, gap-section. Off-grid steps (*-1.5, *-2.5, *-3.5) are
+     flagged by `bun run check:classes`. */
+  --spacing-inline: 0.25rem;
+  --spacing-group: 0.5rem;
+  --spacing-row-y: 0.75rem;
+  --spacing-inset: 1rem;
+  --spacing-page: var(--avenue-page-inset);
+  --spacing-section: 1.5rem;
+
+  /* Control heights (AVE-2 section 2): h-control-md, size-control-sm, min-h-control-lg. Controls that share a row
+     share a height. xs and sm take rounded-md; md and lg take rounded-lg. */
+  --spacing-control-xs: 1.5rem;
+  --spacing-control-sm: 1.75rem;
+  --spacing-control-md: 2rem;
+  --spacing-control-lg: 2.5rem;
+}
+
+/* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
+:root {
+  --avenue-page-inset: 1rem;
+}
+@media (min-width: 40rem) {
+  :root {
+    --avenue-page-inset: 1.25rem;
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  /* The root stays at the browser's 16px so every rem token matches the mockup (meta 12px … display 28px);
-     the 13px reading size is set on body. */
+  /* The root stays at the browser's 16px so every rem token keeps its size; body reads at text-compact. */
   html {
     @apply antialiased font-sans;
     font-feature-settings: "ss01";
@@ -108,7 +139,7 @@
   }
 }
 
-/* Decorative tints for avatars and street bars, hashed from a name.
+/* Decorative tints for avatars and street bars, hashed from a name (copied from the app's src/index.css).
    Teal, plum, iris and stone carry no status meaning. */
 [data-tint] {
   --tint-bg: oklch(var(--tint-bg-l) calc(var(--tint-bg-c) * var(--tint-k, 1)) var(--tint-hue));

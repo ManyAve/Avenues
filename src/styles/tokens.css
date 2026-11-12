@@ -1,5 +1,7 @@
-/* Copied from ManyAve Management (src/tokens.css) on 2026-11-12 as Avenue's starting palette. Not imported: Avenue owns this copy. AVE-3 turns it into Avenue's token set. */
-/* Values copied from ManyAve design tokens and app theme for this isolated mockup. */
+/* Avenue tokens: palette, type scale, semantic colours, elevation and decorative tints, light and dark.
+   Values copied (not imported) from ManyAve Management's src/tokens.css at e01cc90, 2026-11-12.
+   Avenue owns this copy. `bun run tokens:compare` lists every difference from the app's files;
+   the only intended ones are marked AVE-13 below. Spacing, control heights and corners live in avenue.css (AVE-2). */
 :root {
   --color-onyx-25: oklch(98.8% 0.002 280);
   --color-onyx-50: oklch(96.4% 0.004 280);
@@ -158,7 +160,7 @@
   --slate-subtle: var(--light-slate-subtle);
   --slate-subtle-foreground: var(--light-slate-subtle-foreground);
 
-  /* Decorative tints for avatars and street bars, hashed from a name (tintFor in mockup.js).
+  /* Decorative tints for avatars and street bars, hashed from a name (the app's tintFor).
      Teal, plum, iris and stone carry no status meaning; green, amber and blue stay for paid, owing and processing. */
   --tint-bg-l: 0.95;
   --tint-bg-c: 0.03;
@@ -214,7 +216,8 @@
   --success-subtle: oklch(0.27 0.04 146);
   --success-subtle-foreground: oklch(0.8 0.1 146);
 
-  --info: oklch(0.6 0.12 250);
+  /* AVE-13: 0.6 -> 0.54 lightness so --info-foreground on --info reaches 4.5:1 (was 3.71). */
+  --info: oklch(0.54 0.12 250);
   --info-foreground: oklch(0.98 0.01 250);
   --info-subtle: oklch(0.27 0.04 250);
   --info-subtle-foreground: oklch(0.8 0.1 250);
@@ -224,7 +227,8 @@
   --warning-subtle: oklch(0.28 0.04 80);
   --warning-subtle-foreground: oklch(0.82 0.1 80);
 
-  --destructive: oklch(0.58 0.15 20);
+  /* AVE-13: 0.58 -> 0.56 lightness so --destructive-foreground on --destructive reaches 4.5:1 (was 4.35). */
+  --destructive: oklch(0.56 0.15 20);
   --destructive-foreground: oklch(0.98 0.01 20);
   --destructive-subtle: oklch(0.27 0.06 18);
   --destructive-subtle-foreground: oklch(0.8 0.12 18);
