@@ -37,7 +37,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
 | `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
-| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`). |
+| `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility pattern check (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
@@ -68,6 +68,30 @@ turns a rule off without a reason, switches axe off, sets it to warn or manual, 
 area it checks without a reason (`a11yExceptions.context`), however that is written. The rules are in
 `.storybook/a11y-guard.ts`. Every story must also stay in the tests: removing its `test` tag fails
 `check:story-coverage`.
+
+### Accessibility pattern checks (ui-sdk)
+
+Components that follow a WAI-ARIA pattern (dialog, menu, select, combobox, checkbox, switch, disclosure
+and so on) are also checked with `checkPattern` from ui-sdk's testing kit (`@ui-sdk/core/testing`):
+roles, names, states, the references between parts and the pattern's keyboard behavior. Tag a story
+with the pattern and the story tests run the check after its `play` function:
+
+```tsx
+export const Open: Story = {
+  tags: ["pattern:dialog"],
+  play: async ({ canvas }) => { /* open it first: a dialog or menu is checked while open */ },
+};
+```
+
+`scripts/component-patterns.ts` lists every component in `src/components` with its pattern, or the reason
+it has none. `check:story-coverage` fails when a component isn't listed, or when a component with a
+pattern has no tested story with that tag in its own stories file. The check looks at the whole page by
+default, because dialogs and menus render outside the story; `parameters.patternRoot` (a CSS selector)
+narrows it. When a pattern check and an older story assertion disagree, the pattern wins and the UX
+Engineer signs off the changed assertion on the card.
+
+The testing kit is a beta: before treating a pattern failure as a bug, reproduce it by hand. Known false
+alarm: it counts Base UI's hidden (`aria-hidden`) form inputs as unnamed checkboxes.
 
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
