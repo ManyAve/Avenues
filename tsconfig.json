@@ -14,8 +14,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": [],
-    "paths": { "@/*": ["./src/*"] }
+    "types": []
   },
   "include": ["src", ".storybook"]
 }
