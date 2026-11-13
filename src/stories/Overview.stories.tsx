@@ -1,0 +1,743 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import {
+  BellIcon,
+  CalendarIcon,
+  CopyIcon,
+  FileTextIcon,
+  HouseIcon,
+  MegaphoneIcon,
+  MoreHorizontalIcon,
+  PaperclipIcon,
+  PlusIcon,
+  ReceiptIcon,
+  UsersIcon,
+  WrenchIcon,
+} from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { expect } from "storybook/test";
+import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "#avenue/components/avatar";
+import { Badge } from "#avenue/components/badge";
+import { Button } from "#avenue/components/button";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "#avenue/components/card";
+import { Checkbox } from "#avenue/components/checkbox";
+import { Chip, ChipRow } from "#avenue/components/chip";
+import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
+import { ListItem } from "#avenue/components/detail-list";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "#avenue/components/dialog";
+import { Disclosure } from "#avenue/components/disclosure";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "#avenue/components/dropdown-menu";
+import { EmptyState, SectionEmpty } from "#avenue/components/empty-state";
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
+import { IconTile } from "#avenue/components/icon-tile";
+import { InitialsAvatar } from "#avenue/components/initials-avatar";
+import { InlineMessage } from "#avenue/components/inline-message";
+import { Input } from "#avenue/components/input";
+import { Money } from "#avenue/components/money";
+import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
+import { SearchInput } from "#avenue/components/search-input";
+import { SectionCard } from "#avenue/components/section-card";
+import { Select } from "#avenue/components/select";
+import { Status } from "#avenue/components/status";
+import { Switch } from "#avenue/components/switch";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "#avenue/components/table";
+import { Textarea } from "#avenue/components/textarea";
+import { ToastProvider, useToast } from "#avenue/components/toast";
+import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
+import { InfoTip, Tooltip, TooltipContent, TooltipTrigger } from "#avenue/components/tooltip";
+
+// AVE-97: many Avenue components at once, as small real-looking cards, like the preview grid on shadcn's
+// /create page, without its customizer. Built only from Avenue's components. Every name, address, amount and
+// association below is fictional.
+
+const meta = {
+  title: "Overview",
+  parameters: { layout: "fullscreen" },
+} satisfies Meta;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const phone = { viewport: { value: "phone", isRotated: false } };
+
+const years = ["2026", "2025", "2024"].map((y) => ({ value: y, label: y }));
+
+// ---- Cards
+
+function DuesSummary() {
+  return (
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
+        <CardAction className="gap-group text-meta text-muted-foreground">
+          <span className="whitespace-nowrap">Account summary ·</span>
+          <Select aria-label="Dues year" options={years} defaultValue="2026" size="sm" />
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2 text-compact">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Billed</span>
+          <Money cents={48000} />
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Paid</span>
+          <Money cents={24000} />
+        </div>
+        <div className="flex items-center justify-between border-t pt-2">
+          <span className="flex items-center gap-2 font-[550]">
+            Balance <Status tone="warning">Past due</Status>
+          </span>
+          <Money cents={24000} className="font-[550]" />
+        </div>
+      </CardContent>
+      <CardFooter className="justify-end">
+        <RecordPayment />
+      </CardFooter>
+    </Card>
+  );
+}
+
+function RecordPayment() {
+  return (
+    <Dialog>
+      <DialogTrigger render={<Button />}>Record payment</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Record payment</DialogTitle>
+          <DialogDescription>14 Larkspur Lane, 2026 dues.</DialogDescription>
+        </DialogHeader>
+        <FieldGroup className="gap-3">
+          <Field>
+            <FieldLabel>Amount</FieldLabel>
+            <Input inputMode="decimal" placeholder="0.00" />
+          </Field>
+          <Field>
+            <FieldLabel>Check number</FieldLabel>
+            <Input inputMode="numeric" />
+          </Field>
+        </FieldGroup>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button>Record</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const roles = [
+  { value: "member", label: "Member" },
+  { value: "treasurer", label: "Treasurer" },
+  { value: "secretary", label: "Secretary" },
+];
+
+function InviteBoard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Invite the board</CardTitle>
+        <CardDescription>Board members can see dues, complaints and votes.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-group">
+        {[
+          { email: "robin@example.com", role: "treasurer" },
+          { email: "sam@example.com", role: "member" },
+        ].map((row, i) => (
+          <div key={row.email} className="flex gap-controls">
+            <Input type="email" defaultValue={row.email} aria-label={`Email ${i + 1}`} className="min-w-0 flex-1" />
+            <Select aria-label={`Role ${i + 1}`} options={roles} defaultValue={row.role} className="w-32" />
+          </div>
+        ))}
+        <Button variant="outline">
+          <PlusIcon aria-hidden data-icon="inline-start" />
+          Add another person
+        </Button>
+        <Field className="border-t pt-3">
+          <FieldLabel>Or share the invite link</FieldLabel>
+          <div className="flex gap-controls">
+            <Input readOnly defaultValue="https://example.com/invite/k7q2" className="min-w-0 flex-1" />
+            <Tooltip>
+              <TooltipTrigger render={<Button variant="outline" size="icon" aria-label="Copy invite link" />}>
+                <CopyIcon aria-hidden />
+              </TooltipTrigger>
+              <TooltipContent>Copy invite link</TooltipContent>
+            </Tooltip>
+          </div>
+        </Field>
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full">Send invites</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+const severities = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+const areas = [
+  { value: "pool", label: "Pool" },
+  { value: "gate", label: "Gate" },
+  { value: "landscaping", label: "Landscaping" },
+  { value: "lighting", label: "Lighting" },
+];
+
+function ReportIssue() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Report an issue</CardTitle>
+        <CardDescription>The board sees it within a day.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldGroup className="gap-3">
+          <Field>
+            <FieldLabel>Title</FieldLabel>
+            <Input placeholder="What needs fixing?" />
+          </Field>
+          <div className="grid grid-cols-2 gap-controls">
+            <Field>
+              <FieldLabel>Severity</FieldLabel>
+              <Select options={severities} defaultValue="medium" />
+            </Field>
+            <Field>
+              <FieldLabel>Area</FieldLabel>
+              <Select options={areas} defaultValue="gate" />
+            </Field>
+          </div>
+          <Field>
+            <FieldLabel>Details</FieldLabel>
+            <Textarea rows={3} defaultValue="The gate latch at the Maple Court entrance won't catch." />
+          </Field>
+        </FieldGroup>
+      </CardContent>
+      <CardFooter className="justify-end gap-controls">
+        <Button variant="outline">
+          <PaperclipIcon aria-hidden data-icon="inline-start" />
+          Attach photo
+        </Button>
+        <Button>Submit report</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+const states = [
+  { value: "TX", label: "Texas" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "KS", label: "Kansas" },
+];
+
+function MailingAddress() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mailing address</CardTitle>
+        <CardDescription>Where paper notices go.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldGroup className="gap-3">
+          <Field>
+            <FieldLabel>Street address</FieldLabel>
+            <Input defaultValue="301 Sorrel Way" />
+          </Field>
+          <Field>
+            <FieldLabel>Apartment or unit</FieldLabel>
+            <Input placeholder="Optional" />
+          </Field>
+          <div className="grid grid-cols-2 gap-controls">
+            <Field>
+              <FieldLabel>City</FieldLabel>
+              <Input defaultValue="Fernbrook" />
+            </Field>
+            <Field>
+              <FieldLabel>State</FieldLabel>
+              <Select options={states} defaultValue="TX" />
+            </Field>
+          </div>
+          <Field>
+            <FieldLabel>ZIP code</FieldLabel>
+            <Input inputMode="numeric" defaultValue="75000" className="w-32" />
+          </Field>
+          <Field orientation="horizontal">
+            <Checkbox defaultChecked />
+            <FieldLabel>Use for every household I own</FieldLabel>
+          </Field>
+        </FieldGroup>
+      </CardContent>
+      <CardFooter className="justify-end gap-controls">
+        <Button variant="outline">Cancel</Button>
+        <Button>Save address</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+const payments = [
+  { who: "14 Larkspur Lane", method: "Check", cents: 24000, status: "Cleared" },
+  { who: "9 Juniper Court", method: "Card", cents: 12000, status: "Pending" },
+  { who: "301 Sorrel Way", method: "Bank", cents: 24000, status: "Cleared" },
+  { who: "6 Thistle Path", method: "Check", cents: -2500, status: "Refund" },
+] as const;
+
+function Payments() {
+  return (
+    <SectionCard
+      title="Recent payments"
+      count={4}
+      action={
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Payment actions" />}>
+            <MoreHorizontalIcon aria-hidden />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem>Export to CSV</DropdownMenuItem>
+            <DropdownMenuItem>Print deposit slip</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Open the ledger</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
+    >
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Household</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {payments.map((p) => (
+            <TableRow key={p.who}>
+              <TableCell className="font-medium">
+                {p.who}
+                <span className="block text-meta font-normal text-muted-foreground">{p.method}</span>
+              </TableCell>
+              <TableCell>
+                <Status tone={p.status === "Cleared" ? "success" : p.status === "Pending" ? "info" : "neutral"}>
+                  {p.status}
+                </Status>
+              </TableCell>
+              <TableCell className="text-right">
+                <Money cents={p.cents} signed />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={2}>Net this week</TableCell>
+            <TableCell className="text-right">
+              <Money cents={57500} />
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </SectionCard>
+  );
+}
+
+function Collection() {
+  const collected = 68;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>2026 dues collected</CardTitle>
+        <CardAction>
+          <InfoTip label="About dues collected">Paid dues as a share of everything billed for 2026.</InfoTip>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-semibold tabular-nums">{collected}%</span>
+          <Status tone="success" filled>
+            Up 6% on 2025
+          </Status>
+        </div>
+        <div aria-hidden className="h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${collected}%` }} />
+        </div>
+        <dl className="grid grid-cols-3 gap-2 border-t pt-3 text-meta">
+          {[
+            { label: "Collected", cents: 3264000 },
+            { label: "Outstanding", cents: 1536000 },
+            { label: "Credit", cents: 48000 },
+          ].map((s) => (
+            <div key={s.label}>
+              <dt className="tracking-wide text-muted-foreground uppercase">{s.label}</dt>
+              <dd className="text-compact font-[550]">
+                <Money cents={s.cents} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+function NoBoard() {
+  return (
+    <Card>
+      <EmptyState
+        size="compact"
+        icon={UsersIcon}
+        title="No committee members yet"
+        description="Add neighbors to the landscaping committee so they can see its requests."
+        action={{ label: "Add committee members" }}
+      >
+        <AvatarGroup className="mt-3" aria-hidden>
+          {["RA", "SO", "LM"].map((initials) => (
+            <Avatar key={initials}>
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+          ))}
+          <AvatarGroupCount>+2</AvatarGroupCount>
+        </AvatarGroup>
+      </EmptyState>
+    </Card>
+  );
+}
+
+const filters = [
+  { label: "Owing", count: 9 },
+  { label: "Complaints", count: 4 },
+  { label: "Renters", count: 12 },
+  { label: "Paper mail", count: 6 },
+];
+
+function Filters() {
+  const [density, setDensity] = useState("Comfortable");
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Find a household</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <SearchInput placeholder="Address, owner or ID" aria-label="Search households" />
+        <ChipRow aria-label="Household filters">
+          {filters.map((f, i) => (
+            <Chip key={f.label} count={f.count} defaultPressed={i === 0}>
+              {f.label}
+            </Chip>
+          ))}
+        </ChipRow>
+        <div className="flex flex-wrap items-center justify-between gap-controls border-t pt-3">
+          <span className="text-meta text-muted-foreground">Row height</span>
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            spacing={0}
+            value={density}
+            onValueChange={(v) => {
+              if (v) setDensity(v);
+            }}
+            aria-label="Row height"
+          >
+            {["Compact", "Comfortable"].map((d) => (
+              <ToggleGroupItem key={d} value={d}>
+                {d}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Notifications() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>What the association sends you.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldGroup className="gap-3">
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel>Email receipts</FieldLabel>
+              <FieldDescription>Sent when a payment is recorded.</FieldDescription>
+            </FieldContent>
+            <Switch defaultChecked />
+          </Field>
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel>Meeting announcements</FieldLabel>
+              <FieldDescription>Agendas and minutes.</FieldDescription>
+            </FieldContent>
+            <Switch />
+          </Field>
+          <FieldSet className="border-t pt-3">
+            <FieldLegend id="overview-reminder" variant="label">
+              Dues reminder
+            </FieldLegend>
+            <RadioGroup aria-labelledby="overview-reminder" defaultValue="week" name="overview-reminder">
+              {[
+                { value: "week", label: "A week before the due date" },
+                { value: "day", label: "The day before" },
+                { value: "never", label: "Don't remind me" },
+              ].map((r) => (
+                <Field key={r.value} orientation="horizontal">
+                  <RadioGroupItem value={r.value} />
+                  <FieldLabel>{r.label}</FieldLabel>
+                </Field>
+              ))}
+            </RadioGroup>
+          </FieldSet>
+        </FieldGroup>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Activity() {
+  return (
+    <SectionCard title="Activity" count="3 today" countLabel="today">
+      <div className="flex flex-col">
+        <ActivityRow icon={<IconTile icon={ReceiptIcon} tone="success" />} title="Payment recorded" meta="14 Larkspur Lane · 9:12 am" trailing={<Money cents={24000} />} />
+        <ActivityRow icon={<IconTile icon={WrenchIcon} tone="warning" />} title="Complaint opened: gate latch" meta="Maple Court · 8:40 am" />
+        <ActivityRow icon={<IconTile icon={MegaphoneIcon} tone="tint" tint="plum" />} title="Notice sent: pool hours" meta="All households · 8:00 am" note="Board only" />
+      </div>
+    </SectionCard>
+  );
+}
+
+function ActivityRow({ icon, ...item }: { icon: ReactNode } & React.ComponentProps<typeof ListItem>) {
+  return (
+    <div className="flex items-start gap-3 not-last:border-b [&>[data-slot=list-item]]:flex-1 [&>[data-slot=list-item]]:border-0">
+      <span className="pt-group">{icon}</span>
+      <ListItem {...item} />
+    </div>
+  );
+}
+
+function People() {
+  const people = [
+    { name: "Robin Avery", role: "Treasurer", status: <Status tone="primary">Board</Status> },
+    { name: "Sam Okafor", role: "Owner since 2019", status: <Status tone="neutral">Owner</Status> },
+    { name: "Lee Marchetti", role: "Renter", status: <Status tone="info">Renter</Status> },
+  ];
+  return (
+    <SectionCard title="People" count={3}>
+      <ul className="flex flex-col">
+        {people.map((p) => (
+          <li key={p.name} className="flex items-center gap-3 py-group not-last:border-b">
+            <InitialsAvatar name={p.name} decorative size="default" />
+            <div className="min-w-0 flex-1">
+              <p className="font-[550]">{p.name}</p>
+              <p className="text-meta text-muted-foreground">{p.role}</p>
+            </div>
+            {p.status}
+          </li>
+        ))}
+      </ul>
+    </SectionCard>
+  );
+}
+
+const owners: ComboboxOption[] = [
+  { value: "h1", label: "12 Lantern Row · Ada Okafor", meta: "ID 1042" },
+  { value: "h2", label: "14 Lantern Row · Bram Hollis", meta: "ID 1043", hint: "$120.00 owing" },
+  { value: "h3", label: "3 Quill Court · Cora Mendez", meta: "ID 1101" },
+  { value: "h4", label: "88 Juniper Bend · Dev Raman", meta: "ID 1210" },
+];
+
+function SendNotice() {
+  const [household, setHousehold] = useState("");
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Send a notice</CardTitle>
+        <CardDescription>By email, and on paper where an owner asked for it.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldGroup className="gap-3">
+          <Field>
+            <FieldLabel>Applies to</FieldLabel>
+            <Combobox
+              options={owners}
+              value={household}
+              onValueChange={setHousehold}
+              noneLabel="Whole neighborhood"
+              icon={<HouseIcon />}
+              placeholder="Search by address or owner"
+              triggerLabel="Show households"
+            />
+          </Field>
+          <InlineMessage tone="info">2 households get this on paper, at 63¢ each.</InlineMessage>
+          <Disclosure summary="Who doesn't get it (1)">
+            <p className="text-meta text-muted-foreground">5 Quill Court has no email or mailing address yet.</p>
+          </Disclosure>
+        </FieldGroup>
+      </CardContent>
+      <CardFooter className="justify-end">
+        <Button data-agent-confirm="Sends the notice to every household it applies to">Send notice</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function Messages() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Messages in a form</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        <InlineMessage tone="error">Couldn't save. Check the ZIP code and try again.</InlineMessage>
+        <InlineMessage tone="warning">This household already has a pending payment.</InlineMessage>
+        <InlineMessage tone="pending">Checking the address…</InlineMessage>
+        <div className="flex flex-wrap gap-2 border-t pt-3">
+          <Badge>Default</Badge>
+          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="outline">Outline</Badge>
+          <Badge variant="destructive">Overdue</Badge>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Status tone="success">Paid</Status>
+          <Status tone="warning">Past due</Status>
+          <Status tone="info">Scheduled</Status>
+          <Status tone="neutral">Archived</Status>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Toasts() {
+  const toast = useToast();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Confirmations</CardTitle>
+        <CardDescription>Short notes after something happens.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-controls">
+        <Button variant="outline" onClick={() => toast("Household added")}>
+          Add household
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => toast("Notice archived", { action: { label: "Undo", onAction: () => {} } })}
+        >
+          Archive notice
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={() => toast("Couldn't send the reminder. Check the address and try again.", { variant: "error" })}
+        >
+          Show a failure
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Upcoming() {
+  return (
+    <SectionCard title="Documents" count={2}>
+      <ListItem title="2026 budget.pdf" meta="Added by Robin Avery · Mar 2" trailing={<FileTextIcon aria-hidden className="size-4 text-muted-foreground" />} />
+      <ListItem title="Pool rules.pdf" meta="Added by Sam Okafor · Feb 18" note="Board only" />
+      <div className="border-t pt-3">
+        <SectionEmpty icon={CalendarIcon} title="No meetings scheduled" line="Schedule the annual meeting to send the notice." action={{ label: "Schedule meeting", icon: CalendarIcon, onClick: () => {} }} />
+      </div>
+    </SectionCard>
+  );
+}
+
+function Reminders() {
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BellIcon aria-hidden className="size-4 text-muted-foreground" />
+          Late fee in 3 days
+        </CardTitle>
+        <CardDescription>9 households still owe 2026 dues.</CardDescription>
+      </CardHeader>
+      <CardFooter className="justify-end gap-controls">
+        <Button variant="ghost" size="sm">
+          Not now
+        </Button>
+        <Button size="sm">Send reminders</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+// ---- The page
+
+function Overview() {
+  return (
+    <ToastProvider>
+      <main className="min-h-screen bg-background p-inset text-foreground">
+        <header className="mb-6 max-w-2xl">
+          <h1 className="text-2xl font-semibold">Avenue at a glance</h1>
+          <p className="mt-1 text-compact text-muted-foreground">
+            Avenue's components together, as the cards of a fictional association's screens. Every control works.
+          </p>
+        </header>
+        <div
+          data-testid="overview-grid"
+          className="columns-1 gap-4 md:columns-2 xl:columns-3 2xl:columns-4 [&>*]:mb-4 [&>*]:break-inside-avoid"
+        >
+          <DuesSummary />
+          <InviteBoard />
+          <Collection />
+          <Payments />
+          <ReportIssue />
+          <Notifications />
+          <Filters />
+          <Activity />
+          <MailingAddress />
+          <NoBoard />
+          <People />
+          <SendNotice />
+          <Messages />
+          <Reminders />
+          <Toasts />
+          <Upcoming />
+        </div>
+      </main>
+    </ToastProvider>
+  );
+}
+
+/** Many of Avenue's components at once, in a grid of small cards that reflows from four columns to one. */
+export const AtAGlance: Story = {
+  name: "At a glance",
+  tags: ["agent"],
+  render: () => <Overview />,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: "Avenue at a glance" })).toBeVisible();
+    await expect(canvas.getAllByRole("combobox").length).toBeGreaterThan(5);
+  },
+};
+
+/** The same page on a 390px phone: one column. */
+export const Phone: Story = {
+  globals: phone,
+  render: () => <Overview />,
+  play: async ({ canvas }) => {
+    const grid = canvas.getByTestId("overview-grid");
+    await expect(getComputedStyle(grid).columnCount).toBe("1");
+  },
+};

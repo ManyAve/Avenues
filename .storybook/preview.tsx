@@ -90,7 +90,7 @@ const preview: Preview = {
     // the one allowed exception (a rule turned off with a written reason).
     a11y: { test: "error", options: { runOnly: AXE_TAGS } },
     options: {
-      storySort: { order: ["Introduction", "Tokens", "Foundations", "Components", "Composites"] },
+      storySort: { order: ["Introduction", "Overview", "Tokens", "Foundations", "Components", "Composites"] },
     },
   },
 };
