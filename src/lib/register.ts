@@ -204,5 +204,9 @@ export const register = definePrimitive({
       }),
     };
   },
+  // The grid itself has nothing for an agent to do: arrow keys only move focus. What changes data lives in its
+  // parts, each a ui-sdk component with its own agent actions: a street bar and the add row are Buttons (`press`),
+  // a column's sort is a Popover (`setOpen`) holding Buttons, the selection is Checkboxes (`setChecked`). The
+  // Register / Agent expands and sorts story is the agent test (AVE-79).
   agent: { actions: [] },
 });

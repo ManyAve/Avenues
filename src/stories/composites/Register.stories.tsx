@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CircleDollarSignIcon, HouseIcon, Trash2Icon, UsersIcon } from "lucide-react";
+import { createAgent } from "@ui-sdk/react/agent";
 import { Fragment, useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import {
@@ -324,6 +325,38 @@ export const Wide: Story = {
   },
 };
 
+/**
+ * The agent test (AVE-79): an agent collapses and reopens a street and sorts a column through the Register's parts
+ * (ui-sdk Buttons and the sort Popover), the way the person would, and every control it sees has a name.
+ */
+export const AgentExpandsAndSorts: Story = {
+  globals: wide,
+  tags: ["agent"],
+  render: () => frame(<Households />),
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    const birch = canvas.getByRole("button", { name: "Birch Lane 3 households" });
+    const collapse = await agent.act({ steps: [{ ref: "Birch Lane 3 households", action: "press" }] });
+    await expect(collapse.ok, collapse.error?.message).toBe(true);
+    await waitFor(() => expect(birch).toHaveAttribute("aria-expanded", "false"));
+    await expect(canvas.queryByRole("link", { name: "12 Birch Lane" })).toBeNull();
+    const reopen = await agent.act({ steps: [{ ref: "Birch Lane 3 households", action: "press" }] });
+    await expect(reopen.ok, reopen.error?.message).toBe(true);
+    await waitFor(() => expect(birch).toHaveAttribute("aria-expanded", "true"));
+
+    const open = await agent.act({ steps: [{ ref: "Sort Balance", action: "setOpen", args: [true] }] });
+    await expect(open.ok, open.error?.message).toBe(true);
+    await screen.findByRole("button", { name: "Balance, High–low, descending" });
+    const sort = await agent.act({ steps: [{ ref: "Balance, High–low, descending", action: "press" }] });
+    await expect(sort.ok, sort.error?.message).toBe(true);
+    await waitFor(() =>
+      expect(canvas.getByRole("columnheader", { name: /Balance/ })).toHaveAttribute("aria-sort", "descending"),
+    );
+    const cedar = canvas.getAllByRole("link").filter((a) => a.textContent?.includes("Cedar"));
+    await expect(cedar[0]).toHaveTextContent("5 Cedar Court");
+  },
+};
+
 /** The column popover sorts; aria-sort follows. Escape returns focus to the header, and the arrows go on. */
 export const SortPopover: Story = {
   globals: desktop,
@@ -335,7 +368,7 @@ export const SortPopover: Story = {
     const sortBalance = canvas.getByRole("button", { name: "Sort Balance" });
     await expect(sortBalance).toHaveFocus();
     await userEvent.keyboard("{Enter}");
-    const highLow = await screen.findByRole("button", { name: "Balance, High–low" });
+    const highLow = await screen.findByRole("button", { name: "Balance, High–low, descending" });
     // Arrow keys in the popover are the popover's, not the grid's.
     await userEvent.keyboard("{ArrowLeft}");
     await expect(sortBalance).toHaveAttribute("aria-expanded", "true");
