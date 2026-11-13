@@ -563,11 +563,8 @@ export const PAIRS: Record<string, PairEntry> = {
       appCrop: "[data-slot=field-error]",
       avenueCrop: "[data-slot=inline-message]",
       allow: [
-        { prop: "font-size", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "line-height", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "height", because: "AVE-72: the smaller line makes the message shorter" },
-        { prop: "*-gap", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
-        { prop: "parts", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "*-gap", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
+        { prop: "parts", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
       ],
     },
   ],
