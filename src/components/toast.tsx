@@ -90,8 +90,11 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
     // 24px above the bottom edge plus the home-indicator safe area; while a bottom Sheet is open, 8px above its
     // footer instead (CSS anchor positioning on the footer's anchor-name), so it never covers the sheet's actions
     // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it.
+    // Named so the agent snapshot can name the region once ui-sdk passes aria-label through (AVE-43). In
+    // 0.1.0-beta.1 it reaches neither the snapshot nor the empty section; Toast/EmptyRegionAgentGap fails when it does.
     <ToastRegion
       toaster={toaster}
+      aria-label="Notifications"
       side="bottom"
       align="center"
       maxVisible={1}
