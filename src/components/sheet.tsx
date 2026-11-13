@@ -61,7 +61,7 @@ function SheetContent({
           "group/sheet relative flex flex-col gap-4",
           // The ::after covers the gap a drag past the edge would open.
           "after:absolute after:bg-popover",
-          "data-[side=bottom]:mx-auto data-[side=bottom]:max-h-[85dvh] data-[side=bottom]:w-full data-[side=bottom]:max-w-lg data-[side=bottom]:rounded-t-xl data-[side=bottom]:pb-[max(1rem,env(safe-area-inset-bottom))] data-[side=bottom]:after:inset-x-0 data-[side=bottom]:after:top-full data-[side=bottom]:after:h-24",
+          "data-[side=bottom]:mx-auto data-[side=bottom]:max-h-[85dvh] data-[side=bottom]:w-full data-[side=bottom]:max-w-lg data-[side=bottom]:rounded-t-xl data-[side=bottom]:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] data-[side=bottom]:after:inset-x-0 data-[side=bottom]:after:top-full data-[side=bottom]:after:h-24",
           "data-[side=top]:mx-auto data-[side=top]:max-h-[85dvh] data-[side=top]:w-full data-[side=top]:max-w-lg data-[side=top]:rounded-b-xl data-[side=top]:after:inset-x-0 data-[side=top]:after:bottom-full data-[side=top]:after:h-24",
           "data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:rounded-r-xl data-[side=left]:after:inset-y-0 data-[side=left]:after:right-full data-[side=left]:after:w-24 sm:data-[side=left]:max-w-sm",
           "data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:rounded-l-xl data-[side=right]:after:inset-y-0 data-[side=right]:after:left-full data-[side=right]:after:w-24 sm:data-[side=right]:max-w-sm",
@@ -108,7 +108,7 @@ function SheetBody({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="sheet-body"
-      className={cn("-mx-4 -my-1 min-h-0 flex-1 overflow-y-auto px-inset py-1", className)}
+      className={cn("-mx-inset -my-1 min-h-0 flex-1 overflow-y-auto px-inset py-1", className)}
       {...props}
     />
   );
@@ -120,8 +120,8 @@ function SheetFooter({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="sheet-footer"
       className={cn(
-        "-mx-4 -mb-4 mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
-        "group-data-[side=bottom]/sheet:-mb-[max(1rem,env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(1rem,env(safe-area-inset-bottom))]",
+        "-mx-inset -mb-inset mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+        "group-data-[side=bottom]/sheet:-mb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))]",
         "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
         className,
       )}
