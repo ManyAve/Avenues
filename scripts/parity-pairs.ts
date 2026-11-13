@@ -909,6 +909,9 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
   "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
+  "composites-toolbar--sends-ask-first": { none: "An agent-confirm check on a send action (AVE-85); the app has no send toolbar story. Its look is compared through Toolbar / Wide." },
+  "composites-toolbar--sends-ask-first-folded": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--wide-is-a-token": { none: "A token check (AVE-85): the fold reads --breakpoint-wide. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },
 
