@@ -45,6 +45,10 @@ function ChoiceCard({
         className={cn(
           "has-data-checked:border-primary has-data-checked:bg-primary-subtle has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
           "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
+          // The 16px control is centred on the title's first line (AVE-2 §4, AVE-74): half the title's line height less
+          // half the control, so 4px on the web scale's 24px line and 2px on the desktop scale's 20px. Field's own 1px
+          // nudge fits neither. It stays on the first line when the title wraps.
+          "[&>[data-slot=field]>[role=checkbox]]:mt-[calc((var(--text-compact--line-height)-1rem)/2)]! [&>[data-slot=field]>[role=radio]]:mt-[calc((var(--text-compact--line-height)-1rem)/2)]!",
           className,
         )}
         {...props}

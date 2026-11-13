@@ -23,6 +23,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Each card's control is centred on its title's first line, within half a pixel (AVE-74). */
+async function expectCentredOnTitle(controls: HTMLElement[]) {
+  for (const control of controls) {
+    const card = control.closest<HTMLElement>("[data-slot=field]")!;
+    const title = card.querySelector<HTMLElement>("[data-slot=field-title]")!;
+    const line = parseFloat(getComputedStyle(title).lineHeight);
+    const titleMiddle = title.getBoundingClientRect().top + line / 2;
+    const box = control.getBoundingClientRect();
+    await expect(Math.abs(box.top + box.height / 2 - titleMiddle)).toBeLessThanOrEqual(0.5);
+  }
+}
+
+
 type Choice = { value: string; icon: ReactNode; title: string; line: string; disabled?: string };
 
 const homes: Choice[] = [
@@ -120,6 +133,7 @@ export const Radio: Story = {
     const own = canvas.getByRole("radio", { name: "I own my home" });
     const rent = canvas.getByRole("radio", { name: "I rent" });
     const board = canvas.getByRole("radio", { name: "I'm on the board" });
+    await expectCentredOnTitle([own, rent, board]);
     await step("one group, named by its legend", async () => {
       await expect(canvas.getByRole("radiogroup", { name: "How do you live at Maple Court?" })).toBeInTheDocument();
       await expect(own).toBeChecked();
@@ -165,6 +179,7 @@ export const Checkboxes: Story = {
   play: async ({ canvas }) => {
     const events = canvas.getByRole("checkbox", { name: "Events" });
     const sale = canvas.getByRole("checkbox", { name: "For sale" });
+    await expectCentredOnTitle(canvas.getAllByRole("checkbox"));
     await expect(events).toHaveAccessibleName("Events");
     await expect(events).toHaveAccessibleDescription("Porch light: Saturday 6pm.");
     await expect(events).toBeChecked();
