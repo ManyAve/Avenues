@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { resolveRef } from "./visual-diff";
+import { resolveRef, storyViewport } from "./visual-diff";
 
 describe("resolveRef", () => {
   test("uses the ref when it is a commit here", () => {
@@ -24,5 +24,23 @@ describe("resolveRef", () => {
 
   test("is undefined when neither exists", () => {
     expect(resolveRef("nope", () => false)).toBeUndefined();
+  });
+});
+
+describe("storyViewport", () => {
+  const options = { phone: { styles: { width: "390px", height: "844px" } } };
+
+  test("captures a story with no viewport at the desktop size", () => {
+    expect(storyViewport(undefined, options)).toEqual({ width: 1280, height: 800 });
+    expect(storyViewport({ isRotated: false }, options)).toEqual({ width: 1280, height: 800 });
+  });
+
+  test("captures a phone story at the phone's size, as the story tests run it", () => {
+    expect(storyViewport({ value: "phone", isRotated: false }, options)).toEqual({ width: 390, height: 844 });
+    expect(storyViewport("phone", options)).toEqual({ width: 390, height: 844 });
+  });
+
+  test("fails a viewport the preview doesn't define instead of capturing it at the wrong width", () => {
+    expect(() => storyViewport({ value: "tablet" }, options)).toThrow(/tablet/);
   });
 });
