@@ -895,7 +895,14 @@ export const PAIRS: Record<string, PairEntry> = {
   // AVE-78: the sort popover at rest, beside the app's sort menu with a direction chosen. The app's story shows the menu
   // in a bordered box rather than a popover, so the frame isn't judged; the rows inside are.
   "composites-register--sort-popover-open": [
-    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: PANEL },
+    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: [
+      ...PANEL,
+      { prop: "parts", because: "AVE-50: the chosen sort direction shows the shared chosen look and a 16px check, not the app's grey fill alone (AVE-94, WCAG 1.4.1)" },
+      { prop: "background-color", because: "AVE-50: the chosen sort direction takes the shared chosen fill (AVE-94)" },
+      { prop: "border-*-color", because: "AVE-50: the chosen sort direction takes the shared chosen border (AVE-94)" },
+      { prop: "color", because: "AVE-50: the chosen sort direction takes the shared chosen text colour (AVE-94)" },
+      { prop: "width", because: "AVE-50: each direction keeps room for the check, so choosing moves nothing (AVE-94)" },
+    ] },
   ],
   "composites-register--sorted-ascending": { none: "AVE-78: the sorted column's up arrow is new in Avenue (the app shows the same chevron on every column). The header is compared through Register / Wide." },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
