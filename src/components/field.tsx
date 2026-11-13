@@ -105,18 +105,13 @@ function FieldContent({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-/** The control's label (the app's Label, folded in). Wrap a Field holding a Checkbox, Switch or RadioGroupItem in it for a choice card. */
+/** The control's label (the app's Label, folded in). For a card that is a whole label, use ChoiceCard. */
 function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldLabel>) {
   return (
     <FieldPrimitive.FieldLabel
       data-slot="field-label"
       className={cn(
         "group/field-label peer/field-label flex w-fit items-center gap-2 text-sm leading-snug font-medium select-none group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
-        // A choice card (FieldLabel wrapping a Field): a control, so the lg corner (10px), 16px padding (AVE-33). Chosen:
-        // a primary border and the primary-subtle fill, with the radio or checkbox still drawn, so the state never
-        // rests on colour alone. The app has no choice cards, so this departs from no screen.
-        "has-data-checked:border-primary has-data-checked:bg-primary-subtle has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
-        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
         className,
       )}
       {...props}

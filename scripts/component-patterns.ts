@@ -105,6 +105,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
 
   // Plain markup.
   card: { none: "Layout only." },
+  "choice-card": {
+    none: "Composition over Field and ui-sdk's Radio or Checkbox; it changes no keys or ARIA beyond naming the control by its title, which the Choice card stories assert.",
+  },
   table: { none: "A static data table, not an interactive grid." },
   badge: { none: "Static text." },
   money: { none: "Static text; the Money stories test that it never wraps or truncates." },

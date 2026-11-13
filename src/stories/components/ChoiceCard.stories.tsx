@@ -3,21 +3,13 @@ import { CalendarDaysIcon, HouseIcon, KeyRoundIcon, LandmarkIcon, MegaphoneIcon,
 import { useId, type ReactNode } from "react";
 import { expect, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from "#avenue/components/field";
+import { ChoiceCard, ChoiceCardContent, ChoiceCardDescription, ChoiceCardTitle } from "#avenue/components/choice-card";
+import { FieldGroup, FieldLegend, FieldSet } from "#avenue/components/field";
 import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
 
 /**
- * A choice card is a composition, not a component (AVE-33): a FieldLabel wrapping a Field that holds a
- * RadioGroupItem or Checkbox, an icon, a title and one line. The whole card is the label, so a tap anywhere on it
+ * A choice card (AVE-33; its own parts since AVE-37): ChoiceCard holds a RadioGroupItem or Checkbox, an icon, a
+ * title and one line, and names the control by the title alone, so a screen writes no ids. The whole card is the label, so a tap anywhere on it
  * chooses. It is a control, so its corner is `lg` (10px, never the card's 14), with 16px padding and 12px between
  * cards. Chosen: a primary border and the primary-subtle fill, and the radio or checkbox is always drawn, so the
  * state has a shape cue as well as a colour. A disabled card says why in one muted line.
@@ -57,20 +49,16 @@ const topics: Choice[] = [
   },
 ];
 
-/**
- * The card's title and line. The wrapping label would otherwise name the control with all of its text, so the
- * control takes its name from the title (`aria-labelledby`); the Field already describes it with the line, so a
- * screen reader says each once.
- */
-function CardBody({ choice, id }: { choice: Choice; id: string }) {
+/** The card's title and line. */
+function CardBody({ choice }: { choice: Choice }) {
   return (
-    <FieldContent>
-      <FieldTitle id={`${id}-title`} className="[&_svg]:size-4 [&_svg]:text-muted-foreground">
+    <ChoiceCardContent>
+      <ChoiceCardTitle>
         {choice.icon}
         {choice.title}
-      </FieldTitle>
-      <FieldDescription>{choice.line}</FieldDescription>
-    </FieldContent>
+      </ChoiceCardTitle>
+      <ChoiceCardDescription>{choice.line}</ChoiceCardDescription>
+    </ChoiceCardContent>
   );
 }
 
@@ -83,16 +71,10 @@ function RadioCards({ name }: { name: string }) {
       </FieldLegend>
       <RadioGroup aria-labelledby={`${id}-legend`} defaultValue="own" name={name}>
         {homes.map((choice) => (
-          <FieldLabel key={choice.value}>
-            <Field orientation="horizontal" disabled={!!choice.disabled}>
-              <RadioGroupItem
-                value={choice.value}
-                disabled={!!choice.disabled}
-                aria-labelledby={`${id}-${choice.value}-title`}
-              />
-              <CardBody choice={choice} id={`${id}-${choice.value}`} />
-            </Field>
-          </FieldLabel>
+          <ChoiceCard key={choice.value} disabled={!!choice.disabled}>
+            <RadioGroupItem value={choice.value} />
+            <CardBody choice={choice} />
+          </ChoiceCard>
         ))}
       </RadioGroup>
     </FieldSet>
@@ -100,22 +82,15 @@ function RadioCards({ name }: { name: string }) {
 }
 
 function CheckboxCards() {
-  const id = useId();
   return (
     <FieldSet>
       <FieldLegend variant="label">What should we tell you about?</FieldLegend>
       <FieldGroup data-slot="checkbox-group" className="gap-3">
         {topics.map((choice) => (
-          <FieldLabel key={choice.value}>
-            <Field orientation="horizontal" disabled={!!choice.disabled}>
-              <Checkbox
-                defaultChecked={choice.value === "events" || !!choice.disabled}
-                disabled={!!choice.disabled}
-                aria-labelledby={`${id}-${choice.value}-title`}
-              />
-              <CardBody choice={choice} id={`${id}-${choice.value}`} />
-            </Field>
-          </FieldLabel>
+          <ChoiceCard key={choice.value} disabled={!!choice.disabled}>
+            <Checkbox defaultChecked={choice.value === "events" || !!choice.disabled} />
+            <CardBody choice={choice} />
+          </ChoiceCard>
         ))}
       </FieldGroup>
     </FieldSet>
@@ -151,6 +126,13 @@ export const Radio: Story = {
       await expect(own).toHaveAccessibleName("I own my home");
       await expect(own).toHaveAccessibleDescription("You get dues notices and can vote.");
       await expect(board).toHaveAttribute("aria-disabled", "true");
+    });
+    await step("ChoiceCard names each control by its title alone and describes it by its line, once", async () => {
+      for (const choice of homes) {
+        const radio = canvas.getByRole("radio", { name: choice.title });
+        await expect(radio).toHaveAccessibleName(choice.title);
+        await expect(radio).toHaveAccessibleDescription(choice.line);
+      }
     });
     await step("Tab lands on the chosen card; the arrows move, choose and skip the disabled card", async () => {
       await userEvent.tab();
@@ -188,6 +170,12 @@ export const Checkboxes: Story = {
     await expect(events).toBeChecked();
     await expect(sale).not.toBeChecked();
     await expect(canvas.getByRole("checkbox", { name: "Board notices" })).toHaveAttribute("aria-disabled", "true");
+    // ChoiceCard names each control by its title alone and describes it by its line, once.
+    for (const choice of topics) {
+      const box = canvas.getByRole("checkbox", { name: choice.title });
+      await expect(box).toHaveAccessibleName(choice.title);
+      await expect(box).toHaveAccessibleDescription(choice.line);
+    }
     await userEvent.tab();
     await expect(events).toHaveFocus();
     await userEvent.tab();
