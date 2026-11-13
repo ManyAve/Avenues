@@ -34,7 +34,7 @@ const DETAIL_CARD =
 const DUES_TABLE =
   "app: app/ui/components/dues-table.tsx: the Dues table sets its own 34px muted headers, background and 7px padding; the app's Table itself is h-10 px-2 font-medium text-foreground, as Avenue's";
 
-const MONEY_BOX: Allowance = { prop: "height", because: "AVE-55: Avenue's Money sits in a 24px box (20px desktop); the app's is an inline 21px line (18px)" };
+const MONEY_BOX: Allowance = { prop: "height", because: "app: app/ui/components/Money.stories.tsx: the app's story renders Money as a bare inline span (a 21px content box, 18px desktop); Avenue's story sets it in a flex row, where the same classes give a 24px line box (20px). The component's classes match" };
 const TOOLTIP_PAD = "AVE-2 §1: the tooltip's off-grid 6px top and bottom padding moves onto the 4px grid at 4px, so a one-line tooltip is 28px (24px desktop)";
 const MODE_DEV: Allowance[] = [
   { prop: "*-gap", app: "6px", avenue: "4px", because: "AVE-2 §1: the mode toggle's icon to label 6px becomes 4px" },
@@ -137,13 +137,13 @@ const CARD_ACTION_ROW: Allowance[] = [
   { prop: "*-gap", where: "card-action 1", app: "6px", avenue: "8px", because: "AVE-2 §1: the off-grid 6px gap becomes 8px" },
   { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-2 §1: 4px is for an icon beside its own label; the header's title and its action are separate things, 8px (space-group) apart (AVE-57)" },
 ];
-const DESKTOP_TITLE: Allowance[] = [
-  { prop: "font-size", app: "14px", avenue: "16px", because: "AVE-55: Avenue's titles don't follow the desktop type scale" },
-  { prop: "line-height", because: "AVE-55: Avenue's titles don't follow the desktop type scale (and the card title's web line is 22px, the app's 24px)" },
-  { prop: "height", because: "AVE-55: the title's line height differs, so its height does" },
+const DIALOG_TITLE_LINE: Allowance[] = [
+  { prop: "line-height", app: "20px", avenue: "24px", because: "AVE-2 §4: a dialog title keeps a 24px line at desktop scale (14px text), so it stays centred on the 24px close button in the corner" },
+  { prop: "height", app: "20px", avenue: "24px", because: "AVE-2 §4: a dialog title keeps a 24px line at desktop scale (14px text), so it stays centred on the 24px close button in the corner" },
 ];
+const LEGEND_VARIANT =
+  "app: app/ui/components/forms.tsx: the People property form uses FieldLegend variant=\"label\" (text-sm); Avenue's Field / Form shows the legend variant, text-base, as the app's legend variant is";
 const CARD_TITLE: Allowance[] = [
-  ...DESKTOP_TITLE,
   { prop: "*-gap", app: "8px", avenue: "0px", because: "app: app/ui/components/detail.tsx: the detail card's title is a flex row (gap-2) so it can hold an icon; the app's CardTitle itself has no gap, as Avenue's" },
 ];
 
@@ -371,7 +371,7 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Dialog (AVE-6)
   "components-dialog--open": [
     { label: "dialog frame", app: "primitives-deleteaccount--allowed", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=dialog-content]", frame: true, allow: [{ prop: "padding-*", app: "0px", avenue: "16px", because: SECTIONED_DIALOG }] },
-    { label: "dialog title", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-title]", avenueCrop: "[data-slot=dialog-title]", allow: DESKTOP_TITLE },
+    { label: "dialog title", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-title]", avenueCrop: "[data-slot=dialog-title]", allow: DIALOG_TITLE_LINE },
   ],
   "components-dialog--focus-on-open-and-close": { none: BEHAVIOUR("Dialog / Open") },
   "components-dialog--confirm-focuses-safe-button": [
@@ -486,7 +486,11 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-field--required-on-submit": { none: BEHAVIOUR("Field / Invalid") },
   "components-field--disabled": { none: STATE_ONLY("a disabled text field", "Field / Label and description, and disabled opacity through Button / Playground") },
   "components-field--form": [
-    { label: "field legend", app: "primitives-forms--people-property", appCrop: "[data-slot=field-legend] >> nth=0", avenueCrop: "[data-slot=field-legend]", allow: DESKTOP_TITLE },
+    { label: "field legend", app: "primitives-forms--people-property", appCrop: "[data-slot=field-legend] >> nth=0", avenueCrop: "[data-slot=field-legend]", allow: [
+      { prop: "font-size", app: "14px", avenue: "16px", because: LEGEND_VARIANT },
+      { prop: "line-height", because: LEGEND_VARIANT },
+      { prop: "height", because: LEGEND_VARIANT },
+    ] },
   ],
   "components-field--popup-in-field": [
     {
@@ -558,11 +562,11 @@ export const PAIRS: Record<string, PairEntry> = {
       appCrop: "[data-slot=field-error]",
       avenueCrop: "[data-slot=inline-message]",
       allow: [
-        { prop: "font-size", because: "AVE-55: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "line-height", because: "AVE-55: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "height", because: "AVE-55: the smaller line makes the message shorter" },
-        { prop: "*-gap", because: "AVE-55: Avenue's inline error leads with an icon; the app's error text has none" },
-        { prop: "parts", because: "AVE-55: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "font-size", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
+        { prop: "line-height", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
+        { prop: "height", because: "AVE-72: the smaller line makes the message shorter" },
+        { prop: "*-gap", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "parts", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
       ],
     },
   ],
@@ -816,7 +820,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "section card frame", app: "detail-pieces--people", appCrop: "[data-slot=card] >> nth=0", avenueCrop: "[data-slot=card] >> nth=0", frame: true, allow: [
       { prop: "box-shadow", because: "AVE-70: Avenue's SectionCard outline is Card's ring-foreground/10; the app's section card uses ring-border" },
     ] },
-    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0", allow: DESKTOP_TITLE },
+    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0" },
   ],
   "composites-section-card--detail-list-story": [
     { label: "detail label", app: "detail-pieces--people", appCrop: "dl >> nth=0 >> dt >> nth=0", avenueCrop: "[data-slot=detail-list] dt >> nth=0" },

@@ -39,11 +39,15 @@ function CardHeader({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
+/**
+ * text-compact, as every card title on the app's screens sets it (detail.tsx): 16px on a 24px line on the web
+ * scale, 14px on 20px at desktop scale (AVE-55). The app's base primitive says text-base; its screens all override.
+ */
 function CardTitle({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("self-center text-base leading-snug font-medium group-data-[size=sm]/card:text-sm", className)}
+      className={cn("self-center text-compact font-medium group-data-[size=sm]/card:text-sm", className)}
       {...props}
     />
   );
