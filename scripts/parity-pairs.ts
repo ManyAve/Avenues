@@ -404,6 +404,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--keyboard": { none: BEHAVIOUR("Combobox / Time zone") },
   "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
+  "components-combobox--selected-text": { none: BEHAVIOUR("Combobox / Households") },
   "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--pattern": { none: BEHAVIOUR("Combobox / Time zone") },

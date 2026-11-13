@@ -198,7 +198,7 @@ export const Keyboard: Story = {
           <Select options={methods} value={value} onValueChange={setValue} native="never" />
         </Labelled>
         <output className="text-meta text-muted-foreground" data-testid="value">
-          {value}
+          Chosen: {value}
         </output>
       </div>
     );
@@ -469,7 +469,7 @@ function AgentForm() {
         <Select options={roles} value={role} onValueChange={setRole} placeholder="Choose a role" native="never" />
       </Labelled>
       <output data-testid="value" className="text-meta text-muted-foreground">
-        {method ?? "(none)"} / {role ?? "(none)"}
+        Chosen: {method ?? "(none)"} / {role ?? "(none)"}
       </output>
     </div>
   );
@@ -500,7 +500,7 @@ function PhoneForm({ presentation }: { presentation?: "sheet" | undefined }) {
         <Select options={methods} value={value} onValueChange={setValue} native="never" presentation={presentation} />
       </Labelled>
       <output className="text-meta text-muted-foreground" data-testid="value">
-        {value}
+        Chosen: {value}
       </output>
     </div>
   );
