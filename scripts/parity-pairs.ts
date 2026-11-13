@@ -76,6 +76,10 @@ const NAV_TAB: Allowance[] = [
   { prop: "width", because: "AVE-2 §1: the wider padding and gap make the same label wider" },
   { prop: "parts", because: COUNT_PART },
 ];
+const TOOLBAR_SEARCH: Allowance[] = [
+  { prop: "height", app: "29px", avenue: "32px", because: MD_HEIGHT },
+  { prop: "parts", app: "only here: input", avenue: "only here: toolbar-input", because: "AVE-16: inside a toolbar the field is ui-sdk's toolbar input, whose data-slot wins over Avenue's (AGENTS.md, data-slot names); the element is the same input" },
+];
 const SEARCH: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
   { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
@@ -844,6 +848,25 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
+
+  // ---- Composites part 4: the toolbars (AVE-9)
+  "composites-toolbar--wide": [
+    { label: "toolbar filters", app: "shell-toolbar--default", appCrop: "#storybook-root [role=toolbar] > div >> nth=0", avenueCrop: "[data-slot=toolbar-filters]", allow: [
+      ...CHIP,
+      { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
+    ] },
+    { label: "toolbar search", app: "shell-toolbar--default", appCrop: "#storybook-root [role=toolbar] input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },
+  ],
+  "composites-toolbar--phone": [
+    { label: "phone toolbar chips", app: "primitives-phone--toolbar", appCrop: "#storybook-root > div > div:nth-child(2)", avenueCrop: "[data-slot=chip-row]", allow: [
+      ...CHIP,
+      { prop: "padding-*", app: "16px", avenue: "20px", because: "AVE-2 §1: the strip's padding is the page inset, 16px on a phone and 20px from 640px; the capture is wider than a phone" },
+      { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
+    ] },
+    { label: "phone toolbar search", app: "primitives-phone--toolbar", appCrop: "#storybook-root input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },
+  ],
+  "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
 
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [

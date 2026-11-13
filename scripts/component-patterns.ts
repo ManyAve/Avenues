@@ -103,6 +103,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "The Chip stories test the check, keyboard pressing and the scrolling row's focus reveal.",
   },
   "toolbar-button": { upstream: "button" },
+  toolbar: {
+    upstream: "toolbar",
+    note: "ui-sdk's toolbar, styled; the fold into More renders one or the other, so no key changes. The Toolbar stories press every control by keyboard (AVE-9).",
+  },
   "mode-toggle": { upstream: "segmented-control", note: "Dev is a ui-sdk toggle; the theme is Avenue's single-choice ToggleGroup (the radio-group pattern, AVE-17)." },
   "search-input": {
     upstream: "input",
