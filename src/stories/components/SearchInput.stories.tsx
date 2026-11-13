@@ -1,0 +1,53 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent } from "storybook/test";
+import { SearchInput } from "#avenue/components/search-input";
+
+const meta = {
+  title: "Components/SearchInput",
+  component: SearchInput,
+  args: { placeholder: "Search households or people…", "aria-label": "Search" },
+} satisfies Meta<typeof SearchInput>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("searchbox", { name: "Search" });
+    await expect(input.getBoundingClientRect().height).toBe(32);
+    await userEvent.type(input, "Maple");
+    await expect(input).toHaveValue("Maple");
+  },
+};
+
+/** The hint's key really works: "/" from anywhere outside a text field focuses the search. */
+export const WithShortcut: Story = {
+  tags: ["agent"],
+  args: { kbd: "/" },
+  render: (args) => (
+    <div className="flex flex-col items-start gap-group">
+      <button type="button">Add household</button>
+      <SearchInput {...args} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("searchbox", { name: "Search" });
+    await expect(input).toHaveAttribute("aria-keyshortcuts", "/");
+    await expect(canvas.getByText("/")).toBeVisible();
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Add household" })).toHaveFocus();
+    await userEvent.keyboard("/");
+    await expect(input).toHaveFocus();
+    // Typed inside the field, "/" is just text.
+    await userEvent.keyboard("12/B");
+    await expect(input).toHaveValue("12/B");
+  },
+};
+
+/** The toolbar look: tinted fill, light border, the md control corner (AVE-2). */
+export const Filled: Story = {
+  args: { kbd: "/", filled: true },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("searchbox", { name: "Search" });
+    await expect(getComputedStyle(input).borderTopLeftRadius).toBe("10px");
+  },
+};
