@@ -4,8 +4,8 @@
 // (node_modules/@ui-sdk/react/docs/agents.md, "Name a component"), and fails a step whose words fit two controls.
 // So mirrored names such as "A–Z" and "Z–A", or "High–low" and "Low–high", are one name to an agent, though they
 // read as two to a person (AVE-79). After each Components or Composites story this collects the name of every
-// enabled control in each open popup and in the page, reduces each to its words, and fails when two different names
-// reduce to the same words in one place.
+// control, enabled or not, in each open popup and in the page, reduces each to its words, and fails when two
+// different names reduce to the same words in one place.
 //
 // Names that are exactly the same (a Remove button on every row) are left alone: the bridge tells those apart by
 // their row text, and a story shows them on purpose.
@@ -87,8 +87,9 @@ export function controlName(el: HTMLElement): string {
   return text(el).replace(/\s+/g, " ").trim();
 }
 
-function enabledAndShown(el: HTMLElement): boolean {
-  if (el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return false;
+// Disabled controls count too: the bridge lists them in its snapshot (with `disabled: true`) and still matches them by
+// name, so a disabled "A–Z" makes an enabled "Z–A" ambiguous.
+function shown(el: HTMLElement): boolean {
   if (el.closest("[inert], [aria-hidden=true]")) return false;
   const style = getComputedStyle(el);
   return style.display !== "none" && style.visibility !== "hidden";
@@ -101,10 +102,10 @@ function describeScope(popup: Element | null): string {
   return name ? `the ${role} "${name.trim()}"` : `a ${role}`;
 }
 
-/** Every enabled control's name, with the open popup it sits in. */
+/** Every shown control's name, with the open popup it sits in. */
 export function namedControls(root: ParentNode = document.body): NamedControl[] {
   const popups: (Element | null)[] = [];
-  return [...root.querySelectorAll<HTMLElement>(CONTROL_SELECTOR)].filter(enabledAndShown).map((el) => {
+  return [...root.querySelectorAll<HTMLElement>(CONTROL_SELECTOR)].filter(shown).map((el) => {
     const popup = el.closest(POPUP);
     if (!popups.includes(popup)) popups.push(popup);
     // Two popups that read the same are still two places.
