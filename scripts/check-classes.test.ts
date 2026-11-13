@@ -37,4 +37,13 @@ describe("check:classes", () => {
   test("reports the line", () => {
     expect(findViolations("x.tsx", "ok\n<div className='gap-1.5' />")[0]?.line).toBe(2);
   });
+  test("flags hit-area with an after: utility in the same class string", () => {
+    expect(matches(`"relative hit-area after:rounded-full"`)).toEqual([`"relative hit-area after:rounded-full"`]);
+    expect(matches(`'after:absolute px-2 hit-area'`)).toEqual([`'after:absolute px-2 hit-area'`]);
+  });
+
+  test("allows hit-area alone, after: alone, and the two in separate strings", () => {
+    expect(matches(`"relative hit-area [a]:hit-area" "after:absolute after:inset-0"`)).toEqual([]);
+    expect(matches(`"pointer-coarse:hit-area-x" "before:absolute"`)).toEqual([]);
+  });
 });

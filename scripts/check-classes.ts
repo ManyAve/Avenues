@@ -6,6 +6,8 @@
  * - off-grid spacing: the 6, 10 and 14px steps (*-1.5, *-2.5, *-3.5) on padding, margin, gap, space-between,
  *   inset and scroll spacing. Sizing (w-, h-, size-) is not spacing and is left alone: a 14px icon is fine.
  *
+ * - `hit-area` and an `after:` utility in the same class string: hit-area owns the control's ::after (AVE-22).
+ *
  *   bun run check:classes [paths...]   (default: src)
  */
 import { relative, resolve } from "node:path";
@@ -23,6 +25,12 @@ export const rules = [
     name: "off-grid spacing",
     pattern: new RegExp(`(?<![\\w-])${SPACING}-(?:1\\.5|2\\.5|3\\.5)(?![\\w.-])`, "g"),
     fix: "use a 4px step (1.5 -> 2, 2.5 -> 2 inside a control or 3 between blocks, 3.5 -> 4) or an alias",
+  },
+  {
+    // AVE-22: `hit-area` owns the control's ::after, so an after: utility in the same class string fights it.
+    name: "hit-area with after:",
+    pattern: /(["'`])(?=[^"'`\n]*(?<![\w-])hit-area(?![\w-]))(?=[^"'`\n]*(?<![\w-])after:)[^"'`\n]*\1/g,
+    fix: "hit-area owns ::after; decorate the control with before: or a child element",
   },
 ] as const;
 
@@ -63,6 +71,6 @@ if (import.meta.main) {
   }
 
   for (const f of findings) console.log(`${f.file}:${f.line}  ${f.match}  (${f.rule}: ${f.fix})`);
-  console.log(`${files} files checked, ${findings.length} retired corner or off-grid spacing classes.`);
+  console.log(`${files} files checked, ${findings.length} class rule violations (retired corners, off-grid spacing, hit-area with after:).`);
   process.exit(findings.length > 0 ? 1 : 0);
 }

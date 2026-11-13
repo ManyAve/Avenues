@@ -15,5 +15,10 @@ export const modalSurface = "bg-popover p-inset text-sm text-popover-foreground 
 export const modalTitle = "text-base leading-6 font-medium";
 export const modalDescription =
   "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground";
-/** The close button: 24px, with a 40px hit area. Dialog and Sheet place it on the title's line. */
-export const modalCloseButton = "absolute top-4 right-4 after:absolute after:-inset-2";
+/**
+ * The close button: 24px, with a 40px hit area through Button's shared `hit-area` (8px reach each side with a mouse,
+ * 44px on a phone, AVE-22). It stays 24px on a phone rather than growing to xs's 28px, so it keeps the title's line.
+ * Dialog and Sheet place it on the title's line.
+ */
+export const modalCloseButton =
+  "absolute top-4 right-4 [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] pointer-coarse:size-6";

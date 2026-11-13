@@ -72,10 +72,12 @@ export const Sizes: Story = {
     </Rows>
   ),
   play: async ({ canvas }) => {
+    // On a phone (the touch story-test project) xs is 28px, so 28 + the 16px controls gap reaches 44 (AVE-22).
+    const xs = matchMedia("(pointer: coarse)").matches ? 28 : 24;
     const heights = canvas.getAllByRole("button", { name: "Save" }).map((b) => b.getBoundingClientRect().height);
-    await expect(heights).toEqual([24, 28, 32, 40]);
+    await expect(heights).toEqual([xs, 28, 32, 40]);
     const icons = canvas.getAllByRole("button", { name: "Display options" }).map((b) => b.getBoundingClientRect().width);
-    await expect(icons).toEqual([24, 28, 32, 40]);
+    await expect(icons).toEqual([xs, 28, 32, 40]);
   },
 };
 

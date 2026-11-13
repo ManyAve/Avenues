@@ -71,10 +71,12 @@ function ChipRow({
       data-overflow={overflow}
       onFocus={reveal}
       className={cn(
-        "flex gap-group",
+        "flex gap-controls",
         overflow === "wrap"
           ? "flex-wrap"
-          : "snap-x snap-proximity scroll-px-page overflow-x-auto [scrollbar-width:none] max-[700px]:scroll-pe-8 max-[700px]:pe-8 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]",
+          : // A scroller clips its children's overflow, so on a phone it pads 8px above and below (and takes it
+            // back with a negative margin) to keep each chip's 44px tap area inside it (AVE-22).
+            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-[700px]:scroll-pe-8 max-[700px]:pe-8 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]",
         className,
       )}
       {...props}

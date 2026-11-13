@@ -61,7 +61,7 @@ function CardAction({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-action"
-      className={cn("col-start-2 row-start-1 flex items-center gap-2 self-center justify-self-end", className)}
+      className={cn("col-start-2 row-start-1 flex items-center gap-controls self-center justify-self-end", className)}
       {...props}
     />
   );

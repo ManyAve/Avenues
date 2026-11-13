@@ -146,7 +146,8 @@ export const LongOptions: Story = {
     const trigger = canvas.getByRole("combobox", { name: "Template" });
     // The closed control keeps its width and truncates; the open list wraps up to its max width.
     await expect(trigger.getBoundingClientRect().width).toBeLessThanOrEqual(256);
-    await expect(trigger.getBoundingClientRect().height).toBe(32);
+    // On a phone (the touch story-test project) an md select matches the 44px text fields (AVE-22).
+    await expect(trigger.getBoundingClientRect().height).toBe(matchMedia("(pointer: coarse)").matches ? 44 : 32);
   },
 };
 
@@ -259,7 +260,7 @@ export const InvalidIsAnnounced: Story = {
 
 function Figure({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <figure className="grid w-96 content-start gap-group">
+    <figure className="grid w-96 max-w-full content-start gap-group">
       <figcaption className="text-meta text-muted-foreground">{label}</figcaption>
       {children}
     </figure>
@@ -371,7 +372,9 @@ async function expectUncut(el: Element) {
  */
 export const InClippedCardAtEdge: Story = {
   name: "In a clipped card at the window edge",
-  parameters: { layout: "fullscreen" },
+  // The 900px desktop window is the case, so the touch story-test project keeps its default viewport here instead of
+  // the 390px phone (AVE-22); the touch targets are still measured.
+  parameters: { layout: "fullscreen", viewport: { disabled: true } },
   render: () => (
     <div className="flex w-[900px] justify-end p-inset">
       <Card className="w-80 overflow-hidden rounded-xl shadow-card ring-border" data-testid="card">

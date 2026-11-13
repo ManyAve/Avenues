@@ -35,7 +35,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run lint`            | Lints with oxlint; any warning fails.                           |
 | `bun run check:classes`   | Fails on retired corners (`rounded-2xl/3xl/4xl`) or off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`). |
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
-| `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice). A crash, a failed play function or any axe violation fails it. |
+| `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice), then a fifth time as a phone (`touch`), where it also measures every control's tap area (below). A crash, a failed play function, any axe violation or a tap area under 44px fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
 | `bun run check:story-coverage` | Reads the built Storybook and fails if any story was left out of the story tests (its `test` tag removed with `!test`), or if a component misses its accessibility proof (below). |
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
@@ -169,6 +169,40 @@ are `rounded-xs/sm/md/lg/xl` (4/6/8/10/14) and `rounded-full` for labels and tok
 retired. Each is shown under Tokens in Storybook. Foundations in Storybook says how to use them: colour and status,
 type and the 14px floor, spacing, corners, elevation, icons, motion and theming, each with a do and a don't.
 
+## Touch targets
+
+Every control takes a 44 x 44px tap on a phone without being drawn bigger (AVE-22).
+
+**`hit-area`** is a public utility in `styles.css`: Avenue's controls use it, and an app's own controls can too. It
+draws nothing: an invisible `::after`, centred, makes the tappable box at least 44px on a coarse pointer and 24px
+on a fine one (WCAG 2.2 target size), never smaller than the control. A control that reaches further with a mouse
+sets `--hit-area-x` / `--hit-area-y` (Checkbox and Switch `[--hit-area-x:--spacing(3)] [--hit-area-y:--spacing(2)]`,
+12px and 8px). Compose it on a positioned element that doesn't clip its own overflow, in place of hand-written
+`after:-inset-*`. It owns the control's `::after`: decoration on a control uses `::before` or a child, and
+`check:classes` flags `hit-area` with an `after:` class in the same string. Scope it with a variant when a part is
+only sometimes a control (Badge: `[a]:hit-area`).
+
+**Spacing between controls on phones.** Two neighbouring controls need their centres at least 44px apart, so
+their hit areas meet without overlapping. Between two things you can tap, use `gap-controls`: 8px with a mouse,
+16px on a coarse pointer. On phones xs controls are 28px (`h-control-xs`), so 28 + 16 reaches 44 and every larger
+size clears it. `gap-group` stays 8px for a label beside its own control, which may overlap harmlessly (a tap there
+still reaches the control). Stacked controls don't need the gap: their rows are 44px tall on phones. The story
+kit's `Row` uses `gap-controls`, so the stories are measured at real spacing.
+
+**Where an invisible extension can't work, the control grows on coarse pointers only**, so desktop doesn't move:
+text fields and the Combobox input (an `<input>` can't carry `::after`), md Select triggers (to match the fields
+beside them), menu and list rows, toggle-group items along the group's axis, and table rows and fields that hold a
+checkbox or switch are at least 44px there. An sm Select (a card or dialog header) keeps its size: its trigger
+takes `hit-area`, and its phone picker's `<select>` lies invisibly over a 44px band. Spaced toggle groups wrap.
+
+**The proof** is in the story tests (`.storybook/touch-targets.ts`). The `touch` project runs the Components and
+Composites stories with Playwright's `hasTouch` (so `(pointer: coarse)` matches) and, after each story, hit-tests
+a grid of points over the 44px area centred on every enabled control. Each point must land on that control or a
+label of it; a point that lands on the page misses (too small), and one that lands on another control fails both
+(overlap). The four mouse projects check sizes: every control at least 24 x 24px, and Checkbox, Switch, the dialog
+close button and the help button keep their reach (`FINE_MINIMUMS`). A story's `play` that measures sizes reads
+`matchMedia("(pointer: coarse)")` for the phone values.
+
 ## Imports inside Avenue
 
 Files inside the package import each other through the package's own subpaths
@@ -194,6 +228,8 @@ The package is source-shipped (no build step) and exposes:
 - `@manyave/avenue/components/*`: one entry per component.
 - `@manyave/avenue/utils`: `cn`.
 - `@manyave/avenue/format`: `formatMoney`, `tintFor`, `initials`.
+- Utilities in `styles.css` beyond Tailwind's: the token aliases (`gap-group`, `gap-controls`, `h-control-md`, ...)
+  and `hit-area`, the invisible touch target (above). A change to how they behave is an API change.
 
 `react`, `react-dom` and `tailwindcss` are peer dependencies so a consumer never gets a second
 copy.

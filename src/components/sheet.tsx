@@ -120,7 +120,7 @@ function SheetFooter({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="sheet-footer"
       className={cn(
-        "-mx-4 -mb-4 mt-auto flex shrink-0 flex-col-reverse gap-2 border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+        "-mx-4 -mb-4 mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
         "group-data-[side=bottom]/sheet:-mb-[max(1rem,env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(1rem,env(safe-area-inset-bottom))]",
         "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
         className,

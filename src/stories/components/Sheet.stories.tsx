@@ -120,6 +120,8 @@ export const BottomOnPhone: Story = {
 /** The same filters on a wide screen: a bottom sheet keeps a 512px measure, centred. */
 export const BottomOnDesktop: Story = {
   render: () => <ListingFilters defaultOpen />,
+  // A wide screen is the case, so the touch story-test project keeps its default viewport here, not the phone.
+  parameters: { viewport: { disabled: true } },
   play: async () => {
     const sheet = await expectSheetAgainst("bottom", "Filter listings");
     await expect(Math.round(sheet.getBoundingClientRect().width)).toBe(512);

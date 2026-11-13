@@ -26,7 +26,7 @@ function Demo() {
   return (
     <ToastProvider>
       <Rows>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-controls">
           <Trigger label="Add household" text="Household added" />
           <Trigger label="Archive notice" text="Notice archived" options={{ action: { label: "Undo", onAction: undo } }} />
           <Trigger label="Send reminder" text="Couldn't send the reminder. Check the address and try again." options={{ variant: "error" }} />

@@ -6,11 +6,16 @@ import { defineConfig } from "vitest/config";
 // Every story is a browser test: it must render, its play function (if any) must pass, and axe must
 // find no violation (`a11y.test: "error"` in .storybook/preview.tsx). The four projects run the whole
 // set once per theme and type scale, through the same toolbar globals Storybook's switches set.
+//
+// The fifth project, `touch`, runs the light web set again as a phone: Playwright's hasTouch makes
+// `(pointer: coarse)` match, and the `pointer` global turns on the 44px touch-target measure after each story
+// (AVE-22, .storybook/touch-targets.ts).
 const matrix = [
-  ["light", "web"],
-  ["dark", "web"],
-  ["light", "desktop"],
-  ["dark", "desktop"],
+  ["light", "web", "fine"],
+  ["dark", "web", "fine"],
+  ["light", "desktop", "fine"],
+  ["dark", "desktop", "fine"],
+  ["light", "web", "coarse"],
 ] as const;
 
 // Playwright downloads its own Chromium (`bunx playwright install chromium`). Set AVENUE_CHROMIUM to
@@ -44,15 +49,24 @@ const prebundle = [
 export default defineConfig({
   optimizeDeps: { include: prebundle },
   test: {
-    projects: matrix.map(([theme, typeScale]) => ({
+    projects: matrix.map(([theme, typeScale, pointer]) => ({
       extends: true,
-      plugins: [storybookTest({ configDir: ".storybook", initialGlobals: { theme, typeScale } })],
+      plugins: [
+        storybookTest({
+          configDir: ".storybook",
+          // The touch project is also phone-sized: Storybook's viewport "phone", 390 x 844 (.storybook/preview.tsx).
+          initialGlobals: { theme, typeScale, pointer, ...(pointer === "coarse" ? { viewport: { value: "phone" } } : {}) },
+        }),
+      ],
       test: {
-        name: `${theme}-${typeScale}`,
+        name: pointer === "coarse" ? "touch" : `${theme}-${typeScale}`,
         browser: {
           enabled: true,
           headless: true,
-          provider: playwright(executablePath ? { launchOptions: { executablePath } } : {}),
+          provider: playwright({
+            ...(executablePath ? { launchOptions: { executablePath } } : {}),
+            ...(pointer === "coarse" ? { contextOptions: { hasTouch: true } } : {}),
+          }),
           instances: [{ browser: "chromium" as const }],
         },
       },

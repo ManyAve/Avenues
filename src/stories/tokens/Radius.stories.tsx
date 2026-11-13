@@ -111,7 +111,10 @@ export const Nested: Story = {
   render: () => <NestedCorners />,
   // The card's select is the real component: sm (28px, 8px corner), 16px inside the card's top and right edges.
   play: async ({ canvas, canvasElement }) => {
-    const trigger = canvas.getByRole("combobox", { name: "Dues year" });
+    const control = canvas.getByRole("combobox", { name: "Dues year" });
+    // On a phone the sm Select is a transparent native <select> over a 44px band; the field drawn under it
+    // (its next sibling) is what the corner rule describes.
+    const trigger = matchMedia("(pointer: coarse)").matches ? (control.nextElementSibling as HTMLElement) : control;
     const card = canvasElement.querySelector<HTMLElement>("[data-dues-card]");
     if (!card) throw new Error("The Dues card is missing");
     const t = trigger.getBoundingClientRect();

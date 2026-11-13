@@ -130,7 +130,7 @@ function FileField({
         {...(controller === undefined ? {} : { controller })}
         announcement={({ added }) => (added[0] ? `Chose ${added[0].name}.` : null)}
         // The invalid Field tints its text; the row's buttons keep their own colours, as the trigger keeps its outline.
-        render={<div data-slot="file-field-row" className="flex flex-wrap items-center gap-2 text-foreground" />}
+        render={<div data-slot="file-field-row" className="flex flex-wrap items-center gap-controls text-foreground" />}
       >
         {kind === "image" && hasFile && file.url ? <FileThumbnail src={file.url} /> : null}
         {hasFile && (kind === "document" || !file.url) ? (
