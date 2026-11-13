@@ -82,7 +82,18 @@ export function patternProblems(
 export function parityMapProblems(index: Index, map: Record<string, PairEntry> = PAIRS): string[] {
   const avenue = storiesToPair(Object.values(index.entries).filter((e) => e.type === "story").map((e) => e.id));
   const appNamed = Object.values(map).flatMap((entry) => (Array.isArray(entry) ? entry.map((pair) => pair.app) : []));
-  return mapProblems(map, avenue, appNamed).map((p) => `${p} (scripts/parity-pairs.ts)`);
+  // A glyph allowance must name both icons (AVE-77 QA): parity gives Avenue the app's icon before judging pixels, so
+  // an open-ended one would let any icon change on that part pass unseen.
+  const openGlyphs = Object.entries(map).flatMap(([story, entry]) =>
+    Array.isArray(entry)
+      ? entry.flatMap((pair) =>
+          (pair.allow ?? [])
+            .filter((a) => a.prop === "glyph" && (!a.app || !a.avenue))
+            .map(() => `${story} (${pair.label}): a glyph allowance must name the app's and Avenue's icon`),
+        )
+      : [],
+  );
+  return [...mapProblems(map, avenue, appNamed), ...openGlyphs].map((p) => `${p} (scripts/parity-pairs.ts)`);
 }
 
 if (import.meta.main) {
