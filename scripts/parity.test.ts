@@ -127,6 +127,7 @@ describe("explain and verdict", () => {
     expect(isAgreedFix("AVE-13: contrast")).toBe(true);
     expect(isAgreedFix("AVE-29: control text")).toBe(true);
     expect(isAgreedFix("AVE-8: chip check")).toBe(true);
+    expect(isAgreedFix("AVE-50: chosen segment check")).toBe(true);
     expect(isAgreedFix("AVE-58: disclosure trigger")).toBe(true);
     expect(isAgreedFix("AVE-70: page title line")).toBe(true);
     expect(isAgreedFix("AVE-72: inline message icon")).toBe(true);

@@ -1,7 +1,7 @@
 import { Checkbox as CheckboxPrimitive, CheckboxIndicator } from "@ui-sdk/react/checkbox";
 import { CheckIcon, MinusIcon } from "lucide-react";
 import type { ComponentProps } from "react";
-import { useChoiceCardTitleId } from "#avenue/components/choice-card";
+import { useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
 
 /**

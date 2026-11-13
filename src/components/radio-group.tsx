@@ -1,6 +1,6 @@
 import { Radio, RadioGroup as RadioGroupPrimitive, RadioIndicator } from "@ui-sdk/react/radio";
 import type { ComponentProps } from "react";
-import { useChoiceCardTitleId } from "#avenue/components/choice-card";
+import { useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
 
 /**

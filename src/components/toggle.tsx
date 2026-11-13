@@ -16,10 +16,10 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
-        // The chosen segment (AVE-37): outline items, and the chosen one takes the primary border, the primary-subtle
-        // fill and its text. Management hand-writes this on four groups (DisplayOptions, forms, two in lob-mail).
-        choice:
-          "border border-input bg-transparent hover:bg-muted data-checked:border-primary data-checked:bg-primary-subtle data-checked:text-primary-subtle-foreground data-pressed:border-primary data-pressed:bg-primary-subtle data-pressed:text-primary-subtle-foreground",
+        // The chosen segment (AVE-37): outline items, and the chosen one takes the shared `chosen` look (AVE-50).
+        // Management hand-writes it on four groups (DisplayOptions, forms, two in lob-mail). In a ToggleGroup the
+        // chosen item also draws a check (toggle-group.tsx).
+        choice: "border border-input bg-transparent hover:bg-muted data-checked:chosen data-pressed:chosen",
       },
       size: {
         default: `${controlShape({ size: "md" })} min-w-control-md px-2`,
