@@ -6,7 +6,7 @@ export const popupMotion =
   "origin-(--transform-origin) transition-[opacity,scale,translate] duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-2 data-[side=left]:data-starting-style:translate-x-2 data-[side=right]:data-starting-style:-translate-x-2 data-[side=top]:data-starting-style:translate-y-2 motion-reduce:transition-none";
 
 /**
- * Shared by Dialog and Sheet (AVE-32): the modal surface, its title and its description, so a form that is a centred
+ * Shared by Dialog, Sheet (AVE-32) and AlertDialog (AVE-45): the modal surface, its title and its description, so a form that is a centred
  * dialog on a wide screen and a sheet on a phone reads as the same thing. Sizing, corners and position stay with each
  * component.
  */
