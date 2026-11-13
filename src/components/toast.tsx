@@ -28,6 +28,9 @@ import { cn } from "#avenue/lib/utils";
  *
  * ui-sdk announces each toast once through its own live regions, so the visible region is not live and nothing
  * is read twice. F6 moves focus to the toast and back. AVE-2: the 10px top and bottom padding becomes 8.
+ *
+ * On a phone (AVE-40): the toast keeps a 16px gutter each side and wraps a long message rather than cutting it; it
+ * sits above the home indicator and above an open bottom Sheet's footer.
  */
 
 type ToastOptions = {
@@ -84,12 +87,15 @@ function useToast() {
 function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
   return (
     // ui-sdk centres a region with translate: -50% outside any layer, so only an important utility undoes it.
+    // 24px above the bottom edge plus the home-indicator safe area; while a bottom Sheet is open, 8px above its
+    // footer instead (CSS anchor positioning on the footer's anchor-name), so it never covers the sheet's actions
+    // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it.
     <ToastRegion
       toaster={toaster}
       side="bottom"
       align="center"
       maxVisible={1}
-      className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(anchor(--avenue-sheet-footer_top,calc(--spacing(4)+env(safe-area-inset-bottom)))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
     >
       {(item) => (
         <ToastPart
@@ -111,7 +117,8 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
           {item.type === "error" && (
             <ToastClose
               aria-label="Dismiss"
-              className={cn(buttonVariants({ variant: "ghost", size: "icon-xs" }))}
+              // On a phone, 16px from an action, so their 44px tap areas don't overlap (AVE-40).
+              className={cn(buttonVariants({ variant: "ghost", size: "icon-xs" }), item.action && "pointer-coarse:ms-2")}
             >
               <XIcon aria-hidden />
             </ToastClose>

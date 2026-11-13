@@ -723,6 +723,12 @@ export const PAIRS: Record<string, PairEntry> = {
       },
     ]),
   ),
+  ...Object.fromEntries(
+    ["phone-long-error", "phone-action-and-close", "phone-above-sheet-footer"].map((story) => [
+      `components-toast--${story}`,
+      { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
+    ]),
+  ),
 
   // ---- App controls ported in AVE-8 part 2: each app story has an Avenue story of the same name
   "components-chip--selected-beside-unselected": [

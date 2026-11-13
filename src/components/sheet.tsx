@@ -124,6 +124,8 @@ function SheetFooter({ className, ...props }: ComponentProps<"div">) {
       className={cn(
         "-mx-inset -mb-inset mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
         "group-data-[side=bottom]/sheet:-mb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))]",
+        // A toast rises above a bottom sheet's footer by anchoring to it (AVE-40).
+        "group-data-[side=bottom]/sheet:[anchor-name:--avenue-sheet-footer]",
         "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
         className,
       )}
