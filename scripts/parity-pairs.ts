@@ -49,6 +49,10 @@ const MODE_SEGMENT: Allowance[] = [
 ];
 const COUNT_PART =
   "app: app/ui/components/Badge.tsx: the app's chips and nav tabs use its Count too, a plain span with no data-slot; Avenue's Count names its part (data-slot=count), so the part lists differ while the count is the same component";
+// AVE-53: a field's own words follow AVE-29's rule for its value, 14px from 768px up on the web scale (the app's are
+// 16px there). Desktop scale is unchanged: both are 14px.
+const FIELD_TEXT_REASON = "AVE-29: a field's label, description and error follow its value's size, text-control (14px) from 768px up, so the value never looks lighter than the words around it (AVE-53)";
+const FIELD_TEXT: Allowance[] = ["font-size", "line-height", "height", "width"].map((prop) => ({ prop, because: FIELD_TEXT_REASON }));
 const MD_HEIGHT = "AVE-2 §2: toolbar controls share the md height, 32px (the app's are 29 or 30px)";
 const CHIP: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
@@ -323,7 +327,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "checked row checkbox", app: "dues-table--selection", appCrop: "[data-slot=checkbox][aria-checked=true] >> nth=0", avenueCrop: "[data-slot=checkbox][aria-checked=true] >> nth=0" },
   ],
   "components-checkbox--required-in-field": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
   ],
   "components-radio-group--states": { none: NEW_IN_AVENUE("The radio group", "Checkbox / States (the same 16px control and ring)") },
   "components-radio-group--keyboard": { none: BEHAVIOUR("Checkbox / States") },
@@ -461,15 +465,15 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Field, input and textarea (AVE-6, AVE-25)
   "components-field--label-and-description": [
-    { label: "field label", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-label] >> nth=1", avenueCrop: "[data-slot=field-label]" },
+    { label: "field label", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-label] >> nth=1", avenueCrop: "[data-slot=field-label]", allow: FIELD_TEXT },
     { label: "input", app: "dues-dialogs--adjustment", appCrop: "[data-slot=input] >> nth=0", avenueCrop: "[data-slot=input]", allow: [
       ...SIDE_10_TO_8,
       { prop: "width", because: "app: app/ui/components/dues.tsx: the adjustment dialog sets its fields two to a row (grid-cols-2); an input fills whatever column it is in, as Avenue's" },
     ] },
-    { label: "field description", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-description] >> nth=0", avenueCrop: "[data-slot=field-description]" },
+    { label: "field description", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-description] >> nth=0", avenueCrop: "[data-slot=field-description]", allow: FIELD_TEXT },
   ],
   "components-field--invalid": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
     {
       label: "invalid input",
       app: "primitives-signin--bad-email",
@@ -634,7 +638,7 @@ export const PAIRS: Record<string, PairEntry> = {
     },
   ],
   "components-select--invalid": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
   ],
   "components-select--long-options": { none: "Same trigger as Select / Default with long text that truncates; compared there." },
   "components-select--native-on-phones": { none: "The operating system's own picker on phones; its look is the platform's, not Avenue's or the app's." },
