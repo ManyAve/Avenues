@@ -423,8 +423,13 @@ export const SortPopover: Story = {
     // Arrow keys in the popover are the popover's, not the grid's.
     await userEvent.keyboard("{ArrowLeft}");
     await expect(sortBalance).toHaveAttribute("aria-expanded", "true");
+    // The chosen direction carries a check, not colour alone, and choosing moves no width (AVE-94).
+    const width = highLow.getBoundingClientRect().width;
+    await expect(highLow.querySelector("[data-slot=sort-check]")).toBeNull();
     await userEvent.click(highLow);
     await expect(highLow).toHaveAttribute("aria-pressed", "true");
+    await expect(highLow.querySelector("[data-slot=sort-check]")).toBeVisible();
+    await expect(highLow.getBoundingClientRect().width).toBe(width);
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(sortBalance).toHaveFocus());
     await expect(canvas.getByRole("columnheader", { name: /Balance/ })).toHaveAttribute("aria-sort", "descending");

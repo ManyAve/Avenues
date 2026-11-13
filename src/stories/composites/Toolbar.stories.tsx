@@ -411,6 +411,12 @@ export const Phone: Story = {
       chips.scrollLeft = 0;
       await waitFor(() => expect(chips).not.toHaveAttribute("data-scroll-end"));
     }
+    // Controls that share a row share a height (AVE-2 §2, AVE-94): 44px with the search field on a touch screen, 32px
+    // with a mouse.
+    const heights = [bar.getByRole("searchbox"), bar.getByRole("button", { name: /New/ }), bar.getByRole("button", { name: "More" })].map(
+      (control) => control.getBoundingClientRect().height,
+    );
+    await expect(heights).toEqual(Array(3).fill(matchMedia("(pointer: coarse)").matches ? 44 : 32));
     await userEvent.tab();
     await expect(bar.getByRole("searchbox", { name: "Search households" })).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
