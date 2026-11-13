@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "#avenue/lib/utils";
 
 // Building blocks for the Foundations pages. Story-only: nothing here is exported from the package.
-// Page, Section, Code and SelectMock come from the token stories (../tokens/token-docs) so both sections look alike.
+// Page, Section and Code come from the token stories (../tokens/token-docs) so both sections look alike.
 
 /** One rule, stated in a sentence, with an optional reason underneath. */
 export function Rule({ children, why }: { children: ReactNode; why?: ReactNode }) {
