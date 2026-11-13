@@ -134,6 +134,42 @@ export const DesktopMinimum: Story = {
   },
 };
 
+// The fold's edge (AVE-9: actions fold into More below 1100px). The stories above sit at 900 and 1440, so a moved
+// breakpoint passed them; these pin both sides of it, and 1100 is the narrowest window that has to fit every button.
+const foldEdge = {
+  viewport: {
+    options: {
+      atFold: { name: "At the fold (1100px)", styles: { width: "1100px", height: "700px" }, type: "desktop" },
+      belowFold: { name: "Below the fold (1099px)", styles: { width: "1099px", height: "700px" }, type: "desktop" },
+    },
+  },
+};
+
+/** 1100px, the narrowest window where the actions stay buttons. */
+export const AtTheFold: Story = {
+  globals: { viewport: { value: "atFold", isRotated: false } },
+  parameters: foldEdge,
+  render: () => <HouseholdsToolbar />,
+  play: async ({ canvas }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
+    await expect(bar.getByRole("button", { name: /Export/ })).toBeVisible();
+    await expect(bar.getByRole("button", { name: /Import/ })).toHaveAccessibleDescription(importReason);
+    await expect(bar.queryByRole("button", { name: "More actions" })).toBeNull();
+  },
+};
+
+/** 1099px: one pixel narrower, the actions fold into More. */
+export const BelowTheFold: Story = {
+  globals: { viewport: { value: "belowFold", isRotated: false } },
+  parameters: foldEdge,
+  render: () => <HouseholdsToolbar />,
+  play: async ({ canvas }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
+    await expect(bar.getByRole("button", { name: "More actions" })).toBeVisible();
+    await expect(bar.queryByRole("button", { name: /Export/ })).toBeNull();
+  },
+};
+
 /** One Tab stop: Tab lands on the first chip, the arrows cross chips, search and buttons, and Tab leaves. */
 export const KeyboardFlow: Story = {
   globals: wide,
