@@ -129,8 +129,14 @@ const BORDER_WIDTHS = ["border-top-width", "border-right-width", "border-bottom-
 
 /** One visible part of a captured element (the element itself first), as the browser computed it. */
 export interface Part {
+  /** Its place in the capture's part list, also written on the element as `data-parity-i`. */
+  index?: number;
   tag: string;
   slot: string | null;
+  /** An icon's drawing (AVE-77): its lucide name, or a short signature of its shapes. Only on an svg. */
+  glyph?: string;
+  /** An icon's inner markup, so an allowed icon can be drawn on the other side before pixels judge. Only on an svg. */
+  markup?: string;
   /** The part's own text, not its children's. */
   text: string;
   width: number;
@@ -146,6 +152,9 @@ export interface Difference {
   avenue: string;
   /** The allowance that covers it, if any. */
   because?: string;
+  /** The parts it was found on (Part.index), so an allowed value can be applied to the app's part (AVE-77). */
+  appIndex?: number;
+  avenueIndex?: number;
 }
 
 function norm(value: string): string {
@@ -252,19 +261,75 @@ export function styleDifferences(app: Part[], avenue: Part[], sameText: boolean,
       if (frame && (prop === "column-gap" || prop === "row-gap")) continue;
       const av = looks(prop, a.style[prop] ?? "");
       const bv = looks(prop, b.style[prop] ?? "");
-      if (av !== bv) out.push({ where, prop, app: av, avenue: bv });
+      if (av !== bv) out.push({ where, prop, app: av, avenue: bv, ...indices(a, b) });
     }
     const textFollows = !sameText && (multiLine(a) || multiLine(b));
     if (!(frame && i === 0) && !textFollows && Math.round(a.height) !== Math.round(b.height)) {
-      out.push({ where, prop: "height", app: `${Math.round(a.height)}px`, avenue: `${Math.round(b.height)}px` });
+      out.push({ where, prop: "height", app: `${Math.round(a.height)}px`, avenue: `${Math.round(b.height)}px`, ...indices(a, b) });
     }
     // An icon's width never follows text, so it is compared even where the texts differ.
     const icon = a.tag === "svg" && b.tag === "svg";
+    // A different drawing is a different icon, whatever its size and colour (AVE-77).
+    if (icon && a.glyph !== undefined && b.glyph !== undefined && a.glyph !== b.glyph) {
+      out.push({ where, prop: "glyph", app: a.glyph, avenue: b.glyph, ...indices(a, b) });
+    }
     if ((sameText || icon) && !frame && Math.round(a.width) !== Math.round(b.width)) {
-      out.push({ where, prop: "width", app: `${Math.round(a.width)}px`, avenue: `${Math.round(b.width)}px` });
+      out.push({ where, prop: "width", app: `${Math.round(a.width)}px`, avenue: `${Math.round(b.width)}px`, ...indices(a, b) });
     }
   }
   return out;
+}
+
+function indices(a: Part, b: Part): Pick<Difference, "appIndex" | "avenueIndex"> {
+  return { ...(a.index === undefined ? {} : { appIndex: a.index }), ...(b.index === undefined ? {} : { avenueIndex: b.index }) };
+}
+
+/** What to change on each side so pixels can judge what the allowances don't explain (AVE-77). */
+export interface Reconciliation {
+  /** Avenue's value of an allowed difference, set inline on the app's part. */
+  styles: { index: number; prop: string; value: string }[];
+  /** The app's own text for an Avenue part that shows different text. */
+  texts: { index: number; text: string }[];
+  /** The app's drawing for an Avenue icon whose different drawing is allowed. */
+  icons: { index: number; markup: string }[];
+}
+
+const BORDER_COLORS = ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"];
+
+/**
+ * Makes the two captures comparable pixel by pixel (AVE-77). Every allowed difference is a value Avenue chose on
+ * purpose, so the app's part takes Avenue's value; every part that shows different text takes the app's text. Any
+ * pixel still different after that is something no allowance explains. Height and width aren't set: they follow
+ * from the rest. Returns null when there's nothing to do, or when a difference is unexplained already (the verdict is
+ * decided without pixels then).
+ */
+export function reconcile(app: Part[], avenue: Part[], diffs: Difference[], frame = false): Reconciliation | null {
+  if (frame || diffs.some((d) => d.because === undefined)) return null;
+  // A part on one side only (an agreed check icon, a wrapping span) can't be applied to the other side, and the scale
+  // variables are the whole page's; pixels would only find what the allowance already says.
+  if (diffs.some((d) => d.prop === "parts" || d.where === ":root")) return null;
+  const byIndex = new Map(avenue.map((p) => [p.index, p]));
+  const appByIndex = new Map(app.map((p) => [p.index, p]));
+  const styles: Reconciliation["styles"] = [];
+  const icons: Reconciliation["icons"] = [];
+  for (const d of diffs) {
+    if (d.appIndex === undefined || d.avenueIndex === undefined) continue;
+    if (d.prop === "glyph") {
+      const markup = appByIndex.get(d.appIndex)?.markup;
+      if (markup !== undefined) icons.push({ index: d.avenueIndex, markup });
+      continue;
+    }
+    if (!(STYLE_PROPS as readonly string[]).includes(d.prop)) continue;
+    const value = byIndex.get(d.avenueIndex)?.style[d.prop];
+    if (value === undefined) continue;
+    // The capture reads one border colour for all four sides, so an allowed colour goes on all four.
+    for (const prop of d.prop === "border-top-color" ? BORDER_COLORS : [d.prop]) styles.push({ index: d.appIndex, prop, value });
+  }
+  const texts: Reconciliation["texts"] = [];
+  for (const [a, b] of matchParts(app, avenue).pairs) {
+    if (b.index !== undefined && a.text !== b.text && a.text !== "" && b.text !== "") texts.push({ index: b.index, text: a.text });
+  }
+  return styles.length + texts.length + icons.length > 0 ? { styles, texts, icons } : null;
 }
 
 function covers(allowance: Allowance, d: Difference): boolean {
