@@ -10,6 +10,8 @@ import { cn } from "#avenue/lib/utils";
  *
  * The action follows AVE-2's corner rule through Card: on the title's line, a full 16px from the top and right
  * edges, sm size (28px, 8px corner), never a pill. The title is a level-2 heading under the page's h1.
+ *
+ * The outline is the app's border colour (`ring-border`, AVE-70), not Card's 10% foreground ring.
  */
 export function SectionCard({
   title,
@@ -29,7 +31,7 @@ export function SectionCard({
   action?: ReactNode | undefined;
 }) {
   return (
-    <Card data-section="" className={cn("shadow-card", className)} {...props}>
+    <Card data-section="" className={cn("shadow-card ring-border", className)} {...props}>
       <CardHeader>
         <CardTitle>
           <h2 className="flex items-center gap-group text-compact">
