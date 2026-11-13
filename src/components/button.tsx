@@ -9,15 +9,17 @@ import { cn } from "#avenue/lib/utils";
  * AVE-2 sizes: xs 24 and sm 28 with the md corner (8px), default 32 and lg 40 with the lg corner (10px);
  * the app's `page` size (31px, 6px corner) folds into default. Buttons are never pills.
  * Size is listed before variant so the `text` variant's own height and padding win the merge.
+ * Labels use text-control, 14px on both scales (AVE-29). The `text` variant is running text, not a control label, so
+ * it keeps text-sm.
  */
 const buttonVariants = cva(
-  "group/button relative inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 data-disabled:opacity-50 data-disabled:active:translate-y-0 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-control font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 data-disabled:opacity-50 data-disabled:active:translate-y-0 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       size: {
         default: `${controlShape({ size: "md" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
-        xs: `${controlShape({ size: "xs" })} gap-1 px-2 text-xs [&_svg:not([class*='size-'])]:size-3`,
-        sm: `${controlShape({ size: "sm" })} gap-1 px-2 text-control [&_svg:not([class*='size-'])]:size-3.5`,
+        xs: `${controlShape({ size: "xs" })} gap-1 px-2 [&_svg:not([class*='size-'])]:size-3`,
+        sm: `${controlShape({ size: "sm" })} gap-1 px-2 [&_svg:not([class*='size-'])]:size-3.5`,
         lg: `${controlShape({ size: "lg" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         icon: `${controlShape({ size: "md" })} w-control-md`,
         "icon-xs": `${controlShape({ size: "xs" })} w-control-xs [&_svg:not([class*='size-'])]:size-3`,
@@ -41,7 +43,7 @@ const buttonVariants = cva(
          * something on the page. Sits in running text at the text's own height; the hit area extends 8px above
          * and below without moving anything.
          */
-        text: "h-auto rounded-xs border-0 px-0 text-start font-normal whitespace-normal text-primary-subtle-foreground underline underline-offset-3 after:absolute after:-inset-y-2 after:inset-x-0 hover:text-foreground active:not-aria-[haspopup]:translate-y-0",
+        text: "h-auto rounded-xs border-0 px-0 text-sm text-start font-normal whitespace-normal text-primary-subtle-foreground underline underline-offset-3 after:absolute after:-inset-y-2 after:inset-x-0 hover:text-foreground active:not-aria-[haspopup]:translate-y-0",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
