@@ -100,8 +100,8 @@ export const WithNone: Story = {
     const input = canvas.getByRole("combobox", { name: "Applies to" });
     await expect(input).toHaveValue("Neighborhood");
     // The app's 14px icons: the leading house and the chevron (AVE-59).
-    const field = input.closest("[data-slot=combobox]")!;
-    for (const svg of field.querySelectorAll("svg")) await expect(svg.getBoundingClientRect().width).toBe(14);
+    const box = input.closest("[data-slot=combobox]")!;
+    for (const svg of box.querySelectorAll("svg")) await expect(svg.getBoundingClientRect().width).toBe(14);
     await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
     await expect(await screen.findByRole("option", { name: "Neighborhood" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
