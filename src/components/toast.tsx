@@ -16,10 +16,15 @@ import { cn } from "#avenue/lib/utils";
  * ManyAve's Toast, ported from the app's app/ui/components/Toast.tsx (e01cc90) onto ui-sdk's toaster. Its rules
  * are unchanged and tested in the Toast stories:
  *
- * - one toast at a time, at the bottom centre; a new one replaces the current one;
+ * - one toast at a time, at the bottom centre; a new one replaces the current one, except an error (below);
  * - a success hides after 4.2s, and stays while focus is in it (a keyboard user's Undo); ui-sdk also holds it
  *   while the pointer is over it;
- * - an error stays until dismissed and is announced at once; a success is announced politely.
+ * - a success with an action (Undo) stays at least 10s, so a screen reader, switch or voice user can reach it
+ *   (WCAG 2.2.1, AVE-41). Every toast action must also exist somewhere that doesn't time out, such as the row's
+ *   menu or an Undo in the register: the toast is a shortcut, never the only way;
+ * - an error stays until dismissed and is announced at once; a success is announced politely. A later success
+ *   never hides an error: it waits behind it and shows once the error is dismissed (only the latest one waits).
+ *   A new error replaces the current error.
  *
  * ui-sdk announces each toast once through its own live regions, so the visible region is not live and nothing
  * is read twice. F6 moves focus to the toast and back. AVE-2: the 10px top and bottom padding becomes 8.
@@ -35,13 +40,36 @@ type ToastOptions = {
 type ShowToast = (text: string, options?: ToastOptions) => void;
 
 const SUCCESS_MS = 4200;
+/** A success with an action: long enough to reach the action by F6, a switch or voice (AVE-41). */
+const ACTION_MS = 10_000;
 
 function showWith(toaster: Toaster<ReactNode>): ShowToast {
+  const showingError = () => toaster.toasts().some((item) => item.type === "error");
+  // The latest success that arrived while an error showed; it shows once the error is gone.
+  let waiting: (() => void) | undefined;
+  let replacingError = false;
+  toaster.subscribe(() => {
+    if (!waiting || replacingError || showingError()) return;
+    const next = waiting;
+    waiting = undefined;
+    next();
+  });
   return (text, { action, variant = "success" } = {}) => {
-    toaster.dismiss();
     const options = action ? { action } : {};
-    if (variant === "error") toaster.error(text, { ...options, duration: Infinity });
-    else toaster.success(text, { ...options, duration: SUCCESS_MS });
+    if (variant === "error") {
+      // A success waiting behind the old error keeps waiting behind the new one.
+      replacingError = true;
+      toaster.dismiss();
+      toaster.error(text, { ...options, duration: Infinity });
+      replacingError = false;
+      return;
+    }
+    const show = () => {
+      toaster.dismiss();
+      toaster.success(text, { ...options, duration: action ? ACTION_MS : SUCCESS_MS });
+    };
+    if (showingError()) waiting = show;
+    else show();
   };
 }
 
@@ -107,4 +135,4 @@ function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export { ToastProvider, Toaster, useToast, showWith, type ShowToast, type ToastOptions };
+export { ToastProvider, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions };

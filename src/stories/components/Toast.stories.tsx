@@ -59,7 +59,21 @@ export const Success: Story = {
   },
 };
 
-/** With an action, the toast stays while focus is on it (F6 reaches it), and hides 4.2s after focus leaves. */
+/**
+ * A success with an action stays at least 10s, so F6, a switch or voice can reach Undo in time (WCAG 2.2.1, AVE-41).
+ * Still there at 9s, gone soon after 10s.
+ */
+export const ActionGetsTenSeconds: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Archive notice" }));
+    await findToast();
+    await wait(9000);
+    await expect(toastEl()).toHaveTextContent("Notice archived");
+    await gone(3000);
+  },
+};
+
+/** With an action, the toast stays while focus is on it (F6 reaches it), past its 10s, and hides after focus leaves. */
 export const ActionKeepsItWhileFocused: Story = {
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Archive notice" });
@@ -72,10 +86,10 @@ export const ActionKeepsItWhileFocused: Story = {
     });
     action.focus();
     await expect(action).toHaveFocus();
-    await wait(5000);
+    await wait(11000);
     await expect(toastEl()).not.toBeNull();
     trigger.focus();
-    await gone(6000);
+    await gone(12000);
   },
 };
 
@@ -111,15 +125,41 @@ export const ErrorStays: Story = {
   },
 };
 
-/** A new toast replaces the current one. Ends with the toast showing, for the agent test. */
+/** A new success replaces the current one. Ends with the toast showing, for the agent test. */
 export const NewReplacesCurrent: Story = {
   tags: ["agent"],
   play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Archive notice" }));
     await findToast();
     await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
     await waitFor(() => expect(toastEl()).toHaveTextContent("Household added"));
     await waitFor(() => expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1));
+  },
+};
+
+/**
+ * A later success never hides an error (AVE-41): the error stays, and the success waits behind it until the error is
+ * dismissed. Ends with the error showing.
+ */
+export const ErrorNotHiddenBySuccess: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await findToast();
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    await wait(500);
+    const toast = toastEl();
+    await expect(toast).toHaveAttribute("data-type", "error");
+    await expect(toast).toHaveTextContent("Couldn't send the reminder.");
+    await expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1);
+
+    const dismiss = document.querySelector<HTMLElement>("[data-slot=toast-close]")!;
+    dismiss.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(toastEl()).toHaveTextContent("Household added"));
+    await expect(toastEl()).toHaveAttribute("data-type", "success");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await waitFor(() => expect(toastEl()).toHaveAttribute("data-type", "error"));
   },
 };
 
