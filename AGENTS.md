@@ -32,6 +32,12 @@ next to the Base UI import, for example `// Base UI: ui-sdk 0.1 has no <thing>.`
 comments when ui-sdk is upgraded. Hand-rolled behavior is the last resort, built from `@ui-sdk/core`
 (the skill's "Build a component ui-sdk doesn't ship" path), not from scratch.
 
+**On every ui-sdk upgrade**, re-check what Avenue works around today, and drop what ui-sdk now does itself:
+- each `// Base UI:` comment (above), and each patch under "Patched ui-sdk" (below);
+- Combobox / Pattern is pinned to `presentation="popover"`, because ui-sdk 0.1's `checkPattern` fails its own
+  Combobox presenting as a sheet ("aria-controls names no open listbox", AVE-39). Remove the pin, run the `touch`
+  project, and if it passes delete the pin and its comment (AVE-75).
+
 **Avenue keeps its own look.** Moving a component to ui-sdk must not change a pixel: it keeps the
 shadcn component structure, `data-slot` names, Avenue's tokens and Tailwind classes. ui-sdk supplies
 behavior, not appearance; prove it with `bun run visual:diff`.
