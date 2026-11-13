@@ -55,6 +55,29 @@ const FREEZE = `*,*::before,*::after{animation:none!important;transition:none!im
 // (AVE-19: 7 of 72 repeat captures differed with partial raster, 0 of 72 without).
 const CHROMIUM_ARGS = ["--disable-partial-raster"];
 
+const DEFAULT_VIEWPORT = { width: 1280, height: 800 };
+
+export interface Viewport {
+  width: number;
+  height: number;
+}
+
+/**
+ * The page size a story asks for through Storybook's viewport global (`globals: { viewport: { value: "phone" } }`),
+ * read from the preview's viewport options, or the default desktop size. The story tests run such a story at that
+ * size and fail it otherwise (.storybook/viewport-check.ts), so a capture at 1280px would only show that error (AVE-51).
+ */
+export function storyViewport(asked: unknown, options: unknown): Viewport {
+  const value = typeof asked === "object" && asked !== null ? (asked as { value?: unknown }).value : asked;
+  if (typeof value !== "string" || value === "") return DEFAULT_VIEWPORT;
+  const styles = (options as Record<string, { styles?: { width?: string; height?: string } }> | undefined)?.[value]
+    ?.styles;
+  const width = Number.parseFloat(styles?.width ?? "");
+  const height = Number.parseFloat(styles?.height ?? "");
+  if (!Number.isFinite(width)) throw new Error(`the story asks for viewport "${value}", which has no width`);
+  return { width, height: Number.isFinite(height) ? height : DEFAULT_VIEWPORT.height };
+}
+
 export function comboName(c: Combo): string {
   return `${c.theme}-${c.typeScale}`;
 }
@@ -137,25 +160,65 @@ function serve(dir: string) {
   });
 }
 
+interface Rendered {
+  phase: string;
+  viewport: { asked: unknown; options: unknown };
+  error?: string;
+}
+
 /** Opens one story and waits until Storybook has rendered it and run its play function. */
-async function capture(page: Page, base: string, id: string, combo: Combo): Promise<Buffer> {
-  const globals = `theme:${combo.theme};typeScale:${combo.typeScale}`;
-  await page.goto(`${base}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story&globals=${globals}`);
+async function render(page: Page, url: string): Promise<Rendered> {
+  await page.goto(url);
   await page.addStyleTag({ content: FREEZE });
-  const phase = await page.waitForFunction(
+  const handle = await page.waitForFunction(
     () => {
       // Storybook's preview global; its current render's phase reaches "completed" after the play function.
-      const preview = (window as unknown as Record<string, { currentRender?: { phase?: string } } | undefined>)[
-        "__STORYBOOK_PREVIEW__"
-      ];
-      const p = preview?.currentRender?.phase;
-      return p === "completed" || p === "finished" || p === "errored" || p === "aborted" ? p : false;
+      const preview = (
+        window as unknown as Record<
+          string,
+          | {
+              currentRender?: {
+                phase?: string;
+                story?: { storyGlobals?: Record<string, unknown>; parameters?: Record<string, unknown> };
+              };
+            }
+          | undefined
+        >
+      )["__STORYBOOK_PREVIEW__"];
+      const current = preview?.currentRender;
+      const p = current?.phase;
+      if (!(p === "completed" || p === "finished" || p === "errored" || p === "aborted")) return false;
+      // Storybook shows its error screen (and keeps the phase) when a hook such as afterEach throws.
+      const shown = document.body.classList.contains("sb-show-errordisplay");
+      const message = document.querySelector("#error-message")?.textContent?.trim();
+      return {
+        phase: p,
+        viewport: {
+          asked: current?.story?.storyGlobals?.["viewport"],
+          options: (current?.story?.parameters?.["viewport"] as { options?: unknown } | undefined)?.options,
+        },
+        error: shown ? message || "Storybook showed its error screen" : undefined,
+      };
     },
     undefined,
     { timeout: 30_000 },
   );
-  const result = await phase.jsonValue();
-  if (result !== "completed" && result !== "finished") throw new Error(`story ${result}`);
+  return (await handle.jsonValue()) as Rendered;
+}
+
+async function capture(page: Page, base: string, id: string, combo: Combo): Promise<Buffer> {
+  const globals = `theme:${combo.theme};typeScale:${combo.typeScale}`;
+  const url = `${base}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story&globals=${globals}`;
+  let rendered = await render(page, url);
+  // A story that asks for a viewport is captured at that size, as the story tests run it.
+  const wanted = storyViewport(rendered.viewport.asked, rendered.viewport.options);
+  const current = page.viewportSize();
+  if (current?.width !== wanted.width || current?.height !== wanted.height) {
+    await page.setViewportSize(wanted);
+    rendered = await render(page, url);
+  }
+  if (rendered.phase !== "completed" && rendered.phase !== "finished") throw new Error(`story ${rendered.phase}`);
+  if (rendered.error) throw new Error(`story errored: ${rendered.error.split("\n")[0]}`);
   await page.evaluate(() => document.fonts.ready);
   // Two frames so layout settled after the freeze style and any play-function state change.
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
@@ -165,7 +228,7 @@ async function capture(page: Page, base: string, id: string, combo: Combo): Prom
 async function captureAll(browser: Browser, dir: string, side: string, ids: string[]) {
   const server = serve(dir);
   const shots = new Map<string, Buffer | Error>();
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: "reduce" });
+  const context = await browser.newContext({ viewport: DEFAULT_VIEWPORT, reducedMotion: "reduce" });
   const page = await context.newPage();
   try {
     for (const id of ids) {
