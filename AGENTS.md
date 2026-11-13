@@ -85,7 +85,9 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
    ui-sdk part's keys, roles or ARIA; `agent` runs the agent test for a ui-sdk component Avenue only
    styles and wires. Don't run `checkPattern` on unchanged ui-sdk components; ui-sdk tests those itself.
 9. **Keep it agent-ready** (`docs/agents.md`, the skill's agent-ready reference): every control is a
-   ui-sdk part with an accessible name that is unique where it sits; state changes go through
+   ui-sdk part with an accessible name that is unique where it sits, by at least one word: the bridge matches
+   whole words in any order, so "A–Z" and "Z–A" are one name to it, and the story tests fail on such a pair
+   (AVE-92, `.storybook/name-clash.ts`); state changes go through
    `on<Key>Change` callbacks, not DOM listeners; what a popup shows comes from its payload or state,
    not a trigger's `onClick`; anything an agent must not do alone (delete, pay, send) carries
    `data-agent-confirm="<what it does>"`, and fields an agent may fill but not read carry

@@ -40,7 +40,7 @@ const CONTROL_ROLES = [
     "textbox",
   ].map((role) => `[role=${role}]`),
 ];
-const CONTROL_SELECTOR = CONTROL_ROLES.map((selector) => `${selector}[data-slot]`).join(", ");
+export const CONTROL_SELECTOR = CONTROL_ROLES.map((selector) => `${selector}[data-slot]`).join(", ");
 
 /** Story groups whose stories are measured: the components and the composites built from them. */
 export const MEASURED_TITLES = ["Components/", "Composites/"];
