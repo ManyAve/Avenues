@@ -21,6 +21,11 @@ export interface DisclosureProps {
  * Shows or hides secondary detail under a one-line summary (the admin-only Advanced block, a workbook's sheets).
  * Built on ui-sdk's Collapsible. Replaces the app's native details/summary blocks: the summary is a real button with a visible focus ring and
  * aria-expanded, Enter or Space toggles it, and the chevron turns to show the state.
+ *
+ * Against the app's summary (AVE-58): the text stays muted when open, as the app's does; the chevron stands in for
+ * the browser's marker and turns to show the state. The 4px side padding and xs corner give the focus ring room,
+ * and the -4px margin keeps the label where the app's sits. The trigger is as wide as its label, not the whole line,
+ * so a tap beside it doesn't toggle the section.
  */
 export function Disclosure({
   summary,
@@ -42,7 +47,7 @@ export function Disclosure({
       <CollapsibleTrigger
         className={cn(
           "group/disclosure relative hit-area -mx-1 inline-flex items-center gap-1 rounded-xs px-1 text-meta text-muted-foreground outline-none select-none",
-          "hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-open:text-foreground",
+          "hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
       >
