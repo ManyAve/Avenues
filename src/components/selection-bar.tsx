@@ -2,7 +2,7 @@
 
 import { Toolbar as ToolbarPrimitive, ToolbarButton as ToolbarItem } from "@ui-sdk/react/toolbar";
 import { X } from "lucide-react";
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode, type RefObject } from "react";
 import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
 
@@ -31,6 +31,11 @@ export type SelectionAction = {
  * its reason under it (the app hid it in a title). The count is announced whenever it changes, from a status region
  * that stays mounted while the bar comes and goes, so the first selection is announced too, and clearing says so.
  *
+ * When the selection empties, focus goes back to `returnFocus`, the list's own stop (AVE-90). The bar goes away with
+ * the selection, after Clear selection or an action that empties it (Archive, a send that clears it), and focus in it
+ * would otherwise fall to the page. Under the story tests' strict mode, a bar that loses focus with no `returnFocus`
+ * throws, as ui-sdk's own development warnings do.
+ *
  * Changes from the app (AVE-2): the corner is lg (10px, was a 9px literal), actions sit gap-controls apart and it
  * floats 48px above the bottom (was 51px).
  */
@@ -39,7 +44,10 @@ function SelectionBar({
   label = (n) => `${n} selected`,
   actions,
   onClear,
+  returnFocus,
   className,
+  onFocus,
+  onBlur,
   ...props
 }: Omit<ComponentProps<typeof ToolbarPrimitive>, "children"> & {
   count: number;
@@ -47,7 +55,11 @@ function SelectionBar({
   label?: ((count: number) => string) | undefined;
   actions: readonly SelectionAction[];
   onClear?: (() => void) | undefined;
+  /** Where focus goes when the selection empties while focus is in the bar: the list's own stop. */
+  returnFocus?: RefObject<HTMLElement | null> | (() => HTMLElement | null | undefined) | undefined;
 }) {
+  // Whether focus is in the bar, read as the bar unmounts: by then the element may already be out of the page.
+  const focusInside = useRef(false);
   // Say "Selection cleared" only after something was selected, so an empty list carries no stray text.
   const [selectedOnce, setSelectedOnce] = useState(false);
   if (count > 0 && !selectedOnce) setSelectedOnce(true);
@@ -64,7 +76,16 @@ function SelectionBar({
             className,
           )}
           {...props}
+          onFocus={(event) => {
+            focusInside.current = true;
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) focusInside.current = false;
+            onBlur?.(event);
+          }}
         >
+          <ReturnFocus focusInside={focusInside} to={returnFocus} />
           <span data-slot="selection-bar-count" className="flex h-control-sm items-center border-e px-2 font-[550]">
             {label(count)}
           </span>
@@ -93,6 +114,37 @@ function SelectionBar({
       ) : null}
     </>
   );
+}
+
+/** Renders nothing; its cleanup runs before the bar leaves the page, while focus is still known to be in it. */
+function ReturnFocus({
+  focusInside,
+  to,
+}: {
+  focusInside: RefObject<boolean>;
+  to: RefObject<HTMLElement | null> | (() => HTMLElement | null | undefined) | undefined;
+}) {
+  const target = useRef(to);
+  useLayoutEffect(() => {
+    target.current = to;
+  });
+  useLayoutEffect(
+    () => () => {
+      if (!focusInside.current) return;
+      focusInside.current = false;
+      const where = target.current;
+      const element = typeof where === "function" ? where() : where?.current;
+      if (element) {
+        element.focus();
+      } else if (Reflect.get(globalThis, "__UI_SDK_STRICT__")) {
+        queueMicrotask(() => {
+          throw new Error("SelectionBar: the selection emptied while focus was in the bar, and no returnFocus says where it goes.");
+        });
+      }
+    },
+    [focusInside],
+  );
+  return null;
 }
 
 export { SelectionBar };

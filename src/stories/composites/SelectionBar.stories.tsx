@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { CircleDollarSign, Megaphone } from "lucide-react";
+import { Archive, CircleDollarSign, Megaphone } from "lucide-react";
 import { useRef, useState } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
@@ -19,12 +19,14 @@ const dueReason = "Set this year's assessment first.";
 const announce = fn();
 const requestDues = fn();
 
-function List({ initial = [] as string[], duesReady = false }) {
+function List({ initial = [] as string[], duesReady = false, archivable = false }) {
   const [picked, setPicked] = useState<string[]>(initial);
   const first = useRef<HTMLButtonElement>(null);
   const actions: SelectionAction[] = [
     { id: "dues", label: "Request dues", icon: <CircleDollarSign aria-hidden />, confirm: "Sends a dues request to each selected household", ...(duesReady ? { onSelect: requestDues } : { disabledReason: dueReason }) },
     { id: "announce", label: "Announcement", icon: <Megaphone aria-hidden />, primary: true, onSelect: announce },
+    // Archive empties the selection, so the bar goes away under focus, as Clear does (AVE-90).
+    ...(archivable ? [{ id: "archive", label: "Archive", icon: <Archive aria-hidden />, onSelect: () => setPicked([]) }] : []),
   ];
   return (
     <div className="relative min-h-[420px] bg-background px-page py-inset">
@@ -46,11 +48,9 @@ function List({ initial = [] as string[], duesReady = false }) {
         count={picked.length}
         label={(n) => `${n} ${n === 1 ? "household" : "households"} selected`}
         actions={actions}
-        onClear={() => {
-          setPicked([]);
-          // The bar goes away with the selection, so Clear hands focus back to the list.
-          first.current?.focus();
-        }}
+        onClear={() => setPicked([])}
+        // The bar goes away with the selection, and hands focus back to the list's first stop.
+        returnFocus={first}
       />
     </div>
   );
@@ -89,11 +89,12 @@ export const DesktopMinimum: Story = {
 
 /**
  * The count is announced as it changes, the first selection included; the bar is one Tab stop with arrows; a
- * disabled action stays reachable; Clear says so and puts focus back in the list.
+ * disabled action stays reachable; Clear says so, and Clear or an action that empties the selection puts focus back
+ * in the list through `returnFocus` (AVE-90).
  */
 export const KeyboardFlow: Story = {
   globals: wide,
-  render: () => <List />,
+  render: () => <List archivable />,
   play: async ({ canvas }) => {
     const status = canvas.getByRole("status");
     await expect(status).toHaveTextContent("");
@@ -117,8 +118,19 @@ export const KeyboardFlow: Story = {
     await expect(dues).toHaveAccessibleDescription(dueReason);
     await userEvent.keyboard("{ArrowRight}{Enter}");
     await expect(announce).toHaveBeenCalled();
-    await userEvent.keyboard("{ArrowRight}");
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
     await expect(canvas.getByRole("button", { name: "Clear selection" })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(status).toHaveTextContent("Selection cleared"));
+    await expect(canvas.queryByRole("toolbar", { name: "Selection actions" })).toBeNull();
+    await expect(canvas.getAllByRole("checkbox")[0]).toHaveFocus();
+    // An action that empties the selection hands focus back the same way.
+    await userEvent.keyboard(" ");
+    await waitFor(() => expect(status).toHaveTextContent("1 household selected"));
+    for (const _ of homes) await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: /Announcement/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(canvas.getByRole("button", { name: /Archive/ })).toHaveFocus();
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(status).toHaveTextContent("Selection cleared"));
     await expect(canvas.queryByRole("toolbar", { name: "Selection actions" })).toBeNull();
