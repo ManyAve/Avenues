@@ -857,7 +857,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-toolbar--phone": [
     { label: "phone toolbar chips", app: "primitives-phone--toolbar", appCrop: "#storybook-root > div > div:nth-child(2)", avenueCrop: "[data-slot=chip-row]", allow: [
       ...CHIP,
-      { prop: "padding-*", app: "16px", avenue: "20px", because: "AVE-2 §1: the strip's padding is the page inset, 16px on a phone and 20px from 640px; the capture is wider than a phone" },
+      { prop: "padding-right", app: "16px", avenue: "32px", because: "AVE-8: at 700px and narrower a scrolling chip row keeps 32px after its last chip, so it can scroll clear of the 28px fade (ChipRow)" },
       { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
     ] },
     { label: "phone toolbar search", app: "primitives-phone--toolbar", appCrop: "#storybook-root input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },

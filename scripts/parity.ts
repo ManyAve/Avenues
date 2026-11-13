@@ -52,6 +52,7 @@ import {
   type Verdict,
 } from "./parity-lib";
 import { PAIRS } from "./parity-pairs";
+import { storyViewport } from "./visual-diff";
 
 const root = resolve(import.meta.dir, "..");
 const out = join(root, ".parity");
@@ -179,23 +180,71 @@ function storyIds(index: { entries: Record<string, { id: string; type: string }>
     .sort();
 }
 
-/** Opens a story and waits until Storybook reports it rendered and its play function finished. */
-async function open(page: Page, url: string, extraCss: string): Promise<void> {
+const DEFAULT_VIEWPORT = { width: 1280, height: 800 };
+
+type Rendered = { phase: string; viewport: { asked: unknown; options: unknown }; error: string | undefined };
+
+/** Loads a story and waits until Storybook reports it rendered and its play function finished. */
+async function render(page: Page, url: string, extraCss: string): Promise<Rendered> {
   await page.goto(url);
   await page.addStyleTag({ content: FREEZE + extraCss });
-  const phase = await page.waitForFunction(
+  const handle = await page.waitForFunction(
     () => {
-      const preview = (window as unknown as Record<string, { currentRender?: { phase?: string } } | undefined>)[
-        "__STORYBOOK_PREVIEW__"
-      ];
-      const p = preview?.currentRender?.phase;
-      return p === "completed" || p === "finished" || p === "errored" || p === "aborted" ? p : false;
+      const preview = (
+        window as unknown as Record<
+          string,
+          | {
+              currentRender?: {
+                phase?: string;
+                story?: { storyGlobals?: Record<string, unknown>; parameters?: Record<string, unknown> };
+              };
+            }
+          | undefined
+        >
+      )["__STORYBOOK_PREVIEW__"];
+      const current = preview?.currentRender;
+      const p = current?.phase;
+      if (!(p === "completed" || p === "finished" || p === "errored" || p === "aborted")) return false;
+      // Storybook keeps the phase but shows its error screen when a hook such as afterEach throws.
+      const shown = document.body.classList.contains("sb-show-errordisplay");
+      return {
+        phase: p,
+        viewport: {
+          asked: current?.story?.storyGlobals?.["viewport"],
+          options: (current?.story?.parameters?.["viewport"] as { options?: unknown } | undefined)?.options,
+        },
+        error: shown ? document.querySelector("#error-message")?.textContent?.trim() || "Storybook showed its error screen" : undefined,
+      };
     },
     undefined,
     { timeout: 30_000 },
   );
-  const result = await phase.jsonValue();
-  if (result !== "completed" && result !== "finished") throw new Error(`story ${result}`);
+  return (await handle.jsonValue()) as Rendered;
+}
+
+/**
+ * Opens a story and waits until it rendered and its play function finished. With `fit`, a story that asks for a
+ * viewport (Avenue's desktop, wide and phone stories) is opened at that size, as the story tests run it; at 1280px it
+ * would only show the viewport check's error screen over the story (as AVE-51 found for visual:diff). Without `fit`
+ * the page is 1280 x 800, where the app's stories are captured.
+ */
+async function open(page: Page, url: string, extraCss: string, fit = false): Promise<void> {
+  const size = (want: { width: number; height: number }) => {
+    const now = page.viewportSize();
+    return now?.width === want.width && now?.height === want.height ? undefined : want;
+  };
+  const reset = size(DEFAULT_VIEWPORT);
+  if (reset) await page.setViewportSize(reset);
+  let rendered = await render(page, url, extraCss);
+  if (fit) {
+    const wanted = size(storyViewport(rendered.viewport.asked, rendered.viewport.options));
+    if (wanted) {
+      await page.setViewportSize(wanted);
+      rendered = await render(page, url, extraCss);
+    }
+  }
+  if (rendered.phase !== "completed" && rendered.phase !== "finished") throw new Error(`story ${rendered.phase}`);
+  if (rendered.error) throw new Error(`story errored: ${rendered.error.split("\n")[0]}`);
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 }
@@ -413,7 +462,7 @@ async function main() {
       await open(tab, storyUrl(`http://localhost:${appServer.port}`, pair.app, `theme:${combo.theme}`), desktop ? desktopCss : "");
       if (desktop && appScale.size === 0) for (const [k, v] of await tab.evaluate(resolvedSizes, Object.keys(desktopVars))) appScale.set(k, v);
       const app = await shoot(tab, pair.appCrop, pair.keepFocus);
-      await open(tab, storyUrl(`http://localhost:${avenueServer.port}`, story, `theme:${combo.theme};typeScale:${combo.typeScale}`, pair.avenueArgs), "");
+      await open(tab, storyUrl(`http://localhost:${avenueServer.port}`, story, `theme:${combo.theme};typeScale:${combo.typeScale}`, pair.avenueArgs), "", true);
       const scale = desktop ? await tab.evaluate(resolvedSizes, Object.keys(desktopVars)) : [];
       const avenue = await shoot(tab, pair.avenueCrop, pair.keepFocus);
       const sameText = app.text === avenue.text;
