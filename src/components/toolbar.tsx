@@ -6,7 +6,7 @@ import {
   ToolbarInput,
 } from "@ui-sdk/react/toolbar";
 import { ChevronDown, Ellipsis } from "lucide-react";
-import { useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
+import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { ChipRow } from "#avenue/components/chip";
 import {
@@ -88,15 +88,25 @@ function wideQuery() {
   const width = getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-wide").trim();
   return `(min-width: ${width || "68.75rem"})`;
 }
-function subscribeWide(onChange: () => void) {
-  const query = window.matchMedia(wideQuery());
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-/** True from the `wide` breakpoint (1100px) up, where the page's actions fit as buttons. */
-function useWide() {
+/**
+ * True from the `wide` breakpoint (1100px) up, where the page's actions fit as buttons. `beforeChange` runs as the
+ * query flips, before React renders the other side, while the old buttons are still in the page.
+ */
+function useWide(beforeChange: () => void) {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const query = window.matchMedia(wideQuery());
+      const handle = () => {
+        beforeChange();
+        onChange();
+      };
+      query.addEventListener("change", handle);
+      return () => query.removeEventListener("change", handle);
+    },
+    [beforeChange],
+  );
   return useSyncExternalStore(
-    subscribeWide,
+    subscribe,
     () => window.matchMedia(wideQuery()).matches,
     () => true,
   );
@@ -108,10 +118,22 @@ function useWide() {
  * minimum. A folded action keeps its disabled reason, as a muted line under its item.
  *
  * The fold renders one or the other rather than hiding with CSS, so the toolbar's arrow keys never land on a hidden
- * button.
+ * button. When the window crosses 1100px while focus is on a folding action, focus moves to More as they fold and
+ * to the first action as they unfold, instead of falling to the page (AVE-87).
  */
 function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[]; primary: ToolbarAction }) {
-  const wide = useWide();
+  const folding = useRef<HTMLSpanElement>(null);
+  const hadFocus = useRef(false);
+  const beforeChange = useCallback(() => {
+    hadFocus.current = !!folding.current?.contains(document.activeElement);
+  }, []);
+  const wide = useWide(beforeChange);
+  useLayoutEffect(() => {
+    if (!hadFocus.current) return;
+    hadFocus.current = false;
+    // Folded, the one button here is More; unfolded, the first is the first action.
+    folding.current?.querySelector<HTMLElement>(wide ? "button" : '[aria-label="More actions"]')?.focus();
+  }, [wide]);
   return (
     <span
       data-slot="toolbar-actions"
@@ -120,6 +142,8 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
       // button from its end, growing leftward into the room below, so it never runs under the next button.
       className="flex items-start gap-controls [&_[data-slot=button-reason]]:flex [&_[data-slot=button-reason]]:w-0 [&_[data-slot=button-reason]]:self-end [&_[data-slot=button-reason]]:justify-end [&_[data-slot=button-reason]]:whitespace-nowrap"
     >
+      {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
+      <span ref={folding} className="contents">
       {wide ? (
         actions.map((action) => (
           <ToolbarItem
@@ -158,6 +182,7 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
           </DropdownMenuContent>
         </DropdownMenu>
       ) : null}
+      </span>
       <ToolbarItem
         disabled={!!primary.disabledReason}
         onClick={primary.disabledReason ? undefined : primary.onSelect}

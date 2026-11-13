@@ -264,6 +264,65 @@ export const WideIsAToken: Story = {
   },
 };
 
+// AVE-87: a stand-in for the wide (1100px) query, so a story can cross the fold without resizing the window. It goes in
+// before render, because the toolbar subscribes to the query when it mounts.
+const fold = { wide: true, listeners: new Set<() => void>() };
+function stubFold() {
+  const real = window.matchMedia.bind(window);
+  fold.wide = true;
+  fold.listeners.clear();
+  window.matchMedia = (query: string) => {
+    // The toolbar asks for `(min-width: <--breakpoint-wide>)`, 1100px however the token spells it.
+    const wideQuery = `(min-width: ${getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-wide").trim()})`;
+    if (query !== wideQuery) return real(query);
+    return {
+      media: query,
+      get matches() {
+        return fold.wide;
+      },
+      onchange: null,
+      addEventListener: (_: string, listener: () => void) => fold.listeners.add(listener),
+      removeEventListener: (_: string, listener: () => void) => fold.listeners.delete(listener),
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    } as unknown as MediaQueryList;
+  };
+  return () => {
+    window.matchMedia = real;
+  };
+}
+function crossFold(toWide: boolean) {
+  fold.wide = toWide;
+  for (const listener of [...fold.listeners]) listener();
+}
+
+/**
+ * Focus on Export when the window narrows past 1100px moves to More, not to the page; widening again puts it on
+ * the first action, Import (AVE-87).
+ */
+export const FoldKeepsFocus: Story = {
+  globals: wide,
+  beforeEach: stubFold,
+  render: () => <HouseholdsToolbar />,
+  play: async ({ canvas }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
+    bar.getByRole("button", { name: /Export/ }).focus();
+    crossFold(false);
+    await waitFor(() => expect(bar.getByRole("button", { name: "More actions" })).toHaveFocus());
+    crossFold(true);
+    await waitFor(() => expect(bar.getByRole("button", { name: /Import/ })).toHaveFocus());
+    // Focus elsewhere stays where it is.
+    const search = bar.getByRole("searchbox", { name: "Search households or people" });
+    search.focus();
+    crossFold(false);
+    await waitFor(() => expect(bar.getByRole("button", { name: "More actions" })).toBeVisible());
+    await expect(search).toHaveFocus();
+    // The bar keeps one Tab stop through it all.
+    await expect(bar.getAllByRole("button").filter((b) => b.tabIndex === 0).length + (search.tabIndex === 0 ? 1 : 0)).toBe(1);
+  },
+};
+
 /** One Tab stop: Tab lands on the first chip, the arrows cross chips, search and buttons, and Tab leaves. */
 export const KeyboardFlow: Story = {
   globals: wide,
