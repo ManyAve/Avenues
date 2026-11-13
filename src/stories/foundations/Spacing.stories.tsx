@@ -14,7 +14,7 @@ const aliases = [
   ["group", "8", "Between controls in a toolbar; label to field"],
   ["row-y", "12", "Row padding top and bottom; between fields"],
   ["inset", "16", "Card, dialog and popover padding; row sides; gutter"],
-  ["page", "16 / 20", "Page inset: 16px on phones, 20px from 640px"],
+  ["page", "16/20", "Page inset: 16px on phones, 20px from 640px"],
   ["section", "24", "Between sections inside a card or page"],
 ] as const;
 

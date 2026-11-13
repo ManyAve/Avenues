@@ -47,7 +47,7 @@ const tones: readonly (readonly [Tone, string, string])[] = [
   ["primary", "Part-way, or ready for the board to act on", "Partial · Draft ready"],
   ["info", "Settled but worth knowing", "In credit · Letter recorded"],
   ["neutral", "Waiting, not set, or not yet looked at", "Processing · Not set · Needs review"],
-  ["destructive", "Something failed, or an action can't be undone", "Payment request failed · Delete household"],
+  ["destructive", "Something failed", "Payment request failed · Letter returned"],
 ];
 
 const duesStatus = {

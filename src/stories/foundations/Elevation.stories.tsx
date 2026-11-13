@@ -6,7 +6,7 @@ import { DoDont, households, Rule, Rules, SeeTokens } from "./foundation-docs";
 // How to use elevation. The shadows and surface levels are on Tokens/Elevation.
 
 const levels = [
-  ["shadow-control", "Sits on the page and takes input", "Inputs, selects, secondary buttons"],
+  ["shadow-control", "A raised part inside a control", "A selected segment. Fields and buttons are flat"],
   ["shadow-card", "Groups content on the page", "Cards, table frames"],
   ["shadow-popover", "Floats above everything until dismissed", "Menus, popovers, dialogs, toasts"],
 ] as const;
