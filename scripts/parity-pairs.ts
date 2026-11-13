@@ -513,7 +513,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- File field (AVE-35)
   ...Object.fromEntries(
-    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "phone"].map((story) => [
+    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "disabled-retry", "phone"].map((story) => [
       `components-file-field--${story}`,
       { none: NEW_IN_AVENUE("The shared file and image field (AVE-35)", "Button / Sizes (its 28px buttons) and Field / Label and description") },
     ]),
