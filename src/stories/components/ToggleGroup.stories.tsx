@@ -141,19 +141,15 @@ const categories = ["News", "For sale", "Events"];
  * A segmented control on a 390px phone (AVE-33): choosing a post's category in the composer. Built the way
  * Management builds its full-width single-choice groups (row height in DisplayOptions, mailing mode in lob-mail, at
  * a547a7e): spaced 8px apart, full width with equal-width items, and the chosen item drawn with a `primary` border
- * and the `primary-subtle` fill, the same chosen look as a choice card. `md` 32px tall. Labels never truncate; past
+ * and the `primary-subtle` fill, the same chosen look as a choice card: `variant="choice"` (AVE-37). `md` 32px tall. Labels never truncate; past
  * three or four short labels, use Tabs or a Select instead. Same radio-group keys as on desktop.
  */
 export const Phone: Story = {
   render: () => (
     <div className="w-[390px] bg-background p-inset" data-width="390">
-      <ToggleGroup variant="outline" defaultValue="News" aria-label="Post category" className="w-full">
+      <ToggleGroup variant="choice" defaultValue="News" aria-label="Post category" className="w-full">
         {categories.map((c) => (
-          <ToggleGroupItem
-            key={c}
-            value={c}
-            className="flex-1 basis-0 data-checked:border-primary data-checked:bg-primary-subtle data-checked:text-primary-subtle-foreground"
-          >
+          <ToggleGroupItem key={c} value={c} className="flex-1 basis-0">
             {c}
           </ToggleGroupItem>
         ))}
