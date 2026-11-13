@@ -260,7 +260,7 @@ export const InvalidIsAnnounced: Story = {
 
 function Figure({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <figure className="grid w-96 content-start gap-group">
+    <figure className="grid w-96 max-w-full content-start gap-group">
       <figcaption className="text-meta text-muted-foreground">{label}</figcaption>
       {children}
     </figure>

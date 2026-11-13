@@ -136,10 +136,17 @@ export const Heights: Story = {
   // Measured on the real components: Button's four sizes, and the toolbar's md Select at the toolbar's height.
   play: async ({ canvas }) => {
     const buttons = canvas.getAllByRole("button", { name: "Save" });
-    await expect(buttons.map((b) => b.getBoundingClientRect().height)).toEqual([24, 28, 32, 40]);
+    await expect(buttons.map((b) => b.getBoundingClientRect().height)).toEqual([
+      // xs is 28px on a phone (AVE-22), so with the 16px phone gap its 44px tap area doesn't reach a neighbour's.
+      matchMedia("(pointer: coarse)").matches ? 28 : 24,
+      28,
+      32,
+      40,
+    ]);
     await expect(buttons.map((b) => getComputedStyle(b).borderTopLeftRadius)).toEqual(["8px", "8px", "10px", "10px"]);
     const select = canvas.getByRole("combobox", { name: "Dues year" });
-    await expect(select.getBoundingClientRect().height).toBe(32);
+    // A phone grows the md field to 44px (AVE-22).
+    await expect(select.getBoundingClientRect().height).toBe(matchMedia("(pointer: coarse)").matches ? 44 : 32);
     await expect(getComputedStyle(select).borderTopLeftRadius).toBe("10px");
     // AVE-29: a row of controls shares one text size. Buttons and chips use text-control (14px) at every width and on
     // both type scales; a field joins them at 768px and up, and keeps 16px below so iOS doesn't zoom on focus.
