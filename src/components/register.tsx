@@ -22,6 +22,10 @@ import { cn } from "#avenue/lib/utils";
  * Rows and columns are numbered by the author: row 0 is the header, then every rendered row in order, street bars
  * and the add row included. `rowCount` counts them all; `spanningRows` lists the street bars and the add row.
  *
+ * A text field in a cell keeps its own keys while you type. Escape leaves it for its cell, keeping the value, and the
+ * arrows move on from there; Enter or F2 on the cell goes back in. A field with its list open closes the list on the
+ * first Escape (AVE-80; src/lib/register.ts has the rules).
+ *
  * The focused cell shows a square 2px ring inset in the cell, so it never changes the row's height and the sticky
  * header can't clip it. Put the Register in a scroll pane with `scroll-pt-21` (header plus a street bar), so a row
  * the arrows reach scrolls in below them.

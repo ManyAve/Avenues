@@ -15,6 +15,7 @@ import {
 } from "#avenue/components/alert-dialog";
 import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
+import { Combobox } from "#avenue/components/combobox";
 import { Input } from "#avenue/components/input";
 import { Money } from "#avenue/components/money";
 import {
@@ -538,9 +539,12 @@ export const FieldKeepsItsKeys: Story = {
   globals: desktop,
   render: () => {
     function Notes() {
-      const [note, setNote] = useState("Gate code on file");
+      const [notes, setNotes] = useState<Record<string, string>>({
+        "12 Birch Lane": "Gate code on file",
+        "14 Birch Lane": "Dog in the yard",
+      });
       return (
-        <Register aria-label="Notes" rowCount={2} colCount={2} className="w-[520px]">
+        <Register aria-label="Notes" rowCount={3} colCount={2} className="w-[520px]">
           <RegisterHeader>
             <RegisterRow row={0}>
               <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
@@ -548,14 +552,20 @@ export const FieldKeepsItsKeys: Story = {
             </RegisterRow>
           </RegisterHeader>
           <RegisterBody>
-            <RegisterRow row={1}>
-              <RegisterCell row={1} col={0}>
-                12 Birch Lane
-              </RegisterCell>
-              <RegisterCell row={1} col={1} control className="px-1">
-                <Input aria-label="Note for 12 Birch Lane" value={note} onChange={(e) => setNote(e.target.value)} />
-              </RegisterCell>
-            </RegisterRow>
+            {Object.entries(notes).map(([address, note], i) => (
+              <RegisterRow key={address} row={i + 1}>
+                <RegisterCell row={i + 1} col={0}>
+                  {address}
+                </RegisterCell>
+                <RegisterCell row={i + 1} col={1} control className="px-1">
+                  <Input
+                    aria-label={`Note for ${address}`}
+                    value={note}
+                    onChange={(e) => setNotes((n) => ({ ...n, [address]: e.target.value }))}
+                  />
+                </RegisterCell>
+              </RegisterRow>
+            ))}
           </RegisterBody>
         </Register>
       );
@@ -570,6 +580,81 @@ export const FieldKeepsItsKeys: Story = {
     await userEvent.keyboard("{End}{ArrowLeft}{ArrowLeft}x");
     await expect(field).toHaveValue("Gate code on fixle");
     await expect(field).toHaveFocus();
+    // Escape leaves the field for its cell, keeping the value; the arrows move on from there (AVE-80).
+    await userEvent.keyboard("{Escape}");
+    const cell = field.closest<HTMLElement>("[role=gridcell]")!;
+    await expect(cell).toHaveFocus();
+    await expect(field).toHaveValue("Gate code on fixle");
+    await userEvent.keyboard("{ArrowDown}");
+    const next = canvas.getByRole("textbox", { name: "Note for 14 Birch Lane" });
+    await expect(next).toHaveFocus();
+    await userEvent.keyboard("{Escape}{ArrowUp}");
+    await expect(field).toHaveFocus();
+    // Enter or F2 on the cell goes back into its field.
+    await userEvent.keyboard("{Escape}{Enter}");
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{Escape}{F2}");
+    await expect(field).toHaveFocus();
+    // Still one Tab stop for the table.
+    await expect(canvas.getByRole("grid", { name: "Notes" }).querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+  },
+};
+
+const owners = [
+  { value: "p1", label: "Ada Okafor" },
+  { value: "p2", label: "Bram Hollis" },
+];
+
+/** A combobox in a cell: the first Escape closes its list, the second goes to the cell (AVE-80). */
+export const ComboboxInCell: Story = {
+  globals: desktop,
+  render: () => {
+    function Owners() {
+      const [owner, setOwner] = useState("p1");
+      return (
+        <Register aria-label="Owners" rowCount={2} colCount={2} className="w-[520px]">
+          <RegisterHeader>
+            <RegisterRow row={0}>
+              <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
+              <RegisterColumnHeader col={1}>Owner</RegisterColumnHeader>
+            </RegisterRow>
+          </RegisterHeader>
+          <RegisterBody>
+            <RegisterRow row={1}>
+              <RegisterCell row={1} col={0}>
+                12 Birch Lane
+              </RegisterCell>
+              <RegisterCell row={1} col={1} control className="px-1">
+                <Combobox
+                  aria-label="Owner of 12 Birch Lane"
+                  presentation="popover"
+                  options={owners}
+                  value={owner}
+                  onValueChange={setOwner}
+                />
+              </RegisterCell>
+            </RegisterRow>
+          </RegisterBody>
+        </Register>
+      );
+    }
+    return frame(<Owners />);
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("gridcell", { name: "12 Birch Lane" }));
+    await userEvent.keyboard("{ArrowRight}");
+    const field = canvas.getByRole("combobox", { name: "Owner of 12 Birch Lane" });
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    await screen.findByRole("listbox");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    await expect(field.closest("[role=gridcell]")).toHaveFocus();
+    await expect(field).toHaveValue("Ada Okafor");
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(canvas.getByRole("gridcell", { name: "12 Birch Lane" })).toHaveFocus();
   },
 };
 
