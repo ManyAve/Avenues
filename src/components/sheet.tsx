@@ -2,7 +2,7 @@ import * as DrawerPrimitive from "@ui-sdk/react/drawer";
 import { XIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
-import { modalCloseButton, modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
+import { modalCloseButton, modalDescription, modalSurface, modalTitle, sheetHandle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -17,7 +17,8 @@ import { cn } from "#avenue/lib/utils";
  * Unsaved changes: cancel the close in `onOpenChange` while the form is dirty and ask "Discard changes?" in the sheet
  * (the Unsaved changes story). That covers the Close button too, which `dismissible={false}` alone does not.
  *
- * For a list of options on a phone, don't build a sheet: Select and Combobox take ui-sdk's `presentation="sheet"`.
+ * For a list of options on a phone, don't build a sheet: Select and Combobox present as this same bottom sheet on a phone
+ * by themselves (`presentation`, AVE-39).
  */
 function Sheet({ side = "bottom", ...props }: ComponentProps<typeof DrawerPrimitive.Drawer>) {
   return <DrawerPrimitive.Drawer side={side} {...props} />;
@@ -61,7 +62,8 @@ function SheetContent({
           "group/sheet relative flex flex-col gap-4",
           // The ::after covers the gap a drag past the edge would open.
           "after:absolute after:bg-popover",
-          "data-[side=bottom]:mx-auto data-[side=bottom]:max-h-[85dvh] data-[side=bottom]:w-full data-[side=bottom]:max-w-lg data-[side=bottom]:rounded-t-xl data-[side=bottom]:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] data-[side=bottom]:after:inset-x-0 data-[side=bottom]:after:top-full data-[side=bottom]:after:h-24",
+          // The bottom sheet's look is shared with Select and Combobox presenting as a sheet (avenue.css, AVE-39).
+          "data-[side=bottom]:sheet-bottom",
           "data-[side=top]:mx-auto data-[side=top]:max-h-[85dvh] data-[side=top]:w-full data-[side=top]:max-w-lg data-[side=top]:rounded-b-xl data-[side=top]:after:inset-x-0 data-[side=top]:after:bottom-full data-[side=top]:after:h-24",
           "data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:rounded-r-xl data-[side=left]:after:inset-y-0 data-[side=left]:after:right-full data-[side=left]:after:w-24 sm:data-[side=left]:max-w-sm",
           "data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:rounded-l-xl data-[side=right]:after:inset-y-0 data-[side=right]:after:left-full data-[side=right]:after:w-24 sm:data-[side=right]:max-w-sm",
@@ -73,7 +75,7 @@ function SheetContent({
         <div
           data-slot="sheet-handle"
           aria-hidden
-          className="-mt-2 mx-auto hidden h-1 w-9 shrink-0 rounded-xs bg-muted-foreground group-data-[side=bottom]/sheet:block"
+          className={cn(sheetHandle, "hidden group-data-[side=bottom]/sheet:block")}
         />
         {children as ReactNode}
         {showCloseButton && (

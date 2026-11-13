@@ -10,7 +10,16 @@ import {
 } from "@ui-sdk/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { defined, fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
+import {
+  defined,
+  fieldControl,
+  listItem,
+  listPopup,
+  listScroll,
+  listSheetHandle,
+  type PickerSize,
+  type Presentation,
+} from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 /** One choice a Combobox offers. `value` is the stored id; `label` is what the field shows once it is chosen. */
@@ -65,6 +74,12 @@ export interface ComboboxProps<T extends ComboboxOption> {
   triggerLabel?: string | undefined;
   invalid?: boolean | undefined;
   disabled?: boolean | undefined;
+  /**
+   * How the list opens. "auto" (default) opens a bottom sheet on a small touch screen, with the search field in the
+   * sheet's header and the keyboard closed until it is tapped, and a popover elsewhere, decided each time it opens;
+   * "sheet" or "popover" always (UX Engineer, AVE-39).
+   */
+  presentation?: Presentation | undefined;
   className?: string | undefined;
 }
 
@@ -85,6 +100,7 @@ export function Combobox<T extends ComboboxOption>({
   triggerLabel = "Show options",
   invalid,
   disabled,
+  presentation = "auto",
   size,
   className,
   ...aria
@@ -115,6 +131,7 @@ export function Combobox<T extends ComboboxOption>({
         return option ? filter(option, text) : false;
       }}
       autoHighlight
+      presentation={presentation}
       {...defined({ disabled })}
     >
       <div
@@ -144,7 +161,11 @@ export function Combobox<T extends ComboboxOption>({
           onBlur={() => {
             focusing.current = false;
           }}
-          className="h-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+          className={cn(
+            "h-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+            // In a sheet, ui-sdk moves this input into the sheet's header, where it is a 44px search field of its own.
+            "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30",
+          )}
         />
         <ComboboxTrigger
           aria-label={triggerLabel}
@@ -158,12 +179,17 @@ export function Combobox<T extends ComboboxOption>({
         side="bottom"
         align="start"
         sideOffset={4}
-        className={cn(listPopup, "has-data-empty:p-0")}
+        // A sheet keeps one height while the search narrows the list, within the part of the screen above the keyboard.
+        className={cn(
+          listPopup,
+          "not-sheet:has-data-empty:p-0 sheet:h-[calc(var(--visual-viewport-height,100dvh)*0.85)]",
+        )}
       >
+        <div aria-hidden data-slot="sheet-handle" className={listSheetHandle} />
         <ComboboxEmpty className="px-3 py-2 text-sm text-muted-foreground not-data-empty:hidden">
           {emptyMessage(query.trim())}
         </ComboboxEmpty>
-        <ComboboxList className="scroll-py-1 outline-none">
+        <ComboboxList className={cn("scroll-py-1 outline-none", listScroll)}>
           {rows.map((option) => (
             <ComboboxItem
               key={option.value}

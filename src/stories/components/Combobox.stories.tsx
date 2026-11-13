@@ -4,6 +4,7 @@ import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
+import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
 // All households, owners and IDs are fictional.
@@ -47,6 +48,13 @@ function Picker({
     </Field>
   );
 }
+
+const phone = { viewport: { value: "phone", isRotated: false } };
+const coarse = () => matchMedia("(pointer: coarse)").matches;
+// ui-sdk keeps one search field and one query, but mounts the field anew as it moves into the sheet's header and
+// back, so the stories find it again each time rather than holding the element.
+const field = () => screen.getByRole("combobox", { name: "Household" });
+const content = () => document.querySelector<HTMLElement>("[data-slot=combobox-content]:not([hidden])")!;
 
 const meta = {
   title: "Components/Combobox",
@@ -95,6 +103,7 @@ export const WithNone: Story = {
     await expect(await screen.findByRole("option", { name: "Neighborhood" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
     await expect(canvas.getByTestId("value")).toHaveTextContent("h3");
+    await waitForClosed("combobox");
   },
 };
 
@@ -152,6 +161,9 @@ export const Keyboard: Story = {
   render: () => (
     <Picker
       label="Household"
+      // The popover's contract, on every screen: Tab leaves the field. A sheet is modal, so Tab stays in it; its
+      // keyboard is the Sheet keyboard story (AVE-39).
+      presentation="popover"
       options={households}
       initial="h1"
       icon={<HouseIcon />}
@@ -225,10 +237,144 @@ export const Keyboard: Story = {
 export const Pattern: Story = {
   name: "Combobox pattern",
   tags: ["pattern:combobox"],
-  render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} />,
+  // The popover, on every screen: ui-sdk 0.1's checkPattern fails its own Combobox presenting as a sheet ("aria-controls
+  // names no open listbox", reproduced on a bare ui-sdk Combobox, AVE-39), so the touch project checks the popover too.
+  render: () => (
+    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} presentation="popover" />
+  ),
   play: async ({ canvas }) => {
     // The story runner runs checkPattern(…, "combobox") after this play function, from the tag.
     await expect(canvas.getByRole("combobox", { name: "Household" })).toHaveValue("12 Lantern Row · Ada Okafor");
     await expect(canvas.getByTestId("value")).toHaveTextContent("h1");
+  },
+};
+
+/**
+ * On a 390px phone (AVE-39): by default (`presentation="auto"`) the list opens as a bottom sheet on a small touch
+ * screen and as the popover with a mouse, decided each time it opens. In the sheet the search field moves into its
+ * header as a 44px field (one field, one query), the rows are 44px, and choosing one closes the sheet and puts the
+ * choice back in the field.
+ */
+export const SheetOnPhones: Story = {
+  name: "Sheet on phones",
+  globals: phone,
+  render: () => (
+    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
+    await screen.findByRole("listbox");
+    await expect(content()).toHaveAttribute("data-presentation", coarse() ? "sheet" : "popover");
+    if (!coarse()) {
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      return;
+    }
+    const sheet = content();
+    await expectListSheet(sheet, "[data-slot=combobox-item]");
+    await expect(sheet.contains(field())).toBe(true);
+    await expect(field().getBoundingClientRect().height).toBe(44);
+    await userEvent.click(field());
+    await userEvent.clear(field());
+    await userEvent.keyboard("quill");
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+    await userEvent.click(screen.getByRole("option", { name: /3 Quill Court/ }));
+    await waitForClosed("combobox");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("h3");
+    await expect(field()).toHaveValue("3 Quill Court · Cora Mendez");
+    await expect(sheet.contains(field())).toBe(false);
+  },
+};
+
+/** The sheet, open, for the light and dark captures: as a phone shows it, on any screen. */
+export const SheetOpen: Story = {
+  name: "Sheet, open",
+  globals: phone,
+  render: () => (
+    <Picker
+      label="Household"
+      options={households}
+      initial="h1"
+      icon={<HouseIcon />}
+      triggerLabel="Show households"
+      presentation="sheet"
+    />
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
+    await screen.findByRole("listbox");
+    await expectListSheet(content(), "[data-slot=combobox-item]");
+  },
+};
+
+/**
+ * The keyboard in the sheet: typing filters, the arrows move the highlight and Enter chooses, with focus kept in the
+ * search field as it moves into the sheet and back; Escape closes it and puts the previous choice back.
+ */
+export const SheetKeyboard: Story = {
+  name: "Sheet keyboard",
+  globals: phone,
+  render: () => (
+    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} presentation="sheet" />
+  ),
+  play: async ({ canvas, step }) => {
+    await step("typing opens the sheet with the search field in it, still focused", async () => {
+      field().focus();
+      await userEvent.keyboard("{ArrowDown}");
+      await screen.findByRole("listbox");
+      await expect(content()).toHaveAttribute("data-presentation", "sheet");
+      await waitFor(() => expect(field()).toHaveFocus());
+      await expect(content().contains(field())).toBe(true);
+    });
+    await step("arrows move the highlight; Enter chooses and focus stays on the field", async () => {
+      await userEvent.clear(field());
+      await userEvent.keyboard("lantern");
+      await userEvent.keyboard("{ArrowDown}");
+      await waitFor(() =>
+        expect(screen.getByRole("option", { name: /14 Lantern Row/ })).toHaveAttribute("data-highlighted"),
+      );
+      await userEvent.keyboard("{Enter}");
+      await waitForClosed("combobox");
+      await expect(canvas.getByTestId("value")).toHaveTextContent("h2");
+      await expect(field()).toHaveValue("14 Lantern Row · Bram Hollis");
+      await expect(field()).toHaveFocus();
+    });
+    await step("Escape closes the sheet and puts the choice back", async () => {
+      await userEvent.keyboard("{ArrowDown}");
+      await screen.findByRole("listbox");
+      await userEvent.clear(field());
+      await userEvent.keyboard("quill");
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await waitFor(() => expect(field()).toHaveValue("14 Lantern Row · Bram Hollis"));
+      await expect(canvas.getByTestId("value")).toHaveTextContent("h2");
+      await expect(field()).toHaveFocus();
+    });
+  },
+};
+
+/** A swipe down closes the sheet without changing the choice. */
+export const SheetSwipeToClose: Story = {
+  name: "Sheet swipe to close",
+  globals: phone,
+  render: () => (
+    <Picker
+      label="Household"
+      options={households}
+      initial="h1"
+      icon={<HouseIcon />}
+      triggerLabel="Show households"
+      presentation="sheet"
+    />
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
+    await screen.findByRole("listbox");
+    const sheet = content();
+    await expectListSheet(sheet, "[data-slot=combobox-item]");
+    await swipeDown(sheet);
+    await waitForClosed("combobox");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("h1");
+    await expect(field()).toHaveValue("12 Lantern Row · Ada Okafor");
   },
 };

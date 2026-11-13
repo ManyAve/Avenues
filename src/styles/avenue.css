@@ -151,6 +151,31 @@
   }
 }
 
+/* Bottom sheet (AVE-32, AVE-39): one look for every sheet that rises from the bottom edge, Sheet with side="bottom" and
+   Select and Combobox while they present as a sheet. Centred at a 512px measure, at most 85% of the screen tall, the
+   top corners rounded at xl (14px), the bottom padded clear of the home indicator. The ::after fills the gap a drag
+   past the edge would open (the sheet must be positioned). Always apply it under a variant
+   (`data-[side=bottom]:sheet-bottom`, `sheet:sheet-bottom`) so it sorts after the surface's own corner and padding.
+   The `sheet` variant matches a ui-sdk popup presenting as a sheet (`data-presentation="sheet"`) and its parts. */
+@custom-variant sheet (&:where([data-presentation="sheet"], [data-presentation="sheet"] *));
+
+@utility sheet-bottom {
+  margin-inline: auto;
+  width: 100%;
+  max-width: --theme(--container-lg);
+  max-height: 85dvh;
+  border-radius: --theme(--radius-xl) --theme(--radius-xl) 0 0;
+  padding-bottom: max(--theme(--spacing-inset), env(safe-area-inset-bottom));
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    height: --spacing(24);
+    background-color: --theme(--color-popover);
+  }
+}
+
 /* Hit area (AVE-22, AVE-2 "touch targets stay at least 44px by extending the hit area invisibly"): every control
    composes `hit-area`, a public utility. It owns the control's ::after (decoration on a control uses ::before or a
    child). The invisible ::after, centred, makes the tappable box at least 44 x 44px on a coarse pointer (a phone or

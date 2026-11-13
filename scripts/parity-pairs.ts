@@ -154,6 +154,13 @@ const NEW_IN_AVENUE = (what: string, look: string) =>
 const STATE_ONLY = (state: string, look: string) =>
   `The app has no story showing ${state}; the resting look is compared through ${look}.`;
 
+/** AVE-39: the app opens no list as a sheet (its pickers are popovers or the OS picker), so there is nothing to pair. */
+const SHEET = (component: string) =>
+  `${component}'s list presenting as a bottom sheet on a phone (AVE-39) is new in Avenue; the app has no sheet presentation. Its surface, corners and handle are Sheet's, and its rows are the popover's, compared through ${component} / Default.`;
+/** AVE-38: the unchecked outline is a deliberate departure from the app, for 3:1 contrast (WCAG 1.4.11). */
+const OUTLINE = (control: string) =>
+  `A contrast proof (AVE-38): the unchecked ${control}'s outline departs from the app on purpose to reach 3:1, and the play function measures it. The app has no story of this measurement; the control's resting look is compared through its States story.`;
+
 export const PAIRS: Record<string, PairEntry> = {
   // ---- Alert dialog (AVE-9 composites' base)
   "components-alert-dialog--open": [
@@ -299,6 +306,8 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-radio-group--states": { none: NEW_IN_AVENUE("The radio group", "Checkbox / States (the same 16px control and ring)") },
   "components-radio-group--keyboard": { none: BEHAVIOUR("Checkbox / States") },
+  "components-radio-group--unchecked-outline": { none: OUTLINE("radio") },
+  "components-checkbox--unchecked-outline": { none: OUTLINE("checkbox") },
   "components-choice-card--checkboxes": { none: NEW_IN_AVENUE("The choice card (AVE-33, AVE-37)", "Checkbox / States and Field / Label and description") },
   "components-choice-card--radio": { none: NEW_IN_AVENUE("The choice card (AVE-33, AVE-37)", "Checkbox / States and Field / Label and description") },
   "components-choice-card--phone": { none: NEW_IN_AVENUE("The choice card at phone width (AVE-33)", "Checkbox / States and Field / Label and description") },
@@ -332,6 +341,10 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--disabled": { none: STATE_ONLY("a disabled combobox", "Combobox / Time zone") },
   "components-combobox--empty": { none: STATE_ONLY("an empty combobox list (the time zones always match)", "Combobox / Time zone") },
   "components-combobox--keyboard": { none: BEHAVIOUR("Combobox / Time zone") },
+  "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
+  "components-combobox--sheet-open": { none: SHEET("Combobox") },
+  "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
+  "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--pattern": { none: BEHAVIOUR("Combobox / Time zone") },
 
   // ---- Dialog (AVE-6)
@@ -601,6 +614,10 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-select--long-options": { none: "Same trigger as Select / Default with long text that truncates; compared there." },
   "components-select--native-on-phones": { none: "The operating system's own picker on phones; its look is the platform's, not Avenue's or the app's." },
   "components-select--keyboard": { none: BEHAVIOUR("Select / Default") },
+  "components-select--sheet-on-phones": { none: SHEET("Select") },
+  "components-select--sheet-open": { none: SHEET("Select") },
+  "components-select--sheet-keyboard": { none: BEHAVIOUR("Select / Sheet, open") },
+  "components-select--sheet-swipe-to-close": { none: BEHAVIOUR("Select / Sheet, open") },
   "components-select--invalid-is-announced": { none: BEHAVIOUR("Select / Invalid") },
   ...Object.fromEntries(
     [
@@ -633,6 +650,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ),
 
   // ---- Switch (AVE-6)
+  "components-switch--unchecked-outline": { none: OUTLINE("switch") },
   "components-switch--states": [
     { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[aria-label='On, default']" },
     { label: "switch off", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-unchecked] >> nth=0", avenueCrop: "[aria-label='Off, default']" },

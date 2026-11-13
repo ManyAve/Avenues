@@ -22,3 +22,10 @@ export const modalDescription =
  */
 export const modalCloseButton =
   "absolute top-4 right-4 [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] pointer-coarse:size-6";
+
+/**
+ * A bottom sheet's drag handle, 36 x 4px (AVE-32): Sheet's, and Select's and Combobox's while they present as a sheet
+ * (AVE-39). Decorative, so it is aria-hidden; each shows it only on a bottom sheet. The sheet's surface is the
+ * `sheet-bottom` utility in avenue.css.
+ */
+export const sheetHandle = "-mt-2 mx-auto h-1 w-9 shrink-0 rounded-xs bg-muted-foreground";
