@@ -246,6 +246,20 @@
   color: var(--color-primary-subtle-foreground);
 }
 
+/* Hanging reasons (AVE-86, AVE-91): on a row of actions (the page toolbar's, the selection bar's), a disabled
+   action's reason never sets its slot's width. It keeps its line's height (the row grows to hold it) but takes no
+   width, and hangs under the button from its end, growing toward the start into the room below, so it never runs
+   under the next button or spreads the gaps. Put it on the row; Button's reason is its `button-reason` part. */
+@utility reasons-hang {
+  & [data-slot="button-reason"] {
+    display: flex;
+    width: 0;
+    align-self: flex-end;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

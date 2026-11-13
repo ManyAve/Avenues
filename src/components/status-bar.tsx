@@ -36,12 +36,18 @@ function StatusBar({
       {...props}
     >
       {children}
-      <span data-slot="status-bar-count">{count}</span>
+      {/* The dot ends the count, with the bar's 16px on each side of it, so the hint starts with its own words
+          (AVE-91, as AVE-66's meta lines). It goes with the hint below 900px. */}
+      <span data-slot="status-bar-count">
+        {count}
+        {hint ? (
+          <span aria-hidden className="ms-4 hidden opacity-45 desktop:inline">
+            ·
+          </span>
+        ) : null}
+      </span>
       {hint ? (
         <span data-slot="status-bar-hint" className="hidden desktop:inline">
-          <span aria-hidden className="opacity-45">
-            ·
-          </span>{" "}
           {hint}
         </span>
       ) : null}
