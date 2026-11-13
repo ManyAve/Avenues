@@ -157,7 +157,8 @@ export const EscapeWhenClean: Story = {
 
 /**
  * The discard guard. With input typed, Esc asks "Discard changes?" with focus on Keep editing; Esc there steps back
- * to the form with the input kept; Cancel asks again, and Discard closes and returns focus to the trigger.
+ * to the form with the input kept; Cancel asks again, and Discard closes and returns focus to the trigger. Discard
+ * carries `data-agent-confirm`, so an agent asks a person before using it.
  */
 export const DiscardGuard: Story = {
   render: () => <AddDocument />,
@@ -179,7 +180,10 @@ export const DiscardGuard: Story = {
 
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await screen.findByRole("alertdialog", { name: "Discard changes?" });
-    await userEvent.click(screen.getByRole("button", { name: "Discard" }));
+    const discard = screen.getByRole("button", { name: "Discard" });
+    // An agent must not drop someone's input on its own (AVE-44), the same as Sheet's Discard.
+    await expect(discard).toHaveAttribute("data-agent-confirm", "Discards what was entered in this form");
+    await userEvent.click(discard);
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
   },

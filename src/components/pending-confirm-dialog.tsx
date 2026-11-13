@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -38,6 +38,11 @@ export interface PendingConfirmDialogProps {
   pendingLabel: string;
   /** The status line while pending, e.g. "Recording mailing confirmation. Please wait." */
   pendingMessage: string;
+  /**
+   * Where the step is. While pending the person can't leave (Esc, Tab and Close are held), so the caller must
+   * always end it: move to "unknown" when the call times out or its reply is lost, never leave it pending (AVE-44).
+   * The app's mailing call times out; give every call a timeout before showing this dialog.
+   */
   phase: PendingConfirmPhase;
   recovery: PendingConfirmRecovery;
   /** Runs the step; also Try again when the outcome is unknown and it is safe to retry. */
@@ -52,8 +57,12 @@ export interface PendingConfirmDialogProps {
  * - ready: focus starts on Cancel, the safe answer.
  * - pending: focus moves to the status line and Tab can't leave it; Esc, Cancel and the buttons do nothing, so
  *   nobody walks away from a step that is half done.
- * - unknown: the status line says "couldn't confirm" (announced at once) and focus moves to the recovery button.
- *   Close stays available in both recovery cases, so a person is never trapped (the Android review's finding).
+ * - unknown: a new `alert` says "couldn't confirm" (announced at once; a role change on the status line isn't
+ *   announced by every screen reader) and focus moves to the recovery button, which is described by that sentence so
+ *   it is read again on focus (AVE-44). Close stays available in both recovery cases, so a person is never trapped
+ *   (the Android review's finding, kept by the UX Engineer on AVE-44).
+ *
+ * Pending must end: the caller moves to "unknown" after a timeout (see `phase`).
  *
  * ui-sdk's alert dialog: role alertdialog, modal, an outside press never closes it.
  */
@@ -71,8 +80,9 @@ export function PendingConfirmDialog({
   onConfirm,
   cancelLabel = "Cancel",
 }: PendingConfirmDialogProps) {
-  const status = useRef<HTMLParagraphElement>(null);
+  const status = useRef<HTMLOutputElement>(null);
   const recover = useRef<HTMLButtonElement>(null);
+  const reasonId = useId();
   const pending = phase === "pending";
   const unknown = phase === "unknown";
   useLayoutEffect(() => {
@@ -105,29 +115,38 @@ export function PendingConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         {children && <div className="grid gap-3 text-compact">{children}</div>}
-        <p
+        <output
           ref={status}
-          role={unknown ? "alert" : "status"}
           tabIndex={-1}
           data-slot="pending-confirm-status"
           className={cn(
-            "rounded-sm text-meta outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            unknown ? "text-destructive-subtle-foreground" : "text-muted-foreground",
-            phase === "ready" && "sr-only",
+            "block rounded-sm text-meta text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            !pending && "sr-only",
           )}
         >
-          {pending ? pendingMessage : unknown ? recovery.message : ""}
-        </p>
+          {pending ? pendingMessage : ""}
+        </output>
+        {unknown && (
+          <p id={reasonId} role="alert" data-slot="pending-confirm-reason" className="text-meta text-destructive-subtle-foreground">
+            {recovery.message}
+          </p>
+        )}
         <AlertDialogFooter>
           <AlertDialogClose disabled={pending} render={<Button variant="outline" />}>
             {unknown ? "Close" : cancelLabel}
           </AlertDialogClose>
           {unknown && !recovery.safeToRetry ? (
-            <Button ref={recover} onClick={recovery.onCheck}>
+            <Button ref={recover} aria-describedby={reasonId} onClick={recovery.onCheck}>
               {recovery.checkLabel}
             </Button>
           ) : (
-            <Button ref={recover} disabled={pending} focusableWhenDisabled onClick={onConfirm}>
+            <Button
+              ref={recover}
+              disabled={pending}
+              focusableWhenDisabled
+              aria-describedby={unknown ? reasonId : undefined}
+              onClick={onConfirm}
+            >
               {pending ? pendingLabel : unknown ? "Try again" : confirmLabel}
             </Button>
           )}
