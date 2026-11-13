@@ -195,6 +195,37 @@ const OUTLINE_BORDER: Allowance = {
   because: "AVE-38: an unchecked checkbox's outline and an off switch's border are muted-foreground (3:1 or better, WCAG 1.4.11); the app's input-token outline measures about 1.5:1",
 };
 
+const TOP_BAR: Allowance[] = [
+  ...NAV_TAB,
+  { prop: "padding-top", app: "9px", avenue: "12px", because: "AVE-2 §1: the bar's off-grid 9px top and bottom padding becomes 12px, so it is 56px tall (the app's 53)" },
+  { prop: "padding-bottom", app: "9px", avenue: "12px", because: "AVE-2 §1: the bar's off-grid 9px top and bottom padding becomes 12px, so it is 56px tall (the app's 53)" },
+  { prop: "*-gap", where: "nav 1", app: "4px", avenue: "8px", because: "AVE-2 §1: section links are tap targets, so they sit gap-controls (8px) apart, as chips do" },
+  { prop: "height", where: "nav 1", app: "30px", avenue: "28px", because: "AVE-2 §2: a top-bar link is an sm control, 28px, so the strip is too" },
+  { prop: "*-gap", where: "a 1", app: "7px", avenue: "8px", because: "AVE-2 §1: the brand's off-grid 7px gap becomes 8px" },
+  { prop: "border-*-radius", where: "a 1", app: "0px", avenue: "8px", because: "AVE-2 §3: the home link takes the md corner, so its focus ring is rounded like the section links' (it draws nothing else)" },
+  { prop: "parts", because: COUNT_PART },
+  { prop: "height", where: "img 1", because: "app: app/ui/components/TopBar.tsx: the mark is the app's own logo file, which it passes in; the story's stand-in mark is drawn at its 22px height" },
+];
+const STATUS_BAR: Allowance[] = [
+  { prop: "parts", because: "app: app/ui/components/StatusBar.tsx: the app's bar is unnamed spans; Avenue names its hint and totals (status-bar-*)" },
+  { prop: "*-gap", app: "6px", avenue: "8px", because: "AVE-2 §1: the totals' off-grid 6px gap becomes 8px" },
+];
+const STATUS_TOTAL: Allowance[] = [
+  { prop: "parts", app: "only here: span", avenue: "only here: money", because: "app: app/ui/components/StatusBar.tsx: the bar prints each amount in a styled span; Avenue uses its Money component, same font, weight and colour" },
+];
+const SELECTION_BAR: Allowance[] = [
+  ...SIDE_10_TO_8,
+  { prop: "border-*-radius", app: "9px", avenue: "10px", because: "AVE-2 §3: the floating bar's 9px literal corner becomes lg, 10px" },
+  { prop: "parts", app: "only here: span", avenue: "only here: selection-bar-count", because: "app: app/ui/components/SelectionBar.tsx: the count is the same text; Avenue names its part (selection-bar-count)" },
+];
+const DISPLAY_OPTIONS: Allowance[] = [
+  ...SIDE_10_TO_8,
+  OUTLINE_BORDER,
+  { prop: "padding-*", app: "12px", avenue: "16px", because: INSET },
+  { prop: "*-gap", where: "root", app: "10px", avenue: "0px", because: "AVE-2 §1: sections space themselves (12px between, 8px rows) instead of the popover's off-grid 10px gap" },
+  { prop: "parts", because: "app: app/ui/components/DisplayOptions.tsx: the app writes the popover as loose labels and paragraphs; Avenue's parts are named sections (display-options-section with an h3) and option rows (display-options-checkbox)" },
+];
+
 export const PAIRS: Record<string, PairEntry> = {
   // ---- Alert dialog (AVE-9 composites' base)
   "components-alert-dialog--open": [
@@ -872,6 +903,32 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
   "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },
+
+  // ---- Composites part 4b: the bars (AVE-9)
+  "composites-top-bar--wide": [{ label: "top bar", app: "shell-topbar--default", appCrop: "#storybook-root header", avenueCrop: "#storybook-root header", allow: TOP_BAR }],
+  "composites-top-bar--desktop-minimum": { none: "Top bar / Wide at the 900px minimum, where the links take their own row; compared through Top bar / Wide." },
+  "composites-top-bar--phone": { none: "Top bar / Wide on a phone, a scrolling strip; compared through Top bar / Wide and Nav tab." },
+  // The bar's own box (44px, 16px sides) is asserted in Status bar / Wide; its mode toggle is compared through Mode
+  // toggle, whose single-choice group holds ui-sdk's hidden input, so a crop of the whole bar shifts every part after it.
+  "composites-status-bar--wide": [
+    { label: "status bar count", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:nth-child(2)", avenueCrop: "[data-slot=status-bar-count]" },
+    { label: "status bar hint", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:nth-child(3)", avenueCrop: "[data-slot=status-bar-hint]", allow: STATUS_BAR },
+    { label: "status bar totals row", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child", avenueCrop: "[data-slot=status-bar-totals]", frame: true, allow: STATUS_BAR },
+    { label: "first total", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child > span:nth-child(1)", avenueCrop: "[data-slot=status-bar-totals] > span:nth-child(1)", allow: STATUS_TOTAL },
+    { label: "total separator", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child > span:nth-child(2)", avenueCrop: "[data-slot=status-bar-totals] > span:nth-child(2)" },
+    { label: "second total", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child > span:nth-child(3)", avenueCrop: "[data-slot=status-bar-totals] > span:nth-child(3)", allow: STATUS_TOTAL },
+  ],
+  "composites-status-bar--no-totals": [
+    { label: "status bar count alone", app: "shell-statusbar--no-totals", appCrop: "#storybook-root footer > span:last-child", avenueCrop: "[data-slot=status-bar-count]" },
+  ],
+  "composites-status-bar--desktop-minimum": { none: "Status bar / Wide at 900px; compared there." },
+  "composites-status-bar--phone": { none: "Status bar / Wide on a phone, where the totals wrap; compared through Status bar / Wide." },
+  "composites-selection-bar--wide": [{ label: "selection bar", app: "primitives-selectionbar--many", appCrop: "[role=region]", avenueCrop: "[role=toolbar]", allow: SELECTION_BAR }],
+  "composites-selection-bar--desktop-minimum": { none: "Selection bar / Wide at 900px; compared there." },
+  "composites-selection-bar--keyboard-flow": { none: BEHAVIOUR("Selection bar / Wide") },
+  "composites-display-options--open": [{ label: "display options", app: "primitives-displayoptions--default", appCrop: "[data-slot=popover-content]", avenueCrop: "[data-slot=popover-content]", allow: DISPLAY_OPTIONS }],
+  "composites-display-options--keyboard-flow": { none: BEHAVIOUR("Display options / Open") },
+  "composites-display-options--nothing-to-export": { none: STATE_ONLY("Export unavailable with its reason", "Display options / Open") },
 
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [
