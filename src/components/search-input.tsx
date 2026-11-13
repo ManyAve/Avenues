@@ -70,7 +70,8 @@ function SearchInput({
         className={cn(
           "ps-7",
           kbd && "pe-8 pointer-coarse:pe-2",
-          filled && "border-border bg-[color-mix(in_oklab,var(--foreground)_8%,var(--background))] dark:bg-[color-mix(in_oklab,var(--foreground)_8%,var(--background))]",
+          // dark: repeats the token to beat the field surface's own dark background (controlSurface).
+          filled && "border-border bg-field-filled dark:bg-field-filled",
         )}
         {...props}
       />

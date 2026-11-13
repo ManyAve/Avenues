@@ -76,6 +76,9 @@
   --color-slate-subtle-foreground: var(--slate-subtle-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  /* The filled field's tint (the toolbar search, AVE-63): 8% of the foreground over the background, so it follows the
+     theme. Inline, so it resolves where it's used. `muted` is lighter in light mode (L 0.977 vs 0.930), so not it. */
+  --color-field-filled: color-mix(in oklab, var(--foreground) 8%, var(--background));
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
