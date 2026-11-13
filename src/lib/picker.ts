@@ -34,9 +34,9 @@ export const listPopup = cn(
   "max-h-[min(20rem,var(--available-height))] w-(--anchor-width) min-w-48 max-w-(--available-width) overflow-y-auto overscroll-contain rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none",
 );
 
-/** One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). */
+/** One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). 44px tall on phones (AVE-22). */
 export const listItem =
-  "grid cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
+  "grid pointer-coarse:min-h-11 cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
 
 /** Drops undefined props, for ui-sdk's types under exactOptionalPropertyTypes. */
 export function defined<T extends Record<string, unknown>>(props: T) {

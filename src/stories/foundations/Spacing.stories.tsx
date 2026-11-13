@@ -11,7 +11,8 @@ const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, l
 
 const aliases = [
   ["inline", "4", "Icon to its label; count to its chip label"],
-  ["group", "8", "Between controls in a toolbar; label to field"],
+  ["group", "8", "Label to field; label to its control"],
+  ["controls", "8 / 16", "Between two things you can tap: buttons, toolbar, dialog footer (16px on phones)"],
   ["row-y", "12", "Row padding top and bottom; between fields"],
   ["inset", "16", "Card, dialog and popover padding; row sides; gutter"],
   ["page", "16/20", "Page inset: 16px on phones, 20px from 640px"],
@@ -94,7 +95,7 @@ function SpacingUse() {
       <SeeTokens>Tokens › Spacing (the 4px scale and control heights)</SeeTokens>
       <Section
         title="Pick a name, not a number"
-        note="Every gap in a component is one of six names. Use them as p-inset, gap-group, py-row-y, px-page and gap-section."
+        note="Every gap in a component is one of seven names. Use them as p-inset, gap-group, gap-controls, py-row-y, px-page and gap-section. Between two things you can tap, use gap-controls."
       >
         <div className="max-w-3xl">
           {aliases.map(([name, px, use]) => (

@@ -81,7 +81,9 @@ export const Default: Story = {
     for (const header of canvas.getAllByRole("columnheader")) {
       await expect(header).toHaveAttribute("scope", "col");
     }
-    await expect(canvas.getAllByRole("columnheader")[1]!.getBoundingClientRect().height).toBe(40);
+    // On a phone (the touch story-test project) a row with a checkbox is 44px tall (AVE-22).
+    const phone = matchMedia("(pointer: coarse)").matches;
+    await expect(canvas.getAllByRole("columnheader")[1]!.getBoundingClientRect().height).toBe(phone ? 44 : 40);
     const money = canvas.getAllByText("$240.00")[0]!;
     await expect(getComputedStyle(money).fontVariantNumeric).toContain("tabular-nums");
     await expect(getComputedStyle(money).fontFamily).toMatch(/mono/i);

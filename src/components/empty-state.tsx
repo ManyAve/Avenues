@@ -74,7 +74,8 @@ function EmptyState({
         <Button
           variant="link"
           size="sm"
-          className="mt-2"
+          // 16px on a phone, so the two buttons' 44px tap areas meet but don't overlap (AVE-22).
+          className="mt-2 pointer-coarse:mt-4"
           {...(secondaryAction.onClick ? { onClick: secondaryAction.onClick } : {})}
         >
           {secondaryAction.label}

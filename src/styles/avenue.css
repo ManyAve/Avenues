@@ -113,10 +113,13 @@
   --spacing-inset: 1rem;
   --spacing-page: var(--avenue-page-inset);
   --spacing-section: 1.5rem;
+  /* Between two things you can tap (button rows, toolbars, chip rows, dialog footers, card header actions):
+     8px with a mouse, 16px on a phone, so neighbouring 44px hit areas meet but don't overlap (AVE-22). */
+  --spacing-controls: var(--avenue-controls-gap);
 
   /* Control heights (AVE-2 section 2): h-control-md, size-control-sm, min-h-control-lg. Controls that share a row
      share a height. xs and sm take rounded-md; md and lg take rounded-lg. */
-  --spacing-control-xs: 1.5rem;
+  --spacing-control-xs: var(--avenue-control-xs);
   --spacing-control-sm: 1.75rem;
   --spacing-control-md: 2rem;
   --spacing-control-lg: 2.5rem;
@@ -125,10 +128,48 @@
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
 :root {
   --avenue-page-inset: 1rem;
+  --avenue-controls-gap: 0.5rem;
+  --avenue-control-xs: 1.5rem;
+}
+/* On a phone (coarse pointer): 16px between controls, and xs controls are 28px, so 28 + 16 reaches 44 (AVE-22,
+   UX Engineer). Desktop is unchanged. */
+@media (pointer: coarse) {
+  :root {
+    --avenue-controls-gap: 1rem;
+    --avenue-control-xs: 1.75rem;
+  }
 }
 @media (min-width: 40rem) {
   :root {
     --avenue-page-inset: 1.25rem;
+  }
+}
+
+/* Hit area (AVE-22, AVE-2 "touch targets stay at least 44px by extending the hit area invisibly"): every control
+   composes `hit-area`, a public utility. It owns the control's ::after (decoration on a control uses ::before or a
+   child). The invisible ::after, centred, makes the tappable box at least 44 x 44px on a coarse pointer (a phone or
+   tablet) and at least 24 x 24px on a fine one (WCAG 2.2 target size, 2.5.8). A control that reaches further with a
+   mouse sets --hit-area-x / --hit-area-y, the extension on each side (Checkbox and Switch 12px and 8px, the dialog
+   close button 8px); on a coarse pointer the area is 44px whatever the extension, so neighbours 16px apart
+   (gap-controls) don't overlap. Nothing is drawn and layout doesn't move. A Tailwind utility,
+   not a class string in src/lib, so a variant can scope it: Badge is only a control as a link (`[a]:hit-area`).
+   The control must be positioned (Button, Checkbox and the rest are `relative`) and must not clip its own
+   overflow. The story tests measure the result (.storybook/touch-targets.ts). */
+@utility hit-area {
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100% + 2 * var(--hit-area-x, 0px), 1.5rem);
+    height: max(100% + 2 * var(--hit-area-y, 0px), 1.5rem);
+    translate: -50% -50%;
+  }
+  @media (pointer: coarse) {
+    &::after {
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+    }
   }
 }
 

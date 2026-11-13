@@ -12,6 +12,7 @@ export const SPACING_NAMES = [
   "inset",
   "page",
   "section",
+  "controls",
   "control-xs",
   "control-sm",
   "control-md",

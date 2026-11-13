@@ -180,7 +180,10 @@ export const Corners: StoryObj<typeof meta> = {
   render: () => <CornerUse />,
   // The "do" card's select is the real component, so the rule is measured on it rather than taken on trust.
   play: async ({ canvas, canvasElement }) => {
-    const trigger = canvas.getByRole("combobox", { name: "Dues year" });
+    const control = canvas.getByRole("combobox", { name: "Dues year" });
+    // On a phone the sm Select is a transparent native <select> over a 44px band; the field drawn under it
+    // (its next sibling) is what the corner rule describes.
+    const trigger = matchMedia("(pointer: coarse)").matches ? (control.nextElementSibling as HTMLElement) : control;
     const card = canvasElement.querySelector<HTMLElement>("[data-dues-card=after]");
     if (!card) throw new Error("The Dues card is missing");
     const label = within(card).getByText("Account summary ·");
