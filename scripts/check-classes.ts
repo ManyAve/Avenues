@@ -9,6 +9,8 @@
  *   a 14px icon is fine.
  *
  * - `hit-area` and an `after:` utility in the same class string: hit-area owns the control's ::after (AVE-22).
+ * - a breakpoint written as a pixel or rem literal (max-[700px]:, min-[1100px]:): the app's breakpoints are named in
+ *   avenue.css (`phone`, `desktop`, `wide`), so use max-phone:, wide: and the like (AVE-85).
  *
  *   bun run check:classes [paths...]   (default: src)
  */
@@ -33,6 +35,12 @@ export const rules = [
     name: "hit-area with after:",
     pattern: /(["'`])(?=[^"'`\n]*(?<![\w-])hit-area(?![\w-]))(?=[^"'`\n]*(?<![\w-])after:)[^"'`\n]*\1/g,
     fix: "hit-area owns ::after; decorate the control with before: or a child element",
+  },
+  {
+    // AVE-85: the app's breakpoints are tokens (--breakpoint-phone, --breakpoint-wide in avenue.css).
+    name: "literal breakpoint",
+    pattern: /(?<![\w-])(?:max|min)-\[\d+(?:\.\d+)?(?:px|rem|em)\]:/g,
+    fix: "use a named breakpoint: max-phone: (below 700px), desktop: (900px up), wide: (1100px up), max-wide: (below 1100px)",
   },
 ] as const;
 
@@ -73,6 +81,6 @@ if (import.meta.main) {
   }
 
   for (const f of findings) console.log(`${f.file}:${f.line}  ${f.match}  (${f.rule}: ${f.fix})`);
-  console.log(`${files} files checked, ${findings.length} class rule violations (retired corners, off-grid spacing, hit-area with after:).`);
+  console.log(`${files} files checked, ${findings.length} class rule violations (retired corners, off-grid spacing, hit-area with after:, literal breakpoints).`);
   process.exit(findings.length > 0 ? 1 : 0);
 }

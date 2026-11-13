@@ -38,7 +38,7 @@ function StatusBar({
       {children}
       <span data-slot="status-bar-count">{count}</span>
       {hint ? (
-        <span data-slot="status-bar-hint" className="hidden min-[900px]:inline">
+        <span data-slot="status-bar-hint" className="hidden desktop:inline">
           <span aria-hidden className="opacity-45">
             ·
           </span>{" "}

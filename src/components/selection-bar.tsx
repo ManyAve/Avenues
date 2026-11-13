@@ -15,6 +15,11 @@ export type SelectionAction = {
   /** Why the action is unavailable: one muted line under the button, read with it. */
   disabledReason?: ReactNode;
   onSelect?: (() => void) | undefined;
+  /**
+   * What the action does, for an agent to ask a person before it runs: a send, a payment, a delete ("Deletes 3
+   * households"). Rendered as `data-agent-confirm` on the button (AVE-85), as ToolbarAction's `confirm` is.
+   */
+  confirm?: string | undefined;
 };
 
 /**
@@ -73,6 +78,7 @@ function SelectionBar({
                   size="sm"
                   variant={action.primary ? "default" : "outline"}
                   disabledReason={action.disabledReason}
+                  data-agent-confirm={action.confirm}
                 />
               }
             >
