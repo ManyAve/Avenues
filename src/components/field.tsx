@@ -10,9 +10,9 @@ import { cn } from "#avenue/lib/utils";
  * and shows FieldError. Off-grid steps move to the 4px grid (AVE-2): 6px to 8px, 10px to 12px,
  * and the 2px gap between label and description to 4px.
  *
- * A field's own words (label, title, description, error, separator text, the label-variant legend) follow the
- * field's value size (AVE-53, the controlSurface rule from AVE-29): 16px below 768px, text-control (14px) from 768px
- * up, so the value never looks lighter than the words around it. The legend variant keeps text-base: it heads a
+ * A field's own words (label, title, description, error, separator text, the label-variant legend) use `text-field`,
+ * the field's value size (AVE-53, the controlSurface rule from AVE-29): 16px below 768px, text-control (14px) from
+ * 768px up, so the value never looks lighter than the words around it. The legend variant keeps text-base: it heads a
  * group and stays one step above.
  */
 
@@ -41,7 +41,7 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-2 font-medium data-[variant=label]:text-base data-[variant=label]:md:text-control data-[variant=legend]:text-base",
+        "mb-2 font-medium data-[variant=label]:text-field data-[variant=legend]:text-base",
         className,
       )}
       {...props}
@@ -121,7 +121,7 @@ function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitiv
     <FieldPrimitive.FieldLabel
       data-slot="field-label"
       className={cn(
-        "group/field-label peer/field-label flex w-fit items-center gap-2 text-base leading-snug font-medium select-none md:text-control group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
+        "group/field-label peer/field-label flex w-fit items-center gap-2 text-field leading-snug font-medium select-none group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
         className,
       )}
       {...props}
@@ -134,7 +134,7 @@ function FieldTitle({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="field-title"
       className={cn(
-        "flex w-fit items-center gap-2 text-base font-medium group-data-disabled/field:opacity-50 md:text-control",
+        "flex w-fit items-center gap-2 text-field font-medium group-data-disabled/field:opacity-50",
         className,
       )}
       {...props}
@@ -148,7 +148,7 @@ function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPr
     <FieldPrimitive.FieldDescription
       data-slot="field-description"
       className={cn(
-        "text-left text-base leading-normal font-normal text-muted-foreground md:text-control group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2",
+        "text-left text-field leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2",
         "last:mt-0 nth-last-2:-mt-1",
         "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className,
@@ -163,7 +163,7 @@ function FieldSeparator({ children, className, ...props }: ComponentProps<"div">
     <div
       data-slot="field-separator"
       data-content={!!children}
-      className={cn("relative -my-2 h-5 text-base md:text-control", className)}
+      className={cn("relative -my-2 h-5 text-field", className)}
       {...props}
     >
       <div aria-hidden className="absolute inset-x-0 top-1/2 h-px bg-border" />
@@ -213,7 +213,7 @@ function FieldError({
       // role=alert announces the message when it appears; aria-describedby repeats it when the control is focused.
       role="alert"
       data-slot="field-error"
-      className={cn("text-base font-normal text-destructive-subtle-foreground md:text-control", className)}
+      className={cn("text-field font-normal text-destructive-subtle-foreground", className)}
       {...(invalid && props.match === undefined ? { match: true } : {})}
       {...props}
     >

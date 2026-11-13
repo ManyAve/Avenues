@@ -151,6 +151,18 @@
   }
 }
 
+/* A field's own words (label, description, error; AVE-53): the field value's size, 16px below 768px so it matches the
+   field on phones, then text-control. One utility, not text-base md:text-control, so a caller's text-meta replaces
+   it whole in cn (TEXT_SIZE_NAMES knows "field"). A leading-* class still sets the line. */
+@utility text-field {
+  font-size: var(--text-base);
+  line-height: var(--tw-leading, var(--text-base--line-height));
+  @media (width >= 48rem) {
+    font-size: var(--text-control);
+    line-height: var(--tw-leading, var(--text-control--line-height));
+  }
+}
+
 /* Bottom sheet (AVE-32, AVE-39): one look for every sheet that rises from the bottom edge, Sheet with side="bottom" and
    Select and Combobox while they present as a sheet. Centred at a 512px measure, at most 85% of the screen tall, the
    top corners rounded at xl (14px), the bottom padded clear of the home indicator. The ::after fills the gap a drag
