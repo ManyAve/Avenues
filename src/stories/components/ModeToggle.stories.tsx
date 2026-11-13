@@ -28,7 +28,12 @@ export const ByKeyboard: Story = {
   render: () => <Controlled />,
   play: async ({ canvas }) => {
     const dev = canvas.getByRole("button", { name: "Dev mode" });
-    const system = canvas.getByRole("radio", { name: "Match system theme" });
+    const system = canvas.getByRole("radio", { name: "System theme" });
+    // Names start with what they show (WCAG 2.5.3), and Dev is one toggle, not a group of one (AVE-62).
+    await expect(system).toHaveAccessibleName("System theme");
+    await expect(dev).toHaveAccessibleName("Dev mode");
+    await expect(dev.closest("[role=group], [role=toolbar]")).toBeNull();
+    await expect(canvas.queryByRole("group", { name: "Developer mode" })).toBeNull();
     const light = canvas.getByRole("radio", { name: "Light theme" });
     await expect(system).toBeChecked();
     await expect(system).toHaveTextContent("System");
