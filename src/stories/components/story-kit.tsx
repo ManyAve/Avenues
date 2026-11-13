@@ -11,7 +11,9 @@ export function Row({ label, children }: { label: string; children: ReactNode })
   return (
     <div className="grid grid-cols-[7rem_1fr] items-center gap-4 pointer-coarse:min-h-11">
       <span className="text-meta text-muted-foreground">{label}</span>
-      <div className="flex flex-wrap items-center gap-controls">{children}</div>
+      {/* On a phone a wrapped line of 24px text actions needs 20px between lines, so their 44px tap areas meet but
+          don't overlap (AVE-22); 16px is enough for every taller control. */}
+      <div className="flex flex-wrap items-center gap-controls pointer-coarse:gap-y-5">{children}</div>
     </div>
   );
 }
