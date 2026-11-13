@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { patternProblems, untestedStories } from "./check-story-coverage";
+import { parityMapProblems, patternProblems, untestedStories } from "./check-story-coverage";
 
 test("lists stories without the test tag and ignores docs entries", () => {
   const index = {
@@ -40,4 +40,25 @@ test("an unlisted component and an unknown pattern tag both fail", () => {
     'a  is tagged "pattern:stars", which isn\'t a pattern the testing kit knows',
     "src/components/rating.tsx  isn't in scripts/component-patterns.ts; say how its accessibility is proven",
   ]);
+});
+
+test("AVE-71: a component story with no parity entry, or an entry for a removed story, fails", () => {
+  const storyEntry = (id: string) => ({ id, type: "story", tags: ["test"] });
+  const index = {
+    entries: {
+      a: storyEntry("components-button--default"),
+      b: storyEntry("components-button--new-variant"),
+      c: storyEntry("foundations-spacing--rhythm"),
+    },
+  };
+  const map = {
+    "components-button--default": [{ app: "ui-button--default" }],
+    "components-button--removed": { none: "A story that was removed from Avenue since." },
+  };
+  const problems = parityMapProblems(index, map);
+  expect(problems.some((p) => p.startsWith("components-button--new-variant has no pair"))).toBe(true);
+  expect(problems.some((p) => p.startsWith("components-button--removed is in the pair map"))).toBe(true);
+  // Foundations pages aren't paired with the app.
+  expect(problems.some((p) => p.includes("foundations-"))).toBe(false);
+  expect(problems).toHaveLength(2);
 });
