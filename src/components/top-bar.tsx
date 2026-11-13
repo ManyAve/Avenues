@@ -1,5 +1,5 @@
 import { CircleHelp } from "lucide-react";
-import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
 
@@ -9,7 +9,9 @@ import { cn } from "#avenue/lib/utils";
  * file, so the app passes its mark as `logo`.
  *
  * From 1100px down the section links take their own full-width row; at 700px and narrower they are one scrolling
- * strip that keeps the current section in view, and the brand shows its mark only.
+ * strip that keeps the current section in view, and the brand shows its mark only. The strip fades its last 28px on
+ * the side with more sections out of view, as the chip row does (AVE-22), and not at all once both ends show
+ * (AVE-91).
  *
  * Changes from the app (AVE-2): 56px tall (was 53), its sides take the page inset (was 20px, 14px on a phone), the
  * brand's off-grid 7px gap becomes 8px, the section links' 4px gap becomes gap-controls (they are tap targets),
@@ -39,6 +41,7 @@ function TopBar({
 }) {
   const nav = useRef<HTMLElement>(null);
   const shown = useRef<Element | null>(null);
+  const fade = useEdgeFade(nav);
   useEffect(() => {
     // Bring the current section into the strip when it first shows or changes. Only the strip scrolls:
     // scrollIntoView would also scroll the page back up to the bar on every render. A section the person
@@ -86,7 +89,8 @@ function TopBar({
       <nav
         ref={nav}
         aria-label={navLabel}
-        className="flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-wide:order-last max-wide:-mx-page max-wide:basis-full max-wide:scroll-px-page max-wide:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-phone:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
+        data-fade={fade}
+        className="flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-wide:order-last max-wide:-mx-page max-wide:basis-full max-wide:scroll-px-page max-wide:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-phone:data-[fade=right]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] max-phone:data-[fade=left]:[mask-image:linear-gradient(90deg,transparent,#000_28px)]"
       >
         {children}
       </nav>
@@ -99,6 +103,34 @@ function TopBar({
       </div>
     </header>
   );
+}
+
+/**
+ * Which side of a scrolling strip to fade: the one with more hidden past it, or none when nothing is hidden. Starts
+ * on the right, as the strip opens at its start, so the first paint matches. Physical sides, as the mask is.
+ */
+function useEdgeFade(strip: { current: HTMLElement | null }) {
+  const [side, setSide] = useState<"left" | "right" | undefined>("right");
+  useEffect(() => {
+    const el = strip.current;
+    if (!el) return;
+    const measure = () => {
+      const hidden = el.scrollWidth - el.clientWidth;
+      // In right-to-left, scrollLeft runs from 0 down to -hidden.
+      const left = getComputedStyle(el).direction === "rtl" ? hidden + el.scrollLeft : el.scrollLeft;
+      const right = hidden - left;
+      setSide(left <= 1 && right <= 1 ? undefined : right >= left ? "right" : "left");
+    };
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      observer.disconnect();
+    };
+  }, [strip]);
+  return side;
 }
 
 export { TopBar };

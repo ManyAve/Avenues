@@ -137,10 +137,9 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
   return (
     <span
       data-slot="toolbar-actions"
-      // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason never sets its
-      // slot's width: it keeps its line's height (the bar grows to hold it) but takes no width, and hangs under the
-      // button from its end, growing leftward into the room below, so it never runs under the next button.
-      className="flex items-start gap-controls [&_[data-slot=button-reason]]:flex [&_[data-slot=button-reason]]:w-0 [&_[data-slot=button-reason]]:self-end [&_[data-slot=button-reason]]:justify-end [&_[data-slot=button-reason]]:whitespace-nowrap"
+      // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason hangs from
+      // its button's end and never widens its slot (`reasons-hang`, shared with the selection bar).
+      className="flex items-start gap-controls reasons-hang"
     >
       {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
       <span ref={folding} className="contents">

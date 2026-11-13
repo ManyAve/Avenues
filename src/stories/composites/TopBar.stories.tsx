@@ -86,6 +86,14 @@ export const Phone: Story = {
       return expect(link.right).toBeLessThanOrEqual(strip.right + 1);
     });
     await expect(canvas.getByText("manyave")).not.toBeVisible();
+    // Scrolled to Website, more sections are hidden at the start, so the start fades instead of a hard cut; back at
+    // the start, the end fades; with both ends showing, nothing does (AVE-91).
+    await waitFor(() => expect(nav).toHaveAttribute("data-fade", "left"));
+    await expect(getComputedStyle(nav).maskImage).toContain("linear-gradient");
+    nav.scrollTo({ left: 0 });
+    await waitFor(() => expect(nav).toHaveAttribute("data-fade", "right"));
+    nav.scrollTo({ left: nav.scrollWidth });
+    await waitFor(() => expect(nav).toHaveAttribute("data-fade", "left"));
   },
 };
 

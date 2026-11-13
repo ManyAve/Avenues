@@ -21,6 +21,7 @@ type Story = StoryObj<typeof meta>;
 const desktop = { viewport: { value: "desktop", isRotated: false } };
 const wide = { viewport: { value: "wide", isRotated: false } };
 
+const onOff = (value: boolean) => (value ? "on" : "off");
 const exportReason = "No households match the filters.";
 const importHouseholds = fn();
 
@@ -64,8 +65,9 @@ function Options({ empty = false }: { empty?: boolean }) {
           </DisplayOptions>
         </ToolbarControls>
       </Toolbar>
+      {/* What the panel set, so the story shows its effect; labelled, not a bare debug line (AVE-91). */}
       <p className="px-page text-meta text-muted-foreground" data-testid="state">
-        {`lines ${lines}, email ${email}, keep ${keep}, ${density}`}
+        {`Settings: column lines ${onOff(lines)}, email column ${onOff(email)}, keep filters ${onOff(keep)}, ${density} rows`}
       </p>
     </div>
   );
@@ -92,7 +94,7 @@ export const Open: Story = {
     // As the app's story ends: Column lines on and Compact rows.
     await userEvent.click(within(panel).getByRole("checkbox", { name: "Column lines" }));
     await userEvent.click(within(panel).getByRole("radio", { name: "Compact" }));
-    await expect(canvas.getByTestId("state")).toHaveTextContent("lines true, email false, keep false, compact");
+    await expect(canvas.getByTestId("state")).toHaveTextContent("Settings: column lines on, email column off, keep filters off, compact rows");
   },
 };
 
@@ -108,12 +110,12 @@ export const KeyboardFlow: Story = {
     await userEvent.keyboard(" ");
     await userEvent.tab();
     await userEvent.keyboard(" ");
-    await expect(state).toHaveTextContent("lines true, email true, keep false, normal");
+    await expect(state).toHaveTextContent("Settings: column lines on, email column on, keep filters off, normal rows");
     await userEvent.tab();
     await userEvent.tab();
     await expect(panel.getByRole("radio", { name: "Normal" })).toHaveFocus();
     await userEvent.keyboard("{ArrowLeft}");
-    await expect(state).toHaveTextContent("compact");
+    await expect(state).toHaveTextContent("compact rows");
     await userEvent.tab();
     await userEvent.tab();
     await expect(panel.getByRole("button", { name: /Import households/ })).toHaveFocus();
