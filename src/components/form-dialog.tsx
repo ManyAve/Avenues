@@ -158,7 +158,11 @@ export function FormDialog({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogClose render={<Button variant="outline" />}>Keep editing</AlertDialogClose>
-              <AlertDialogClose value="discard" render={<Button variant="destructive" />}>
+              <AlertDialogClose
+                value="discard"
+                data-agent-confirm="Discards what was entered in this form"
+                render={<Button variant="destructive" />}
+              >
                 Discard
               </AlertDialogClose>
             </AlertDialogFooter>
