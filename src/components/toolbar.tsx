@@ -73,25 +73,37 @@ export type ToolbarAction = {
   /** Why the action is unavailable. Shown under the button, and under its item in More. */
   disabledReason?: ReactNode;
   onSelect?: (() => void) | undefined;
+  /**
+   * What the action does, for an agent to ask a person before it runs: a send, a payment, a delete ("Sends 42 dues
+   * notices"). Rendered as `data-agent-confirm` on the button and on its More item.
+   */
+  confirm?: string | undefined;
 };
 
-const wideQuery = "(min-width: 1100px)";
+/**
+ * The `wide` breakpoint from avenue.css (`--breakpoint-wide`, 1100px), the same value the `wide:` variant uses. The
+ * fallback only applies before Avenue's stylesheet loads.
+ */
+function wideQuery() {
+  const width = getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-wide").trim();
+  return `(min-width: ${width || "68.75rem"})`;
+}
 function subscribeWide(onChange: () => void) {
-  const query = window.matchMedia(wideQuery);
+  const query = window.matchMedia(wideQuery());
   query.addEventListener("change", onChange);
   return () => query.removeEventListener("change", onChange);
 }
-/** True when the window is 1100px or wider, where the page's actions fit as buttons. */
+/** True from the `wide` breakpoint (1100px) up, where the page's actions fit as buttons. */
 function useWide() {
   return useSyncExternalStore(
     subscribeWide,
-    () => window.matchMedia(wideQuery).matches,
+    () => window.matchMedia(wideQuery()).matches,
     () => true,
   );
 }
 
 /**
- * A page's create and send actions at the toolbar's end. `primary` always shows as a button. From 1100px up the
+ * A page's create and send actions at the toolbar's end. `primary` always shows as a button. From `wide` (1100px) up the
  * other `actions` are outlined buttons; below it they fold into a More menu, so the toolbar fits the 900px desktop
  * minimum. A folded action keeps its disabled reason, as a muted line under its item.
  *
@@ -101,14 +113,22 @@ function useWide() {
 function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[]; primary: ToolbarAction }) {
   const wide = useWide();
   return (
-    <span data-slot="toolbar-actions" className="ms-2 flex items-start gap-controls">
+    <span
+      data-slot="toolbar-actions"
+      // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason never sets its
+      // slot's width: it keeps its line's height (the bar grows to hold it) but takes no width, and hangs under the
+      // button from its end, growing leftward into the room below, so it never runs under the next button.
+      className="flex items-start gap-controls [&_[data-slot=button-reason]]:flex [&_[data-slot=button-reason]]:w-0 [&_[data-slot=button-reason]]:self-end [&_[data-slot=button-reason]]:justify-end [&_[data-slot=button-reason]]:whitespace-nowrap"
+    >
       {wide ? (
         actions.map((action) => (
           <ToolbarItem
             key={action.id}
             disabled={!!action.disabledReason}
             onClick={action.disabledReason ? undefined : action.onSelect}
-            render={<Button variant="outline" disabledReason={action.disabledReason} />}
+            render={
+              <Button variant="outline" disabledReason={action.disabledReason} data-agent-confirm={action.confirm} />
+            }
           >
             {action.icon}
             {action.label}
@@ -128,6 +148,7 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
                 key={action.id}
                 disabled={!!action.disabledReason}
                 reason={action.disabledReason}
+                data-agent-confirm={action.confirm}
                 {...(action.onSelect ? { onSelect: action.onSelect } : {})}
               >
                 {action.icon}
@@ -140,7 +161,7 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
       <ToolbarItem
         disabled={!!primary.disabledReason}
         onClick={primary.disabledReason ? undefined : primary.onSelect}
-        render={<Button disabledReason={primary.disabledReason} />}
+        render={<Button disabledReason={primary.disabledReason} data-agent-confirm={primary.confirm} />}
       >
         {primary.icon}
         {primary.label}

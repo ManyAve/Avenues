@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CircleDollarSignIcon, HouseIcon, Trash2Icon, UsersIcon } from "lucide-react";
+import { createAgent } from "@ui-sdk/react/agent";
 import { Fragment, useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import {
@@ -14,6 +15,7 @@ import {
 } from "#avenue/components/alert-dialog";
 import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
+import { Combobox } from "#avenue/components/combobox";
 import { Input } from "#avenue/components/input";
 import { Money } from "#avenue/components/money";
 import {
@@ -324,6 +326,88 @@ export const Wide: Story = {
   },
 };
 
+/**
+ * The agent test (AVE-79): an agent collapses and reopens a street and sorts a column through the Register's parts
+ * (ui-sdk Buttons and the sort Popover), the way the person would, and every control it sees has a name.
+ */
+export const AgentExpandsAndSorts: Story = {
+  globals: wide,
+  tags: ["agent"],
+  render: () => frame(<Households />),
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    const birch = canvas.getByRole("button", { name: "Birch Lane 3 households" });
+    const collapse = await agent.act({ steps: [{ ref: "Birch Lane 3 households", action: "press" }] });
+    await expect(collapse.ok, collapse.error?.message).toBe(true);
+    await waitFor(() => expect(birch).toHaveAttribute("aria-expanded", "false"));
+    await expect(canvas.queryByRole("link", { name: "12 Birch Lane" })).toBeNull();
+    const reopen = await agent.act({ steps: [{ ref: "Birch Lane 3 households", action: "press" }] });
+    await expect(reopen.ok, reopen.error?.message).toBe(true);
+    await waitFor(() => expect(birch).toHaveAttribute("aria-expanded", "true"));
+
+    const open = await agent.act({ steps: [{ ref: "Sort Balance", action: "setOpen", args: [true] }] });
+    await expect(open.ok, open.error?.message).toBe(true);
+    await screen.findByRole("button", { name: "Balance, High–low, descending" });
+    const sort = await agent.act({ steps: [{ ref: "Balance, High–low, descending", action: "press" }] });
+    await expect(sort.ok, sort.error?.message).toBe(true);
+    await waitFor(() =>
+      expect(canvas.getByRole("columnheader", { name: /Balance/ })).toHaveAttribute("aria-sort", "descending"),
+    );
+    const cedar = canvas.getAllByRole("link").filter((a) => a.textContent?.includes("Cedar"));
+    await expect(cedar[0]).toHaveTextContent("5 Cedar Court");
+  },
+};
+
+/**
+ * The sorted column shows its direction (AVE-78): an arrow in place of the chevron, and the header's text and arrow in
+ * foreground. Unsorted columns keep the faint chevron in muted-foreground.
+ */
+async function expectSortShown(column: string, direction: "ascending" | "descending" | undefined) {
+  const header = screen.getByRole("columnheader", { name: new RegExp(column) });
+  const icon = header.querySelector("button svg:last-of-type")!;
+  if (direction) {
+    await expect(icon).toHaveAttribute("data-sorted", direction);
+    await expect(icon.getAttribute("class")).toMatch(direction === "ascending" ? /lucide-arrow-up/ : /lucide-arrow-down/);
+    await expect(getComputedStyle(icon).opacity).toBe("1");
+  } else {
+    await expect(icon).not.toHaveAttribute("data-sorted");
+    await expect(icon.getAttribute("class")).toMatch(/lucide-chevron-down/);
+  }
+  const text = getComputedStyle(header).color;
+  const probe = document.createElement("span");
+  probe.className = direction ? "text-foreground" : "text-muted-foreground";
+  header.append(probe);
+  const expected = getComputedStyle(probe).color;
+  probe.remove();
+  await expect(text).toBe(expected);
+}
+
+/**
+ * The sort popover at rest, open on Balance with High–low chosen: Balance shows a down arrow in foreground, beside
+ * Property and Neighbor's faint chevrons (AVE-78).
+ */
+export const SortPopoverOpen: Story = {
+  globals: desktop,
+  render: () => frame(<Households initialSort={{ field: "dues", direction: "desc" }} />),
+  play: async ({ canvas }) => {
+    await expectSortShown("Balance", "descending");
+    await expectSortShown("Property", undefined);
+    await expectSortShown("Neighbor", undefined);
+    await userEvent.click(canvas.getByRole("button", { name: "Sort Balance" }));
+    await expect(await screen.findByRole("button", { name: "Balance, High–low, descending" })).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
+/** Sorted from low to high, the arrow points up. */
+export const SortedAscending: Story = {
+  globals: wide,
+  render: () => frame(<Households initialSort={{ field: "dues", direction: "asc" }} />),
+  play: async () => {
+    await expectSortShown("Balance", "ascending");
+    await expectSortShown("Property", undefined);
+  },
+};
+
 /** The column popover sorts; aria-sort follows. Escape returns focus to the header, and the arrows go on. */
 export const SortPopover: Story = {
   globals: desktop,
@@ -335,7 +419,7 @@ export const SortPopover: Story = {
     const sortBalance = canvas.getByRole("button", { name: "Sort Balance" });
     await expect(sortBalance).toHaveFocus();
     await userEvent.keyboard("{Enter}");
-    const highLow = await screen.findByRole("button", { name: "Balance, High–low" });
+    const highLow = await screen.findByRole("button", { name: "Balance, High–low, descending" });
     // Arrow keys in the popover are the popover's, not the grid's.
     await userEvent.keyboard("{ArrowLeft}");
     await expect(sortBalance).toHaveAttribute("aria-expanded", "true");
@@ -345,6 +429,9 @@ export const SortPopover: Story = {
     await waitFor(() => expect(sortBalance).toHaveFocus());
     await expect(canvas.getByRole("columnheader", { name: /Balance/ })).toHaveAttribute("aria-sort", "descending");
     await expect(canvas.getByRole("columnheader", { name: /Property/ })).toHaveAttribute("aria-sort", "none");
+    // The sorted column shows its direction; the one it took over from goes back to the chevron (AVE-78).
+    await expectSortShown("Balance", "descending");
+    await expectSortShown("Property", undefined);
     const cedar = canvas.getAllByRole("link").filter((a) => a.textContent?.includes("Cedar"));
     await expect(cedar[0]).toHaveTextContent("5 Cedar Court");
     await userEvent.keyboard("{ArrowLeft}");
@@ -452,9 +539,12 @@ export const FieldKeepsItsKeys: Story = {
   globals: desktop,
   render: () => {
     function Notes() {
-      const [note, setNote] = useState("Gate code on file");
+      const [notes, setNotes] = useState<Record<string, string>>({
+        "12 Birch Lane": "Gate code on file",
+        "14 Birch Lane": "Dog in the yard",
+      });
       return (
-        <Register aria-label="Notes" rowCount={2} colCount={2} className="w-[520px]">
+        <Register aria-label="Notes" rowCount={3} colCount={2} className="w-[520px]">
           <RegisterHeader>
             <RegisterRow row={0}>
               <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
@@ -462,14 +552,20 @@ export const FieldKeepsItsKeys: Story = {
             </RegisterRow>
           </RegisterHeader>
           <RegisterBody>
-            <RegisterRow row={1}>
-              <RegisterCell row={1} col={0}>
-                12 Birch Lane
-              </RegisterCell>
-              <RegisterCell row={1} col={1} control className="px-1">
-                <Input aria-label="Note for 12 Birch Lane" value={note} onChange={(e) => setNote(e.target.value)} />
-              </RegisterCell>
-            </RegisterRow>
+            {Object.entries(notes).map(([address, note], i) => (
+              <RegisterRow key={address} row={i + 1}>
+                <RegisterCell row={i + 1} col={0}>
+                  {address}
+                </RegisterCell>
+                <RegisterCell row={i + 1} col={1} control className="px-1">
+                  <Input
+                    aria-label={`Note for ${address}`}
+                    value={note}
+                    onChange={(e) => setNotes((n) => ({ ...n, [address]: e.target.value }))}
+                  />
+                </RegisterCell>
+              </RegisterRow>
+            ))}
           </RegisterBody>
         </Register>
       );
@@ -484,6 +580,81 @@ export const FieldKeepsItsKeys: Story = {
     await userEvent.keyboard("{End}{ArrowLeft}{ArrowLeft}x");
     await expect(field).toHaveValue("Gate code on fixle");
     await expect(field).toHaveFocus();
+    // Escape leaves the field for its cell, keeping the value; the arrows move on from there (AVE-80).
+    await userEvent.keyboard("{Escape}");
+    const cell = field.closest<HTMLElement>("[role=gridcell]")!;
+    await expect(cell).toHaveFocus();
+    await expect(field).toHaveValue("Gate code on fixle");
+    await userEvent.keyboard("{ArrowDown}");
+    const next = canvas.getByRole("textbox", { name: "Note for 14 Birch Lane" });
+    await expect(next).toHaveFocus();
+    await userEvent.keyboard("{Escape}{ArrowUp}");
+    await expect(field).toHaveFocus();
+    // Enter or F2 on the cell goes back into its field.
+    await userEvent.keyboard("{Escape}{Enter}");
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{Escape}{F2}");
+    await expect(field).toHaveFocus();
+    // Still one Tab stop for the table.
+    await expect(canvas.getByRole("grid", { name: "Notes" }).querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+  },
+};
+
+const owners = [
+  { value: "p1", label: "Ada Okafor" },
+  { value: "p2", label: "Bram Hollis" },
+];
+
+/** A combobox in a cell: the first Escape closes its list, the second goes to the cell (AVE-80). */
+export const ComboboxInCell: Story = {
+  globals: desktop,
+  render: () => {
+    function Owners() {
+      const [owner, setOwner] = useState("p1");
+      return (
+        <Register aria-label="Owners" rowCount={2} colCount={2} className="w-[520px]">
+          <RegisterHeader>
+            <RegisterRow row={0}>
+              <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
+              <RegisterColumnHeader col={1}>Owner</RegisterColumnHeader>
+            </RegisterRow>
+          </RegisterHeader>
+          <RegisterBody>
+            <RegisterRow row={1}>
+              <RegisterCell row={1} col={0}>
+                12 Birch Lane
+              </RegisterCell>
+              <RegisterCell row={1} col={1} control className="px-1">
+                <Combobox
+                  aria-label="Owner of 12 Birch Lane"
+                  presentation="popover"
+                  options={owners}
+                  value={owner}
+                  onValueChange={setOwner}
+                />
+              </RegisterCell>
+            </RegisterRow>
+          </RegisterBody>
+        </Register>
+      );
+    }
+    return frame(<Owners />);
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("gridcell", { name: "12 Birch Lane" }));
+    await userEvent.keyboard("{ArrowRight}");
+    const field = canvas.getByRole("combobox", { name: "Owner of 12 Birch Lane" });
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    await screen.findByRole("listbox");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    await expect(field).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    await expect(field.closest("[role=gridcell]")).toHaveFocus();
+    await expect(field).toHaveValue("Ada Okafor");
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(canvas.getByRole("gridcell", { name: "12 Birch Lane" })).toHaveFocus();
   },
 };
 

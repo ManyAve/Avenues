@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Download, FileUp, Layers, Plus, SlidersHorizontal } from "lucide-react";
+import { Download, FileUp, Layers, Mail, Plus, Send, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -106,6 +106,19 @@ export const Wide: Story = {
     await expect(importButton).toHaveAttribute("aria-disabled", "true");
     await expect(importButton).toHaveAccessibleDescription(importReason);
     await expect(bar.queryByRole("button", { name: "More actions" })).toBeNull();
+    // The reason doesn't widen Import's slot: Import to Export is gap-controls, like every other gap, and the reason
+    // hangs from Import's end without reaching under Export (AVE-86).
+    const actionRow = toolbar.querySelector<HTMLElement>("[data-slot=toolbar-actions]")!;
+    const gap = parseFloat(getComputedStyle(actionRow).columnGap);
+    const exportButton = bar.getByRole("button", { name: /Export/ });
+    const slot = importButton.closest<HTMLElement>("[data-slot=button-with-reason]")!;
+    await expect(Math.round(slot.getBoundingClientRect().width)).toBe(Math.round(importButton.getBoundingClientRect().width));
+    await expect(Math.round(exportButton.getBoundingClientRect().left - importButton.getBoundingClientRect().right)).toBe(gap);
+    const reason = slot.querySelector<HTMLElement>("[data-slot=button-reason]")!;
+    const text = document.createRange();
+    text.selectNodeContents(reason);
+    await expect(Math.round(text.getBoundingClientRect().right)).toBeLessThanOrEqual(Math.round(importButton.getBoundingClientRect().right));
+    await expect(text.getBoundingClientRect().width).toBeGreaterThan(importButton.getBoundingClientRect().width);
   },
 };
 
@@ -117,6 +130,10 @@ export const DesktopMinimum: Story = {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
     await expect(bar.queryByRole("button", { name: /Export/ })).toBeNull();
     const more = bar.getByRole("button", { name: "More actions" });
+    // Every control is spaced by gap-controls alone, More included (AVE-86).
+    const gap = parseFloat(getComputedStyle(canvasElement.querySelector("[data-slot=toolbar-controls]")!).columnGap);
+    const before = bar.getByRole("button", { name: "Display options" });
+    await expect(Math.round(more.getBoundingClientRect().left - before.getBoundingClientRect().right)).toBe(gap);
     more.focus();
     await userEvent.keyboard("{ArrowDown}");
     const page = within(canvasElement.ownerDocument.body);
@@ -167,6 +184,83 @@ export const BelowTheFold: Story = {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
     await expect(bar.getByRole("button", { name: "More actions" })).toBeVisible();
     await expect(bar.queryByRole("button", { name: /Export/ })).toBeNull();
+  },
+};
+
+// A send carries `confirm`, so an agent asks a person before it runs (AGENTS.md rule 9, AVE-85). The attribute is on
+// the button at 1100px and up, and on the More item below it.
+const sendNotices = fn();
+const mailLetters = fn();
+const sends: ToolbarAction[] = [
+  { id: "mail", label: "Mail letters", icon: <Mail aria-hidden />, confirm: "Mails 42 dues letters", onSelect: mailLetters },
+];
+const sendPrimary: ToolbarAction = {
+  id: "send",
+  label: "Send notices",
+  icon: <Send aria-hidden />,
+  confirm: "Sends 42 dues notices",
+  onSelect: sendNotices,
+};
+
+function NoticesToolbar() {
+  return (
+    <div className="min-h-[360px] bg-background">
+      <Toolbar aria-label="Dues notices">
+        <ToolbarControls>
+          <ToolbarSearch placeholder="Search notices…" aria-label="Search notices" />
+          <ToolbarActions actions={sends} primary={sendPrimary} />
+        </ToolbarControls>
+      </Toolbar>
+    </div>
+  );
+}
+
+/** 1440px: Send notices and Mail letters are buttons, and each asks an agent to confirm before it runs. */
+export const SendsAskFirst: Story = {
+  globals: wide,
+  tags: ["agent"],
+  render: () => <NoticesToolbar />,
+  play: async ({ canvas }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Dues notices" }));
+    await expect(bar.getByRole("button", { name: /Send notices/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Sends 42 dues notices",
+    );
+    await expect(bar.getByRole("button", { name: /Mail letters/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Mails 42 dues letters",
+    );
+  },
+};
+
+/** 900px: Mail letters folds into More and keeps its confirmation there. */
+export const SendsAskFirstFolded: Story = {
+  globals: desktop,
+  tags: ["agent"],
+  render: () => <NoticesToolbar />,
+  play: async ({ canvas, canvasElement }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Dues notices" }));
+    await expect(bar.getByRole("button", { name: /Send notices/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Sends 42 dues notices",
+    );
+    await expect(bar.queryByRole("button", { name: /Mail letters/ })).toBeNull();
+    bar.getByRole("button", { name: "More actions" }).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const mail = await within(canvasElement.ownerDocument.body).findByRole("menuitem", { name: /Mail letters/ });
+    await expect(mail).toHaveAttribute("data-agent-confirm", "Mails 42 dues letters");
+    await userEvent.keyboard("{Escape}");
+    await expect(mailLetters).not.toHaveBeenCalled();
+  },
+};
+
+/** The wide breakpoint is one value: the toolbar's fold reads the `--breakpoint-wide` token the `wide:` variant uses. */
+export const WideIsAToken: Story = {
+  globals: wide,
+  render: () => <NoticesToolbar />,
+  play: async ({ canvasElement }) => {
+    const width = getComputedStyle(canvasElement.ownerDocument.documentElement).getPropertyValue("--breakpoint-wide");
+    await expect(width.trim()).toBe("68.75rem");
   },
 };
 
@@ -248,6 +342,16 @@ export const Phone: Story = {
   ),
   play: async ({ canvas, canvasElement }) => {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
+    // The chip row fades its last 28px at 700px and narrower, and drops the fade once scrolled to its end (AVE-86).
+    const chips = canvasElement.querySelector<HTMLElement>("[data-slot=chip-row]")!;
+    if (innerWidth <= 700) {
+      await expect(getComputedStyle(chips).maskImage).toContain("linear-gradient");
+      chips.scrollLeft = chips.scrollWidth;
+      await waitFor(() => expect(chips).toHaveAttribute("data-scroll-end"));
+      await expect(getComputedStyle(chips).maskImage).toBe("none");
+      chips.scrollLeft = 0;
+      await waitFor(() => expect(chips).not.toHaveAttribute("data-scroll-end"));
+    }
     await userEvent.tab();
     await expect(bar.getByRole("searchbox", { name: "Search households" })).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");

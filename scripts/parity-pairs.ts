@@ -169,11 +169,18 @@ const ADDRESS_CELL: Allowance[] = [
     because: "app: app/ui/components/cells.tsx: the households screen puts a house icon and a hover-card preview in the address cell; the Register cell holds what the screen gives it, here a plain link",
   },
 ];
-const STREET_TOTAL: Allowance = {
+const STREET_BAR: Allowance[] = [
+  { prop: "border-*-width", app: "5px", avenue: "4px", because: "AVE-2 §1: the street bar's off-grid 5px gap above and below (a background border) becomes 4px (AVE-79)" },
+  { prop: "*-gap", app: "9px", avenue: "8px", because: "AVE-2 §1: the street bar's off-grid 9px gap between chevron, icon, name and count becomes 8px (AVE-79)" },
+  { prop: "padding-*", app: "5px", avenue: "4px", because: "AVE-2 §1: the street toggle's off-grid 5px padding becomes 4px (AVE-79)" },
+];
+// The street bar holds both differences in one parts list: the toggle is ui-sdk's Button, a named part where the app
+// has a plain button (AVE-79), and the street total is Money (AVE-55).
+const STREET_BAR_PARTS: Allowance = {
   prop: "parts",
-  app: "only here: span",
-  avenue: "only here: money",
-  because: "AVE-55: the street total is Avenue's Money, which never truncates and sits in its own box; the app's group row prints a plain span",
+  app: "only here: button, span",
+  avenue: "only here: button, money",
+  because: "AVE-55: the street total is Avenue's Money, which never truncates and sits in its own box, where the app prints a plain span; and the street toggle is ui-sdk's Button (AVE-79), a named part where the app has a plain button",
 };
 
 const BEHAVIOUR = (look: string) =>
@@ -383,6 +390,7 @@ export const PAIRS: Record<string, PairEntry> = {
           allow: [
             { prop: "padding-left", where: "root", app: "0px", avenue: "8px", because: "AVE-2 §1: the icon's off-grid 10px start margin becomes 8px inside the control, carried by the field's padding instead of the icon (AVE-59)" },
             { prop: "parts", because: "app: app/ui/components/time-zone-picker.tsx: the app's Base UI picker is a bare input and button beside its icon; Avenue's ui-sdk combobox names its input and trigger parts and wraps the icon. Same look (AVE-59)" },
+            ...(["width", "height"] as const).map((prop) => ({ prop, app: "14px", avenue: "16px", because: "AVE-84: picker icons follow the control size, 16px in an md field like Select's chevron and Button's icons; the app's time-zone picker draws 14px" })),
           ],
         },
       ],
@@ -397,6 +405,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--keyboard": { none: BEHAVIOUR("Combobox / Time zone") },
   "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
+  "components-combobox--selected-text": { none: BEHAVIOUR("Combobox / Households") },
+  "components-select--icon-sizes": { none: "AVE-84: Select and Combobox side by side at md and sm, to show their icons follow the control size; the app has no story with both. Each is compared through Select / Default and Combobox / Time zone." },
   "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--pattern": { none: BEHAVIOUR("Combobox / Time zone") },
@@ -747,7 +757,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Toast (AVE-8)
   ...Object.fromEntries(
-    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current", "action-gets-ten-seconds", "error-not-hidden-by-success", "empty-region-agent-gap"].map((story) => [
+    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current", "action-gets-ten-seconds", "error-not-hidden-by-success", "empty-region"].map((story) => [
       `components-toast--${story}`,
       {
         none: "The app's Toast stories raise a toast only inside their play function and it has left by the time the story reports rendered, so there is no resting toast to capture. Compared by eye when AVE-8 ported it.",
@@ -868,7 +878,7 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Composites part 3: the Register (AVE-9)
   "composites-register--wide": [
     { label: "column header", app: "households-table--default", appCrop: "#storybook-root thead th:nth-child(3) >> nth=0", avenueCrop: "#storybook-root thead th:nth-child(3) >> nth=0", allow: REGISTER_HEADER },
-    { label: "street bar", app: "households-table--default", appCrop: "#storybook-root tbody tr:first-child td >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child td >> nth=0", allow: [STREET_TOTAL] },
+    { label: "street bar", app: "households-table--default", appCrop: "#storybook-root tbody tr:first-child td >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child td >> nth=0", allow: [STREET_BAR_PARTS, ...STREET_BAR] },
     { label: "row cell", app: "households-table--default", appCrop: "#storybook-root tbody tr:nth-child(2) td:nth-child(2) >> nth=0", avenueCrop: "[data-slot=register-body] tr:nth-child(2) td:nth-child(2) >> nth=0", allow: ADDRESS_CELL },
   ],
   "composites-register--compact": [
@@ -877,11 +887,19 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--normal-and-comfortable": { none: "The Register at normal and comfortable density, stacked; each row height is compared through Register / Wide (normal) and asserted in the story (48 and 52)." },
   "composites-register--desktop-minimum": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--sort-popover": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--agent-expands-and-sorts": { none: BEHAVIOUR("Register / Wide") },
+  // AVE-78: the sort popover at rest, beside the app's sort menu with a direction chosen. The app's story shows the menu
+  // in a bordered box rather than a popover, so the frame isn't judged; the rows inside are.
+  "composites-register--sort-popover-open": [
+    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: PANEL },
+  ],
+  "composites-register--sorted-ascending": { none: "AVE-78: the sorted column's up arrow is new in Avenue (the app shows the same chevron on every column). The header is compared through Register / Wide." },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--row-action-clicked-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
+  "composites-register--combobox-in-cell": { none: BEHAVIOUR("Register / Wide and Combobox / Households") },
 
   // ---- Composites part 4: the toolbars (AVE-9)
   "composites-toolbar--wide": [
@@ -901,6 +919,9 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
   "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
+  "composites-toolbar--sends-ask-first": { none: "An agent-confirm check on a send action (AVE-85); the app has no send toolbar story. Its look is compared through Toolbar / Wide." },
+  "composites-toolbar--sends-ask-first-folded": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--wide-is-a-token": { none: "A token check (AVE-85): the fold reads --breakpoint-wide. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },
 

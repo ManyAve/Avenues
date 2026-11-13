@@ -92,15 +92,57 @@ export const ImageStates: Story = {
   },
 };
 
+/** The text a screen reader reads: aria-hidden parts left out. */
+function readText(element: Element) {
+  const copy = element.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll("[aria-hidden]")) hidden.remove();
+  return copy.textContent ?? "";
+}
+
+/** The text on screen: sr-only parts left out. */
+function shownText(element: Element) {
+  const copy = element.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll(".sr-only")) hidden.remove();
+  return copy.textContent ?? "";
+}
+
 /** Every state as a document: the name shows in place of the thumbnail. */
 export const DocumentStates: Story = {
   args: { label: "Pool rules", kind: "document", hint: documentHint },
   render: () => <StateGrid kind="document" />,
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("button", { name: /Choose file/ })).toBeEnabled();
     await expect(canvas.getAllByText("sunnydale-pool-rules.pdf", { exact: false }).length).toBeGreaterThan(0);
     await expect(canvas.getByRole("button", { name: /Try again/ })).toBeEnabled();
     await expect(canvas.getByRole("button", { name: /Check again/ })).toBeEnabled();
+    // The name shows above the row, so the messages say "this file" on screen, but each is read on its own, so a
+    // screen reader hears the name (AVE-82).
+    const failed = canvas.getByRole("alert");
+    await expect(shownText(failed)).toBe("Couldn't upload this file. Check your connection and try again.");
+    await expect(readText(failed)).toBe("Couldn't upload sunnydale-pool-rules.pdf. Check your connection and try again.");
+    const unconfirmed = canvas.getByText(/Couldn't confirm/).closest("[role=status]")!;
+    await expect(shownText(unconfirmed)).toContain("Couldn't confirm this file was saved.");
+    await expect(readText(unconfirmed)).toContain("Couldn't confirm sunnydale-pool-rules.pdf was saved.");
+    // A ghost action that wraps to start a line (here Try again and Check again, at 1280) starts where the name, hint
+    // and notes start, not 9px in; an action beside another keeps its place. Only the button moves (AVE-83).
+    const actions = [...canvasElement.querySelectorAll<HTMLElement>("[data-file-action]")];
+    for (const action of actions) {
+      const rowLeft = action.closest("[data-slot=file-field-row]")!.getBoundingClientRect().left;
+      if (action.hasAttribute("data-line-start")) {
+        const firstLeft = action.querySelector("svg")?.getBoundingClientRect().left ?? action.getBoundingClientRect().left + 9;
+        await expect(Math.abs(firstLeft - rowLeft)).toBeLessThan(1);
+      } else {
+        await expect(action.getBoundingClientRect().left).toBeGreaterThan(rowLeft + 1);
+      }
+      await expect(action.getBoundingClientRect().height).toBe(28);
+    }
+    if (innerWidth >= 1024) {
+      await expect(canvas.getByRole("button", { name: /Try again/ })).toHaveAttribute("data-line-start");
+      await expect(canvas.getByRole("button", { name: /Check again/ })).toHaveAttribute("data-line-start");
+    }
+    // The warning note and the error are the same text style; only the tone and the icon differ (AVE-83, AVE-89).
+    await expect(getComputedStyle(unconfirmed).fontSize).toBe(getComputedStyle(failed).fontSize);
+    await expect(getComputedStyle(unconfirmed).lineHeight).toBe(getComputedStyle(failed).lineHeight);
   },
 };
 
@@ -147,7 +189,8 @@ export const Phone: Story = {
     await expectMiddleCut(canvasElement);
     // The name is shown above, so the error doesn't repeat it, and an icon carries the state with the colour (AVE-48).
     const alert = canvas.getByRole("alert");
-    await expect(alert).toHaveTextContent("Couldn't upload this file. Check your connection and try again.");
+    await expect(shownText(alert)).toBe("Couldn't upload this file. Check your connection and try again.");
+    await expect(readText(alert)).toContain(`Couldn't upload ${longName.name}.`);
     await expect(alert.querySelector("svg")).not.toBeNull();
   },
 };
@@ -228,7 +271,7 @@ export const Upload: Story = {
     });
 
     await step("the first try fails: an alert says what happened, and Try again works by keyboard", async () => {
-      await waitFor(() => expect(canvas.getByRole("alert")).toHaveTextContent("Couldn't upload this file."));
+      await waitFor(() => expect(readText(canvas.getByRole("alert"))).toContain("Couldn't upload sunnydale-pool-rules.pdf."));
       const retry = canvas.getByRole("button", { name: "Try again" });
       retry.focus();
       await userEvent.keyboard("{Enter}");

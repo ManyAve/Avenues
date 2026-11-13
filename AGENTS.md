@@ -49,6 +49,15 @@ an element with `data-ui-sdk-skin`, because globally they restyle Avenue (they s
 component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`, run
 `bun run ui-sdk:css`; `bun run test:scripts` fails until you do.
 
+**Patched ui-sdk.** `patches/` holds Bun patches to ui-sdk, applied by `bun install` (listed under
+`patchedDependencies` in `package.json`), so they survive installs and the Cloudflare build. Each is a stopgap
+for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies
+and is still needed. To change one, `bun patch <package>`, edit `node_modules`, then `bun patch --commit`.
+
+- `@ui-sdk/core` 0.1.0-beta.1, toast (AVE-43): an empty toast region was listed in the agent snapshot as an
+  unnamed `toast`, failing the agent test on nearly every screen. The patch leaves the region out of the snapshot
+  while no toast shows, using the primitive's `agent.shown`. `Toast/EmptyRegion` fails if the patch stops applying.
+
 ### How to build with ui-sdk
 
 1. **Docs and skill first**, as above.
@@ -76,7 +85,9 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
    ui-sdk part's keys, roles or ARIA; `agent` runs the agent test for a ui-sdk component Avenue only
    styles and wires. Don't run `checkPattern` on unchanged ui-sdk components; ui-sdk tests those itself.
 9. **Keep it agent-ready** (`docs/agents.md`, the skill's agent-ready reference): every control is a
-   ui-sdk part with an accessible name that is unique where it sits; state changes go through
+   ui-sdk part with an accessible name that is unique where it sits, by at least one word: the bridge matches
+   whole words in any order, so "A–Z" and "Z–A" are one name to it, and the story tests fail on such a pair
+   (AVE-92, `.storybook/name-clash.ts`); state changes go through
    `on<Key>Change` callbacks, not DOM listeners; what a popup shows comes from its payload or state,
    not a trigger's `onClick`; anything an agent must not do alone (delete, pay, send) carries
    `data-agent-confirm="<what it does>"`, and fields an agent may fill but not read carry

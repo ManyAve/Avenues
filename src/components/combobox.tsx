@@ -114,6 +114,7 @@ export function Combobox<T extends ComboboxOption>({
     [noneLabel, options],
   );
   const selected = value ? (byValue.has(value) ? value : null) : noneLabel ? NONE : null;
+  const chosenLabel = selected === NONE ? noneLabel : selected ? byValue.get(selected)?.label : undefined;
   const [query, setQuery] = useState("");
   // The popup matches the whole field (icon, input and chevron), not just the input.
   const [anchor, setAnchor] = useState<HTMLDivElement | null>(null);
@@ -144,10 +145,23 @@ export function Combobox<T extends ComboboxOption>({
         className={cn(fieldControl({ size }), "gap-0 pe-0 pointer-coarse:min-h-11", icon ? "ps-2" : "ps-0", className)}
       >
         {icon && (
-          <span aria-hidden className="flex shrink-0 text-muted-foreground [&_svg]:size-3.5">
+          <span aria-hidden className="flex shrink-0 text-muted-foreground">
             {icon}
           </span>
         )}
+        {/* While the list is a sheet, ui-sdk moves the input into the sheet's header, which would leave the field
+            looking cleared behind it. This stand-in shows the current choice there until a new one is picked
+            (AVE-76). It's aria-hidden: the real field is in the sheet, and it shows only while the input is gone. */}
+        <span
+          aria-hidden
+          data-slot="combobox-value"
+          className={cn(
+            "hidden min-w-0 flex-1 truncate px-2 [[data-slot=combobox]:not(:has(>input))>&]:block",
+            !chosenLabel && "text-muted-foreground",
+          )}
+        >
+          {chosenLabel ?? placeholder}
+        </span>
         <ComboboxInput
           id={id}
           placeholder={placeholder}
@@ -155,7 +169,12 @@ export function Combobox<T extends ComboboxOption>({
           {...aria}
           onFocus={(e) => {
             focusing.current = true;
-            e.currentTarget.select();
+            const input = e.currentTarget;
+            // On a phone, selected text brings up the system's copy and select handles, so the cursor goes to the end
+            // instead; with a mouse or keyboard, the whole label is selected so typing replaces it (AVE-76).
+            if (input.ownerDocument.defaultView?.matchMedia("(pointer: coarse)").matches) {
+              input.setSelectionRange(input.value.length, input.value.length);
+            } else input.select();
           }}
           onMouseUp={(e) => {
             if (focusing.current) e.preventDefault();
@@ -174,7 +193,7 @@ export function Combobox<T extends ComboboxOption>({
           aria-label={triggerLabel}
           className="flex h-full w-8 shrink-0 items-center pointer-coarse:w-11 justify-center text-muted-foreground outline-none disabled:cursor-not-allowed"
         >
-          <ChevronsUpDownIcon aria-hidden className="size-3.5" />
+          <ChevronsUpDownIcon aria-hidden />
         </ComboboxTrigger>
       </div>
       <ComboboxContent

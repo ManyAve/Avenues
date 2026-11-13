@@ -1,0 +1,24 @@
+diff --git a/dist/components/toast/toast.js b/dist/components/toast/toast.js
+index 7e08cca5c9d2963b7299eb41dd39e77742786587..cecdf99e8c332ca05b9e6145f1f74916d67062b3 100644
+--- a/dist/components/toast/toast.js
++++ b/dist/components/toast/toast.js
+@@ -1,7 +1,7 @@
+ // src/components/toast/toast.ts
+ import { definePrimitive } from "../../foundation/kernel/primitive.js";
+ import { toastSlots } from "./toast-parts.js";
+-import { initialToastState, syncToastState, toastRegionApi } from "./toast-api.js";
++import { hasToasts, initialToastState, syncToastState, toastRegionApi } from "./toast-api.js";
+ import {
+   createToaster,
+   toast
+@@ -32,7 +32,9 @@ var toastRegionPrimitive = /* @__PURE__ */ definePrimitive({
+   // Arrow functions, so TypeScript infers the slot names before it checks the api and the parts.
+   api: (context) => toastRegionApi(context),
+   slots: (slot) => toastSlots(slot),
+-  agent: { actions: ["pause"] }
++  // Avenue patch (AVE-43): an empty region has nothing to name or pause, so the agent snapshot leaves it out,
++  // as it does a field with no errors. Drop this patch once ui-sdk does the same upstream.
++  agent: { shown: (state) => hasToasts(state.items), actions: ["pause"] }
+ });
+ var toastRegion = toastRegionPrimitive;
+ export {

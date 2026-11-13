@@ -3,7 +3,7 @@ import { FileTextIcon, ReceiptIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { Field, FieldLabel } from "#avenue/components/field";
+import { Field, FieldDescription, FieldLabel } from "#avenue/components/field";
 import { FormDialog } from "#avenue/components/form-dialog";
 import { Input } from "#avenue/components/input";
 import { Select, type SelectOption } from "#avenue/components/select";
@@ -60,7 +60,9 @@ function AddDocument({
     >
       <Field>
         <FieldLabel>Title</FieldLabel>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Community bylaws" />
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        {/* A hint is a description, not a placeholder, which would read as typed text (AVE-25, fixed in AVE-89). */}
+        <FieldDescription>For example, Community bylaws.</FieldDescription>
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field>

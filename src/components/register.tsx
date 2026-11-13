@@ -1,7 +1,8 @@
 "use client";
 
+import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { createParts } from "@ui-sdk/react/primitive";
-import { ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
@@ -20,6 +21,10 @@ import { cn } from "#avenue/lib/utils";
  *
  * Rows and columns are numbered by the author: row 0 is the header, then every rendered row in order, street bars
  * and the add row included. `rowCount` counts them all; `spanningRows` lists the street bars and the add row.
+ *
+ * A text field in a cell keeps its own keys while you type. Escape leaves it for its cell, keeping the value, and the
+ * arrows move on from there; Enter or F2 on the cell goes back in. A field with its list open closes the list on the
+ * first Escape (AVE-80; src/lib/register.ts has the rules).
  *
  * The focused cell shows a square 2px ring inset in the cell, so it never changes the row's height and the sticky
  * header can't clip it. Put the Register in a scroll pane with `scroll-pt-21` (header plus a street bar), so a row
@@ -89,6 +94,10 @@ function RegisterRow({
  * A column header, sticky at the top. With `sortMenu`, the header is a button that opens it in a popover, and `sort`
  * says which way the column is sorted (aria-sort). `control` passes focus to the one control inside, like the
  * select-all checkbox.
+ *
+ * The sorted column shows its direction (AVE-78, a named departure from Management, which shows the same faint chevron
+ * on every column): its chevron becomes an arrow, up for ascending and down for descending, and the header's text and
+ * arrow step up from muted-foreground to foreground. The arrow is aria-hidden, since aria-sort already says it.
  */
 function RegisterColumnHeader({
   icon: Icon,
@@ -96,6 +105,7 @@ function RegisterColumnHeader({
   sortLabel,
   numeric,
   control,
+  sort,
   className,
   children,
   ...props
@@ -108,11 +118,15 @@ function RegisterColumnHeader({
   /** A money column: the header sits at the end, over right-aligned figures. */
   numeric?: boolean | undefined;
 }) {
+  const sorted = sortMenu !== undefined && (sort === "ascending" || sort === "descending");
+  const SortArrow = sort === "ascending" ? ArrowUpIcon : ArrowDownIcon;
   const content = (
     <span className={cn("flex items-center gap-2", numeric && "justify-end")}>
       {Icon && <Icon className="size-3 shrink-0 opacity-80" aria-hidden />}
       <span className="truncate">{children}</span>
-      {sortMenu !== undefined && (
+      {sortMenu === undefined ? null : sorted ? (
+        <SortArrow data-sorted={sort} className={cn("size-2.75 shrink-0", !numeric && "ms-auto")} aria-hidden />
+      ) : (
         <ChevronDownIcon className={cn("size-2.75 shrink-0 opacity-60", !numeric && "ms-auto")} aria-hidden />
       )}
     </span>
@@ -125,9 +139,11 @@ function RegisterColumnHeader({
       scope="col"
       className={cn(
         "sticky top-0 z-10 h-9 pointer-coarse:h-11 bg-background px-3 text-start align-middle text-control font-[450] whitespace-nowrap text-muted-foreground",
+        sorted && "text-foreground",
         ring,
         className,
       )}
+      sort={sort}
       {...props}
       id={`0:${props.col}`}
     >
@@ -136,13 +152,8 @@ function RegisterColumnHeader({
       ) : (
         <Popover>
           <PopoverTrigger
-            render={
-              <button
-                type="button"
-                aria-label={label}
-                className="relative hit-area w-full rounded-sm text-start outline-none hover:text-foreground"
-              />
-            }
+            aria-label={label}
+            className="relative hit-area w-full rounded-sm text-start outline-none hover:text-foreground"
           >
             {content}
           </PopoverTrigger>
@@ -212,7 +223,7 @@ function RegisterGroupRow({
         control
         colSpan={colCount}
         className={cn(
-          "relative isolate h-12 border-y-[5px] border-background bg-clip-padding p-0 px-2 text-meta",
+          "relative isolate h-12 border-y-4 border-background bg-clip-padding p-0 px-2 text-meta",
           "rounded-xl",
           ring,
         )}
@@ -226,11 +237,10 @@ function RegisterGroupRow({
             aria-hidden
             className="absolute inset-0 -z-[1] rounded-xl bg-[linear-gradient(100deg,color-mix(in_oklab,var(--group-color)_12%,var(--muted)),color-mix(in_oklab,var(--group-color)_4%,var(--muted))_55%,var(--muted))]"
           />
-          <button
-            type="button"
+          <ButtonPrimitive
             aria-expanded={open}
             onClick={() => onOpenChange(!open)}
-            className="relative hit-area flex min-w-0 flex-1 items-center gap-2.25 py-1.25 text-start outline-none"
+            className="relative hit-area flex min-w-0 flex-1 items-center gap-2 py-1 text-start outline-none"
           >
             {open ? (
               <ChevronDownIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
@@ -239,8 +249,12 @@ function RegisterGroupRow({
             )}
             <Icon className="size-3.5 text-(--group-color)" aria-hidden />
             <span className="text-compact font-semibold">{name}</span>
-            <span className="text-muted-foreground">{count}</span>
-          </button>
+            {/* The spaces and the hidden word name it "Birch Lane, 3 households", not "Birch Lane3". */}{" "}
+            <span className="text-muted-foreground">
+              {count}
+              <span className="sr-only"> {count === 1 ? "household" : "households"}</span>
+            </span>
+          </ButtonPrimitive>
           {trailing && <span className="ms-auto text-muted-foreground">{trailing}</span>}
         </div>
       </parts.Cell>
@@ -263,14 +277,13 @@ function RegisterAddRow({
   return (
     <parts.Row id={`${row}`} row={row}>
       <parts.Cell id={`${row}:0`} row={row} col={0} control colSpan={colCount} className={cn("h-10 px-3", ring)}>
-        <button
-          type="button"
+        <ButtonPrimitive
           onClick={onAdd}
-          className="relative hit-area flex items-center gap-1.75 py-1.25 text-control text-muted-foreground outline-none hover:text-foreground"
+          className="relative hit-area flex items-center gap-2 py-1 text-control text-muted-foreground outline-none hover:text-foreground"
         >
           <PlusIcon className="size-3.25" aria-hidden />
           {children}
-        </button>
+        </ButtonPrimitive>
       </parts.Cell>
     </parts.Row>
   );
@@ -294,7 +307,8 @@ function SortMenu({
 }) {
   return (
     <div className="text-meta">
-      <div className="flex items-center justify-between px-2 pb-1 text-muted-foreground">
+      {/* On a phone the rows part by 16px, so the 44px taps of Clear and the direction buttons don't overlap. */}
+      <div className="flex items-center justify-between px-2 pb-1 pointer-coarse:pb-2 text-muted-foreground">
         <span>Sort by</span>
         <span>Direction</span>
         <Button variant="ghost" size="xs" onClick={() => onChange(null)} disabled={!value}>
@@ -302,7 +316,7 @@ function SortMenu({
         </Button>
       </div>
       {fields.map((field) => (
-        <div key={field.key} className="flex items-center gap-2 px-2 py-1">
+        <div key={field.key} className="flex items-center gap-controls px-2 py-1 pointer-coarse:py-2">
           <span className="flex-1">{field.label}</span>
           {(["asc", "desc"] as const).map((direction, i) => {
             const on = value?.field === field.key && value.direction === direction;
@@ -312,7 +326,9 @@ function SortMenu({
                 variant={on ? "secondary" : "ghost"}
                 size="xs"
                 aria-pressed={on}
-                aria-label={`${field.label}, ${field.directions[i]}`}
+                // "Balance, High–low, descending": the visible words, plus the direction, because an agent
+                // matches names by their words and "High–low" and "Low–high" have the same ones (AVE-79).
+                aria-label={`${field.label}, ${field.directions[i]}, ${direction === "asc" ? "ascending" : "descending"}`}
                 onClick={() => onChange({ field: field.key, direction })}
               >
                 {field.directions[i]}

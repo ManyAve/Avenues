@@ -43,7 +43,7 @@ function Picker({
       <Combobox {...props} invalid={invalid} value={value} onValueChange={setValue} />
       {error && <FieldError>{error}</FieldError>}
       <output data-testid="value" className="text-meta text-muted-foreground">
-        {value || "(none)"}
+        Chosen: {value || "(none)"}
       </output>
     </Field>
   );
@@ -53,8 +53,16 @@ const phone = { viewport: { value: "phone", isRotated: false } };
 const coarse = () => matchMedia("(pointer: coarse)").matches;
 // ui-sdk keeps one search field and one query, but mounts the field anew as it moves into the sheet's header and
 // back, so the stories find it again each time rather than holding the element.
-const field = () => screen.getByRole("combobox", { name: "Household" });
+const field = () => screen.getByRole<HTMLInputElement>("combobox", { name: "Household" });
 const content = () => document.querySelector<HTMLElement>("[data-slot=combobox-content]:not([hidden])")!;
+
+// While the search field is in the sheet, the field behind it keeps showing the choice (AVE-76).
+const standIn = () => document.querySelector<HTMLElement>("[data-slot=combobox-value]")!;
+async function expectChoiceBehindSheet(label: string) {
+  await expect(standIn()).toBeVisible();
+  await expect(standIn()).toHaveTextContent(label);
+  await expect(standIn()).toHaveAttribute("aria-hidden");
+}
 
 const meta = {
   title: "Components/Combobox",
@@ -99,9 +107,9 @@ export const WithNone: Story = {
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Applies to" });
     await expect(input).toHaveValue("Neighborhood");
-    // The app's 14px icons: the leading house and the chevron (AVE-59).
+    // An md field's icons are 16px, like Select's chevron: icons follow the control size (AVE-84, after AVE-59).
     const box = input.closest("[data-slot=combobox]")!;
-    for (const svg of box.querySelectorAll("svg")) await expect(svg.getBoundingClientRect().width).toBe(14);
+    for (const svg of box.querySelectorAll("svg")) await expect(svg.getBoundingClientRect().width).toBe(16);
     await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
     await expect(await screen.findByRole("option", { name: "Neighborhood" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
@@ -184,6 +192,8 @@ export const Keyboard: Story = {
 
     await step("typing filters the list", async () => {
       await userEvent.click(input);
+      // On a phone the cursor lands at the end rather than selecting the label (AVE-76), so clear it first.
+      if (coarse()) await userEvent.clear(input);
       await userEvent.keyboard("quill");
       const options = await screen.findAllByRole("option");
       await expect(options.map((o) => o.textContent)).toEqual([
@@ -277,15 +287,24 @@ export const SheetOnPhones: Story = {
     await expectListSheet(sheet, "[data-slot=combobox-item]");
     await expect(sheet.contains(field())).toBe(true);
     await expect(field().getBoundingClientRect().height).toBe(44);
+    await expectChoiceBehindSheet("12 Lantern Row · Ada Okafor");
     await userEvent.click(field());
     await userEvent.clear(field());
     await userEvent.keyboard("quill");
     await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+    // Typing a search doesn't change the choice behind the sheet; only a pick does.
+    await expectChoiceBehindSheet("12 Lantern Row · Ada Okafor");
     await userEvent.click(screen.getByRole("option", { name: /3 Quill Court/ }));
     await waitForClosed("combobox");
-    await expect(canvas.getByTestId("value")).toHaveTextContent("h3");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Chosen: h3");
     await expect(field()).toHaveValue("3 Quill Court · Cora Mendez");
     await expect(sheet.contains(field())).toBe(false);
+    await expect(standIn()).not.toBeVisible();
+    // On a phone the cursor goes to the end, rather than selecting the label, which would raise the system's handles.
+    field().blur();
+    field().focus();
+    await expect(field().selectionStart).toBe(field().value.length);
+    await expect(field().selectionEnd).toBe(field().value.length);
   },
 };
 
@@ -307,6 +326,29 @@ export const SheetOpen: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
     await screen.findByRole("listbox");
     await expectListSheet(content(), "[data-slot=combobox-item]");
+    await expectChoiceBehindSheet("12 Lantern Row · Ada Okafor");
+  },
+};
+
+/**
+ * Selected text is Avenue's colour, primary at 25%, not the browser's blue (AVE-76). With a mouse or keyboard,
+ * focusing the field selects its label so typing replaces it.
+ */
+export const SelectedText: Story = {
+  render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} />,
+  play: async () => {
+    if (coarse()) return;
+    await userEvent.tab();
+    await expect(field()).toHaveFocus();
+    await expect(field().selectionStart).toBe(0);
+    await expect(field().selectionEnd).toBe(field().value.length);
+    const tint = getComputedStyle(field(), "::selection").backgroundColor;
+    const probe = document.createElement("span");
+    probe.style.backgroundColor = "color-mix(in oklab, var(--primary) 25%, transparent)";
+    field().parentElement!.append(probe);
+    const expected = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    await expect(tint).toBe(expected);
   },
 };
 

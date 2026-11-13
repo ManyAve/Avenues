@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, type ReactNode } from "react";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { HouseIcon } from "lucide-react";
+import { Combobox } from "#avenue/components/combobox";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
 import { Select, type SelectOption } from "#avenue/components/select";
@@ -198,7 +200,7 @@ export const Keyboard: Story = {
           <Select options={methods} value={value} onValueChange={setValue} native="never" />
         </Labelled>
         <output className="text-meta text-muted-foreground" data-testid="value">
-          {value}
+          Chosen: {value}
         </output>
       </div>
     );
@@ -469,7 +471,7 @@ function AgentForm() {
         <Select options={roles} value={role} onValueChange={setRole} placeholder="Choose a role" native="never" />
       </Labelled>
       <output data-testid="value" className="text-meta text-muted-foreground">
-        {method ?? "(none)"} / {role ?? "(none)"}
+        Chosen: {method ?? "(none)"} / {role ?? "(none)"}
       </output>
     </div>
   );
@@ -500,7 +502,7 @@ function PhoneForm({ presentation }: { presentation?: "sheet" | undefined }) {
         <Select options={methods} value={value} onValueChange={setValue} native="never" presentation={presentation} />
       </Labelled>
       <output className="text-meta text-muted-foreground" data-testid="value">
-        {value}
+        Chosen: {value}
       </output>
     </div>
   );
@@ -601,5 +603,44 @@ export const SheetSwipeToClose: Story = {
     await waitForClosed("select");
     await expect(canvas.getByTestId("value")).toHaveTextContent("check");
     await expect(trigger).toHaveFocus();
+  },
+};
+
+/**
+ * Select and Combobox side by side at each size (AVE-84): their icons follow the control size, as Button's do, 16px in
+ * an md field and 14px in an sm one (a card or dialog header).
+ */
+export const IconSizes: Story = {
+  render: () => (
+    <div className="grid w-[40rem] grid-cols-2 gap-group">
+      {(["md", "sm"] as const).map((size) => (
+        <div key={size} className="contents">
+          <Select aria-label={`Year, ${size}`} options={years} defaultValue="2026" size={size} native="never" />
+          <Combobox
+            aria-label={`Household, ${size}`}
+            options={[{ value: "h1", label: "12 Lantern Row · Ada Okafor" }]}
+            value="h1"
+            onValueChange={() => {}}
+            icon={<HouseIcon />}
+            triggerLabel={`Show households, ${size}`}
+            size={size}
+          />
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const [size, px] of [
+      ["md", 16],
+      ["sm", 14],
+    ] as const) {
+      const select = within(canvasElement).getByRole("combobox", { name: `Year, ${size}` });
+      const combobox = within(canvasElement).getByRole("combobox", { name: `Household, ${size}` });
+      const field = combobox.closest<HTMLElement>("[data-slot=combobox]")!;
+      const icons = [...select.querySelectorAll("svg"), ...field.querySelectorAll("svg")];
+      // Select's chevron, Combobox's house and up-down chevron.
+      await expect(icons).toHaveLength(3);
+      for (const icon of icons) await expect(icon.getBoundingClientRect().width).toBe(px);
+    }
   },
 };
