@@ -1,51 +1,80 @@
-import { Code, Moon } from "lucide-react";
+import { Code, Monitor, Moon, Sun } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
 
+export type ThemeChoice = "system" | "light" | "dark";
+
+const themeItems = [
+  { value: "system", label: "System", icon: Monitor, name: "Match system theme" },
+  { value: "light", label: "Light", icon: Sun, name: "Light theme" },
+  { value: "dark", label: "Dark", icon: Moon, name: "Dark theme" },
+] as const;
+
 /**
- * The developer and theme switches at the far left of ManyAve's status bar (the app's
- * app/ui/components/StatusBar.tsx at e01cc90): one joined group of independent on/off buttons, ui-sdk's
- * ToggleGroup through Avenue's, so it is one Tab stop and the arrow keys move between items. Leaving `dev`
- * undefined leaves out the Dev item. AVE-2: icon to label 6px becomes 4px, side padding 10px becomes 8px.
+ * The developer and theme controls at the far left of ManyAve's status bar (the app's
+ * app/ui/components/StatusBar.tsx at manyave-management 7b476f2). Leaving `dev` undefined leaves out the Dev item.
+ * `choice` is the stored setting (System follows the computer); without it, the theme on screen is shown as Light or
+ * Dark. The chosen theme names itself and the others stay icons, so the bar keeps its width.
  *
- * Names (WCAG 2.5.3, label in name): the app named its items "Developer mode" and "Dark theme" while they showed
- * "Dev" and "Light", so speech users saying what they see missed them and axe fails both. Dev is now named
- * "Dev mode". The theme item always shows the moon and "Dark" and is pressed when the theme is dark: a toggle
- * keeps one name, and the app's swap to a sun and "Light" read as "Light, not pressed".
+ * Behavior from ui-sdk through Avenue's ToggleGroup: Dev is a pressed/not-pressed toggle, and the theme is a
+ * single choice (ui-sdk's SegmentedControl, a radio group: one Tab stop, the arrow keys choose).
+ *
+ * Changes from the app:
+ * - AVE-2: icon to label 6px becomes 4px, side padding 10px becomes 8px.
+ * - WCAG 2.5.3 (label in name): the app named the Dev toggle "Developer mode" while it shows "Dev", so a speech
+ *   user saying what they see misses it and axe fails it. It is named "Dev mode".
  */
 function ModeToggle({
   dev,
   theme,
+  choice,
   onDevChange,
   onThemeChange,
 }: {
   dev?: boolean | undefined;
   theme?: "light" | "dark" | undefined;
+  choice?: ThemeChoice | undefined;
   onDevChange?: ((on: boolean) => void) | undefined;
-  onThemeChange?: ((theme: "light" | "dark") => void) | undefined;
+  onThemeChange?: ((theme: ThemeChoice) => void) | undefined;
 }) {
+  const selected = choice ?? theme ?? "light";
   return (
-    <ToggleGroup
-      multiple
-      variant="outline"
-      size="sm"
-      spacing={0}
-      value={[dev ? "dev" : "", theme === "dark" ? "dark" : ""].filter(Boolean)}
-      onValueChange={(value: string[]) => {
-        onDevChange?.(value.includes("dev"));
-        onThemeChange?.(value.includes("dark") ? "dark" : "light");
-      }}
-      aria-label="Display mode"
-      className="text-meta"
-    >
+    <span data-slot="mode-toggle" className="flex items-center gap-group">
       {dev !== undefined && (
-        <ToggleGroupItem value="dev" aria-label="Dev mode" className="gap-1 px-2 text-control">
-          <Code aria-hidden /> Dev
-        </ToggleGroupItem>
+        <ToggleGroup
+          multiple
+          variant="outline"
+          size="sm"
+          spacing={0}
+          value={dev ? ["dev"] : []}
+          onValueChange={(value: string[]) => onDevChange?.(value.includes("dev"))}
+          aria-label="Developer mode"
+          className="text-meta"
+        >
+          <ToggleGroupItem value="dev" aria-label="Dev mode" className="gap-1 px-2 text-control">
+            <Code aria-hidden /> Dev
+          </ToggleGroupItem>
+        </ToggleGroup>
       )}
-      <ToggleGroupItem value="dark" aria-label="Dark theme" className="gap-1 px-2 text-control">
-        <Moon aria-hidden /> Dark
-      </ToggleGroupItem>
-    </ToggleGroup>
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        spacing={0}
+        value={selected}
+        onValueChange={(value: string | null) => {
+          const next = themeItems.find((item) => item.value === value);
+          if (next) onThemeChange?.(next.value);
+        }}
+        aria-label="Theme"
+        className="text-meta"
+      >
+        {themeItems.map(({ value, label, icon: Icon, name }) => (
+          <ToggleGroupItem key={value} value={value} aria-label={name} title={label} className="gap-1 px-2 text-control">
+            <Icon aria-hidden />
+            {value === selected && <span className="max-sm:sr-only">{label}</span>}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </span>
   );
 }
 

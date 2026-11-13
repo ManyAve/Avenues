@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent } from "storybook/test";
+import { Button } from "#avenue/components/button";
 import { SearchInput } from "#avenue/components/search-input";
 
 const meta = {
@@ -25,7 +26,7 @@ export const WithShortcut: Story = {
   args: { kbd: "/" },
   render: (args) => (
     <div className="flex flex-col items-start gap-group">
-      <button type="button">Add household</button>
+      <Button variant="outline">Add household</Button>
       <SearchInput {...args} />
     </div>
   ),

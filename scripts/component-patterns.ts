@@ -103,7 +103,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "The Chip stories test the check, keyboard pressing and the scrolling row's focus reveal.",
   },
   "toolbar-button": { upstream: "button" },
-  "mode-toggle": { upstream: "toggle", note: "Avenue's ToggleGroup with `multiple`: one Tab stop, arrows move." },
+  "mode-toggle": { upstream: "segmented-control", note: "Dev is a ui-sdk toggle; the theme is Avenue's single-choice ToggleGroup (the radio-group pattern, AVE-17)." },
   "search-input": {
     upstream: "input",
     note: "The WithShortcut story tests that the hint's key focuses the field and is plain text inside it.",
