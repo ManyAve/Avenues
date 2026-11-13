@@ -21,7 +21,7 @@ let personApproved = false;
 const agent = createAgent({ allow: (step) => !step.confirm || personApproved });
 
 const control =
-  "h-control-md rounded-lg border border-input bg-background px-3 text-control shadow-control outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "h-control-md rounded-lg border border-input bg-background px-3 text-control outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function NotificationSettings() {
   const [sent, setSent] = useState(false);

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Button } from "#avenue/components/button";
 import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section } from "../tokens/token-docs";
@@ -33,7 +34,8 @@ function Chip({ label, active, height }: { label: string; active?: boolean; heig
   );
 }
 
-function IconButton({ className }: { className: string }) {
+/** The app's icon button today (29px round, raised). The after toolbar uses Avenue's Button instead. */
+function IconButtonBefore({ className }: { className: string }) {
   return (
     <span className={cn("flex items-center justify-center border border-input bg-card shadow-control", className)}>
       <SlidersHorizontal aria-hidden="true" className="size-4" />
@@ -49,7 +51,9 @@ function ToolbarAfter() {
       <Chip label="Owing" active height="h-control-md" />
       <Chip label="Paid" height="h-control-md" />
       <Select options={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
-      <IconButton className="size-control-md rounded-lg" />
+      <Button variant="outline" size="icon" aria-label="Display options">
+        <SlidersHorizontal aria-hidden="true" className="size-4" />
+      </Button>
     </div>
   );
 }
@@ -63,7 +67,7 @@ function ToolbarBefore() {
       <span className="inline-flex h-[30px] items-center gap-inline rounded-full border border-input bg-card pr-2 pl-3 text-control shadow-control">
         2026 <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
       </span>
-      <IconButton className="size-[29px] rounded-full" />
+      <IconButtonBefore className="size-[29px] rounded-full" />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Bell, FileText, Inbox, Mail, Send, SlidersHorizontal, Wallet } from "lucide-react";
-import { cn } from "#avenue/lib/utils";
+import { Button } from "#avenue/components/button";
 import { Code, Page, Section } from "../tokens/token-docs";
 import { DoDont, households, Rule, Rules } from "./foundation-docs";
 
@@ -28,15 +28,14 @@ function NextActions({ iconsOnly }: { iconsOnly?: boolean }) {
         return (
           <div key={h.address} className="flex items-center justify-between gap-group px-inset py-row-y">
             <span className="text-compact">{h.address}</span>
-            <span
-              className={cn(
-                "flex h-control-xs items-center gap-inline rounded-md border border-input bg-card text-control shadow-control",
-                iconsOnly ? "w-control-xs justify-center" : "px-2",
-              )}
+            <Button
+              variant="outline"
+              size={iconsOnly ? "icon-xs" : "xs"}
+              aria-label={iconsOnly ? `${label}, ${h.address}` : undefined}
             >
               <Icon aria-hidden="true" className="size-3.5" />
-              {iconsOnly ? <span className="sr-only">{label}</span> : label}
-            </span>
+              {iconsOnly ? null : label}
+            </Button>
           </div>
         );
       })}
@@ -47,11 +46,11 @@ function NextActions({ iconsOnly }: { iconsOnly?: boolean }) {
 function Toolbar({ mixed }: { mixed?: boolean }) {
   return (
     <div className="flex items-center gap-group">
-      <span className="flex h-control-md items-center gap-inline rounded-lg border border-input bg-card px-3 text-control shadow-control">
+      <Button variant="outline">
         <SlidersHorizontal aria-hidden="true" className="size-4" />
         Display
-      </span>
-      <span className="flex h-control-md items-center gap-inline rounded-lg border border-input bg-card px-3 text-control shadow-control">
+      </Button>
+      <Button variant="outline">
         {mixed ? (
           // The don't swaps in an emoji, deliberately: a second icon style beside lucide.
           <span aria-hidden="true">✉️</span>
@@ -59,11 +58,11 @@ function Toolbar({ mixed }: { mixed?: boolean }) {
           <Mail aria-hidden="true" className="size-4" />
         )}
         Announce
-      </span>
-      <span className="flex h-control-md items-center gap-inline rounded-lg border border-input bg-card px-3 text-control shadow-control">
+      </Button>
+      <Button variant="outline">
         <Send aria-hidden="true" className={mixed ? "size-5 stroke-1" : "size-4"} />
         Send
-      </span>
+      </Button>
     </div>
   );
 }

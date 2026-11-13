@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section } from "../tokens/token-docs";
 import { DoDont, households, Rule, Rules } from "./foundation-docs";
@@ -33,13 +34,9 @@ function Replay({ slow }: { slow?: boolean }) {
   const [run, setRun] = useState(0);
   return (
     <div className="flex w-full max-w-xs flex-col items-start gap-group">
-      <button
-        type="button"
-        onClick={() => setRun((n) => n + 1)}
-        className="flex h-control-md items-center rounded-lg border border-input bg-card px-3 text-control shadow-control transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
+      <Button variant="outline" onClick={() => setRun((n) => n + 1)}>
         Replay
-      </button>
+      </Button>
       <div
         key={run}
         className={cn(
@@ -77,13 +74,9 @@ function Total({ counting }: { counting?: boolean }) {
   };
   return (
     <div className="flex w-full max-w-xs flex-col items-start gap-group">
-      <button
-        type="button"
-        onClick={replay}
-        className="flex h-control-md items-center rounded-lg border border-input bg-card px-3 text-control shadow-control transition-colors hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
+      <Button variant="outline" onClick={replay}>
         Replay
-      </button>
+      </Button>
       <div className="flex w-full flex-col gap-inline rounded-xl border bg-card p-inset">
         <span className="text-meta text-muted-foreground">Collected this year · {households.length} households</span>
         <span className="text-title font-semibold tabular-nums">${shown.toLocaleString("en-US")}.00</span>
