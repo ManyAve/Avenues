@@ -134,8 +134,7 @@ const STATUS: Allowance[] = [
 const CARD_ACTION_ROW: Allowance[] = [
   { prop: "height", where: "card-action 1", avenue: "28px", because: "AVE-2 §6: the action row holds the 28px sm control, centred on the title's line" },
   { prop: "*-gap", where: "card-action 1", app: "6px", avenue: "8px", because: "AVE-2 §1: the off-grid 6px gap becomes 8px" },
-  { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-57: the app's header puts 4px between title and action" },
-  { prop: "font-weight", where: "card-title 1", app: "550", avenue: "600", because: "AVE-57: the app's header title is weight 550" },
+  { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-2 §1: 4px is for an icon beside its own label; the header's title and its action are separate things, 8px (space-group) apart (AVE-57)" },
 ];
 const DESKTOP_TITLE: Allowance[] = [
   { prop: "font-size", app: "14px", avenue: "16px", because: "AVE-55: Avenue's titles don't follow the desktop type scale" },
@@ -146,6 +145,29 @@ const CARD_TITLE: Allowance[] = [
   ...DESKTOP_TITLE,
   { prop: "*-gap", app: "8px", avenue: "0px", because: "app: app/ui/components/detail.tsx: the detail card's title is a flex row (gap-2) so it can hold an icon; the app's CardTitle itself has no gap, as Avenue's" },
 ];
+
+const REGISTER_CELL: Allowance[] = [
+  { prop: "padding-left", app: "10px", avenue: "12px", because: "AVE-2 §1: a Register cell's off-grid 10px side padding moves onto the 4px grid at 12px" },
+  { prop: "padding-right", app: "10px", avenue: "12px", because: "AVE-2 §1: a Register cell's off-grid 10px side padding moves onto the 4px grid at 12px" },
+];
+const REGISTER_HEADER: Allowance[] = [
+  ...REGISTER_CELL,
+  { prop: "*-gap", app: "6px", avenue: "8px", because: "AVE-2 §1: a column header's label to its sort button, the app's off-grid 6px, becomes 8px" },
+];
+const ADDRESS_CELL: Allowance[] = [
+  ...REGISTER_CELL,
+  {
+    prop: "parts",
+    where: "root",
+    because: "app: app/ui/components/cells.tsx: the households screen puts a house icon and a hover-card preview in the address cell; the Register cell holds what the screen gives it, here a plain link",
+  },
+];
+const STREET_TOTAL: Allowance = {
+  prop: "parts",
+  app: "only here: span",
+  avenue: "only here: money",
+  because: "AVE-55: the street total is Avenue's Money, which never truncates and sits in its own box; the app's group row prints a plain span",
+};
 
 const BEHAVIOUR = (look: string) =>
   `Behaviour story: a play function presses keys or checks focus, so its end state isn't a resting look the app has a story for. Its look is compared through ${look}.`;
@@ -805,6 +827,23 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "money-in icon tile (success)", app: "components-activity--board", appCrop: "span.size-9:not(:has(span)) >> nth=0", avenueCrop: "[data-slot=icon-tile] >> nth=1" },
   ],
   "composites-icon-tile--phone-row": { none: "An icon tile in a feed row at phone width; the app has no phone story. The tile is compared through Icon tile / Tones." },
+
+  // ---- Composites part 3: the Register (AVE-9)
+  "composites-register--wide": [
+    { label: "column header", app: "households-table--default", appCrop: "#storybook-root thead th:nth-child(3) >> nth=0", avenueCrop: "#storybook-root thead th:nth-child(3) >> nth=0", allow: REGISTER_HEADER },
+    { label: "street bar", app: "households-table--default", appCrop: "#storybook-root tbody tr:first-child td >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child td >> nth=0", allow: [STREET_TOTAL] },
+    { label: "row cell", app: "households-table--default", appCrop: "#storybook-root tbody tr:nth-child(2) td:nth-child(2) >> nth=0", avenueCrop: "[data-slot=register-body] tr:nth-child(2) td:nth-child(2) >> nth=0", allow: ADDRESS_CELL },
+  ],
+  "composites-register--compact": [
+    { label: "compact row cell", app: "households-table--compact", appCrop: "#storybook-root tbody tr:nth-child(2) td:nth-child(2) >> nth=0", avenueCrop: "[data-slot=register-body] tr:nth-child(2) td:nth-child(2) >> nth=0", allow: ADDRESS_CELL },
+  ],
+  "composites-register--normal-and-comfortable": { none: "The Register at normal and comfortable density, stacked; each row height is compared through Register / Wide (normal) and asserted in the story (48 and 52)." },
+  "composites-register--desktop-minimum": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--sort-popover": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
+  "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
 
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [
