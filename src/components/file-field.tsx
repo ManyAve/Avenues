@@ -5,7 +5,7 @@ import {
   type FileRejection,
 } from "@ui-sdk/react/file-input";
 import { FileUpIcon, ImageUpIcon, RotateCwIcon } from "lucide-react";
-import { useId, useState, type ComponentProps, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Button, buttonVariants } from "#avenue/components/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
 import { InlineMessage } from "#avenue/components/inline-message";
@@ -113,6 +113,24 @@ function FileField({
       : undefined;
   const describedBy = disabledReason ? reasonId : undefined;
 
+  // Remove, Try again and Check again unmount the button just pressed. Once it's gone, if focus fell to the page,
+  // put it on the trigger, which stays mounted and focusable in every state (AVE-49). Waiting for the unmount
+  // keeps focus where it is when the press doesn't change the row, and never takes focus from somewhere the person
+  // has since moved to.
+  const trigger = useRef<HTMLButtonElement>(null);
+  const pressed = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    const button = pressed.current;
+    if (!button || button.isConnected) return;
+    pressed.current = null;
+    const active = button.ownerDocument.activeElement;
+    if (!active || active === button.ownerDocument.body) trigger.current?.focus();
+  });
+  const press = (action: () => void) => (event: { currentTarget: HTMLElement }) => {
+    pressed.current = event.currentTarget;
+    action();
+  };
+
   return (
     <Field data-slot="file-field" data-status={status} invalid={status === "failed"} className={cn("gap-2", className)}>
       <FieldLabel>{label}</FieldLabel>
@@ -137,6 +155,7 @@ function FileField({
           <FileName name={file.name} className="max-w-full min-w-0 basis-full text-sm sm:basis-auto" />
         ) : null}
         <FileInputTrigger
+          ref={trigger}
           // The trigger has no focusableWhenDisabled, and disabling it mid-upload drops focus on the page, so it stays
           // enabled, says it's unavailable with aria-disabled, and cancels its own press.
           className={cn(
@@ -165,13 +184,20 @@ function FileField({
             aria-label={`Remove ${file.name}`}
             aria-describedby={describedBy}
             data-agent-confirm={`Removes ${file.name}`}
-            onClick={onRemove}
+            onClick={press(onRemove)}
           >
             Remove
           </Button>
         ) : null}
         {onRetry && (status === "failed" || status === "unconfirmed") ? (
-          <Button variant="ghost" size="sm" disabled={!!disabledReason} focusableWhenDisabled onClick={onRetry}>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={!!disabledReason}
+            focusableWhenDisabled
+            aria-describedby={describedBy}
+            onClick={press(onRetry)}
+          >
             <RotateCwIcon aria-hidden data-icon="inline-start" />
             {status === "failed" ? "Try again" : "Check again"}
           </Button>
