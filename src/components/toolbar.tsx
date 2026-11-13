@@ -113,7 +113,13 @@ function useWide() {
 function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[]; primary: ToolbarAction }) {
   const wide = useWide();
   return (
-    <span data-slot="toolbar-actions" className="ms-2 flex items-start gap-controls">
+    <span
+      data-slot="toolbar-actions"
+      // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason never sets its
+      // slot's width: it keeps its line's height (the bar grows to hold it) but takes no width, and hangs under the
+      // button from its end, growing leftward into the room below, so it never runs under the next button.
+      className="flex items-start gap-controls [&_[data-slot=button-reason]]:flex [&_[data-slot=button-reason]]:w-0 [&_[data-slot=button-reason]]:self-end [&_[data-slot=button-reason]]:justify-end [&_[data-slot=button-reason]]:whitespace-nowrap"
+    >
       {wide ? (
         actions.map((action) => (
           <ToolbarItem

@@ -106,6 +106,19 @@ export const Wide: Story = {
     await expect(importButton).toHaveAttribute("aria-disabled", "true");
     await expect(importButton).toHaveAccessibleDescription(importReason);
     await expect(bar.queryByRole("button", { name: "More actions" })).toBeNull();
+    // The reason doesn't widen Import's slot: Import to Export is gap-controls, like every other gap, and the reason
+    // hangs from Import's end without reaching under Export (AVE-86).
+    const actionRow = toolbar.querySelector<HTMLElement>("[data-slot=toolbar-actions]")!;
+    const gap = parseFloat(getComputedStyle(actionRow).columnGap);
+    const exportButton = bar.getByRole("button", { name: /Export/ });
+    const slot = importButton.closest<HTMLElement>("[data-slot=button-with-reason]")!;
+    await expect(Math.round(slot.getBoundingClientRect().width)).toBe(Math.round(importButton.getBoundingClientRect().width));
+    await expect(Math.round(exportButton.getBoundingClientRect().left - importButton.getBoundingClientRect().right)).toBe(gap);
+    const reason = slot.querySelector<HTMLElement>("[data-slot=button-reason]")!;
+    const text = document.createRange();
+    text.selectNodeContents(reason);
+    await expect(Math.round(text.getBoundingClientRect().right)).toBeLessThanOrEqual(Math.round(importButton.getBoundingClientRect().right));
+    await expect(text.getBoundingClientRect().width).toBeGreaterThan(importButton.getBoundingClientRect().width);
   },
 };
 
@@ -117,6 +130,10 @@ export const DesktopMinimum: Story = {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
     await expect(bar.queryByRole("button", { name: /Export/ })).toBeNull();
     const more = bar.getByRole("button", { name: "More actions" });
+    // Every control is spaced by gap-controls alone, More included (AVE-86).
+    const gap = parseFloat(getComputedStyle(canvasElement.querySelector("[data-slot=toolbar-controls]")!).columnGap);
+    const before = bar.getByRole("button", { name: "Display options" });
+    await expect(Math.round(more.getBoundingClientRect().left - before.getBoundingClientRect().right)).toBe(gap);
     more.focus();
     await userEvent.keyboard("{ArrowDown}");
     const page = within(canvasElement.ownerDocument.body);
@@ -325,6 +342,16 @@ export const Phone: Story = {
   ),
   play: async ({ canvas, canvasElement }) => {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
+    // The chip row fades its last 28px at 700px and narrower, and drops the fade once scrolled to its end (AVE-86).
+    const chips = canvasElement.querySelector<HTMLElement>("[data-slot=chip-row]")!;
+    if (innerWidth <= 700) {
+      await expect(getComputedStyle(chips).maskImage).toContain("linear-gradient");
+      chips.scrollLeft = chips.scrollWidth;
+      await waitFor(() => expect(chips).toHaveAttribute("data-scroll-end"));
+      await expect(getComputedStyle(chips).maskImage).toBe("none");
+      chips.scrollLeft = 0;
+      await waitFor(() => expect(chips).not.toHaveAttribute("data-scroll-end"));
+    }
     await userEvent.tab();
     await expect(bar.getByRole("searchbox", { name: "Search households" })).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
