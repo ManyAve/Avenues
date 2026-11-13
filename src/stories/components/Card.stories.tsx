@@ -49,7 +49,7 @@ export const HeaderWithAction: Story = {
   render: () => (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle className="text-meta font-semibold tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
+        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
         <CardAction className="gap-group text-meta text-muted-foreground">
           <span>Account summary ·</span>
           <Button variant="outline" size="sm" className="pr-1" aria-label="Year, 2026">
@@ -77,6 +77,8 @@ export const HeaderWithAction: Story = {
     const title = canvas.getByText("Dues");
     const box = title.getBoundingClientRect();
     await expect(getComputedStyle(title).textTransform).toBe("uppercase");
+    // The app's Dues title weight (AVE-57).
+    await expect(getComputedStyle(title).fontWeight).toBe("550");
     await expect(action.height).toBe(28);
     await expect(Math.round(action.left - label.right)).toBe(8);
     await expect(Math.round(action.top - card.top)).toBe(16);
