@@ -1,6 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import { createAgent } from "@ui-sdk/react/agent";
+import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
+import {
+  Sheet,
+  SheetBody,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#avenue/components/sheet";
 import { ToastProvider, useToast, type ToastOptions } from "#avenue/components/toast";
 import { Rows } from "./story-kit";
 
@@ -59,7 +69,21 @@ export const Success: Story = {
   },
 };
 
-/** With an action, the toast stays while focus is on it (F6 reaches it), and hides 4.2s after focus leaves. */
+/**
+ * A success with an action stays at least 10s, so F6, a switch or voice can reach Undo in time (WCAG 2.2.1, AVE-41).
+ * Still there at 9s, gone soon after 10s.
+ */
+export const ActionGetsTenSeconds: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Archive notice" }));
+    await findToast();
+    await wait(9000);
+    await expect(toastEl()).toHaveTextContent("Notice archived");
+    await gone(3000);
+  },
+};
+
+/** With an action, the toast stays while focus is on it (F6 reaches it), past its 10s, and hides after focus leaves. */
 export const ActionKeepsItWhileFocused: Story = {
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Archive notice" });
@@ -72,10 +96,10 @@ export const ActionKeepsItWhileFocused: Story = {
     });
     action.focus();
     await expect(action).toHaveFocus();
-    await wait(5000);
+    await wait(11000);
     await expect(toastEl()).not.toBeNull();
     trigger.focus();
-    await gone(6000);
+    await gone(12000);
   },
 };
 
@@ -111,15 +135,41 @@ export const ErrorStays: Story = {
   },
 };
 
-/** A new toast replaces the current one. Ends with the toast showing, for the agent test. */
+/** A new success replaces the current one. Ends with the toast showing, for the agent test. */
 export const NewReplacesCurrent: Story = {
   tags: ["agent"],
   play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Archive notice" }));
     await findToast();
     await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
     await waitFor(() => expect(toastEl()).toHaveTextContent("Household added"));
     await waitFor(() => expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1));
+  },
+};
+
+/**
+ * A later success never hides an error (AVE-41): the error stays, and the success waits behind it until the error is
+ * dismissed. Ends with the error showing.
+ */
+export const ErrorNotHiddenBySuccess: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await findToast();
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    await wait(500);
+    const toast = toastEl();
+    await expect(toast).toHaveAttribute("data-type", "error");
+    await expect(toast).toHaveTextContent("Couldn't send the reminder.");
+    await expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1);
+
+    const dismiss = document.querySelector<HTMLElement>("[data-slot=toast-close]")!;
+    dismiss.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(toastEl()).toHaveTextContent("Household added"));
+    await expect(toastEl()).toHaveAttribute("data-type", "success");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await waitFor(() => expect(toastEl()).toHaveAttribute("data-type", "error"));
   },
 };
 
@@ -146,5 +196,130 @@ export const ErrorShown: Story = {
       await expect(Math.abs(box.left + box.width / 2 - window.innerWidth / 2)).toBeLessThanOrEqual(1);
       await expect(Math.round(window.innerHeight - box.bottom)).toBe(24);
     });
+  },
+};
+
+/**
+ * Documents a ui-sdk gap (AVE-43, 0.1.0-beta.1): an empty toast region is listed in the agent snapshot as a
+ * `toast` with a `pause` action and no name, so the agent test fails on nearly every app screen, where the region
+ * sits empty near the root. `aria-label` on ToastRegion doesn't reach the snapshot (nor the empty section).
+ *
+ * This story expects the gap, so it fails once ui-sdk names the region. Then tag it `agent`, drop this check, and
+ * update the toast note in scripts/component-patterns.ts.
+ */
+export const EmptyRegionAgentGap: Story = {
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <Button>Save</Button>
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async () => {
+    const onPage = createAgent()
+      .snapshot()
+      .filter((entry) => !entry.offPage && entry.component !== "more");
+    await expect(onPage.find((entry) => entry.component === "button")).toHaveProperty("label", "Save");
+    const region = onPage.find((entry) => entry.component === "toast");
+    await expect(region, "ui-sdk no longer lists the empty region: see this story's notes").toBeDefined();
+    await expect(region?.label, "ui-sdk now names the empty region: tag this story agent").toBeFalsy();
+  },
+};
+
+const phone = { viewport: { value: "phone", isRotated: false } };
+const longError = "Couldn't send the reminder. Check the address and try again.";
+
+/** Keeps a 16px gutter each side of a toast at 390px and checks nothing in it is cut. */
+async function expectInsidePhoneGutters(toast: HTMLElement) {
+  await waitFor(async () => {
+    const box = toast.getBoundingClientRect();
+    await expect(Math.round(box.left)).toBeGreaterThanOrEqual(16);
+    await expect(Math.round(window.innerWidth - box.right)).toBeGreaterThanOrEqual(16);
+  });
+  const title = toast.querySelector<HTMLElement>("[data-slot=toast-title]")!;
+  await expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+  await expect(title.scrollHeight).toBeLessThanOrEqual(title.clientHeight);
+}
+
+/**
+ * The longest error on a 390px phone (AVE-40): it wraps inside the 16px gutters and is never cut, and sits 24px above
+ * the bottom edge plus the home indicator's safe area (0 in a browser).
+ */
+export const PhoneLongError: Story = {
+  globals: phone,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    const toast = await findToast();
+    await expect(toast).toHaveTextContent(longError);
+    await expectInsidePhoneGutters(toast);
+    // Wrapped, not cut: taller than one line.
+    await expect(toast.querySelector<HTMLElement>("[data-slot=toast-title]")!.getBoundingClientRect().height).toBeGreaterThan(24);
+    await waitFor(() => expect(Math.round(window.innerHeight - toast.getBoundingClientRect().bottom)).toBe(24));
+  },
+};
+
+/**
+ * An error with an action on a phone: Retry and Dismiss each keep a 44px tap area, and the two don't overlap (the
+ * touch story-test project measures them). Ends with the toast showing.
+ */
+export const PhoneActionAndClose: Story = {
+  globals: phone,
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <Trigger
+          label="Send reminder"
+          text={longError}
+          options={{ variant: "error", action: { label: "Retry", onAction: () => {} } }}
+        />
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    const toast = await findToast();
+    await expectInsidePhoneGutters(toast);
+    await expect(toast.querySelector("[data-slot=toast-action]")).toHaveTextContent("Retry");
+    await expect(toast.querySelector("[data-slot=toast-close]")).toHaveAccessibleName("Dismiss");
+  },
+};
+
+function SheetWithToast() {
+  const toast = useToast();
+  return (
+    <Sheet defaultOpen side="bottom">
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Reminder</SheetTitle>
+        </SheetHeader>
+        <SheetBody>
+          <p>Remind 14 Larkspur Lane that dues are due on Dec 1.</p>
+        </SheetBody>
+        <SheetFooter>
+          <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+          <Button onClick={() => toast(longError, { variant: "error" })}>Send reminder</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/** With a bottom Sheet open, the toast sits 8px above the sheet's footer, so it never covers its actions (AVE-40). */
+export const PhoneAboveSheetFooter: Story = {
+  globals: phone,
+  render: () => (
+    <ToastProvider>
+      <SheetWithToast />
+    </ToastProvider>
+  ),
+  play: async () => {
+    await screen.findByRole("dialog", { name: "Reminder" });
+    await userEvent.click(await screen.findByRole("button", { name: "Send reminder" }));
+    const toast = await findToast();
+    await expectInsidePhoneGutters(toast);
+    const footer = document.querySelector<HTMLElement>("[data-slot=sheet-footer]")!;
+    await waitFor(() =>
+      expect(Math.round(footer.getBoundingClientRect().top - toast.getBoundingClientRect().bottom)).toBe(8),
+    );
   },
 };

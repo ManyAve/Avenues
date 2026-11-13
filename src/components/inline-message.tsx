@@ -36,6 +36,10 @@ export interface InlineMessageProps {
  * empty) and only its text changes. A re-render with the same text changes nothing in the DOM and is not announced
  * again; a new message is announced once. Keep the same InlineMessage mounted and change its children, rather than
  * mounting a new one per message. Changing tone changes the role, which some readers treat as a new region.
+ *
+ * The text is the body's size, `text-compact` (16px web, 14px desktop), the app's error text and the size AVE-46 gave
+ * the confirm dialog's warning (AVE-72): a message about a failure shouldn't be the smallest text on the screen. The
+ * icon stays, unlike the app's, so colour never carries the state alone (WCAG 1.4.1, as AVE-48).
  */
 export function InlineMessage({ tone = "error", children, hideIcon, id, className }: InlineMessageProps) {
   const { role, Icon, text, spin } = tones[tone];
@@ -48,15 +52,15 @@ export function InlineMessage({ tone = "error", children, hideIcon, id, classNam
       data-slot="inline-message"
       data-tone={tone}
       data-empty={empty || undefined}
-      className={cn("flex items-start gap-1 text-meta data-empty:sr-only", text, className)}
+      className={cn("flex items-start gap-1 text-compact data-empty:sr-only", text, className)}
     >
       {!empty && (
         <>
           {!hideIcon && (
-            <Icon
-              aria-hidden
-              className={cn("mt-0.5 size-4 shrink-0", spin && "animate-spin motion-reduce:animate-none")}
-            />
+            // One line tall, so the icon sits on the first line at either type scale.
+            <span className="flex h-lh shrink-0 items-center">
+              <Icon aria-hidden className={cn("size-4", spin && "animate-spin motion-reduce:animate-none")} />
+            </span>
           )}
           <span className="min-w-0">{children}</span>
         </>

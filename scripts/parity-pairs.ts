@@ -563,11 +563,8 @@ export const PAIRS: Record<string, PairEntry> = {
       appCrop: "[data-slot=field-error]",
       avenueCrop: "[data-slot=inline-message]",
       allow: [
-        { prop: "font-size", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "line-height", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "height", because: "AVE-72: the smaller line makes the message shorter" },
-        { prop: "*-gap", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
-        { prop: "parts", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "*-gap", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
+        { prop: "parts", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
       ],
     },
   ],
@@ -719,11 +716,17 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Toast (AVE-8)
   ...Object.fromEntries(
-    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current"].map((story) => [
+    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current", "action-gets-ten-seconds", "error-not-hidden-by-success", "empty-region-agent-gap"].map((story) => [
       `components-toast--${story}`,
       {
         none: "The app's Toast stories raise a toast only inside their play function and it has left by the time the story reports rendered, so there is no resting toast to capture. Compared by eye when AVE-8 ported it.",
       },
+    ]),
+  ),
+  ...Object.fromEntries(
+    ["phone-long-error", "phone-action-and-close", "phone-above-sheet-footer"].map((story) => [
+      `components-toast--${story}`,
+      { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
     ]),
   ),
 
@@ -860,7 +863,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-toolbar--phone": [
     { label: "phone toolbar chips", app: "primitives-phone--toolbar", appCrop: "#storybook-root > div > div:nth-child(2)", avenueCrop: "[data-slot=chip-row]", allow: [
       ...CHIP,
-      { prop: "padding-*", app: "16px", avenue: "20px", because: "AVE-2 §1: the strip's padding is the page inset, 16px on a phone and 20px from 640px; the capture is wider than a phone" },
+      { prop: "padding-right", app: "16px", avenue: "32px", because: "AVE-8: at 700px and narrower a scrolling chip row keeps 32px after its last chip, so it can scroll clear of the 28px fade (ChipRow)" },
       { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
     ] },
     { label: "phone toolbar search", app: "primitives-phone--toolbar", appCrop: "#storybook-root input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },

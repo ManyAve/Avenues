@@ -15,7 +15,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ErrorTone: Story = { name: "Error" };
+export const ErrorTone: Story = {
+  name: "Error",
+  play: async ({ canvas }) => {
+    // The body's size, like the app's error text (AVE-72), with the icon centred on the first line.
+    const region = canvas.getByRole("alert");
+    const desktop = document.getElementById("avenue-desktop-scale") !== null;
+    await expect(getComputedStyle(region).fontSize).toBe(desktop ? "14px" : "16px");
+    const icon = region.querySelector("svg")!.getBoundingClientRect();
+    const line = parseFloat(getComputedStyle(region).lineHeight);
+    await expect(Math.round(icon.top - region.getBoundingClientRect().top)).toBe(Math.round((line - 16) / 2));
+  },
+};
 export const Warning: Story = {
   args: { tone: "warning", children: "This household has no owner email, so the notice goes by mail." },
 };
