@@ -53,6 +53,15 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     why: "Changes keys: leaving the field with half-typed text restores the last choice.",
   },
 
+  "form-dialog": {
+    pattern: "dialog",
+    why: "Changes dismissal: with unsaved input, Esc, an outside press, Cancel and the close button ask first (AVE-9).",
+  },
+  "pending-confirm-dialog": {
+    pattern: "alertdialog",
+    why: "Changes keys: while the step runs, Tab stays on the status line and Esc does nothing (AVE-9).",
+  },
+
   // ui-sdk components, styled and wired: wiring tests plus the agent test.
   button: {
     upstream: "button",
