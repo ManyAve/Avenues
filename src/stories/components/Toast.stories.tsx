@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { createAgent } from "@ui-sdk/react/agent";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { ToastProvider, useToast, type ToastOptions } from "#avenue/components/toast";
@@ -186,5 +187,32 @@ export const ErrorShown: Story = {
       await expect(Math.abs(box.left + box.width / 2 - window.innerWidth / 2)).toBeLessThanOrEqual(1);
       await expect(Math.round(window.innerHeight - box.bottom)).toBe(24);
     });
+  },
+};
+
+/**
+ * Documents a ui-sdk gap (AVE-43, 0.1.0-beta.1): an empty toast region is listed in the agent snapshot as a
+ * `toast` with a `pause` action and no name, so the agent test fails on nearly every app screen, where the region
+ * sits empty near the root. `aria-label` on ToastRegion doesn't reach the snapshot (nor the empty section).
+ *
+ * This story expects the gap, so it fails once ui-sdk names the region. Then tag it `agent`, drop this check, and
+ * update the toast note in scripts/component-patterns.ts.
+ */
+export const EmptyRegionAgentGap: Story = {
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <Button>Save</Button>
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async () => {
+    const onPage = createAgent()
+      .snapshot()
+      .filter((entry) => !entry.offPage && entry.component !== "more");
+    await expect(onPage.find((entry) => entry.component === "button")).toHaveProperty("label", "Save");
+    const region = onPage.find((entry) => entry.component === "toast");
+    await expect(region, "ui-sdk no longer lists the empty region: see this story's notes").toBeDefined();
+    await expect(region?.label, "ui-sdk now names the empty region: tag this story agent").toBeFalsy();
   },
 };

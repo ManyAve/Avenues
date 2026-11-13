@@ -115,7 +115,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   "nav-tab": { none: "A plain link with aria-current; no behavior beyond the browser's." },
   toast: {
     upstream: "toast",
-    note: "The app's timing rules are story tests. The agent story ends with a toast showing: ui-sdk's empty region appears in the agent snapshot without a name (0.1.0-beta.1).",
+    note: "The app's timing rules are story tests. The agent story ends with a toast showing: ui-sdk's empty region appears in the agent snapshot without a name (0.1.0-beta.1). EmptyRegionAgentGap expects that gap and fails once ui-sdk fixes it (AVE-43).",
   },
 
   // Plain markup.
