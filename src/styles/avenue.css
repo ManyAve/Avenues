@@ -47,6 +47,9 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  /* Selected text (AVE-76): primary at 25%, in both themes, in place of the browser's own blue. The text keeps its
+     colour, which stays readable over the light tint. */
+  --color-selection: color-mix(in oklab, var(--primary) 25%, transparent);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-subtle: var(--primary-subtle);
   --color-primary-subtle-foreground: var(--primary-subtle-foreground);
@@ -237,6 +240,9 @@
   }
   body {
     @apply bg-background text-compact text-foreground;
+  }
+  ::selection {
+    background-color: --theme(--color-selection);
   }
 }
 
