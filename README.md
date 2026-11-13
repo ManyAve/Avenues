@@ -120,8 +120,13 @@ compares just the Avenue stories whose id starts with it.
 The pairs live in `scripts/parity-pairs.ts`. Each Avenue component and composite story either names the app
 story (and what to crop on each side) it is compared with, or says in a sentence why it has none (a
 behaviour-only story, or something the app doesn't have). Each pair compares, per visible part, the computed
-padding, borders, corners, fill, text colour, type, shadow, gaps and size, plus the pixels where both
-captures show the same text (not for a frame pair, which compares a container's own box). A difference passes only with an allowance whose reason says which kind it is:
+padding, borders, corners, fill, text colour, type (including italic, underline and case), shadow,
+outline, transform, gaps and size, and each icon's fill, stroke and size. Pixels decide too, but only where
+they can: both captures show the same text, no style differs (an allowed padding change moves every pixel
+after it) and the pair isn't a frame (a container's own box); a different sub-pixel offset may account for
+at most 32 edge pixels. Every other comparison is judged on styles only, and the summary and report say how
+many, so "same" is never read as "looked identical". A difference passes only with an allowance whose
+reason says which kind it is:
 
 - `AVE-2 §<n>: …` an agreed spacing or corner fix, or `AVE-13: …`, `AVE-29: …` or `AVE-8: …`, the
   agreed contrast, control-text and selected-chip-check decisions.
