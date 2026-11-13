@@ -116,7 +116,7 @@ export function FormDialog({
         >
           <DialogHeader className="shrink-0 flex-row items-center gap-group border-b p-inset pe-12">
             <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <DialogTitle className="text-compact leading-6">{title}</DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
             <DialogDescription className="sr-only">{description}</DialogDescription>
           </DialogHeader>
           <FieldGroup className="min-h-0 gap-4 overflow-y-auto p-inset text-compact">

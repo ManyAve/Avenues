@@ -37,6 +37,12 @@ export const Default: Story = {
       </CardFooter>
     </Card>
   ),
+  play: async ({ canvas }) => {
+    // The title is text-compact, as on the app's screens (AVE-55): 16/24 on web, 14/20 at desktop scale.
+    const title = getComputedStyle(canvas.getByText("Annual meeting"));
+    const desktop = document.getElementById("avenue-desktop-scale") !== null;
+    await expect([title.fontSize, title.lineHeight]).toEqual(desktop ? ["14px", "20px"] : ["16px", "24px"]);
+  },
 };
 
 /**
