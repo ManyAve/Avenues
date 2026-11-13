@@ -382,6 +382,31 @@ export const RowActionDialogThenTab: Story = {
   },
 };
 
+/**
+ * The same with the pointer (Architect's rule 1, "follow focus from any source"): a row action that isn't the stop is
+ * clicked, its dialog closes and hands focus back, and that action is now the table's one stop.
+ */
+export const RowActionClickedDialogThenTab: Story = {
+  globals: desktop,
+  render: () => frame(<Households />),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    const remove = canvas.getByRole("button", { name: "Remove 14 Birch Lane" });
+    await expect(remove).toHaveAttribute("tabindex", "-1");
+    await userEvent.click(remove);
+    await screen.findByRole("alertdialog", { name: "Remove 14 Birch Lane?" });
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(remove).toHaveFocus());
+    await expect(remove).toHaveAttribute("tabindex", "0");
+    await expect(stops()).toBe(1);
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "After the table" })).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    await expect(remove).toHaveFocus();
+  },
+};
+
 /** A click anywhere moves the stop there: the next Tab into the table lands on what was clicked. */
 export const ClickMovesTheStop: Story = {
   globals: desktop,
