@@ -275,8 +275,11 @@ function FeedRow({ cut }: { cut?: boolean }) {
         ) : (
           <p className="m-0 flex flex-col text-meta text-muted-foreground">
             <span className="text-foreground">{post.author}</span>
+            {/* Each part wraps whole, so "2 hours ago" never splits across lines. */}
             <span>
-              {post.street} · {post.group} · {post.when}
+              <span className="whitespace-nowrap">{post.street}</span>{" "}
+              <span className="whitespace-nowrap">· {post.group}</span>{" "}
+              <span className="whitespace-nowrap">· {post.when}</span>
             </span>
           </p>
         )}

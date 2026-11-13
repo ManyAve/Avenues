@@ -61,12 +61,12 @@ function DuesCard({ before }: { before?: boolean }) {
   );
 }
 
-function Segmented({ tight }: { tight?: boolean }) {
+function Segmented({ tight, copy }: { tight?: boolean | undefined; copy?: boolean | undefined }) {
   return (
     // 3px is the app's segmented-control padding: an optical inset inside a control, which AVE-2 allows. Drawn at
     // md (32px: 1px border, 3px padding, 24px items) with control text. Drawn, not Avenue's ToggleGroup, because that
     // ships spaced or joined items, not a padded track, so it can't show this rule.
-    <div data-segmented className="inline-flex h-control-md gap-0.5 rounded-lg border bg-muted p-[3px]">
+    <div data-segmented={copy ? undefined : true} className="inline-flex h-control-md gap-0.5 rounded-lg border bg-muted p-[3px]">
       {["Month", "Quarter", "Year"].map((label, i) => (
         <span
           key={label}
@@ -74,11 +74,36 @@ function Segmented({ tight }: { tight?: boolean }) {
             "flex h-full items-center px-3 text-control",
             tight ? "rounded-lg" : "rounded-sm",
             i === 2 ? "bg-card shadow-control" : "text-muted-foreground",
+            // The crop shows corners, not letters. In dark the selected item is close to the track's tone, so the
+            // crop outlines it (0.5px, 2px once enlarged) to keep its curve readable.
+            copy && "text-transparent",
+            copy && i === 2 && "ring-[0.5px] ring-foreground/50",
           )}
         >
           {label}
         </span>
       ))}
+    </div>
+  );
+}
+
+/**
+ * At true md size a 6px and a 10px item corner are hard to tell apart, so each card adds a 4× crop of the track's
+ * top-right corner: the selected item's corner inside the track's. A decorative copy, hidden from assistive tech.
+ */
+function SegmentedWithCorner({ tight }: { tight?: boolean | undefined }) {
+  return (
+    <div className="flex items-center gap-section">
+      <Segmented tight={tight} />
+      <div
+        aria-hidden="true"
+        data-corner-crop
+        className="relative size-28 shrink-0 overflow-hidden rounded-md border bg-background"
+      >
+        <div className="absolute top-4 right-4 origin-top-right scale-400">
+          <Segmented tight={tight} copy />
+        </div>
+      </div>
     </div>
   );
 }
@@ -152,10 +177,10 @@ function CornerUse() {
       </Section>
       <Section title="More do and don't">
         <DoDont
-          good={<Segmented />}
-          bad={<Segmented tight />}
-          doCaption="10px container with 3px padding: 10 − 3 = 7, rounded down to sm (6px). The curves stay parallel."
-          dontCaption="Items with the container's own 10px corner, 3px from its edge: the curves pinch at every corner."
+          good={<SegmentedWithCorner />}
+          bad={<SegmentedWithCorner tight />}
+          doCaption="10px container with 3px padding: 10 − 3 = 7, rounded down to sm (6px). In the 4× crop the curves stay parallel."
+          dontCaption="Items with the container's own 10px corner, 3px from its edge. In the 4× crop the curves pinch together at the corner."
         />
         <DoDont
           good={<Actions />}
