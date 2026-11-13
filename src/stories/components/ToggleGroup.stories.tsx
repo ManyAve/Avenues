@@ -134,3 +134,43 @@ export const KeyboardMultiple: Story = {
     await expect(canvas.getByRole("button", { name: "After the group" })).toHaveFocus();
   },
 };
+
+const categories = ["News", "For sale", "Events"];
+
+/**
+ * A segmented control on a 390px phone (AVE-33): choosing a post's category in the composer. Built the way
+ * Management builds its full-width single-choice groups (row height in DisplayOptions, mailing mode in lob-mail, at
+ * a547a7e): spaced 8px apart, full width with equal-width items, and the chosen item drawn with a `primary` border
+ * and the `primary-subtle` fill, the same chosen look as a choice card. `md` 32px tall. Labels never truncate; past
+ * three or four short labels, use Tabs or a Select instead. Same radio-group keys as on desktop.
+ */
+export const Phone: Story = {
+  render: () => (
+    <div className="w-[390px] bg-background p-inset" data-width="390">
+      <ToggleGroup variant="outline" defaultValue="News" aria-label="Post category" className="w-full">
+        {categories.map((c) => (
+          <ToggleGroupItem
+            key={c}
+            value={c}
+            className="flex-1 basis-0 data-checked:border-primary data-checked:bg-primary-subtle data-checked:text-primary-subtle-foreground"
+          >
+            {c}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const items = categories.map((c) => canvas.getByRole("radio", { name: c }));
+    const widths = items.map((item) => item.getBoundingClientRect().width);
+    // Full width of the phone's content box (390 less 16px each side, less two 8px gaps), split evenly; no label is cut.
+    await expect(Math.round(widths.reduce((a, b) => a + b, 0))).toBe(390 - 32 - 16);
+    await expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
+    for (const item of items) await expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
+    await userEvent.tab();
+    await expect(items[0]).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(items[1]).toHaveFocus();
+    await expect(items[1]).toBeChecked();
+  },
+};

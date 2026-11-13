@@ -64,6 +64,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
   dialog: { upstream: "dialog" },
   "alert-dialog": { upstream: "alert-dialog" },
+  sheet: { upstream: "drawer", note: "The Sheet stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
   "dropdown-menu": { upstream: "trigger-menu" },
   popover: { upstream: "popover" },
   tooltip: { upstream: "tooltip" },
