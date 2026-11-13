@@ -231,6 +231,9 @@ const DISPLAY_OPTIONS: Allowance[] = [
   { prop: "padding-*", app: "12px", avenue: "16px", because: INSET },
   { prop: "*-gap", where: "root", app: "10px", avenue: "0px", because: "AVE-2 §1: sections space themselves (12px between, 8px rows) instead of the popover's off-grid 10px gap" },
   { prop: "parts", because: "app: app/ui/components/DisplayOptions.tsx: the app writes the popover as loose labels and paragraphs; Avenue's parts are named sections (display-options-section with an h3) and option rows (display-options-checkbox)" },
+  { prop: "width", because: "AVE-50: Row height is the shared chosen segment: equal columns as wide as the widest label plus the chosen item's 16px check (UI Designer, WCAG 1.4.1)" },
+  { prop: "display", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
+  { prop: "grid-*", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
 ];
 
 export const PAIRS: Record<string, PairEntry> = {
@@ -846,6 +849,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-toggle-group--keyboard": { none: BEHAVIOUR("Toggle group / Variants") },
   "components-toggle-group--keyboard-multiple": { none: BEHAVIOUR("Toggle group / Variants") },
+  "components-toggle-group--choice": { none: "AVE-50's chosen segment with its check and equal columns; the app draws no check and its groups (forms.tsx:532, lob-mail.tsx:99) are full-width colour-only segments. Its look is compared through Display options / Open (Row height)." },
   "components-toggle-group--phone": { none: "The segmented control at phone width (AVE-33); the app's segmented controls are desktop-only. Compared through Toggle group / Variants." },
 
   // ---- Composites part 2 (AVE-9)
@@ -891,7 +895,14 @@ export const PAIRS: Record<string, PairEntry> = {
   // AVE-78: the sort popover at rest, beside the app's sort menu with a direction chosen. The app's story shows the menu
   // in a bordered box rather than a popover, so the frame isn't judged; the rows inside are.
   "composites-register--sort-popover-open": [
-    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: PANEL },
+    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: [
+      ...PANEL,
+      { prop: "parts", because: "AVE-50: the chosen sort direction shows the shared chosen look and a 16px check, not the app's grey fill alone (AVE-94, WCAG 1.4.1)" },
+      { prop: "background-color", because: "AVE-50: the chosen sort direction takes the shared chosen fill (AVE-94)" },
+      { prop: "border-*-color", because: "AVE-50: the chosen sort direction takes the shared chosen border (AVE-94)" },
+      { prop: "color", because: "AVE-50: the chosen sort direction takes the shared chosen text colour (AVE-94)" },
+      { prop: "width", because: "AVE-50: each direction keeps room for the check, so choosing moves nothing (AVE-94)" },
+    ] },
   ],
   "composites-register--sorted-ascending": { none: "AVE-78: the sorted column's up arrow is new in Avenue (the app shows the same chevron on every column). The header is compared through Register / Wide." },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },

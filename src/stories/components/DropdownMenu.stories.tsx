@@ -89,6 +89,13 @@ export const Open: Story = {
     const disabled = screen.getByRole("menuitem", { name: /Send live notice/ });
     await expect(disabled).toHaveAttribute("aria-disabled", "true");
     await expect(disabled).toHaveAccessibleDescription("Only a board admin can send a live notice.");
+    // Placed on whole device pixels (AVE-21, Avenue's ui-sdk patch), so its text is as sharp as the page's on a 1x
+    // screen. The trigger is centred and 92.6px wide here, so an unrounded menu lands at 593.688px.
+    const popup = screen.getByRole("menu");
+    for (const side of ["left", "top"] as const) {
+      const value = parseFloat(popup.style[side]) * devicePixelRatio;
+      await expect(Math.abs(value - Math.round(value))).toBeLessThan(0.01);
+    }
   },
 };
 

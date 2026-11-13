@@ -252,6 +252,7 @@ export const Pattern: Story = {
   tags: ["pattern:combobox"],
   // The popover, on every screen: ui-sdk 0.1's checkPattern fails its own Combobox presenting as a sheet ("aria-controls
   // names no open listbox", reproduced on a bare ui-sdk Combobox, AVE-39), so the touch project checks the popover too.
+  // Re-check on every ui-sdk upgrade (AGENTS.md, AVE-75).
   render: () => (
     <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} presentation="popover" />
   ),

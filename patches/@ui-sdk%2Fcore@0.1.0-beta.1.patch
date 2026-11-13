@@ -22,3 +22,21 @@ index 7e08cca5c9d2963b7299eb41dd39e77742786587..cecdf99e8c332ca05b9e6145f1f74916
  });
  var toastRegion = toastRegionPrimitive;
  export {
+diff --git a/dist/foundation/platform/position.js b/dist/foundation/platform/position.js
+index e90f951f61954a463d4d3ae3140b013e90709516..2ea576f5df4bdde389b77a249078af0640e53f39 100644
+--- a/dist/foundation/platform/position.js
++++ b/dist/foundation/platform/position.js
+@@ -297,8 +297,11 @@ function position(anchorOrGetter, el, optionsOrGetter = {}) {
+       x: box.x - (parseFloat(style.left) || 0) * scale.x,
+       y: box.y - (parseFloat(style.top) || 0) * scale.y
+     };
+-    popup.style("left", `${(result.x - origin.x) / scale.x}px`);
+-    popup.style("top", `${(result.y - origin.y) / scale.y}px`);
++    // Avenue patch (AVE-21): whole device pixels, so popup text isn't drawn at half-pixel positions on 1x screens.
++    const dpr = typeof devicePixelRatio === "number" && devicePixelRatio > 0 ? devicePixelRatio : 1;
++    const snap = (value) => Math.round(value * dpr) / dpr;
++    popup.style("left", `${snap((result.x - origin.x) / scale.x)}px`);
++    popup.style("top", `${snap((result.y - origin.y) / scale.y)}px`);
+     if (first) {
+       placed = true;
+       void getComputedStyle(el).left;

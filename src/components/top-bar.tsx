@@ -59,7 +59,7 @@ function TopBar({
     <header
       data-slot="top-bar"
       className={cn(
-        "flex min-h-14 flex-wrap items-center gap-4 border-b bg-background px-page py-3 text-meta max-[700px]:gap-x-3",
+        "flex min-h-14 flex-wrap items-center gap-4 border-b bg-background px-page py-3 text-meta max-phone:gap-x-3",
         className,
       )}
       {...props}
@@ -67,14 +67,14 @@ function TopBar({
       <a
         href={homeHref}
         aria-label={`${name} home`}
-        className="relative hit-area flex shrink-0 items-center gap-2 rounded-md border-e pe-4 text-post font-[650] tracking-[-0.4px] text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-[700px]:border-0 max-[700px]:pe-0"
+        className="relative hit-area flex shrink-0 items-center gap-2 rounded-md border-e pe-4 text-post font-[650] tracking-[-0.4px] text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-phone:border-0 max-phone:pe-0"
       >
         {logo ? (
           <span aria-hidden className="contents">
             {logo}
           </span>
         ) : null}
-        <span aria-hidden className="max-[700px]:hidden">
+        <span aria-hidden className="max-phone:hidden">
           {name}
         </span>
       </a>
@@ -86,7 +86,7 @@ function TopBar({
       <nav
         ref={nav}
         aria-label={navLabel}
-        className="flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-[1100px]:order-last max-[1100px]:-mx-page max-[1100px]:basis-full max-[1100px]:scroll-px-page max-[1100px]:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
+        className="flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-wide:order-last max-wide:-mx-page max-wide:basis-full max-wide:scroll-px-page max-wide:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-phone:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
       >
         {children}
       </nav>

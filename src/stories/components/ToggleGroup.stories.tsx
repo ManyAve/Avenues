@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { CodeIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { CodeIcon, LayoutGridIcon, ListIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { expect, userEvent } from "storybook/test";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
 import { Row, Rows } from "./story-kit";
@@ -165,10 +165,64 @@ export const Phone: Story = {
     await expect(Math.round(widths.reduce((a, b) => a + b, 0))).toBe(390 - 32 - 2 * gap);
     await expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
     for (const item of items) await expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
+    // The chosen item carries a check, so the choice isn't colour alone (AVE-50); choosing moves no width.
+    const check = (item: HTMLElement) => item.querySelector("[data-slot=toggle-check]");
+    await expect(check(items[0]!)).toBeVisible();
+    await expect(check(items[1]!)).not.toBeVisible();
     await userEvent.tab();
     await expect(items[0]).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
     await expect(items[1]).toHaveFocus();
     await expect(items[1]).toBeChecked();
+    await expect(check(items[1]!)).toBeVisible();
+    await expect(check(items[0]!)).not.toBeVisible();
+    await expect(items.map((item) => item.getBoundingClientRect().width)).toEqual(widths);
+  },
+};
+
+/**
+ * Chosen segments at their own width (AVE-50): the items are equal columns as wide as the widest label plus the
+ * check, each centred, so choosing one never changes a width or moves a label. An icon item swaps its icon for the
+ * check while chosen.
+ */
+export const Choice: Story = {
+  render: () => (
+    <div className="grid justify-items-start gap-controls">
+      <ToggleGroup variant="choice" defaultValue="Monthly" aria-label="Dues schedule">
+        {["Monthly", "Quarterly", "Yearly"].map((c) => (
+          <ToggleGroupItem key={c} value={c}>
+            {c}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      <ToggleGroup variant="choice" defaultValue="list" aria-label="Layout">
+        <ToggleGroupItem value="list" aria-label="List">
+          <ListIcon aria-hidden />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="grid" aria-label="Grid">
+          <LayoutGridIcon aria-hidden />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const items = ["Monthly", "Quarterly", "Yearly"].map((c) => canvas.getByRole("radio", { name: c }));
+    const widths = items.map((item) => item.getBoundingClientRect().width);
+    await expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
+    await userEvent.tab();
+    await expect(items[0]).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(items[1]).toBeChecked();
+    await expect(items.map((item) => item.getBoundingClientRect().width)).toEqual(widths);
+    const list = canvas.getByRole("radio", { name: "List" });
+    const grid = canvas.getByRole("radio", { name: "Grid" });
+    const iconWidth = grid.getBoundingClientRect().width;
+    await expect(list.querySelector("[data-slot=toggle-check]")).toBeVisible();
+    await expect(list.querySelectorAll("svg:not([data-slot=toggle-check])")[0]).not.toBeVisible();
+    await userEvent.tab();
+    await expect(list).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(grid).toBeChecked();
+    await expect(grid.getBoundingClientRect().width).toBe(iconWidth);
   },
 };

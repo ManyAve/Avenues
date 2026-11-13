@@ -198,7 +198,9 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
 /**
  * The phone toolbar (the app's MobileToolbar): search with New and More beside it, then the filter chips as one
  * scrolling strip. A view with nothing to create or nothing more passes neither, and shows no dead button.
- * `newMenu` and `moreMenu` are DropdownMenuItems.
+ * `newMenu` and `moreMenu` are DropdownMenuItems. On a touch screen the search field is 44px tall, so New and More
+ * grow to 44px with it, keeping the lg corner: controls that share a row share a height (AVE-2 §2, AVE-94). With a
+ * mouse all three stay 32px.
  */
 function PhoneToolbar({
   filters,
@@ -219,7 +221,7 @@ function PhoneToolbar({
         <SearchInput filled placeholder="Search…" className="min-w-0 flex-1" render={<ToolbarInput />} {...searchProps} />
         {newMenu ? (
           <DropdownMenu>
-            <ToolbarItem render={<DropdownMenuTrigger render={<Button variant="outline" />} />}>
+            <ToolbarItem render={<DropdownMenuTrigger render={<Button variant="outline" className="pointer-coarse:h-11" />} />}>
               New <ChevronDown />
             </ToolbarItem>
             <DropdownMenuContent align="end" className="w-52">
@@ -231,7 +233,7 @@ function PhoneToolbar({
           <DropdownMenu>
             <ToolbarItem
               aria-label="More"
-              render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" />} />}
+              render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" className="pointer-coarse:size-11" />} />}
             >
               <Ellipsis />
             </ToolbarItem>

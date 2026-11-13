@@ -260,7 +260,10 @@ The package is source-shipped (no build step) and exposes:
 - `@manyave/avenue/utils`: `cn`.
 - `@manyave/avenue/format`: `formatMoney`, `tintFor`, `initials`.
 - Utilities in `styles.css` beyond Tailwind's: the token aliases (`gap-group`, `gap-controls`, `h-control-md`, ...)
-  and `hit-area`, the invisible touch target (above). A change to how they behave is an API change.
+  `hit-area`, the invisible touch target (above), and `chosen`, the one look of a chosen thing (the primary border,
+  the primary-subtle fill and its text), which Chip, a `choice` ToggleGroup and ChoiceCard reach through their own
+  state variant (`data-pressed:chosen`, `data-checked:chosen`, `has-data-checked:chosen`; AVE-50). A change to how
+  they behave is an API change.
 
 `react`, `react-dom` and `tailwindcss` are peer dependencies so a consumer never gets a second
 copy.

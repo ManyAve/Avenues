@@ -32,7 +32,7 @@ function NavTab({
           <>
             {children}
             {count !== undefined && (
-              <Count value={count} className="bg-transparent px-0 opacity-85 max-[700px]:hidden" />
+              <Count value={count} className="bg-transparent px-0 opacity-85 max-phone:hidden" />
             )}
           </>
         ),

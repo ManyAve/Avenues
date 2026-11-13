@@ -131,7 +131,7 @@ function SectionEmpty({
         <p className="text-meta text-muted-foreground">{line}</p>
       </div>
       {action && (
-        <Button variant="outline" size="sm" className="shrink-0 max-[699px]:ml-13" onClick={action.onClick}>
+        <Button variant="outline" size="sm" className="shrink-0 max-phone:ml-13" onClick={action.onClick}>
           {action.icon && <action.icon aria-hidden />} {action.label}
         </Button>
       )}

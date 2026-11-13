@@ -28,7 +28,7 @@ function Chip({
       variant="outline"
       className={cn(
         "group/chip h-control-md shrink-0 snap-start gap-1 rounded-full border-border bg-background px-2 text-control font-normal text-muted-foreground",
-        "data-pressed:border-primary data-pressed:bg-primary-subtle data-pressed:text-primary-subtle-foreground",
+        "data-pressed:chosen",
         className,
       )}
       {...props}
@@ -94,7 +94,7 @@ function ChipRow({
           ? "flex-wrap"
           : // A scroller clips its children's overflow, so on a phone it pads 8px above and below (and takes it
             // back with a negative margin) to keep each chip's 44px tap area inside it (AVE-22).
-            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-[700px]:scroll-pe-8 max-[700px]:pe-8 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] data-scroll-end:[mask-image:none]",
+            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-phone:scroll-pe-8 max-phone:pe-8 max-phone:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] data-scroll-end:[mask-image:none]",
         className,
       )}
       {...props}

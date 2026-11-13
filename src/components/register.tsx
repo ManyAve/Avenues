@@ -2,7 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { createParts } from "@ui-sdk/react/primitive";
-import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
@@ -324,15 +324,21 @@ function SortMenu({
             return (
               <Button
                 key={direction}
-                variant={on ? "secondary" : "ghost"}
+                variant="ghost"
                 size="xs"
+                // The chosen direction takes the shared chosen look and its check (AVE-94, AVE-50), not the app's
+                // grey fill alone. An unchosen one keeps the check's 20px as 6px each side of its label (plus the
+                // 4px gaps), so choosing moves nothing.
+                className="aria-pressed:chosen"
                 aria-pressed={on}
                 // "Balance, High–low, descending": the visible words, plus the direction, because an agent
                 // matches names by their words and "High–low" and "Low–high" have the same ones (AVE-79).
                 aria-label={`${field.label}, ${field.directions[i]}, ${direction === "asc" ? "ascending" : "descending"}`}
                 onClick={() => onChange({ field: field.key, direction })}
               >
+                {on ? <CheckIcon aria-hidden data-slot="sort-check" className="size-4" /> : <span aria-hidden className="w-1.5" />}
                 {field.directions[i]}
+                {on ? null : <span aria-hidden className="w-1.5" />}
               </Button>
             );
           })}

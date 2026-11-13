@@ -40,7 +40,8 @@ function DisplayOptions({ children, className }: { children: ReactNode; classNam
       <PopoverContent
         align="end"
         aria-label="Display options"
-        className={cn("w-80 gap-0 text-meta", className)}
+        // 320px, or wider when Row height's equal columns need it (AVE-50: each holds the widest label and the check).
+        className={cn("w-min min-w-80 gap-0 text-meta", className)}
       >
         {children}
       </PopoverContent>
@@ -98,17 +99,15 @@ function DisplayOptionsDensity({
         const density = densities.find(([key]) => key === next)?.[0];
         if (density) onValueChange?.(density);
       }}
-      variant="outline"
+      // The shared chosen segment (AVE-50, AVE-91): equal columns, and the chosen height carries a check. The app
+      // hand-writes the chosen colours on outline items and draws no check.
+      variant="choice"
       size="sm"
       aria-label="Row height"
-      className="w-full *:flex-1"
+      className="w-full"
     >
       {densities.map(([key, label]) => (
-        <ToggleGroupItem
-          key={key}
-          value={key}
-          className="text-control data-checked:border-primary data-checked:bg-primary-subtle data-checked:text-primary-subtle-foreground"
-        >
+        <ToggleGroupItem key={key} value={key} className="text-control">
           {label}
         </ToggleGroupItem>
       ))}

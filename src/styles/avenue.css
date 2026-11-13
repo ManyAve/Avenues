@@ -137,11 +137,16 @@
   --container-grid: 80rem;
 }
 
-/* Wide (AVE-85): 1100px, where a page's actions fit as buttons. Management's TopBar and Toolbar both switch here.
-   `wide:` in classes; Toolbar's useWide reads the same variable, so the two can't drift. `static` keeps it on :root
-   for that read even when no class uses it. */
+/* The app's layout breakpoints (AVE-85), as Tailwind breakpoints so classes name them, never a pixel literal.
+   Wide: 1100px, where a page's actions fit as buttons; Management's TopBar and Toolbar both switch here (`wide:`
+   from 1100px up, `max-wide:` below it). Toolbar's useWide reads the same variable, so the two can't drift.
+   Phone: 700px; below it the top bar's section links and a chip row scroll and fade, and counts hide
+   (`max-phone:`). Desktop: 900px, the desktop app's smallest window; the status bar's hint shows from here up
+   (`desktop:`). `static` keeps them on :root even when no class uses them. */
 @theme static {
   --breakpoint-wide: 68.75rem;
+  --breakpoint-desktop: 56.25rem;
+  --breakpoint-phone: 43.75rem;
 }
 
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
@@ -227,6 +232,18 @@
       height: max(100%, 2.75rem);
     }
   }
+}
+
+/* Chosen (AVE-50): the one look for a chosen thing, shared by Chip (`data-pressed:chosen`), a ToggleGroup's `choice`
+   items (`data-checked:chosen`, `data-pressed:chosen`) and ChoiceCard (`has-data-checked:chosen`): the primary
+   border, the primary-subtle fill and its text. A utility, like `hit-area`, so each part reaches it through its own
+   state variant and a token change moves all three together. It is public API in styles.css. Colour alone doesn't
+   carry the state: each part also draws a check or its control (WCAG 1.4.1). `cn` knows it replaces a background,
+   border or text colour under the same variant (src/lib/utils.ts). */
+@utility chosen {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary-subtle-foreground);
 }
 
 @layer base {
