@@ -23,7 +23,7 @@ function Input({
       className={cn(
         controlSurface,
         controlSize({ size }),
-        "py-1 file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
+        "py-1 file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-control file:font-medium file:text-foreground",
         className,
       )}
       {...props}

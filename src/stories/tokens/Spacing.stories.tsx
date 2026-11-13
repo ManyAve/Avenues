@@ -141,5 +141,11 @@ export const Heights: Story = {
     const select = canvas.getByRole("combobox", { name: "Dues year" });
     await expect(select.getBoundingClientRect().height).toBe(32);
     await expect(getComputedStyle(select).borderTopLeftRadius).toBe("10px");
+    // AVE-29: a row of controls shares one text size. Buttons and chips use text-control (14px) at every width and on
+    // both type scales; a field joins them at 768px and up, and keeps 16px below so iOS doesn't zoom on focus.
+    const fontSize = (el: Element) => getComputedStyle(el).fontSize;
+    const chips = [canvas.getByText("Owing"), canvas.getByText("Paid")];
+    await expect([...buttons, ...chips].map(fontSize)).toEqual(Array(6).fill("14px"));
+    await expect(fontSize(select)).toBe(window.matchMedia("(min-width: 48rem)").matches ? "14px" : "16px");
   },
 };

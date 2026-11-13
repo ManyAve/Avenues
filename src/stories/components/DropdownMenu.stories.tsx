@@ -84,7 +84,8 @@ function Menu({ defaultOpen }: { defaultOpen?: boolean }) {
 export const Open: Story = {
   render: () => <Menu defaultOpen />,
   play: async () => {
-    await expect(await screen.findByRole("menu")).toBeVisible();
+    // The popup fades in from opacity 0 (data-starting-style), so wait for it rather than check once.
+    await waitFor(async () => expect(await screen.findByRole("menu")).toBeVisible());
     const disabled = screen.getByRole("menuitem", { name: /Send live notice/ });
     await expect(disabled).toHaveAttribute("aria-disabled", "true");
     await expect(disabled).toHaveAccessibleDescription("Only a board admin can send a live notice.");
