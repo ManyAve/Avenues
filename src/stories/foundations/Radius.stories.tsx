@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronDown } from "lucide-react";
+import { expect, within } from "storybook/test";
+import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
-import { Code, Page, Section, SelectMock } from "../tokens/token-docs";
+import { Code, Page, Section } from "../tokens/token-docs";
 import { DoDont, Rule, Rules, SeeTokens } from "./foundation-docs";
 
 // AVE-2 sections 3 to 6 as rules people can follow: which corner, rounded things inside rounded things, where pills
 // go, and the year select in the Dues card. The scale itself is on Tokens/Radius.
-// The year select is drawn with SelectMock, a stand-in, until AVE-7's Select is merged; then swap it in here.
+// The "do" Dues card uses Avenue's real Select (AVE-26); the "don't" card is the app's pill, drawn for comparison.
+
+const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const uses = [
   ["xs", "4px", "Checkboxes, small marks, keyboard hints, progress tracks"],
@@ -20,11 +24,11 @@ const uses = [
 /** The Dues card header. `before` is the app today; the after follows AVE-2 section 6. */
 function DuesCard({ before }: { before?: boolean }) {
   return (
-    <div className="w-full max-w-sm rounded-xl border bg-card shadow-card">
+    <div data-dues-card={before ? "before" : "after"} className="w-full max-w-sm rounded-xl border bg-card shadow-card">
       <div
         className={cn(
           "flex justify-between gap-group border-b px-inset",
-          before ? "items-start pt-[6px] pr-[6px] pb-row-y" : "items-center py-row-y",
+          before ? "items-start pt-[6px] pr-[6px] pb-row-y" : "items-center pt-inset pb-row-y",
         )}
       >
         <h3 className="m-0 text-meta font-semibold tracking-wide text-muted-foreground uppercase">
@@ -39,7 +43,7 @@ function DuesCard({ before }: { before?: boolean }) {
               <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
             </span>
           ) : (
-            <SelectMock size="sm" />
+            <Select options={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
           )}
         </div>
       </div>
@@ -136,7 +140,7 @@ function CornerUse() {
       </Section>
       <Section
         title="The year select in the Dues card"
-        note="The select is a drawn stand-in until Avenue's Select lands; its size, corner and placement are the rule."
+        note="The do card uses Avenue's Select; its size, corner and placement are the rule."
       >
         <DoDont
           good={<DuesCard />}
@@ -170,4 +174,27 @@ const meta = {
 
 export default meta;
 
-export const Corners: StoryObj<typeof meta> = { name: "Radius and nested corners", render: () => <CornerUse /> };
+export const Corners: StoryObj<typeof meta> = {
+  name: "Radius and nested corners",
+  render: () => <CornerUse />,
+  // The "do" card's select is the real component, so the rule is measured on it rather than taken on trust.
+  play: async ({ canvas, canvasElement }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Dues year" });
+    const card = canvasElement.querySelector<HTMLElement>("[data-dues-card=after]");
+    if (!card) throw new Error("The Dues card is missing");
+    const label = within(card).getByText("Account summary ·");
+    const title = within(card).getByRole("heading", { name: "Dues" });
+    const t = trigger.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    const l = label.getBoundingClientRect();
+    const h = title.getBoundingClientRect();
+    // AVE-2 section 6: sm (28px, 8px corner), 16px inside the card's top and right edges, 8px from its label,
+    // centred on the title's line.
+    await expect(t.height).toBe(28);
+    await expect(getComputedStyle(trigger).borderTopLeftRadius).toBe("8px");
+    await expect(t.top - c.top - card.clientTop).toBe(16);
+    await expect(c.right - card.clientLeft - t.right).toBe(16);
+    await expect(t.left - l.right).toBe(8);
+    await expect(Math.abs((t.top + t.bottom) / 2 - (h.top + h.bottom) / 2)).toBeLessThanOrEqual(0.5);
+  },
+};
