@@ -57,4 +57,9 @@ describe("check:classes", () => {
     expect(matches(`"relative hit-area [a]:hit-area" "after:absolute after:inset-0"`)).toEqual([]);
     expect(matches(`"pointer-coarse:hit-area-x" "before:absolute"`)).toEqual([]);
   });
+  test("flags a breakpoint written as a literal, not a named one (AVE-85)", () => {
+    const found = findViolations("x.tsx", 'className="max-[700px]:hidden min-[1100px]:flex max-[43.75rem]:p-2"');
+    expect(found.map((f) => f.match)).toEqual(["max-[700px]:", "min-[1100px]:", "max-[43.75rem]:"]);
+    expect(findViolations("x.tsx", 'className="max-phone:hidden wide:flex desktop:inline max-w-[700px] min-h-[44px]"')).toEqual([]);
+  });
 });

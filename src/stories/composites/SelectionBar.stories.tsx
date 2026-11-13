@@ -23,7 +23,7 @@ function List({ initial = [] as string[], duesReady = false }) {
   const [picked, setPicked] = useState<string[]>(initial);
   const first = useRef<HTMLButtonElement>(null);
   const actions: SelectionAction[] = [
-    { id: "dues", label: "Request dues", icon: <CircleDollarSign aria-hidden />, ...(duesReady ? { onSelect: requestDues } : { disabledReason: dueReason }) },
+    { id: "dues", label: "Request dues", icon: <CircleDollarSign aria-hidden />, confirm: "Sends a dues request to each selected household", ...(duesReady ? { onSelect: requestDues } : { disabledReason: dueReason }) },
     { id: "announce", label: "Announcement", icon: <Megaphone aria-hidden />, primary: true, onSelect: announce },
   ];
   return (
@@ -64,6 +64,12 @@ export const Wide: Story = {
   play: async ({ canvas }) => {
     const bar = canvas.getByRole("toolbar", { name: "Selection actions" });
     await expect(bar).toHaveTextContent("2 households selected");
+    // A send asks an agent to check with the person first (AVE-85); Announcement only opens a draft.
+    await expect(canvas.getByRole("button", { name: /Request dues/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Sends a dues request to each selected household",
+    );
+    await expect(canvas.getByRole("button", { name: /Announcement/ })).not.toHaveAttribute("data-agent-confirm");
   },
 };
 
