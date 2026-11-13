@@ -183,6 +183,11 @@ const SHEET = (component: string) =>
 const OUTLINE = (control: string) =>
   `A contrast proof (AVE-38): the unchecked ${control}'s outline departs from the app on purpose to reach 3:1, and the play function measures it. The app has no story of this measurement; the control's resting look is compared through its States story.`;
 
+const OUTLINE_BORDER: Allowance = {
+  prop: "border-*-color",
+  because: "AVE-38: an unchecked checkbox's outline and an off switch's border are muted-foreground (3:1 or better, WCAG 1.4.11); the app's input-token outline measures about 1.5:1",
+};
+
 export const PAIRS: Record<string, PairEntry> = {
   // ---- Alert dialog (AVE-9 composites' base)
   "components-alert-dialog--open": [
@@ -317,7 +322,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Checkbox and radio (AVE-6, AVE-33)
   "components-checkbox--states": [
-    { label: "unchecked", app: "primitives-input--checkbox-story", appCrop: "[data-slot=checkbox]", avenueCrop: "[aria-label=Unchecked]" },
+    { label: "unchecked", app: "primitives-input--checkbox-story", appCrop: "[data-slot=checkbox]", avenueCrop: "[aria-label=Unchecked]", allow: [OUTLINE_BORDER] },
     { label: "checked", app: "dues-table--selection", appCrop: "[data-slot=checkbox][aria-checked=true] >> nth=0", avenueCrop: "[aria-label=Checked]" },
   ],
   "components-checkbox--select-all": [
@@ -675,7 +680,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-switch--unchecked-outline": { none: OUTLINE("switch") },
   "components-switch--states": [
     { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[aria-label='On, default']" },
-    { label: "switch off", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-unchecked] >> nth=0", avenueCrop: "[aria-label='Off, default']" },
+    { label: "switch off", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-unchecked] >> nth=0", avenueCrop: "[aria-label='Off, default']", allow: [OUTLINE_BORDER] },
   ],
   "components-switch--settings-row": [
     { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[data-slot=switch]" },
