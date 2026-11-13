@@ -1,13 +1,14 @@
 import { mergeProps, renderElement, type PartProps } from "@ui-sdk/react/primitive";
-import { createContext, useContext, useId, type ComponentProps, type ReactNode } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "#avenue/components/field";
+import { ChoiceCardContext, useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * A choice card (AVE-33, made API in AVE-37): a whole card that is the label of one RadioGroupItem or Checkbox, with
  * a title and one line. A tap anywhere on the card chooses. It is a control, so its corner is `lg` (10px, never the
  * card's 14), with 16px padding; put cards in a RadioGroup (one Tab stop, the arrows move and choose) or a
- * FieldGroup (each its own Tab stop). Chosen: a primary border and the primary-subtle fill, with the radio or
+ * FieldGroup (each its own Tab stop). Chosen: the shared `chosen` border and fill (AVE-50), with the radio or
  * checkbox still drawn, so the state never rests on colour alone. The app has no choice cards, so this departs from
  * no screen.
  *
@@ -25,13 +26,6 @@ import { cn } from "#avenue/lib/utils";
  * card's text, and the line would be read twice (once in the name, again as the description Field adds). ChoiceCard
  * names the control by its title alone (`aria-labelledby`), so a screen writes no ids and can't forget it.
  */
-const ChoiceCardContext = createContext<string | undefined>(undefined);
-
-/** The id of the enclosing choice card's title, for its RadioGroupItem or Checkbox to be labelled by. */
-function useChoiceCardTitleId() {
-  return useContext(ChoiceCardContext);
-}
-
 function ChoiceCard({
   className,
   disabled,
@@ -43,8 +37,11 @@ function ChoiceCard({
     <ChoiceCardContext.Provider value={titleId}>
       <FieldLabel
         className={cn(
-          "has-data-checked:border-primary has-data-checked:bg-primary-subtle has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
+          "has-data-checked:chosen has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
           "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
+          // `chosen` (AVE-50) also sets the text colour, but a chosen card's text stays as it was (an invalid field keeps
+          // its own): the radio or checkbox carries the state.
+          "has-data-checked:*:data-[slot=field]:not-data-invalid:text-foreground",
           // The 16px control is centred on the title's first line (AVE-2 §4, AVE-74): half the title's line height less
           // half the control, so 4px on the web scale's 24px line and 2px on the desktop scale's 20px. Field's own 1px
           // nudge fits neither. It stays on the first line when the title wraps.

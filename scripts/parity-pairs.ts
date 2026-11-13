@@ -231,6 +231,9 @@ const DISPLAY_OPTIONS: Allowance[] = [
   { prop: "padding-*", app: "12px", avenue: "16px", because: INSET },
   { prop: "*-gap", where: "root", app: "10px", avenue: "0px", because: "AVE-2 §1: sections space themselves (12px between, 8px rows) instead of the popover's off-grid 10px gap" },
   { prop: "parts", because: "app: app/ui/components/DisplayOptions.tsx: the app writes the popover as loose labels and paragraphs; Avenue's parts are named sections (display-options-section with an h3) and option rows (display-options-checkbox)" },
+  { prop: "width", because: "AVE-50: Row height is the shared chosen segment: equal columns as wide as the widest label plus the chosen item's 16px check (UI Designer, WCAG 1.4.1)" },
+  { prop: "display", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
+  { prop: "grid-*", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
 ];
 
 export const PAIRS: Record<string, PairEntry> = {
@@ -846,6 +849,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-toggle-group--keyboard": { none: BEHAVIOUR("Toggle group / Variants") },
   "components-toggle-group--keyboard-multiple": { none: BEHAVIOUR("Toggle group / Variants") },
+  "components-toggle-group--choice": { none: "AVE-50's chosen segment with its check and equal columns; the app draws no check and its groups (forms.tsx:532, lob-mail.tsx:99) are full-width colour-only segments. Its look is compared through Display options / Open (Row height)." },
   "components-toggle-group--phone": { none: "The segmented control at phone width (AVE-33); the app's segmented controls are desktop-only. Compared through Toggle group / Variants." },
 
   // ---- Composites part 2 (AVE-9)

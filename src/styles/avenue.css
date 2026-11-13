@@ -234,6 +234,18 @@
   }
 }
 
+/* Chosen (AVE-50): the one look for a chosen thing, shared by Chip (`data-pressed:chosen`), a ToggleGroup's `choice`
+   items (`data-checked:chosen`, `data-pressed:chosen`) and ChoiceCard (`has-data-checked:chosen`): the primary
+   border, the primary-subtle fill and its text. A utility, like `hit-area`, so each part reaches it through its own
+   state variant and a token change moves all three together. It is public API in styles.css. Colour alone doesn't
+   carry the state: each part also draws a check or its control (WCAG 1.4.1). `cn` knows it replaces a background,
+   border or text colour under the same variant (src/lib/utils.ts). */
+@utility chosen {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary-subtle-foreground);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

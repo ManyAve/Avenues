@@ -28,7 +28,7 @@ function Chip({
       variant="outline"
       className={cn(
         "group/chip h-control-md shrink-0 snap-start gap-1 rounded-full border-border bg-background px-2 text-control font-normal text-muted-foreground",
-        "data-pressed:border-primary data-pressed:bg-primary-subtle data-pressed:text-primary-subtle-foreground",
+        "data-pressed:chosen",
         className,
       )}
       {...props}

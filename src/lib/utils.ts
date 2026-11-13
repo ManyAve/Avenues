@@ -45,6 +45,10 @@ export const cn = createCn({
     theme: { spacing: [...SPACING_NAMES] },
     classGroups: {
       "font-size": [{ text: [...TEXT_SIZE_NAMES] }],
+      // The `chosen` utility (avenue.css, AVE-50) sets the border, fill and text colours, so a later `chosen`
+      // replaces an earlier `bg-muted` under the same variant, as `bg-primary-subtle` did.
+      chosen: ["chosen"],
     },
+    conflictingClassGroups: { chosen: ["bg-color", "border-color", "text-color"] },
   },
 });
