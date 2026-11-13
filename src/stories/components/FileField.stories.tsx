@@ -110,7 +110,7 @@ function shownText(element: Element) {
 export const DocumentStates: Story = {
   args: { label: "Pool rules", kind: "document", hint: documentHint },
   render: () => <StateGrid kind="document" />,
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("button", { name: /Choose file/ })).toBeEnabled();
     await expect(canvas.getAllByText("sunnydale-pool-rules.pdf", { exact: false }).length).toBeGreaterThan(0);
     await expect(canvas.getByRole("button", { name: /Try again/ })).toBeEnabled();
@@ -123,6 +123,26 @@ export const DocumentStates: Story = {
     const unconfirmed = canvas.getByText(/Couldn't confirm/).closest("[role=status]")!;
     await expect(shownText(unconfirmed)).toContain("Couldn't confirm this file was saved.");
     await expect(readText(unconfirmed)).toContain("Couldn't confirm sunnydale-pool-rules.pdf was saved.");
+    // A ghost action that wraps to start a line (here Try again and Check again, at 1280) starts where the name, hint
+    // and notes start, not 9px in; an action beside another keeps its place. Only the button moves (AVE-83).
+    const actions = [...canvasElement.querySelectorAll<HTMLElement>("[data-file-action]")];
+    for (const action of actions) {
+      const rowLeft = action.closest("[data-slot=file-field-row]")!.getBoundingClientRect().left;
+      if (action.hasAttribute("data-line-start")) {
+        const firstLeft = action.querySelector("svg")?.getBoundingClientRect().left ?? action.getBoundingClientRect().left + 9;
+        await expect(Math.abs(firstLeft - rowLeft)).toBeLessThan(1);
+      } else {
+        await expect(action.getBoundingClientRect().left).toBeGreaterThan(rowLeft + 1);
+      }
+      await expect(action.getBoundingClientRect().height).toBe(28);
+    }
+    if (innerWidth >= 1024) {
+      await expect(canvas.getByRole("button", { name: /Try again/ })).toHaveAttribute("data-line-start");
+      await expect(canvas.getByRole("button", { name: /Check again/ })).toHaveAttribute("data-line-start");
+    }
+    // The warning note and the error are the same text style; only the tone and the icon differ (AVE-83, AVE-89).
+    await expect(getComputedStyle(unconfirmed).fontSize).toBe(getComputedStyle(failed).fontSize);
+    await expect(getComputedStyle(unconfirmed).lineHeight).toBe(getComputedStyle(failed).lineHeight);
   },
 };
 

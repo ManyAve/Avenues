@@ -143,6 +143,26 @@ function FileField({
     const active = button.ownerDocument.activeElement;
     if (!active || active === button.ownerDocument.body) trigger.current?.focus();
   });
+  // A ghost action (Remove, Try again, Check again) that wraps to start a line is pulled left by its 8px padding and 1px border,
+  // so its icon or text lines up with the name, hint and notes above and below (AVE-83). CSS can't tell when an item
+  // starts a line, so the row marks it, measured again whenever the row resizes. The hit area keeps its size.
+  const row = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    const mark = () => {
+      const actions = [...el.querySelectorAll<HTMLElement>("[data-file-action]")];
+      for (const action of actions) action.removeAttribute("data-line-start");
+      const start = el.getBoundingClientRect().left;
+      for (const action of actions) {
+        if (Math.abs(action.getBoundingClientRect().left - start) < 1) action.setAttribute("data-line-start", "");
+      }
+    };
+    mark();
+    const observer = new ResizeObserver(mark);
+    observer.observe(el);
+    return () => observer.disconnect();
+  });
   const press = (action: () => void) => (event: { currentTarget: HTMLElement }) => {
     pressed.current = event.currentTarget;
     action();
@@ -165,7 +185,9 @@ function FileField({
         {...(controller === undefined ? {} : { controller })}
         announcement={({ added }) => (added[0] ? `Chose ${added[0].name}.` : null)}
         // The invalid Field tints its text; the row's buttons keep their own colours, as the trigger keeps its outline.
-        render={<div data-slot="file-field-row" className="flex flex-wrap items-center gap-controls text-foreground" />}
+        render={
+          <div ref={row} data-slot="file-field-row" className="flex flex-wrap items-center gap-controls text-foreground" />
+        }
       >
         {kind === "image" && hasFile && file.url ? <FileThumbnail src={file.url} /> : null}
         {nameShown ? (
@@ -201,6 +223,8 @@ function FileField({
             aria-label={`Remove ${file.name}`}
             aria-describedby={describedBy}
             data-agent-confirm={`Removes ${file.name}`}
+            data-file-action
+            className="data-line-start:-ms-[calc(--spacing(2)+1px)]"
             onClick={press(onRemove)}
           >
             Remove
@@ -213,6 +237,8 @@ function FileField({
             disabled={!!disabledReason}
             focusableWhenDisabled
             aria-describedby={describedBy}
+            data-file-action
+            className="data-line-start:-ms-[calc(--spacing(2)+1px)]"
             onClick={press(onRetry)}
           >
             <RotateCwIcon aria-hidden data-icon="inline-start" />
