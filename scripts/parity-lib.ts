@@ -22,7 +22,8 @@ export interface Allowance {
    * - `AVE-2 §<n>: …` an agreed fix: a spacing or corner rule Zack asked for. Two other merged design
    *   decisions count as agreed: `AVE-13: …` (dark colours raised to reach 4.5:1 contrast), `AVE-29: …`
    *   (control text is 14px from 768px up on both type scales) and `AVE-8: …` (the UI Designer's check on a
-   *   selected chip, for WCAG 1.4.1).
+   *   selected chip, for WCAG 1.4.1). Each parity card closed by keeping Avenue's look counts too, for the
+   *   UI Designer to confirm after the merge: `AVE-58: …` (the disclosure trigger is a sized, focusable button).
    * - `AVE-<id>: …` a filed bug: the run passes while it is open, and the report lists it as known.
    * - `app: <file>: …` the app's story, not its component, draws this: the screen passes its own classes to
    *   the primitive (a card's shadow, a dialog's sections), so Avenue's component doesn't need to match it,
@@ -272,7 +273,7 @@ function covers(allowance: Allowance, d: Difference): boolean {
 }
 
 export function isAgreedFix(because: string): boolean {
-  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29):/.test(because);
+  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|58):/.test(because);
 }
 
 export function isAppLocal(because: string): boolean {

@@ -30,7 +30,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Closed: Story = {};
 
-export const Open: Story = { args: { defaultOpen: true } };
+export const Open: Story = {
+  args: { defaultOpen: true },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Advanced" });
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+    // Open, the summary keeps the muted colour, as the app's does (AVE-58).
+    await expect(getComputedStyle(button).color).toBe(getComputedStyle(button.parentElement!).color);
+  },
+};
 
 export const Disabled: Story = { args: { disabled: true } };
 
