@@ -81,11 +81,16 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   textarea: { upstream: "textarea" },
   field: { upstream: "field" },
   avatar: { upstream: "avatar" },
+  "initials-avatar": { upstream: "avatar", note: "ManyAve's tinted initials on Avatar." },
+  status: { upstream: "tooltip", note: "The help is an InfoTip; the Status stories test focus, tap and Esc." },
+  "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, tested in its story." },
 
   // Plain markup.
   card: { none: "Layout only." },
   table: { none: "A static data table, not an interactive grid." },
   badge: { none: "Static text." },
+  money: { none: "Static text; the Money stories test that it never wraps or truncates." },
+  "ask-admin": { none: "Static text that controls point aria-describedby at." },
   "inline-message": {
     none: "A live region; its announcements are covered by the Inline message stories.",
   },
