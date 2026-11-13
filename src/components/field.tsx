@@ -62,9 +62,9 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-invalid:text-destr
     orientation: {
       vertical: "flex-col *:not-[[popover]]:w-full [&>.sr-only]:w-auto",
       horizontal:
-        "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=switch]]:mt-px",
+        "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio],[role=switch]]:mt-px",
       responsive:
-        "flex-col *:not-[[popover]]:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:not-[[popover]]:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=switch]]:mt-px",
+        "flex-col *:not-[[popover]]:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:not-[[popover]]:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio],[role=switch]]:mt-px",
     },
   },
   defaultVariants: { orientation: "vertical" },
@@ -105,14 +105,17 @@ function FieldContent({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-/** The control's label (the app's Label, folded in). Wrap a Checkbox or Switch in it for a choice card. */
+/** The control's label (the app's Label, folded in). Wrap a Field holding a Checkbox, Switch or RadioGroupItem in it for a choice card. */
 function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldLabel>) {
   return (
     <FieldPrimitive.FieldLabel
       data-slot="field-label"
       className={cn(
         "group/field-label peer/field-label flex w-fit items-center gap-2 text-sm leading-snug font-medium select-none group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
-        "has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-3 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
+        // A choice card (FieldLabel wrapping a Field): a control, so the lg corner (10px), 16px padding (AVE-33). Chosen:
+        // a primary border and the primary-subtle fill, with the radio or checkbox still drawn, so the state never
+        // rests on colour alone. The app has no choice cards, so this departs from no screen.
+        "has-data-checked:border-primary has-data-checked:bg-primary-subtle has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
         className,
       )}
