@@ -8,12 +8,15 @@ import { cn } from "#avenue/lib/utils";
  * toolbar's height, and it takes the md control corner (10px) instead of a pill, because a button acts
  * (AVE-2 section 5 names icon-only toolbar buttons). Side padding 7px becomes 8px. Give an icon-only one an
  * aria-label.
+ *
+ * Icons stay the app's 14px (AVE-68): the app's toolbar button is an sm Button, whose icons are 14px. Only the
+ * height is agreed to change, so the md Button's 16px icon size is overridden here.
  */
 function ToolbarButton({ className, ...props }: ComponentProps<typeof Button>) {
   return (
     <Button
       variant="outline"
-      className={cn("min-w-control-md gap-1 px-2 text-control text-muted-foreground shadow-control", className)}
+      className={cn("min-w-control-md gap-1 px-2 text-control text-muted-foreground shadow-control [&_svg:not([class*='size-'])]:size-3.5", className)}
       {...props}
     />
   );
