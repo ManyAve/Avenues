@@ -1,5 +1,6 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
 // Every story is a browser test: it must render, its play function (if any) must pass, and axe must
@@ -16,27 +17,21 @@ const matrix = [
 // use a Chromium that is already installed instead.
 const executablePath = process.env.AVENUE_CHROMIUM;
 
+function uiSdkEntries() {
+  const manifest = new URL("node_modules/@ui-sdk/react/package.json", import.meta.url);
+  const { exports } = JSON.parse(readFileSync(manifest, "utf8")) as { exports: Record<string, unknown> };
+  return Object.keys(exports)
+    .filter((key) => key.startsWith("./") && !/\.[a-z]+$/.test(key))
+    .map((key) => `@ui-sdk/react/${key.slice(2)}`);
+}
+
 // Pre-bundle every dependency the stories import, so Vite never discovers one mid-run and reloads the page under
 // a running test ("Vite unexpectedly reloaded a test").
 const prebundle = [
   "@ui-sdk/core/testing",
-  "@ui-sdk/react/agent",
-  "@ui-sdk/react/avatar",
-  "@ui-sdk/react/button",
-  "@ui-sdk/react/checkbox",
-  "@ui-sdk/react/dialog",
-  "@ui-sdk/react/field",
-  "@ui-sdk/react/hover-card",
-  "@ui-sdk/react/input",
-  "@ui-sdk/react/menu",
-  "@ui-sdk/react/popover",
-  "@ui-sdk/react/primitive",
-  "@ui-sdk/react/segmented-control",
-  "@ui-sdk/react/select",
-  "@ui-sdk/react/switch",
-  "@ui-sdk/react/textarea",
-  "@ui-sdk/react/toggle",
-  "@ui-sdk/react/tooltip",
+  // Every ui-sdk entry, read from its exports, so a component that starts using a new one can't miss this
+  // list. Vite's "@ui-sdk/react/*" glob doesn't read package exports, so it can't be used here.
+  ...uiSdkEntries(),
   "class-variance-authority",
   "cn/config",
   "lucide-react",

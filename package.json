@@ -12,7 +12,8 @@
     "./tokens.css": "./src/styles/tokens.css",
     "./desktop.css": "./src/styles/desktop.css",
     "./components/*": "./src/components/*.tsx",
-    "./utils": "./src/lib/utils.ts"
+    "./utils": "./src/lib/utils.ts",
+    "./format": "./src/lib/format.ts"
   },
   "imports": {
     "#avenue/lib/*": "./src/lib/*.ts",
