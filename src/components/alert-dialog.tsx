@@ -1,5 +1,6 @@
 import * as AlertDialogPrimitive from "@ui-sdk/react/alert-dialog";
 import type { ComponentProps, ReactNode } from "react";
+import { modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -30,7 +31,8 @@ function AlertDialogContent({
       <AlertDialogPrimitive.AlertDialogBackdrop className="fixed inset-0 isolate z-50 bg-black/10 transition-opacity duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none" />
       <AlertDialogPrimitive.AlertDialogContent
         className={cn(
-          "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 m-0 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl bg-popover p-inset text-sm text-popover-foreground ring-1 ring-foreground/10 transition-[opacity,scale] duration-100 outline-none backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
+          modalSurface,
+          "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 m-0 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl transition-[opacity,scale] duration-100 backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
         {...props}
@@ -51,7 +53,7 @@ function AlertDialogFooter({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+        "-mx-inset -mb-inset flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
         className,
       )}
       {...props}
@@ -60,7 +62,7 @@ function AlertDialogFooter({ className, ...props }: ComponentProps<"div">) {
 }
 
 function AlertDialogTitle({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.AlertDialogTitle>) {
-  return <AlertDialogPrimitive.AlertDialogTitle className={cn("text-base leading-6 font-medium", className)} {...props} />;
+  return <AlertDialogPrimitive.AlertDialogTitle className={cn(modalTitle, className)} {...props} />;
 }
 
 function AlertDialogDescription({
@@ -69,7 +71,7 @@ function AlertDialogDescription({
 }: ComponentProps<typeof AlertDialogPrimitive.AlertDialogDescription>) {
   return (
     <AlertDialogPrimitive.AlertDialogDescription
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn(modalDescription, className)}
       {...props}
     />
   );
