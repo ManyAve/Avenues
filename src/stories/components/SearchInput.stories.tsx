@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { SearchInput } from "#avenue/components/search-input";
+import { Select } from "#avenue/components/select";
 
 const meta = {
   title: "Components/SearchInput",
@@ -21,7 +22,11 @@ export const Default: Story = {
   },
 };
 
-/** The hint's key really works: "/" from anywhere outside a text field focuses the search. */
+/**
+ * The hint's key really works: "/" from anywhere outside a text field focuses the search. A one-key shortcut must be
+ * possible to turn off (WCAG 2.1.4): an app that passes `kbd` offers a "Keyboard shortcuts" setting, on by default,
+ * and passes `kbd` only while it is on (AVE-62).
+ */
 export const WithShortcut: Story = {
   tags: ["agent"],
   args: { kbd: "/" },
@@ -44,6 +49,41 @@ export const WithShortcut: Story = {
     // Typed inside the field, "/" is just text.
     await userEvent.keyboard("12/B");
     await expect(input).toHaveValue("12/B");
+  },
+};
+
+/** "/" typed in an open list belongs to the list, not the search (AVE-62). The list opens by keyboard. */
+export const ShortcutSkipsOpenList: Story = {
+  args: { kbd: "/" },
+  render: (args) => (
+    <div className="flex flex-col items-start gap-group">
+      <Select
+        native="never"
+        aria-label="Street"
+        placeholder="Choose a street"
+        options={[
+          { value: "larkspur", label: "Larkspur Lane" },
+          { value: "juniper", label: "Juniper Court" },
+        ]}
+      />
+      <SearchInput {...args} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("searchbox", { name: "Search" });
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}");
+    const list = await screen.findByRole("listbox");
+    await waitFor(() => expect(list.contains(document.activeElement) || document.activeElement === list).toBe(true));
+    await userEvent.keyboard("/");
+    await expect(input).not.toHaveFocus();
+    await expect(screen.getByRole("listbox")).toBeVisible();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    // The closed Select types ahead too (ui-sdk handles the key), so step off it before the shortcut works again.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.keyboard("/");
+    await expect(input).toHaveFocus();
   },
 };
 

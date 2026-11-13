@@ -762,6 +762,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-searchinput--with-shortcut": [
     { label: "search input with shortcut", app: "primitives-searchinput--with-shortcut", avenueCrop: "[data-slot=search-input]", allow: SEARCH },
   ],
+  "components-searchinput--shortcut-skips-open-list": { none: BEHAVIOUR("SearchInput / With shortcut") },
   "components-searchinput--filled": { none: STATE_ONLY("a search input with text in it", "SearchInput / Default") },
   "components-toolbarbutton--icon": [{ label: "icon toolbar button", app: "primitives-toolbarbutton--icon", allow: TOOLBAR }],
   "components-toolbarbutton--with-label": [{ label: "toolbar button with label", app: "primitives-toolbarbutton--with-label", allow: TOOLBAR }],
