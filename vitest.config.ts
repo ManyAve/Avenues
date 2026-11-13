@@ -33,6 +33,9 @@ function uiSdkEntries() {
 // Pre-bundle every dependency the stories import, so Vite never discovers one mid-run and reloads the page under
 // a running test ("Vite unexpectedly reloaded a test").
 const prebundle = [
+  // Bare @ui-sdk/core holds definePrimitive and the behaviors Avenue's own primitives use (the Register's grid
+  // focus); left out, a cold cache reloaded the page mid-run (AVE-80).
+  "@ui-sdk/core",
   "@ui-sdk/core/testing",
   // Every ui-sdk entry, read from its exports, so a component that starts using a new one can't miss this
   // list. Vite's "@ui-sdk/react/*" glob doesn't read package exports, so it can't be used here.

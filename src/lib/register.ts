@@ -11,6 +11,12 @@ import { byCell, createGridFocus, definePrimitive, selects, type GridCell } from
  * - Never zero stops: when rows go away (deleted, filtered, collapsed), the stop moves to the nearest cell left,
  *   and focus that was on a removed row moves there too.
  * - A text field keeps its own keys while you type in it; a control whose popup is open keeps them too.
+ *
+ * Leaving and re-entering a text field (AVE-80, UX Engineer, after the WAI-ARIA APG grid's editing keys):
+ * - Escape in a cell's text field moves focus to the cell itself, keeping the value. From there the arrows move on.
+ * - Enter or F2 on that cell puts focus back in its field. The arrows still reach the field directly, so typing
+ *   straight away keeps working.
+ * - A field whose popup is open (a combobox's list) keeps Escape to close it first; the next Escape goes to the cell.
  */
 
 export type RegisterOptions = {
@@ -26,6 +32,9 @@ type State = { active: GridCell | null };
 /** Keys that belong to the element being typed in, or to an open popup, not to the grid. */
 const ownKeys =
   "input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable=true], [role=combobox], [aria-haspopup][aria-expanded=true]";
+
+/** Controls you type in. Escape leaves them for their cell, and Enter or F2 on the cell goes back in. */
+const editable = "input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable=true], [role=combobox]";
 
 /** The one control a cell passes focus to. */
 const controlSelector = "a[href], button, input, select, textarea, [role=checkbox], [role=button]";
@@ -91,7 +100,27 @@ export const register = definePrimitive({
         if (event.defaultPrevented) return;
         // Only keys pressed on the cell or its one control are the grid's. Not keys from inside a popup the control
         // opened, whether it renders in the cell or elsewhere (React passes those up its own tree).
-        if (event.target !== el && event.target !== controls.get(el)) return;
+        const control = controls.get(el);
+        if (event.target !== el && event.target !== control) return;
+        // Escape leaves a text field for its cell, unless the field's popup is open: that Escape closes the popup.
+        if (
+          event.key === "Escape" &&
+          control &&
+          event.target === control &&
+          control.matches(editable) &&
+          control.getAttribute("aria-expanded") !== "true"
+        ) {
+          event.preventDefault();
+          el.setAttribute("tabindex", "-1");
+          el.focus();
+          return;
+        }
+        // Enter or F2 on that cell goes back into its field.
+        if ((event.key === "Enter" || event.key === "F2") && control && event.target === el && control.matches(editable)) {
+          event.preventDefault();
+          control.focus();
+          return;
+        }
         if (event.target instanceof Element && event.target.closest(ownKeys)) return;
         // Control+End (Command+End on a Mac) goes to the last cell that exists, like the add row's button, where the
         // grid's own corner may be a column a spanning row doesn't have.

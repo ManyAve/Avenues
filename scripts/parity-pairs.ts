@@ -897,6 +897,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
+  "composites-register--combobox-in-cell": { none: BEHAVIOUR("Register / Wide and Combobox / Households") },
 
   // ---- Composites part 4: the toolbars (AVE-9)
   "composites-toolbar--wide": [
