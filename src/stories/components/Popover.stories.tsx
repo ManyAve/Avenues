@@ -46,7 +46,8 @@ function DisplayOptions({ defaultOpen }: { defaultOpen?: boolean }) {
 export const Open: Story = {
   render: () => <DisplayOptions defaultOpen />,
   play: async () => {
-    await expect(await screen.findByRole("dialog", { name: "Display options" })).toBeVisible();
+    // The popup fades in from opacity 0 (data-starting-style), so wait for it rather than check once.
+    await waitFor(async () => expect(await screen.findByRole("dialog", { name: "Display options" })).toBeVisible());
   },
 };
 
