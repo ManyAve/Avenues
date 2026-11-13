@@ -134,8 +134,7 @@ const STATUS: Allowance[] = [
 const CARD_ACTION_ROW: Allowance[] = [
   { prop: "height", where: "card-action 1", avenue: "28px", because: "AVE-2 §6: the action row holds the 28px sm control, centred on the title's line" },
   { prop: "*-gap", where: "card-action 1", app: "6px", avenue: "8px", because: "AVE-2 §1: the off-grid 6px gap becomes 8px" },
-  { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-57: the app's header puts 4px between title and action" },
-  { prop: "font-weight", where: "card-title 1", app: "550", avenue: "600", because: "AVE-57: the app's header title is weight 550" },
+  { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-2 §1: 4px is for an icon beside its own label; the header's title and its action are separate things, 8px (space-group) apart (AVE-57)" },
 ];
 const DESKTOP_TITLE: Allowance[] = [
   { prop: "font-size", app: "14px", avenue: "16px", because: "AVE-55: Avenue's titles don't follow the desktop type scale" },

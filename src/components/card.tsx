@@ -8,6 +8,9 @@ import { cn } from "#avenue/lib/utils";
  * a full inset (16px) from the top and right edges, instead of top-aligned across the title and description.
  * Controls in a card header use the sm size (28px, 8px corner) and are never pills, so nothing is rounder than the
  * card or jammed into its corner.
+ *
+ * The header keeps 8px between the title and its action where the app has 4px (AVE-57): AVE-2 section 1 keeps 4px
+ * for an icon beside its own label, and separate things in a row sit 8px apart.
  */
 function Card({ className, size = "default", ...props }: ComponentProps<"div"> & { size?: "default" | "sm" | undefined }) {
   return (
