@@ -125,7 +125,9 @@ export function PendingConfirmDialog({
           tabIndex={-1}
           data-slot="pending-confirm-status"
           className={cn(
-            "block rounded-sm text-compact text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            // A status, not a control: focus lands here to stay in the dialog while both buttons are disabled, but
+            // it gets no ring, which would read as a field to type in and clip the descenders (AVE-81).
+            "block text-compact text-muted-foreground outline-none",
             !pending && "sr-only",
           )}
         >

@@ -93,6 +93,9 @@ export const KeyboardFlow: Story = {
     const status = await screen.findByRole("status");
     await waitFor(() => expect(status).toHaveFocus());
     await expect(status).toHaveTextContent("Recording mailing confirmation. Please wait.");
+    // Focus is on the status line, but a status is not a control, so it draws no ring (AVE-81).
+    await expect(getComputedStyle(status).outlineStyle).toBe("none");
+    await expect(getComputedStyle(status).boxShadow).toBe("none");
     await expect(screen.getByRole("button", { name: "Confirming…" })).toHaveAttribute("aria-disabled", "true");
     await userEvent.tab();
     await expect(status).toHaveFocus();
