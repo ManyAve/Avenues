@@ -219,6 +219,9 @@ const STATUS_BAR: Allowance[] = [
   { prop: "parts", because: "app: app/ui/components/StatusBar.tsx: the app's bar is unnamed spans; Avenue names its hint and totals (status-bar-*)" },
   { prop: "*-gap", app: "6px", avenue: "8px", because: "AVE-2 §1: the totals' off-grid 6px gap becomes 8px" },
 ];
+const STATUS_COUNT: Allowance[] = [
+  { prop: "parts", app: "only here: none", avenue: "only here: span", because: "AVE-91: the dot after the count moved inside the count, so it hides with the count on narrow bars instead of leaving a stray dot (the app draws it as its own span)" },
+];
 const STATUS_TOTAL: Allowance[] = [
   { prop: "parts", app: "only here: span", avenue: "only here: money", because: "app: app/ui/components/StatusBar.tsx: the bar prints each amount in a styled span; Avenue uses its Money component, same font, weight and colour" },
 ];
@@ -521,6 +524,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "field label", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-label] >> nth=1", avenueCrop: "[data-slot=field-label]", allow: FIELD_TEXT },
     { label: "input", app: "dues-dialogs--adjustment", appCrop: "[data-slot=input] >> nth=0", avenueCrop: "[data-slot=input]", allow: [
       ...SIDE_10_TO_8,
+      ...CONTROL_TEXT,
       { prop: "width", because: "app: app/ui/components/dues.tsx: the adjustment dialog sets its fields two to a row (grid-cols-2); an input fills whatever column it is in, as Avenue's" },
     ] },
     { label: "field description", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-description] >> nth=0", avenueCrop: "[data-slot=field-description]", allow: FIELD_TEXT },
@@ -534,6 +538,7 @@ export const PAIRS: Record<string, PairEntry> = {
       avenueCrop: "[data-slot=input]",
       allow: [
         ...SIDE_10_TO_8,
+        ...CONTROL_TEXT,
         { prop: "width", because: "app: app/ui/components/sign-in.tsx: the sign-in card makes its input 336px wide; the story's field is 352px" },
         { prop: "border-top-color", because: "AVE-13: the dark destructive colour is 0.56 lightness, not 0.58, so its text reaches 4.5:1" },
         { prop: "box-shadow", because: "AVE-13: the dark destructive colour is 0.56 lightness, not 0.58, so its text reaches 4.5:1" },
@@ -560,7 +565,7 @@ export const PAIRS: Record<string, PairEntry> = {
     },
   ],
   "components-input--sizes": [
-    { label: "md input", app: "primitives-input--default", appCrop: "[data-slot=input]", avenueCrop: "[data-slot=input] >> nth=2", allow: [...SIDE_10_TO_8, { prop: "width", because: "app: app/ui/components/Input.stories.tsx: the app's story stretches the input across the canvas" }] },
+    { label: "md input", app: "primitives-input--default", appCrop: "[data-slot=input]", avenueCrop: "[data-slot=input] >> nth=2", allow: [...SIDE_10_TO_8, ...CONTROL_TEXT, { prop: "width", because: "app: app/ui/components/Input.stories.tsx: the app's story stretches the input across the canvas" }] },
   ],
   "components-input--placeholder-states": { none: "Shows the placeholder rule (AVE-25) across states; the input is compared through Input / Sizes and Field / Invalid." },
   "components-input--placeholder-do-and-dont": { none: "A do-and-don't page for the placeholder rule (AVE-25); the input is compared through Input / Sizes." },
@@ -666,6 +671,7 @@ export const PAIRS: Record<string, PairEntry> = {
           frame: true,
           allow: [
             ...SIDE_10_TO_8,
+            ...CONTROL_TEXT,
             { prop: "padding-top", app: "4px", avenue: "0px", because: "AVE-2 §2: the trigger is the 32px md control and centres its text, so it needs no vertical padding; the input's 4px fits the same height" },
             { prop: "padding-bottom", app: "4px", avenue: "0px", because: "AVE-2 §2: the trigger is the 32px md control and centres its text, so it needs no vertical padding; the input's 4px fits the same height" },
           ],
@@ -961,7 +967,7 @@ export const PAIRS: Record<string, PairEntry> = {
   // The bar's own box (44px, 16px sides) is asserted in Status bar / Wide; its mode toggle is compared through Mode
   // toggle, whose single-choice group holds ui-sdk's hidden input, so a crop of the whole bar shifts every part after it.
   "composites-status-bar--wide": [
-    { label: "status bar count", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:nth-child(2)", avenueCrop: "[data-slot=status-bar-count]" },
+    { label: "status bar count", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:nth-child(2)", avenueCrop: "[data-slot=status-bar-count]", allow: STATUS_COUNT },
     { label: "status bar hint", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:nth-child(3)", avenueCrop: "[data-slot=status-bar-hint]", allow: STATUS_BAR },
     { label: "status bar totals row", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child", avenueCrop: "[data-slot=status-bar-totals]", frame: true, allow: STATUS_BAR },
     { label: "first total", app: "shell-statusbar--default", appCrop: "#storybook-root footer > span:last-child > span:nth-child(1)", avenueCrop: "[data-slot=status-bar-totals] > span:nth-child(1)", allow: STATUS_TOTAL },
