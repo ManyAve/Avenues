@@ -18,10 +18,17 @@ type Story = StoryObj<typeof meta>;
 export const ErrorTone: Story = {
   name: "Error",
   play: async ({ canvas }) => {
-    // The body's size, like the app's error text (AVE-72), with the icon centred on the first line.
+    // A field error's size (AVE-89): 16px below 768px, 14px from 768px up on both scales, the same `text-field` rule
+    // FieldError uses. The icon is centred on the first line.
     const region = canvas.getByRole("alert");
-    const desktop = document.getElementById("avenue-desktop-scale") !== null;
-    await expect(getComputedStyle(region).fontSize).toBe(desktop ? "14px" : "16px");
+    await expect(getComputedStyle(region).fontSize).toBe(innerWidth >= 768 ? "14px" : "16px");
+    const fieldError = document.createElement("div");
+    fieldError.className = "text-field";
+    region.after(fieldError);
+    const expected = getComputedStyle(fieldError);
+    await expect(getComputedStyle(region).fontSize).toBe(expected.fontSize);
+    await expect(getComputedStyle(region).lineHeight).toBe(expected.lineHeight);
+    fieldError.remove();
     const icon = region.querySelector("svg")!.getBoundingClientRect();
     const line = parseFloat(getComputedStyle(region).lineHeight);
     await expect(Math.round(icon.top - region.getBoundingClientRect().top)).toBe(Math.round((line - 16) / 2));

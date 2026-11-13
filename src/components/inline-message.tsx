@@ -37,9 +37,9 @@ export interface InlineMessageProps {
  * again; a new message is announced once. Keep the same InlineMessage mounted and change its children, rather than
  * mounting a new one per message. Changing tone changes the role, which some readers treat as a new region.
  *
- * The text is the body's size, `text-compact` (16px web, 14px desktop), the app's error text and the size AVE-46 gave
- * the confirm dialog's warning (AVE-72): a message about a failure shouldn't be the smallest text on the screen. The
- * icon stays, unlike the app's, so colour never carries the state alone (WCAG 1.4.1, as AVE-48).
+ * The text is a field error's size, `text-field` (16px below 768px, then text-control, 14px, on both scales), the
+ * same utility FieldError uses, so a form's own error and a field's error can't drift apart (AVE-89, after AVE-72 and
+ * AVE-53). The icon stays, unlike the app's, so colour never carries the state alone (WCAG 1.4.1, as AVE-48).
  */
 export function InlineMessage({ tone = "error", children, hideIcon, id, className }: InlineMessageProps) {
   const { role, Icon, text, spin } = tones[tone];
@@ -52,7 +52,7 @@ export function InlineMessage({ tone = "error", children, hideIcon, id, classNam
       data-slot="inline-message"
       data-tone={tone}
       data-empty={empty || undefined}
-      className={cn("flex items-start gap-1 text-compact data-empty:sr-only", text, className)}
+      className={cn("flex items-start gap-1 text-field data-empty:sr-only", text, className)}
     >
       {!empty && (
         <>
