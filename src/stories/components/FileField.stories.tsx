@@ -92,6 +92,20 @@ export const ImageStates: Story = {
   },
 };
 
+/** The text a screen reader reads: aria-hidden parts left out. */
+function readText(element: Element) {
+  const copy = element.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll("[aria-hidden]")) hidden.remove();
+  return copy.textContent ?? "";
+}
+
+/** The text on screen: sr-only parts left out. */
+function shownText(element: Element) {
+  const copy = element.cloneNode(true) as Element;
+  for (const hidden of copy.querySelectorAll(".sr-only")) hidden.remove();
+  return copy.textContent ?? "";
+}
+
 /** Every state as a document: the name shows in place of the thumbnail. */
 export const DocumentStates: Story = {
   args: { label: "Pool rules", kind: "document", hint: documentHint },
@@ -101,6 +115,14 @@ export const DocumentStates: Story = {
     await expect(canvas.getAllByText("sunnydale-pool-rules.pdf", { exact: false }).length).toBeGreaterThan(0);
     await expect(canvas.getByRole("button", { name: /Try again/ })).toBeEnabled();
     await expect(canvas.getByRole("button", { name: /Check again/ })).toBeEnabled();
+    // The name shows above the row, so the messages say "this file" on screen, but each is read on its own, so a
+    // screen reader hears the name (AVE-82).
+    const failed = canvas.getByRole("alert");
+    await expect(shownText(failed)).toBe("Couldn't upload this file. Check your connection and try again.");
+    await expect(readText(failed)).toBe("Couldn't upload sunnydale-pool-rules.pdf. Check your connection and try again.");
+    const unconfirmed = canvas.getByText(/Couldn't confirm/).closest("[role=status]")!;
+    await expect(shownText(unconfirmed)).toContain("Couldn't confirm this file was saved.");
+    await expect(readText(unconfirmed)).toContain("Couldn't confirm sunnydale-pool-rules.pdf was saved.");
   },
 };
 
@@ -147,7 +169,8 @@ export const Phone: Story = {
     await expectMiddleCut(canvasElement);
     // The name is shown above, so the error doesn't repeat it, and an icon carries the state with the colour (AVE-48).
     const alert = canvas.getByRole("alert");
-    await expect(alert).toHaveTextContent("Couldn't upload this file. Check your connection and try again.");
+    await expect(shownText(alert)).toBe("Couldn't upload this file. Check your connection and try again.");
+    await expect(readText(alert)).toContain(`Couldn't upload ${longName.name}.`);
     await expect(alert.querySelector("svg")).not.toBeNull();
   },
 };
@@ -228,7 +251,7 @@ export const Upload: Story = {
     });
 
     await step("the first try fails: an alert says what happened, and Try again works by keyboard", async () => {
-      await waitFor(() => expect(canvas.getByRole("alert")).toHaveTextContent("Couldn't upload this file."));
+      await waitFor(() => expect(readText(canvas.getByRole("alert"))).toContain("Couldn't upload sunnydale-pool-rules.pdf."));
       const retry = canvas.getByRole("button", { name: "Try again" });
       retry.focus();
       await userEvent.keyboard("{Enter}");

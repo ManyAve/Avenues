@@ -105,14 +105,28 @@ function FileField({
   // When the name is already on screen above the row, the messages don't repeat it: a long name would wrap to
   // several lines on a phone (AVE-48). Under a thumbnail, where the name isn't shown, they still name the file.
   const nameShown = hasFile && (kind === "document" || !file.url);
-  const subject = file && !nameShown ? file.name : "this file";
+  // An alert is read on its own, away from the row, so screen readers still hear the name: "this file" is hidden
+  // from them and the name is read in its place (AVE-82). With two file fields on a form, the alert says which failed.
+  const subject: ReactNode = !file ? null : nameShown ? (
+    <>
+      <span aria-hidden>this file</span>
+      <span className="sr-only">{file.name}</span>
+    </>
+  ) : (
+    file.name
+  );
   const failure =
     status === "failed"
-      ? (error ?? (file ? `Couldn't upload ${subject}. Check your connection and try again.` : "Couldn't upload the file. Try again."))
+      ? (error ??
+        (file ? (
+          <>Couldn't upload {subject}. Check your connection and try again.</>
+        ) : (
+          "Couldn't upload the file. Try again."
+        )))
       : undefined;
   const unconfirmed =
     status === "unconfirmed"
-      ? (error ?? `Couldn't confirm ${file ? subject : "the file"} was saved. Check again before choosing it a second time.`)
+      ? (error ?? <>Couldn't confirm {file ? subject : "the file"} was saved. Check again before choosing it a second time.</>)
       : undefined;
   const describedBy = disabledReason ? reasonId : undefined;
 
