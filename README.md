@@ -41,6 +41,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run check`           | Runs everything above in order and stops at the first failure.  |
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`; `origin/<ref>` when there is no local branch of that name) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
+| `bun run parity [--app <path>]` | Builds the ManyAve Management app's Storybook from a local checkout (default `../manyave-management`) and Avenue's, then captures every Avenue component and composite story beside the app story it was ported from, in all four combinations, and compares them. Fails on any difference without a recorded reason, or any story with no pair and no reason; the report goes to `.parity/report/index.html`. Not part of `check`, because it needs the app checked out (below). |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
@@ -105,6 +106,31 @@ calling it a bug (false alarms are logged on AVE-17).
 TypeScript is installed twice on purpose: `@typescript/native` is TypeScript 7 and provides `tsc`,
 while the `typescript` package is TypeScript 6, which Storybook needs to read component props for
 Controls and the Docs args table.
+
+### Proving Avenue matches the app
+
+`bun run parity` is how Zack approves the finished system: every Avenue component beside the app's own
+version. It reads the app (`--app <path>`, default `../manyave-management`) and never changes it or imports
+from it: it copies the app's committed files with `git archive` into a temporary folder and builds its
+Storybook there. The app's private `@buildwf` Point packages can't install without registry access, so when
+`bun install` fails the copy drops them and swaps a stub for `@point/cloud/validators` (the UI only needs it
+for types); the report says when it did. `--reuse` skips both builds and reuses `.parity/`; `--only <prefix>`
+compares just the Avenue stories whose id starts with it.
+
+The pairs live in `scripts/parity-pairs.ts`. Each Avenue component and composite story either names the app
+story (and what to crop on each side) it is compared with, or says in a sentence why it has none (a
+behaviour-only story, or something the app doesn't have). Each pair compares, per visible part, the computed
+padding, borders, corners, fill, text colour, type, shadow, gaps and size, plus the pixels where both
+captures show the same text. A difference passes only with an allowance whose reason says which kind it is:
+
+- `AVE-2 §<n>: …` an agreed spacing or corner fix, or `AVE-13: …` / `AVE-29: …`, the agreed contrast and
+  control-text decisions.
+- `AVE-<id>: …` a filed bug that is still open; the report lists it as known.
+- `app: <file>: …` the app's screen passes its own classes to the component (a card's shadow, a dialog's
+  sections), so Avenue's component isn't meant to match; name the app file that adds them.
+
+Anything else, and any story missing from the map, fails the run. When a story is added, add its line to
+the map in the same pull request.
 
 ## Publishing Storybook
 
