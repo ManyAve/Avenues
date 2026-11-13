@@ -4,12 +4,22 @@ import {
   SelectContent,
   SelectItem,
   SelectItemIndicator,
+  SelectList,
   SelectTrigger,
   SelectValue,
 } from "@ui-sdk/react/select";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useState, useSyncExternalStore, type ChangeEvent } from "react";
-import { defined, fieldControl, listItem, listPopup, type PickerSize } from "#avenue/lib/picker";
+import {
+  defined,
+  fieldControl,
+  listItem,
+  listPopup,
+  listScroll,
+  listSheetHandle,
+  type PickerSize,
+  type Presentation,
+} from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 export interface SelectOption<V extends string = string> {
@@ -58,6 +68,12 @@ export interface SelectProps<V extends string = string> {
    * closed control looks the same either way (UI Designer, AVE-7).
    */
   native?: Native | undefined;
+  /**
+   * How Avenue's list opens (when the OS picker isn't used, see `native`). "auto" (default) opens it as a bottom sheet
+   * on a small touch screen and as a popover elsewhere, decided each time it opens; "sheet" or "popover" always
+   * (UX Engineer, AVE-39).
+   */
+  presentation?: Presentation | undefined;
   className?: string | undefined;
 }
 
@@ -78,6 +94,7 @@ export function Select<V extends string = string>({
   disabled,
   required,
   native = "auto",
+  presentation = "auto",
   size,
   className,
   ...aria
@@ -202,6 +219,7 @@ export function Select<V extends string = string>({
       onValueChange={(next: V | V[] | null) => {
         if (typeof next === "string") onValueChange?.(next);
       }}
+      presentation={presentation}
       {...defined({ placeholder, name, disabled, required })}
     >
       <SelectTrigger
@@ -221,20 +239,23 @@ export function Select<V extends string = string>({
         {chevron}
       </SelectTrigger>
       <SelectContent side="bottom" align="start" sideOffset={4} className={listPopup}>
-        {options.map((o) => (
-          <SelectItem
-            key={o.value}
-            value={o.value}
-            label={o.label}
-            className={listItem}
-            {...(o.disabled ? { disabled: true } : {})}
-          >
-            <SelectItemIndicator className="col-start-1 flex">
-              <CheckIcon aria-hidden className="size-4" />
-            </SelectItemIndicator>
-            <span className="col-start-2 min-w-0">{o.label}</span>
-          </SelectItem>
-        ))}
+        <div aria-hidden data-slot="sheet-handle" className={listSheetHandle} />
+        <SelectList className={listScroll}>
+          {options.map((o) => (
+            <SelectItem
+              key={o.value}
+              value={o.value}
+              label={o.label}
+              className={listItem}
+              {...(o.disabled ? { disabled: true } : {})}
+            >
+              <SelectItemIndicator className="col-start-1 flex">
+                <CheckIcon aria-hidden className="size-4" />
+              </SelectItemIndicator>
+              <span className="col-start-2 min-w-0">{o.label}</span>
+            </SelectItem>
+          ))}
+        </SelectList>
       </SelectContent>
     </SelectRoot>
   );
