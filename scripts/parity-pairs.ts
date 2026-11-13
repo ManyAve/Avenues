@@ -118,6 +118,8 @@ const SIDE_10_TO_8: Allowance[] = [
   { prop: "padding-left", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
   { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
 ];
+const SORT_MENU_FRAME =
+  "app: app/ui/components/SortMenu.stories.tsx: the story draws the menu in a bordered box of its own (`rounded-lg border p-2`); Avenue's capture is the popover the menu opens in, with the popover's ring, fill and shadow";
 const PANEL: Allowance[] = [
   { prop: "padding-*", app: "12px", avenue: "16px", because: INSET },
 ];
@@ -333,7 +335,10 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "ghost", app: "primitives-button--ghost", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=9", allow: BUTTON_MD },
   ],
   "components-button--sizes": [
-    { label: "sm outline in a card", app: "detail-pieces--dues", appCrop: "[data-slot=button]:has-text('Record payment')", avenueCrop: "[data-slot=button] >> nth=5", allow: SIDE_10_TO_8 },
+    { label: "sm outline in a card", app: "detail-pieces--dues", appCrop: "[data-slot=button]:has-text('Record payment')", avenueCrop: "[data-slot=button] >> nth=5", allow: [
+      ...SIDE_10_TO_8,
+      { prop: "glyph", because: "app: app/ui/components/detail.tsx: the dues card's Record payment button carries a Receipt icon; Avenue's sizes story shows its sm outline button as Export, with Download" },
+    ] },
     { label: "md", app: "primitives-button--primary", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=8", allow: BUTTON_MD },
   ],
   "components-button--states": [
@@ -394,6 +399,9 @@ export const PAIRS: Record<string, PairEntry> = {
             { prop: "padding-left", where: "root", app: "0px", avenue: "8px", because: "AVE-2 §1: the icon's off-grid 10px start margin becomes 8px inside the control, carried by the field's padding instead of the icon (AVE-59)" },
             { prop: "parts", because: "app: app/ui/components/time-zone-picker.tsx: the app's Base UI picker is a bare input and button beside its icon; Avenue's ui-sdk combobox names its input and trigger parts and wraps the icon. Same look (AVE-59)" },
             ...(["width", "height"] as const).map((prop) => ({ prop, app: "14px", avenue: "16px", because: "AVE-84: picker icons follow the control size, 16px in an md field like Select's chevron and Button's icons; the app's time-zone picker draws 14px" })),
+            ...(story === "time-zone"
+              ? []
+              : [{ prop: "glyph", app: "lucide-globe", avenue: "lucide-house", because: "app: app/ui/components/time-zone-picker.tsx: the app's only picker is for time zones, with a Globe; Avenue's household pickers lead with a House" }]),
           ],
         },
       ],
@@ -456,7 +464,10 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Dropdown menu (AVE-6)
   "components-dropdown-menu--open": [
     { label: "menu panel", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-content]", avenueCrop: "[data-slot=menu-content]", frame: true },
-    { label: "menu item", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-item] >> nth=1", avenueCrop: "[data-slot=menu-item] >> nth=1", allow: MENU_ITEM },
+    { label: "menu item", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-item] >> nth=1", avenueCrop: "[data-slot=menu-item] >> nth=1", allow: [
+      ...MENU_ITEM,
+      { prop: "glyph", app: "lucide-flag", avenue: "lucide-printer", because: "app: app/ui/components/menus.tsx: the app's New menu item is New complaint, with a Flag; Avenue's menu story shows Print statement, with a Printer" },
+    ] },
   ],
   "components-dropdown-menu--keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
   "components-dropdown-menu--open-by-click": { none: BEHAVIOUR("Dropdown menu / Open") },
@@ -609,6 +620,8 @@ export const PAIRS: Record<string, PairEntry> = {
       allow: [
         { prop: "*-gap", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
         { prop: "parts", because: "AVE-72: Avenue's message keeps its leading icon so colour never carries the error alone (WCAG 1.4.1, as AVE-48); the app's error text has none" },
+        { prop: "font-size", app: "16px", avenue: "14px", because: "AVE-89: an inline message is a field error's size, 14px from 768px up on both scales (AVE-53); the app's field error is still 16px on the web scale" },
+        { prop: "line-height", app: "24px", avenue: "20px", because: "AVE-89: an inline message is a field error's size, so its 14px text takes the 20px line" },
       ],
     },
   ],
@@ -902,6 +915,8 @@ export const PAIRS: Record<string, PairEntry> = {
       { prop: "border-*-color", because: "AVE-50: the chosen sort direction takes the shared chosen border (AVE-94)" },
       { prop: "color", because: "AVE-50: the chosen sort direction takes the shared chosen text colour (AVE-94)" },
       { prop: "width", because: "AVE-50: each direction keeps room for the check, so choosing moves nothing (AVE-94)" },
+      { prop: "border-*-width", app: "1px", avenue: "0px", because: SORT_MENU_FRAME },
+      { prop: "box-shadow", because: SORT_MENU_FRAME },
     ] },
   ],
   "composites-register--sorted-ascending": { none: "AVE-78: the sorted column's up arrow is new in Avenue (the app shows the same chevron on every column). The header is compared through Register / Wide." },

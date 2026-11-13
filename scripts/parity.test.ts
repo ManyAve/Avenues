@@ -7,6 +7,7 @@ import {
   looks,
   mapProblems,
   pixelJudgement,
+  reconcile,
   SUBPIXEL_MAX,
   matchParts,
   rootVariables,
@@ -237,5 +238,32 @@ describe("style properties QA's italic plant needed (AVE-73)", () => {
     const icon = (fill: string, w: number) => part({ tag: "svg", width: w, style: { fill, stroke: "rgb(0, 0, 0)" } });
     const d = styleDifferences([part(), icon("none", 14)], [part(), icon("rgb(0, 0, 0)", 16)], false);
     expect(d.map((x) => x.prop).sort()).toEqual(["fill", "width"]);
+  });
+});
+
+describe("reconcile (AVE-77)", () => {
+  const border = { "border-top-width": "1px", "border-right-width": "1px", "border-bottom-width": "1px", "border-left-width": "1px" };
+  test("an allowed border colour goes on all four sides of the app's part", () => {
+    const app = [part({ index: 0, style: { ...border, "border-top-color": "rgb(200, 200, 200)" } })];
+    const avenue = [part({ index: 0, style: { ...border, "border-top-color": "rgb(90, 90, 90)" } })];
+    const diffs = explain(styleDifferences(app, avenue, true), [{ prop: "border-top-color", because: "AVE-38: outline" }]);
+    const plan = reconcile(app, avenue, diffs);
+    expect(plan?.styles.map((x) => x.prop)).toEqual(["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"]);
+    expect(new Set(plan?.styles.map((x) => x.value))).toEqual(new Set(["rgb(90, 90, 90)"]));
+  });
+  test("a different icon is a difference, and nothing reconciles an unexplained one", () => {
+    const icon = (glyph: string) => part({ index: 1, tag: "svg", width: 16, height: 16, glyph, markup: `<path d="${glyph}"/>` });
+    const app = [part({ index: 0 }), icon("lucide-dollar-sign")];
+    const avenue = [part({ index: 0 }), icon("lucide-download")];
+    const diffs = styleDifferences(app, avenue, true);
+    expect(diffs).toContainEqual(expect.objectContaining({ prop: "glyph", app: "lucide-dollar-sign", avenue: "lucide-download" }));
+    expect(reconcile(app, avenue, explain(diffs, []))).toBeNull();
+  });
+  test("an allowed icon takes the app's drawing on Avenue's side", () => {
+    const icon = (glyph: string) => part({ index: 1, tag: "svg", width: 16, height: 16, glyph, markup: `<path d="${glyph}"/>` });
+    const app = [part({ index: 0 }), icon("lucide-dollar-sign")];
+    const avenue = [part({ index: 0 }), icon("lucide-download")];
+    const diffs = explain(styleDifferences(app, avenue, true), [{ prop: "glyph", because: "app: app/x.tsx: its story shows another icon" }]);
+    expect(reconcile(app, avenue, diffs)?.icons).toEqual([{ index: 1, markup: '<path d="lucide-dollar-sign"/>' }]);
   });
 });
