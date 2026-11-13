@@ -78,5 +78,8 @@
   "engines": {
     "bun": ">=1.4.4"
   },
-  "packageManager": "bun@1.4.4"
+  "packageManager": "bun@1.4.4",
+  "patchedDependencies": {
+    "@ui-sdk/core@0.1.0-beta.1": "patches/@ui-sdk%2Fcore@0.1.0-beta.1.patch"
+  }
 }

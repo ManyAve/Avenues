@@ -49,6 +49,15 @@ an element with `data-ui-sdk-skin`, because globally they restyle Avenue (they s
 component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`, run
 `bun run ui-sdk:css`; `bun run test:scripts` fails until you do.
 
+**Patched ui-sdk.** `patches/` holds Bun patches to ui-sdk, applied by `bun install` (listed under
+`patchedDependencies` in `package.json`), so they survive installs and the Cloudflare build. Each is a stopgap
+for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies
+and is still needed. To change one, `bun patch <package>`, edit `node_modules`, then `bun patch --commit`.
+
+- `@ui-sdk/core` 0.1.0-beta.1, toast (AVE-43): an empty toast region was listed in the agent snapshot as an
+  unnamed `toast`, failing the agent test on nearly every screen. The patch leaves the region out of the snapshot
+  while no toast shows, using the primitive's `agent.shown`. `Toast/EmptyRegion` fails if the patch stops applying.
+
 ### How to build with ui-sdk
 
 1. **Docs and skill first**, as above.
