@@ -123,6 +123,12 @@
   --spacing-control-sm: 1.75rem;
   --spacing-control-md: 2rem;
   --spacing-control-lg: 2.5rem;
+
+  /* Content widths (AVE-9), measured from Management: reading for a column of text, forms and messages (its
+     messages page, 768px); grid for tables, card grids and the household page (its main layout, 1280px). max-w-reading,
+     max-w-grid. */
+  --container-reading: 48rem;
+  --container-grid: 80rem;
 }
 
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */

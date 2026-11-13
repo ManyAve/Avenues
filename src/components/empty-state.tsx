@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button, buttonVariants } from "#avenue/components/button";
+import { IconTile } from "#avenue/components/icon-tile";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -124,9 +125,7 @@ function SectionEmpty({
       className={cn("flex flex-wrap items-center gap-x-3 gap-y-3", className)}
       {...props}
     >
-      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-        <Icon className="size-5" aria-hidden />
-      </span>
+      <IconTile icon={Icon} size="section" />
       <div className="min-w-0 flex-1 basis-56">
         <p className="font-[550]">{title}</p>
         <p className="text-meta text-muted-foreground">{line}</p>
