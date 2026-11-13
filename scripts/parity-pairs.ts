@@ -415,6 +415,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--empty": { none: STATE_ONLY("an empty combobox list (the time zones always match)", "Combobox / Time zone") },
   "components-combobox--keyboard": { none: BEHAVIOUR("Combobox / Time zone") },
   "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
+  "components-combobox--clear-on-phones": { none: BEHAVIOUR("Combobox / Households (the clear button is new in Avenue, phones only, AVE-93)") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
   "components-combobox--selected-text": { none: BEHAVIOUR("Combobox / Households") },
   "components-select--icon-sizes": { none: "AVE-84: Select and Combobox side by side at md and sm, to show their icons follow the control size; the app has no story with both. Each is compared through Select / Default and Combobox / Time zone." },

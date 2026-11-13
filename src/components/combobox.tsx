@@ -1,5 +1,6 @@
 import {
   Combobox as ComboboxRoot,
+  ComboboxClear,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
@@ -8,8 +9,8 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from "@ui-sdk/react/combobox";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   defined,
   fieldControl,
@@ -72,6 +73,11 @@ export interface ComboboxProps<T extends ComboboxOption> {
   "aria-describedby"?: string | undefined;
   /** Names the chevron button for screen readers ("Show households"). */
   triggerLabel?: string | undefined;
+  /**
+   * Names the phone's clear button. By default "Clear" and the field's label in lower case ("Clear household"),
+   * read from the input's label or `aria-label`.
+   */
+  clearLabel?: string | undefined;
   invalid?: boolean | undefined;
   disabled?: boolean | undefined;
   /**
@@ -101,6 +107,7 @@ export function Combobox<T extends ComboboxOption>({
   icon,
   id,
   triggerLabel = "Show options",
+  clearLabel,
   invalid,
   disabled,
   presentation = "auto",
@@ -120,13 +127,24 @@ export function Combobox<T extends ComboboxOption>({
   const [anchor, setAnchor] = useState<HTMLDivElement | null>(null);
   // Focus selects the whole label so typing replaces it; the click that focused must not undo that selection.
   const focusing = useRef(false);
+  // The clear button's name follows the field's own label, which a Field gives the input after it mounts.
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [fieldName, setFieldName] = useState<string | undefined>();
+  useLayoutEffect(() => {
+    const element = inputRef.current;
+    const name = element?.getAttribute("aria-label") ?? element?.labels?.[0]?.textContent ?? undefined;
+    setFieldName(name?.trim().toLowerCase() || undefined);
+  }, []);
 
   return (
     <ComboboxRoot<string>
       value={selected}
-      onValueChange={(next: string | string[] | null) => {
-        // Clearing the text is still typing, not a choice: only a picked option changes the value.
+      onValueChange={(next: string | string[] | null, details: { reason: string; cancel: () => void }) => {
         if (typeof next === "string") onValueChange(next === NONE ? "" : next);
+        // The phone's Clear clears the choice as well as the search (AVE-93); Escape while the list is open asks for
+        // it back. Clearing the text by typing is still typing, not a choice, so that request is refused.
+        else if (details.reason === "clear-press") onValueChange("");
+        else details.cancel();
       }}
       onQueryChange={(next: string) => setQuery(next)}
       filter={(item: { value: string; label: string }, text: string) => {
@@ -163,6 +181,7 @@ export function Combobox<T extends ComboboxOption>({
           {chosenLabel ?? placeholder}
         </span>
         <ComboboxInput
+          ref={inputRef}
           id={id}
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
@@ -189,6 +208,17 @@ export function Combobox<T extends ComboboxOption>({
             "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30",
           )}
         />
+        {/* On a phone the cursor lands after the chosen label instead of selecting it (AVE-76), so typing would add to
+            it; Clear empties the field and the search in one tap, keeps focus in it, and shows only while there is
+            something to clear. ui-sdk's own Escape brings the choice back while the list is open. With a mouse,
+            select-on-focus does this job, so the button never shows there and the desktop look is unchanged
+            (UX Engineer, AVE-93). Undoable, so no agent confirm. */}
+        <ComboboxClear
+          aria-label={clearLabel ?? (fieldName ? `Clear ${fieldName}` : "Clear choice")}
+          className="relative hit-area hidden h-full w-11 shrink-0 items-center justify-center text-muted-foreground outline-none pointer-coarse:flex disabled:cursor-not-allowed"
+        >
+          <XIcon aria-hidden />
+        </ComboboxClear>
         <ComboboxTrigger
           aria-label={triggerLabel}
           className="flex h-full w-8 shrink-0 items-center pointer-coarse:w-11 justify-center text-muted-foreground outline-none disabled:cursor-not-allowed"

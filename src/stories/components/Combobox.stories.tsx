@@ -109,7 +109,10 @@ export const WithNone: Story = {
     await expect(input).toHaveValue("Neighborhood");
     // An md field's icons are 16px, like Select's chevron: icons follow the control size (AVE-84, after AVE-59).
     const box = input.closest("[data-slot=combobox]")!;
-    for (const svg of box.querySelectorAll("svg")) await expect(svg.getBoundingClientRect().width).toBe(16);
+    // Visible icons only: the phone's clear button (AVE-93) is in the field but hidden with a mouse.
+    for (const svg of box.querySelectorAll("svg")) {
+      if (svg.checkVisibility()) await expect(svg.getBoundingClientRect().width).toBe(16);
+    }
     await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
     await expect(await screen.findByRole("option", { name: "Neighborhood" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
@@ -306,6 +309,46 @@ export const SheetOnPhones: Story = {
     field().focus();
     await expect(field().selectionStart).toBe(field().value.length);
     await expect(field().selectionEnd).toBe(field().value.length);
+  },
+};
+
+/**
+ * On a phone, Clear beside the chevron empties the choice and the search in one tap and keeps focus in it, so a new
+ * search doesn't add to the chosen label (AVE-93). It is 44px and shows only while there is something to clear. With
+ * a mouse it never shows: select-on-focus already replaces the label.
+ */
+export const ClearOnPhones: Story = {
+  name: "Clear on phones",
+  globals: phone,
+  render: () => (
+    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
+  ),
+  play: async ({ canvas }) => {
+    if (!coarse()) {
+      await expect(canvas.queryByRole("button", { name: "Clear household" })).toBeNull();
+      await userEvent.tab();
+      await expect(field()).toHaveFocus();
+      await userEvent.tab();
+      await expect(document.activeElement?.getAttribute("data-slot")).not.toBe("combobox-clear");
+      return;
+    }
+    const clear = canvas.getByRole("button", { name: "Clear household" });
+    await expect(clear.getBoundingClientRect().width).toBe(44);
+    await userEvent.click(clear);
+    await waitFor(() => expect(field()).toHaveValue(""));
+    await expect(field()).toHaveFocus();
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Chosen: (none)");
+    // Nothing to clear now, so the button goes.
+    await waitFor(() => expect(canvas.queryByRole("button", { name: "Clear household" })).toBeNull());
+    await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(households.length));
+    await userEvent.click(field());
+    await userEvent.keyboard("quill");
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+    await userEvent.click(screen.getByRole("option", { name: /3 Quill Court/ }));
+    await waitForClosed("combobox");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Chosen: h3");
+    await expect(field()).toHaveValue("3 Quill Court · Cora Mendez");
   },
 };
 
