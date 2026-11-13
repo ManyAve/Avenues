@@ -126,10 +126,13 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "The app's timing rules are story tests. The agent stories cover a toast showing and the empty region, which a patch to ui-sdk 0.1.0-beta.1 leaves out of the agent snapshot (AVE-43; see AGENTS.md).",
   },
 
-  // Plain markup.
+  // Avenue primitives with no kit pattern: built with definePrimitive, but ui-sdk's kit has no pattern of their kind
+  // to run checkPattern against. Their stories press every key the primitive handles instead (AVE-79).
   register: {
-    none: "ui-sdk's kit has no grid pattern to check; the Register stories press every key the grid handles (AVE-9).",
+    none: "ui-sdk's kit has no grid pattern to check; the Register stories press every key the grid handles, and Register / Agent expands and sorts is its agent test (AVE-9, AVE-79).",
   },
+
+  // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
   "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },

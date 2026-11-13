@@ -17,6 +17,17 @@ describe("check:classes", () => {
     expect(matches(`"rounded-xs rounded-sm rounded-md rounded-lg rounded-xl rounded-full rounded-t-xl"`)).toEqual([]);
   });
 
+  test("flags quarter steps and half steps from 6px, but not the 2px hairline", () => {
+    expect(matches(`"gap-2.25 py-1.25 gap-1.75 px-0.75 m-4.5 -mt-0.25 gap-0.5 mt-0.5 size-2.75 h-3.25 w-1.5"`)).toEqual([
+      "gap-2.25",
+      "py-1.25",
+      "gap-1.75",
+      "px-0.75",
+      "m-4.5",
+      "-mt-0.25",
+    ]);
+  });
+
   test("flags off-grid spacing", () => {
     expect(matches(`"gap-1.5 px-2.5 py-3.5 -mt-1.5 space-y-2.5 sm:p-1.5 inset-x-3.5 gap-x-2.5"`)).toEqual([
       "gap-1.5",

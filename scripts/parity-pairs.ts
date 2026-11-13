@@ -169,11 +169,18 @@ const ADDRESS_CELL: Allowance[] = [
     because: "app: app/ui/components/cells.tsx: the households screen puts a house icon and a hover-card preview in the address cell; the Register cell holds what the screen gives it, here a plain link",
   },
 ];
-const STREET_TOTAL: Allowance = {
+const STREET_BAR: Allowance[] = [
+  { prop: "border-*-width", app: "5px", avenue: "4px", because: "AVE-2 §1: the street bar's off-grid 5px gap above and below (a background border) becomes 4px (AVE-79)" },
+  { prop: "*-gap", app: "9px", avenue: "8px", because: "AVE-2 §1: the street bar's off-grid 9px gap between chevron, icon, name and count becomes 8px (AVE-79)" },
+  { prop: "padding-*", app: "5px", avenue: "4px", because: "AVE-2 §1: the street toggle's off-grid 5px padding becomes 4px (AVE-79)" },
+];
+// The street bar holds both differences in one parts list: the toggle is ui-sdk's Button, a named part where the app
+// has a plain button (AVE-79), and the street total is Money (AVE-55).
+const STREET_BAR_PARTS: Allowance = {
   prop: "parts",
-  app: "only here: span",
-  avenue: "only here: money",
-  because: "AVE-55: the street total is Avenue's Money, which never truncates and sits in its own box; the app's group row prints a plain span",
+  app: "only here: button, span",
+  avenue: "only here: button, money",
+  because: "AVE-55: the street total is Avenue's Money, which never truncates and sits in its own box, where the app prints a plain span; and the street toggle is ui-sdk's Button (AVE-79), a named part where the app has a plain button",
 };
 
 const BEHAVIOUR = (look: string) =>
@@ -868,7 +875,7 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Composites part 3: the Register (AVE-9)
   "composites-register--wide": [
     { label: "column header", app: "households-table--default", appCrop: "#storybook-root thead th:nth-child(3) >> nth=0", avenueCrop: "#storybook-root thead th:nth-child(3) >> nth=0", allow: REGISTER_HEADER },
-    { label: "street bar", app: "households-table--default", appCrop: "#storybook-root tbody tr:first-child td >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child td >> nth=0", allow: [STREET_TOTAL] },
+    { label: "street bar", app: "households-table--default", appCrop: "#storybook-root tbody tr:first-child td >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child td >> nth=0", allow: [STREET_BAR_PARTS, ...STREET_BAR] },
     { label: "row cell", app: "households-table--default", appCrop: "#storybook-root tbody tr:nth-child(2) td:nth-child(2) >> nth=0", avenueCrop: "[data-slot=register-body] tr:nth-child(2) td:nth-child(2) >> nth=0", allow: ADDRESS_CELL },
   ],
   "composites-register--compact": [
@@ -877,6 +884,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--normal-and-comfortable": { none: "The Register at normal and comfortable density, stacked; each row height is compared through Register / Wide (normal) and asserted in the story (48 and 52)." },
   "composites-register--desktop-minimum": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--sort-popover": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--agent-expands-and-sorts": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--row-action-clicked-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },

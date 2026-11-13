@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { createParts } from "@ui-sdk/react/primitive";
 import { ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
@@ -136,13 +137,8 @@ function RegisterColumnHeader({
       ) : (
         <Popover>
           <PopoverTrigger
-            render={
-              <button
-                type="button"
-                aria-label={label}
-                className="relative hit-area w-full rounded-sm text-start outline-none hover:text-foreground"
-              />
-            }
+            aria-label={label}
+            className="relative hit-area w-full rounded-sm text-start outline-none hover:text-foreground"
           >
             {content}
           </PopoverTrigger>
@@ -212,7 +208,7 @@ function RegisterGroupRow({
         control
         colSpan={colCount}
         className={cn(
-          "relative isolate h-12 border-y-[5px] border-background bg-clip-padding p-0 px-2 text-meta",
+          "relative isolate h-12 border-y-4 border-background bg-clip-padding p-0 px-2 text-meta",
           "rounded-xl",
           ring,
         )}
@@ -226,11 +222,10 @@ function RegisterGroupRow({
             aria-hidden
             className="absolute inset-0 -z-[1] rounded-xl bg-[linear-gradient(100deg,color-mix(in_oklab,var(--group-color)_12%,var(--muted)),color-mix(in_oklab,var(--group-color)_4%,var(--muted))_55%,var(--muted))]"
           />
-          <button
-            type="button"
+          <ButtonPrimitive
             aria-expanded={open}
             onClick={() => onOpenChange(!open)}
-            className="relative hit-area flex min-w-0 flex-1 items-center gap-2.25 py-1.25 text-start outline-none"
+            className="relative hit-area flex min-w-0 flex-1 items-center gap-2 py-1 text-start outline-none"
           >
             {open ? (
               <ChevronDownIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
@@ -239,8 +234,12 @@ function RegisterGroupRow({
             )}
             <Icon className="size-3.5 text-(--group-color)" aria-hidden />
             <span className="text-compact font-semibold">{name}</span>
-            <span className="text-muted-foreground">{count}</span>
-          </button>
+            {/* The spaces and the hidden word name it "Birch Lane, 3 households", not "Birch Lane3". */}{" "}
+            <span className="text-muted-foreground">
+              {count}
+              <span className="sr-only"> {count === 1 ? "household" : "households"}</span>
+            </span>
+          </ButtonPrimitive>
           {trailing && <span className="ms-auto text-muted-foreground">{trailing}</span>}
         </div>
       </parts.Cell>
@@ -263,14 +262,13 @@ function RegisterAddRow({
   return (
     <parts.Row id={`${row}`} row={row}>
       <parts.Cell id={`${row}:0`} row={row} col={0} control colSpan={colCount} className={cn("h-10 px-3", ring)}>
-        <button
-          type="button"
+        <ButtonPrimitive
           onClick={onAdd}
-          className="relative hit-area flex items-center gap-1.75 py-1.25 text-control text-muted-foreground outline-none hover:text-foreground"
+          className="relative hit-area flex items-center gap-2 py-1 text-control text-muted-foreground outline-none hover:text-foreground"
         >
           <PlusIcon className="size-3.25" aria-hidden />
           {children}
-        </button>
+        </ButtonPrimitive>
       </parts.Cell>
     </parts.Row>
   );
@@ -294,7 +292,8 @@ function SortMenu({
 }) {
   return (
     <div className="text-meta">
-      <div className="flex items-center justify-between px-2 pb-1 text-muted-foreground">
+      {/* On a phone the rows part by 16px, so the 44px taps of Clear and the direction buttons don't overlap. */}
+      <div className="flex items-center justify-between px-2 pb-1 pointer-coarse:pb-2 text-muted-foreground">
         <span>Sort by</span>
         <span>Direction</span>
         <Button variant="ghost" size="xs" onClick={() => onChange(null)} disabled={!value}>
@@ -302,7 +301,7 @@ function SortMenu({
         </Button>
       </div>
       {fields.map((field) => (
-        <div key={field.key} className="flex items-center gap-2 px-2 py-1">
+        <div key={field.key} className="flex items-center gap-controls px-2 py-1 pointer-coarse:py-2">
           <span className="flex-1">{field.label}</span>
           {(["asc", "desc"] as const).map((direction, i) => {
             const on = value?.field === field.key && value.direction === direction;
@@ -312,7 +311,9 @@ function SortMenu({
                 variant={on ? "secondary" : "ghost"}
                 size="xs"
                 aria-pressed={on}
-                aria-label={`${field.label}, ${field.directions[i]}`}
+                // "Balance, High–low, descending": the visible words, plus the direction, because an agent
+                // matches names by their words and "High–low" and "Low–high" have the same ones (AVE-79).
+                aria-label={`${field.label}, ${field.directions[i]}, ${direction === "asc" ? "ascending" : "descending"}`}
                 onClick={() => onChange({ field: field.key, direction })}
               >
                 {field.directions[i]}
