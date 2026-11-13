@@ -43,7 +43,7 @@ const CONTROL_ROLES = [
 export const CONTROL_SELECTOR = CONTROL_ROLES.map((selector) => `${selector}[data-slot]`).join(", ");
 
 /** Story groups whose stories are measured: the components and the composites built from them. */
-export const MEASURED_TITLES = ["Components/", "Composites/"];
+export const MEASURED_TITLES = ["Components/", "Composites/", "Overview"];
 
 export interface TouchProblem {
   control: string;
