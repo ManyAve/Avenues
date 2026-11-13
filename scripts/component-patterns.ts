@@ -81,6 +81,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   textarea: { upstream: "textarea" },
   field: { upstream: "field" },
   avatar: { upstream: "avatar" },
+  "file-field": {
+    upstream: "file-input",
+    note: "The testing kit has no file-input pattern; the File field stories press Choose, Remove and Try again by keyboard and check the names and live regions.",
+  },
   "initials-avatar": { upstream: "avatar", note: "ManyAve's tinted initials on Avatar." },
   status: { upstream: "tooltip", note: "The help is an InfoTip; the Status stories test focus, tap and Esc." },
   "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, tested in its story." },
