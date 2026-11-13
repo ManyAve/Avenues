@@ -44,7 +44,11 @@ export const Tones: Story = {
   ),
   play: async ({ canvas }) => {
     for (const { label } of tones) {
-      for (const pill of canvas.getAllByText(label)) await expect(pill).toBeVisible();
+      for (const pill of canvas.getAllByText(label)) {
+        await expect(pill).toBeVisible();
+        // Outline and filled are both 20px labels (AVE-2).
+        await expect(pill.getBoundingClientRect().height).toBe(20);
+      }
     }
   },
 };

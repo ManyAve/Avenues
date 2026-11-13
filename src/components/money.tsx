@@ -1,24 +1,14 @@
 import type { ComponentProps } from "react";
+import { formatMoney } from "#avenue/lib/format";
 import { cn } from "#avenue/lib/utils";
-
-const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const signedDollars = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  signDisplay: "exceptZero",
-});
-
-/** Cents as US dollars: 12345 → "$123.45", -500 → "-$5.00"; `signed` adds "+" to amounts above zero. */
-function formatMoney(cents: number, { signed = false }: { signed?: boolean } = {}) {
-  return (signed ? signedDollars : dollars).format(cents / 100);
-}
 
 /**
  * ManyAve's Money, ported from the app's app/ui/components/Money.tsx (e01cc90): cents as tabular monospace
  * currency. It never truncates or wraps (UX.md), so give it room rather than a width.
  *
- * `cents` of null or undefined is a blank amount: a dash, read as "No amount". `data-private` marks it so
- * session replays blur payment details.
+ * `cents` of null or undefined is a blank amount: a dash, read as "No amount". A sign is spoken as a word
+ * ("minus $5.00"), because screen readers may drop a hyphen-minus and read a debt as a credit. `data-private`
+ * marks it so session replays blur payment details.
  */
 function Money({
   cents,
@@ -40,6 +30,11 @@ function Money({
           <span aria-hidden>—</span>
           <span className="sr-only">No amount</span>
         </>
+      ) : cents < 0 || (signed && cents > 0) ? (
+        <>
+          <span aria-hidden>{formatMoney(cents, { signed })}</span>
+          <span className="sr-only">{`${cents < 0 ? "minus" : "plus"} ${formatMoney(Math.abs(cents))}`}</span>
+        </>
       ) : (
         formatMoney(cents, { signed })
       )}
@@ -47,4 +42,4 @@ function Money({
   );
 }
 
-export { Money, formatMoney };
+export { Money };

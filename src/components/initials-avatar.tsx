@@ -1,27 +1,7 @@
 import type { ComponentProps } from "react";
 import { Avatar, AvatarFallback } from "#avenue/components/avatar";
+import { initials, tintFor } from "#avenue/lib/format";
 import { cn } from "#avenue/lib/utils";
-
-const tints = ["teal", "plum", "stone", "iris"] as const;
-type Tint = (typeof tints)[number];
-
-/**
- * The tint for a key, by a stable FNV-1a hash (the app's tintFor, e01cc90), so sorting or filtering never
- * recolours a person. Teal, plum, iris and stone carry no status meaning.
- */
-function tintFor(key: string): Tint {
-  let h = 2166136261;
-  for (const c of key) {
-    h ^= c.charCodeAt(0);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  return tints[h % tints.length]!;
-}
-
-/** First letter of the first two words that start with a letter, in any script. */
-function initials(name: string): string {
-  return (name.match(/(?<=^|\s)\p{L}/gu) ?? []).slice(0, 2).join("").toUpperCase();
-}
 
 /**
  * ManyAve's tinted-initials avatar, ported from the app's app/ui/components/Avatar.tsx (e01cc90): sm 28 and
@@ -64,4 +44,4 @@ function InitialsAvatar({
   );
 }
 
-export { InitialsAvatar, initials, tintFor, type Tint };
+export { InitialsAvatar };

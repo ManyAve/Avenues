@@ -90,6 +90,7 @@ function EmptyState({
             className={cn(buttonVariants({ variant: "link", size: "sm" }), "h-auto px-0")}
           >
             {externalLink.label}
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </p>
       )}

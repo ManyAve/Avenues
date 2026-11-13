@@ -1,7 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, screen } from "storybook/test";
 import { AskAdmin } from "#avenue/components/ask-admin";
 import { Button } from "#avenue/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#avenue/components/dialog";
 import { Switch } from "#avenue/components/switch";
 import { Rows } from "./story-kit";
 
@@ -35,17 +44,33 @@ export const Inline: Story = {
   },
 };
 
-/** In a wrapping dialog footer: its own full-width line above the buttons, aligned to the end. */
-export const Footer: Story = {
+/**
+ * In a dialog footer: on a phone it sits under the buttons; from 640px it takes its own full-width line above
+ * them, aligned to the end. The Save button points its description at it.
+ */
+export const InADialogFooter: Story = {
+  parameters: { layout: "fullscreen" },
   render: (args) => (
-    <Rows>
-      <div className="flex w-[28rem] flex-col-reverse gap-2 rounded-xl border p-inset sm:flex-row sm:flex-wrap sm:justify-end">
-        <AskAdmin footer {...args} />
-        <Button variant="outline">Cancel</Button>
-        <Button disabled>
-          Save
-        </Button>
-      </div>
-    </Rows>
+    <Dialog defaultOpen>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Set the 2026 assessment</DialogTitle>
+          <DialogDescription>Four households at Maple Court are billed $240.00 each, due March 1.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:flex-wrap sm:items-center">
+          <AskAdmin footer id="assessment-reason" {...args}>
+            Ask a board admin to set the assessment and due date.
+          </AskAdmin>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button disabled focusableWhenDisabled aria-describedby="assessment-reason">
+            Set assessment
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   ),
+  play: async () => {
+    const save = await screen.findByRole("button", { name: "Set assessment" });
+    await expect(save).toHaveAccessibleDescription("Ask a board admin to set the assessment and due date.");
+  },
 };

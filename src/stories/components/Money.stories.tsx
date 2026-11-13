@@ -3,6 +3,8 @@ import { expect } from "storybook/test";
 import { Money } from "#avenue/components/money";
 import { Row, Rows } from "./story-kit";
 
+const lineHeight = (el: HTMLElement) => parseFloat(getComputedStyle(el).lineHeight);
+
 const meta = {
   title: "Components/Money",
   component: Money,
@@ -37,6 +39,10 @@ export const Amounts: Story = {
     await expect(canvas.getByText("+$12.50")).toBeVisible();
     await expect(canvas.getByText("-$12.50")).toBeVisible();
     await expect(canvas.getByText("No amount")).toBeInTheDocument();
+    // The sign is a word for screen readers, so a debt is never heard as a credit.
+    await expect(canvas.getAllByText("minus $5.00")[0]).toHaveClass("sr-only");
+    await expect(canvas.getByText("plus $12.50")).toHaveClass("sr-only");
+    await expect(canvas.getByText("minus $12.50")).toHaveClass("sr-only");
   },
 };
 
@@ -61,13 +67,18 @@ export const NeverTruncates: Story = {
       <div className="w-12 border border-dashed border-border">
         <Money cents={123456789} data-testid="amount" />
       </div>
+      <div className="w-4 border border-dashed border-border">
+        <Money cents={null} data-testid="blank" />
+      </div>
     </Rows>
   ),
   play: async ({ canvas }) => {
     const amount = canvas.getByTestId("amount");
     await expect(amount).toHaveTextContent("$1,234,567.89");
-    const lineHeight = parseFloat(getComputedStyle(amount).lineHeight);
-    await expect(amount.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight + 1);
+    await expect(getComputedStyle(amount).whiteSpace).toBe("nowrap");
+    const blank = canvas.getByTestId("blank");
+    await expect(blank.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight(blank) + 1);
+    await expect(amount.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight(amount) + 1);
     await expect(getComputedStyle(amount).textOverflow).not.toBe("ellipsis");
     await expect(amount.scrollWidth).toBeLessThanOrEqual(amount.getBoundingClientRect().width + 1);
   },

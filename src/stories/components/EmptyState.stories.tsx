@@ -51,7 +51,7 @@ export const ExternalLink: Story = {
     externalLink: { lead: "Starting a new association?", label: "Set it up on the web", href: "https://example.com/start" },
   },
   play: async ({ canvas }) => {
-    const link = canvas.getByRole("link", { name: "Set it up on the web" });
+    const link = canvas.getByRole("link", { name: "Set it up on the web (opens in a new tab)" });
     await expect(link.tagName).toBe("A");
     await expect(link).toHaveAttribute("href", "https://example.com/start");
     await expect(link).toHaveAttribute("target", "_blank");
@@ -75,7 +75,7 @@ export const CompactInACard: Story = {
     action: { label: "Plan an event", onClick: fn() },
   },
   render: (args) => (
-    <div className="w-[358px]">
+    <div className="w-[390px] bg-background p-inset">
       <Card>
         <EmptyState {...args} />
       </Card>

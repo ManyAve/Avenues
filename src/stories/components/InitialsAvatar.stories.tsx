@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
-import { InitialsAvatar, tintFor } from "#avenue/components/initials-avatar";
+import { InitialsAvatar } from "#avenue/components/initials-avatar";
+import { tintFor } from "#avenue/lib/format";
 import { Row, Rows } from "./story-kit";
 
 const meta = {
