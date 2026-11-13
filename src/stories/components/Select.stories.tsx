@@ -6,6 +6,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/compone
 import { Select, type SelectOption } from "#avenue/components/select";
 import { createAgent } from "@ui-sdk/react/agent";
 import { cn } from "#avenue/lib/utils";
+import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
 
 // AVE-7. One Select for the app's 20 native selects. md (32px, lg corner) by default; sm (28px, md corner) in a card
 // or dialog header; never a pill. All data is fictional.
@@ -59,6 +60,15 @@ function Labelled({
     </Field>
   );
 }
+
+const phone = { viewport: { value: "phone", isRotated: false } };
+const coarse = () => matchMedia("(pointer: coarse)").matches;
+
+/** True while the open list presents as a bottom sheet (ui-sdk's `data-presentation`, AVE-39). */
+function isSheet(content: Element) {
+  return content.getAttribute("data-presentation") === "sheet";
+}
+
 
 const meta = {
   title: "Components/Select",
@@ -120,9 +130,9 @@ export const DisabledOption: Story = {
     await userEvent.click(trigger);
     const list = await screen.findByRole("listbox");
     const popup = list.closest("[data-slot=select-content]") ?? list;
-    await waitFor(() =>
-      expect(Math.round(popup.getBoundingClientRect().width)).toBe(Math.round(trigger.getBoundingClientRect().width)),
-    );
+    // On a phone the list is a sheet as wide as the screen (AVE-39).
+    const width = isSheet(popup) ? innerWidth : trigger.getBoundingClientRect().width;
+    await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(Math.round(width)));
     await expect(screen.getByRole("option", { name: /Past president/ })).toHaveAttribute("aria-disabled", "true");
   },
 };
@@ -238,6 +248,7 @@ export const Keyboard: Story = {
       await userEvent.keyboard(" ");
       await screen.findByRole("listbox");
       await userEvent.keyboard("{Escape}");
+      await waitForClosed("select");
     });
   },
 };
@@ -332,11 +343,12 @@ export const InCardHeader: Story = {
     await expect(trigger.getBoundingClientRect().height).toBe(28);
     await expect(style.borderTopLeftRadius).toBe("8px");
     await userEvent.click(trigger);
-    // A narrow field's list is never narrower than 192px.
+    // A narrow field's list is never narrower than 192px. On a phone it is a sheet as wide as the screen (AVE-39).
     const list = await screen.findByRole("listbox");
     const popup = list.closest("[data-slot=select-content]") ?? list;
-    await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(192));
+    await waitFor(() => expect(Math.round(popup.getBoundingClientRect().width)).toBe(isSheet(popup) ? innerWidth : 192));
     await userEvent.click(await screen.findByRole("option", { name: "2025" }));
+    await waitForClosed("select");
     await expect(trigger).toHaveTextContent("2025");
   },
 };
@@ -476,5 +488,118 @@ export const Agent: Story = {
     const result = await agent.act({ steps: [{ ref: "Board role", action: "setValue", args: ["Treasurer"] }] });
     await expect(result.ok, result.error?.message).toBe(true);
     await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent("check / treasurer"));
+  },
+};
+
+function PhoneForm({ presentation }: { presentation?: "sheet" | undefined }) {
+  const [value, setValue] = useState<string | null>("check");
+  return (
+    <div className="grid gap-group">
+      <Labelled label="Payment method" className="w-full">
+        {/* On a phone the OS picker opens by default (AVE-7); native="never" asks for Avenue's own list. */}
+        <Select options={methods} value={value} onValueChange={setValue} native="never" presentation={presentation} />
+      </Labelled>
+      <output className="text-meta text-muted-foreground" data-testid="value">
+        {value}
+      </output>
+    </div>
+  );
+}
+
+/**
+ * Avenue's list on a 390px phone (AVE-39): by default (`presentation="auto"`) it opens as a bottom sheet on a small
+ * touch screen and as the popover with a mouse, decided each time it opens. The sheet is Sheet's: 14px top corners,
+ * the handle, home-indicator padding and 44px rows. Choosing a row closes it and puts focus back on the field.
+ */
+export const SheetOnPhones: Story = {
+  name: "Sheet on phones",
+  globals: phone,
+  render: () => <PhoneForm />,
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Payment method" });
+    await userEvent.click(trigger);
+    const list = await screen.findByRole("listbox");
+    const content = list.closest<HTMLElement>("[data-slot=select-content]")!;
+    await expect(content).toHaveAttribute("data-presentation", coarse() ? "sheet" : "popover");
+    if (!isSheet(content)) {
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("select");
+      return;
+    }
+    await expectListSheet(content, "[data-slot=select-item]");
+    // Each row's check sits on the page's 16px line.
+    const check = within(list).getByRole("option", { name: "Check" }).querySelector("svg")!.getBoundingClientRect();
+    await expect(Math.round(check.left - content.getBoundingClientRect().left)).toBe(16);
+    await userEvent.click(within(list).getByRole("option", { name: "Bank transfer" }));
+    await waitForClosed("select");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("bank");
+    await expect(trigger).toHaveFocus();
+  },
+};
+
+/** The sheet, open, for the light and dark captures: as a phone shows it, on any screen. */
+export const SheetOpen: Story = {
+  name: "Sheet, open",
+  globals: phone,
+  render: () => <PhoneForm presentation="sheet" />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Payment method" }));
+    const list = await screen.findByRole("listbox");
+    await expectListSheet(list.closest<HTMLElement>("[data-slot=select-content]")!, "[data-slot=select-item]");
+  },
+};
+
+/**
+ * The keyboard in the sheet (a phone with a keyboard, or a sheet asked for on a wide screen): Enter opens it, the
+ * arrows move, Enter chooses and focus returns to the field; Escape closes it and keeps the value.
+ */
+export const SheetKeyboard: Story = {
+  name: "Sheet keyboard",
+  globals: phone,
+  render: () => <PhoneForm presentation="sheet" />,
+  play: async ({ canvas, step }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Payment method" });
+    await step("Enter opens the sheet on the chosen row", async () => {
+      trigger.focus();
+      await userEvent.keyboard("{Enter}");
+      const list = await screen.findByRole("listbox");
+      await expect(list.closest("[data-slot=select-content]")).toHaveAttribute("data-presentation", "sheet");
+      await waitFor(() => expect(within(list).getByRole("option", { name: "Check" })).toHaveFocus());
+    });
+    await step("arrows move; Enter chooses and focus returns to the field", async () => {
+      await userEvent.keyboard("{ArrowDown}");
+      await waitFor(() => expect(screen.getByRole("option", { name: "Cash" })).toHaveFocus());
+      await userEvent.keyboard("{Enter}");
+      await waitForClosed("select");
+      await expect(canvas.getByTestId("value")).toHaveTextContent("cash");
+      await expect(trigger).toHaveFocus();
+    });
+    await step("Escape closes the sheet and keeps the value", async () => {
+      await userEvent.keyboard("{Enter}");
+      await screen.findByRole("listbox");
+      await userEvent.keyboard("{ArrowDown}");
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("select");
+      await expect(canvas.getByTestId("value")).toHaveTextContent("cash");
+      await expect(trigger).toHaveFocus();
+    });
+  },
+};
+
+/** A swipe down closes the sheet without changing the value, and focus returns to the field. */
+export const SheetSwipeToClose: Story = {
+  name: "Sheet swipe to close",
+  globals: phone,
+  render: () => <PhoneForm presentation="sheet" />,
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Payment method" });
+    await userEvent.click(trigger);
+    const list = await screen.findByRole("listbox");
+    const content = list.closest<HTMLElement>("[data-slot=select-content]")!;
+    await expectListSheet(content, "[data-slot=select-item]");
+    await swipeDown(content);
+    await waitForClosed("select");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("check");
+    await expect(trigger).toHaveFocus();
   },
 };
