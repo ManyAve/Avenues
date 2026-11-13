@@ -307,8 +307,9 @@ function SortMenu({
 }) {
   return (
     <div className="text-meta">
-      {/* On a phone the rows part by 16px, so the 44px taps of Clear and the direction buttons don't overlap. */}
-      <div className="flex items-center justify-between px-2 pb-1 pointer-coarse:pb-2 text-muted-foreground">
+      {/* On a phone each row is 44px tall with its buttons centred, so the 44px taps of Clear and the direction
+          buttons fit their own rows, 8px apart, and never overlap, whatever height the buttons are. */}
+      <div className="flex items-center justify-between px-2 pb-1 pointer-coarse:mb-2 pointer-coarse:min-h-11 pointer-coarse:pb-0 text-muted-foreground">
         <span>Sort by</span>
         <span>Direction</span>
         <Button variant="ghost" size="xs" onClick={() => onChange(null)} disabled={!value}>
@@ -316,7 +317,7 @@ function SortMenu({
         </Button>
       </div>
       {fields.map((field) => (
-        <div key={field.key} className="flex items-center gap-controls px-2 py-1 pointer-coarse:py-2">
+        <div key={field.key} className="flex items-center gap-controls px-2 py-1 pointer-coarse:mb-2 pointer-coarse:min-h-11 pointer-coarse:py-0">
           <span className="flex-1">{field.label}</span>
           {(["asc", "desc"] as const).map((direction, i) => {
             const on = value?.field === field.key && value.direction === direction;
