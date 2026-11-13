@@ -18,6 +18,8 @@ export const Icon: Story = {
     const button = canvas.getByRole("button", { name: "Row density" });
     await expect(button.getBoundingClientRect().height).toBe(32);
     await expect(getComputedStyle(button).borderTopLeftRadius).toBe("10px");
+    // The app's 14px toolbar icon, inside the agreed 32px button (AVE-68).
+    await expect(button.querySelector("svg")!.getBoundingClientRect().width).toBe(14);
     await userEvent.tab();
     await userEvent.keyboard("{Enter}");
     await expect(args.onClick).toHaveBeenCalledTimes(1);

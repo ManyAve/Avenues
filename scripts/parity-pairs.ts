@@ -88,8 +88,6 @@ const TOOLBAR: Allowance[] = [
   { prop: "padding-right", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
   { prop: "border-*-radius", app: "pill", avenue: "10px", because: "AVE-2 §5: icon-only toolbar buttons stop being pills and take the md control corner" },
   { prop: "width", because: "AVE-2 §2: the taller md button and its padding make it wider" },
-  { prop: "width", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
-  { prop: "height", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
 ];
 const SECTIONED_DIALOG =
   "app: app/ui/components/dialogs.tsx: the account dialogs pass `gap-0 p-0` and draw their own bordered header, body and footer sections (px-5, footer py-3); Avenue's Dialog keeps the app's default p-4 gap-4 (app/ui/components/ui/dialog.tsx)";
