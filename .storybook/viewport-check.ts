@@ -27,7 +27,10 @@ export function viewportProblem(
 /** Runs after each story under the story tests only (Playwright sets navigator.webdriver). */
 export function runViewportCheck(globals: Record<string, unknown>, parameters: Record<string, unknown>): void {
   if (typeof navigator === "undefined" || !navigator.webdriver) return;
-  const viewport = parameters["viewport"] as { options?: Record<string, ViewportOption> } | undefined;
+  const viewport = parameters["viewport"] as { options?: Record<string, ViewportOption>; disabled?: boolean } | undefined;
+  // A story that turns the viewport off (a desktop-window case) runs at the default width whatever the project's
+  // global asks for; the `touch` project asks for the phone on every story (AVE-22).
+  if (viewport?.disabled) return;
   const problem = viewportProblem(globals["viewport"], viewport?.options, document.documentElement.clientWidth);
   if (problem) throw new Error(`Viewport check: ${problem}.`);
 }

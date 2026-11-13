@@ -91,11 +91,11 @@ function landsOn(hit: Element | null, control: HTMLElement): boolean {
 }
 
 /**
- * An open popup (menu, popover, tooltip, dialog) drawn over part of a control is meant to cover it, so a point on a
- * popup the control isn't inside is not a miss. A point on the popup the control sits in still counts: that is a
+ * An open popup (menu, popover, tooltip, dialog, or a modal's backdrop over the page behind it) drawn over part of a
+ * control is meant to cover it, so a point on a popup the control isn't inside is not a miss. A point on the popup the control sits in still counts: that is a
  * menu item's own row, and its neighbours.
  */
-const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [role=tooltip], [data-slot$=-arrow]";
+const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [role=tooltip], [data-slot$=-arrow], [data-slot$=-backdrop]";
 function coveredByOtherPopup(hit: Element | null, control: HTMLElement): boolean {
   const popup = hit?.closest(POPUP);
   return !!popup && !popup.contains(control);
