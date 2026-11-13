@@ -37,8 +37,10 @@ import {
   comboName,
   explain,
   mapProblems,
+  pixelJudgement,
   rootVariables,
   sameOffset,
+  SUBPIXEL_MAX,
   STYLE_PROPS,
   storiesToPair,
   styleDifferences,
@@ -75,8 +77,8 @@ interface Result {
   differences: Difference[];
   changedPixels?: number;
   sameText?: boolean;
-  /** True when the two captures started at different sub-pixel offsets, so the pixel diff wasn't judged. */
-  subpixel?: boolean | undefined;
+  /** Set when the pixel diff didn't decide the verdict: why it was judged on styles only. */
+  stylesOnly?: string | undefined;
   error?: string | undefined;
   files?: { app: string; avenue: string; diff?: string | undefined };
 }
@@ -306,14 +308,15 @@ function html(results: Result[], unpaired: [string, string][], meta: Record<stri
         .map((d) => `<tr><td>${esc(d.where)}</td><td>${esc(d.prop)}</td><td>${esc(d.app)}</td><td>${esc(d.avenue)}</td><td>${esc(d.because ?? "unexplained")}</td></tr>`)
         .join("");
       const imgs = r.files
-        ? `<div class="imgs"><figure><figcaption>App</figcaption><img src="${r.files.app}"></figure><figure><figcaption>Avenue</figcaption><img src="${r.files.avenue}"></figure>${r.files.diff ? `<figure><figcaption>Diff${r.sameText ? "" : " (texts differ: shown, not judged)"}</figcaption><img src="${r.files.diff}"></figure>` : ""}</div>`
+        ? `<div class="imgs"><figure><figcaption>App</figcaption><img src="${r.files.app}"></figure><figure><figcaption>Avenue</figcaption><img src="${r.files.avenue}"></figure>${r.files.diff ? `<figure><figcaption>Diff${r.stylesOnly ? " (shown, not judged)" : ""}</figcaption><img src="${r.files.diff}"></figure>` : ""}</div>`
         : "";
-      return `<section class="${r.verdict}"><h3>${badge(r.verdict)} ${esc(r.avenueStory)} · ${esc(r.label)} · ${r.combo}</h3><p class="m">App: ${esc(r.app)}${r.changedPixels !== undefined ? ` · ${r.changedPixels} px differ` : ""}${r.subpixel ? " (not judged: the two sit at different sub-pixel offsets and every style matches)" : ""}${r.error ? ` · <b>${esc(r.error)}</b>` : ""}</p>${imgs}${diffs ? `<table><tr><th>Where</th><th>Property</th><th>App</th><th>Avenue</th><th>Because</th></tr>${diffs}</table>` : ""}</section>`;
+      return `<section class="${r.verdict}"><h3>${badge(r.verdict)} ${esc(r.avenueStory)} · ${esc(r.label)} · ${r.combo}</h3><p class="m">App: ${esc(r.app)}${r.changedPixels !== undefined ? ` · ${r.changedPixels} px differ` : ""}${r.stylesOnly ? ` · <b>styles only</b>: pixels not judged, ${esc(r.stylesOnly)}` : " · pixels judged"}${r.error ? ` · <b>${esc(r.error)}</b>` : ""}</p>${imgs}${diffs ? `<table><tr><th>Where</th><th>Property</th><th>App</th><th>Avenue</th><th>Because</th></tr>${diffs}</table>` : ""}</section>`;
     })
     .join("\n");
   const counts = (["unexplained", "error", "known-bug", "app-local", "agreed-fix", "same"] as Verdict[])
     .map((v) => `${badge(v)} ${results.filter((r) => r.verdict === v).length}`)
-    .join(" ");
+    .join(" ") +
+    ` · <b>${results.filter((r) => r.stylesOnly !== undefined).length} styles only</b> (pixels not judged), ${results.filter((r) => r.files && r.stylesOnly === undefined).length} judged on pixels too`;
   return `<!doctype html><meta charset="utf-8"><title>Avenue parity</title><style>
 body{font:14px system-ui;margin:24px;color:#222;background:#fafafa}h1{font-size:20px}h3{font-size:14px;margin:0 0 4px}
 section{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:12px 0}section.same{opacity:.75}
@@ -425,10 +428,10 @@ async function main() {
       await Bun.write(join(reportDir, files.avenue), avenue.png);
       if (files.diff) await Bun.write(join(reportDir, files.diff), diff);
       const subpixel = !sameOffset(app.offset, avenue.offset);
-      const excused = sameText && subpixel && differences.length === 0 && changed > 0;
-      // A frame compares a container's own box; its contents are compared by their own pairs.
-      const judged = sameText && !excused && !pair.frame;
-      return { ...base, verdict: verdict(differences, judged && changed > 0, sameText), differences, changedPixels: changed, sameText, subpixel: excused || undefined, files };
+      const j = pixelJudgement({ sameText, frame: pair.frame === true, differences, changed, subpixel });
+      // Unjudged: say so, so "same" never stands for "looked at the styles only".
+      const stylesOnly = j.judged ? undefined : j.why;
+      return { ...base, verdict: verdict(differences, j.judged && changed > 0, sameText), differences, changedPixels: changed, sameText, stylesOnly, files };
     } catch (error) {
       return { ...base, verdict: "error", differences: [], error: error instanceof Error ? error.message.split("\n")[0] : String(error) };
     }
@@ -438,7 +441,7 @@ async function main() {
     "App commit": `${appMeta.commit}${appMeta.dirty ? " (checkout had uncommitted changes; built from HEAD)" : ""}`,
     "Point packages": appMeta.stubbed ? "stubbed (no registry access)" : "installed",
     "Avenue commit": git(["rev-parse", "--short", "HEAD"], root),
-    "Pixel threshold": `${PIXEL_THRESHOLD} per pixel, 0 pixels allowed, judged only where both captures show the same text and, when every style matches, start at the same sub-pixel offset; not for frames`,
+    "Pixel threshold": `${PIXEL_THRESHOLD} per pixel, 0 pixels allowed; judged only where both show the same text, no style differs and the pair isn't a frame (up to ${SUBPIXEL_MAX} edge pixels forgiven for a different sub-pixel offset). Every other comparison is counted as styles only.`,
   };
   await Bun.write(join(reportDir, "report.json"), JSON.stringify({ meta, problems, unpaired, results }, null, 2));
   await Bun.write(join(reportDir, "index.html"), html(results, unpaired, meta, problems));
@@ -450,8 +453,10 @@ async function main() {
     console.log(`${r.verdict.padEnd(12)} ${r.avenueStory} [${r.label}] @ ${r.combo}: ${why || `${r.changedPixels} px differ`}`);
   }
   const count = (v: Verdict) => results.filter((r) => r.verdict === v).length;
+  const stylesOnly = results.filter((r) => r.stylesOnly !== undefined).length;
+  const stylesOnlySame = results.filter((r) => r.stylesOnly !== undefined && r.verdict === "same").length;
   console.log(
-    `\n${results.length} comparisons against app ${appMeta.commit}: ${count("same")} same, ${count("agreed-fix")} agreed fixes, ${count("known-bug")} known bugs, ${count("app-local")} drawn by the app's screen, ${count("unexplained")} unexplained, ${count("error")} errors; ${unpaired.length} unpaired stories, ${problems.length} map problems.`,
+    `\n${results.length} comparisons against app ${appMeta.commit}: ${count("same")} same, ${count("agreed-fix")} agreed fixes, ${count("known-bug")} known bugs, ${count("app-local")} drawn by the app's screen, ${count("unexplained")} unexplained, ${count("error")} errors; ${unpaired.length} unpaired stories, ${problems.length} map problems.\n${results.length - stylesOnly} judged on pixels and styles, ${stylesOnly} on styles only (${stylesOnlySame} of those "same").`,
   );
   console.log(`Report: ${join(reportDir, "index.html")}`);
   process.exit(bad.length > 0 || problems.length > 0 ? 1 : 0);

@@ -6,6 +6,8 @@ import {
   isKnownBug,
   looks,
   mapProblems,
+  pixelJudgement,
+  SUBPIXEL_MAX,
   matchParts,
   rootVariables,
   sameOffset,
@@ -177,5 +179,56 @@ describe("helpers", () => {
   test("sameOffset tolerates float noise only", () => {
     expect(sameOffset([0, 0.5], [0, 0.505])).toBe(true);
     expect(sameOffset([0, 0], [0, 0.797])).toBe(false);
+  });
+});
+
+describe("pixelJudgement", () => {
+  const base = { sameText: true, frame: false, differences: [], changed: 0, subpixel: false };
+  const allowed = { where: "root", prop: "padding-left", app: "10px", avenue: "8px", because: "AVE-2 §1: grid" };
+  test("judges pixels when the text matches and no style differs", () => {
+    expect(pixelJudgement({ ...base, changed: 300 }).judged).toBe(true);
+  });
+  test("an allowed difference doesn't absorb changed pixels: the comparison is styles only", () => {
+    expect(pixelJudgement({ ...base, differences: [allowed], changed: 300 })).toEqual({
+      judged: false,
+      why: "an allowed difference moves the pixels",
+    });
+  });
+  test("different text and frames are styles only", () => {
+    expect(pixelJudgement({ ...base, sameText: false }).judged).toBe(false);
+    expect(pixelJudgement({ ...base, frame: true }).judged).toBe(false);
+  });
+  test("a sub-pixel offset forgives only edge pixels", () => {
+    expect(pixelJudgement({ ...base, subpixel: true, changed: SUBPIXEL_MAX }).judged).toBe(false);
+    expect(pixelJudgement({ ...base, subpixel: true, changed: SUBPIXEL_MAX + 1 }).judged).toBe(true);
+  });
+  test("a part on one side only still lets pixels decide", () => {
+    const parts = { where: "root", prop: "parts", app: "only here: span", avenue: "only here: none" };
+    expect(pixelJudgement({ ...base, differences: [parts] }).judged).toBe(true);
+  });
+});
+
+describe("style properties QA's italic plant needed (AVE-73)", () => {
+  test("italic, underline, uppercase and a moved part are differences", () => {
+    const a = part({ text: "Pay", style: { "font-style": "normal", "text-decoration-line": "none", "text-transform": "none", transform: "none" } });
+    const b = part({ text: "Pay", style: { "font-style": "italic", "text-decoration-line": "underline", "text-transform": "uppercase", transform: "matrix(1, 0, 0, 1, 0, 1)" } });
+    expect(styleDifferences([a], [b], true).map((x) => x.prop).sort()).toEqual([
+      "font-style",
+      "text-decoration-line",
+      "text-transform",
+      "transform",
+    ]);
+  });
+  test("an outline's width matters only where one is drawn", () => {
+    const a = part({ style: { "outline-style": "none", "outline-width": "1px" } });
+    const b = part({ style: { "outline-style": "none", "outline-width": "3px" } });
+    expect(styleDifferences([a], [b], true)).toEqual([]);
+    const c = part({ style: { "outline-style": "solid", "outline-width": "3px" } });
+    expect(styleDifferences([a], [c], true).map((x) => x.prop).sort()).toEqual(["outline-style", "outline-width"]);
+  });
+  test("an icon's fill, stroke and size are compared even where the texts differ", () => {
+    const icon = (fill: string, w: number) => part({ tag: "svg", width: w, style: { fill, stroke: "rgb(0, 0, 0)" } });
+    const d = styleDifferences([part(), icon("none", 14)], [part(), icon("rgb(0, 0, 0)", 16)], false);
+    expect(d.map((x) => x.prop).sort()).toEqual(["fill", "width"]);
   });
 });
