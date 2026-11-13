@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "#avenue/components/alert-dialog";
+import { TriangleAlertIcon } from "lucide-react";
 import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
 
@@ -57,10 +58,14 @@ export interface PendingConfirmDialogProps {
  * - ready: focus starts on Cancel, the safe answer.
  * - pending: focus moves to the status line and Tab can't leave it; Esc, Cancel and the buttons do nothing, so
  *   nobody walks away from a step that is half done.
- * - unknown: a new `alert` says "couldn't confirm" (announced at once; a role change on the status line isn't
- *   announced by every screen reader) and focus moves to the recovery button, which is described by that sentence so
- *   it is read again on focus (AVE-44). Close stays available in both recovery cases, so a person is never trapped
- *   (the Android review's finding, kept by the UX Engineer on AVE-44).
+ * - unknown: a new `alert` says "couldn't confirm" as a warning, not an error (AVE-46: the outcome is unknown, the
+ *   step may well have happened, and red would push people to retry), at the body's size, `text-compact`, with the
+ *   warning icon, laid out like InlineMessage. It stays an alert, not InlineMessage's polite status, so it is
+ *   announced at once; it is a new element because a role change on the status line isn't announced by every
+ *   screen reader. Focus moves to the recovery button, which is described by that sentence so it is read again on
+ *   focus (AVE-44). Close stays available in both recovery cases, so a person is never trapped (the Android
+ *   review's finding, kept by the UX Engineer on AVE-44).
+ * - The pending message is muted, also at `text-compact`.
  *
  * Pending must end: the caller moves to "unknown" after a timeout (see `phase`).
  *
@@ -120,15 +125,24 @@ export function PendingConfirmDialog({
           tabIndex={-1}
           data-slot="pending-confirm-status"
           className={cn(
-            "block rounded-sm text-meta text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "block rounded-sm text-compact text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
             !pending && "sr-only",
           )}
         >
           {pending ? pendingMessage : ""}
         </output>
         {unknown && (
-          <p id={reasonId} role="alert" data-slot="pending-confirm-reason" className="text-meta text-destructive-subtle-foreground">
-            {recovery.message}
+          <p
+            id={reasonId}
+            role="alert"
+            data-slot="pending-confirm-reason"
+            className="flex items-start gap-1 text-compact text-warning-subtle-foreground"
+          >
+            {/* One line tall, so the icon sits on the first line at either type scale. */}
+            <span className="flex h-lh shrink-0 items-center">
+              <TriangleAlertIcon aria-hidden className="size-4" />
+            </span>
+            <span>{recovery.message}</span>
           </p>
         )}
         <AlertDialogFooter>
