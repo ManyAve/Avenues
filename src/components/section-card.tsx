@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { Count } from "#avenue/components/status";
+import { TitleWithCount } from "#avenue/components/status";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -14,6 +14,7 @@ import { cn } from "#avenue/lib/utils";
 export function SectionCard({
   title,
   count,
+  countLabel,
   action,
   children,
   className,
@@ -22,6 +23,8 @@ export function SectionCard({
   title: string;
   /** Beside the title: a number, or text such as "2 open". */
   count?: ReactNode | undefined;
+  /** What a screen reader hears after the count: "open" reads the heading as "Complaints, 2 open". */
+  countLabel?: string | undefined;
   /** One control, sm size. */
   action?: ReactNode | undefined;
 }) {
@@ -30,8 +33,7 @@ export function SectionCard({
       <CardHeader>
         <CardTitle>
           <h2 className="flex items-center gap-group text-compact">
-            {title}
-            {count !== undefined && <Count value={count} />}
+            <TitleWithCount title={title} count={count} countLabel={countLabel} />
           </h2>
         </CardTitle>
         {action && <CardAction>{action}</CardAction>}
