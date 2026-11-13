@@ -12,7 +12,7 @@ export type PickerSize = Extract<ControlSize, "sm" | "md">;
  * The closed field every value picker shares (Select trigger, native Select, Combobox input group): Avenue's control
  * surface and size (#avenue/lib/control), plus the states a wrapper needs. Base UI's Field marks an invalid Select
  * trigger with data-invalid, and a Combobox's invalid input sits inside the group, so both show the invalid ring.
- * sm text is 14px on wider screens to sit beside a header's 14px line; it stays 16px on phones so iOS doesn't zoom.
+ * Its text size comes from the control surface: 14px from 768px wide, 16px on phones so iOS doesn't zoom (AVE-29).
  */
 export function fieldControl({ size = "md" }: { size?: PickerSize | null | undefined } = {}) {
   return cn(
@@ -22,7 +22,6 @@ export function fieldControl({ size = "md" }: { size?: PickerSize | null | undef
     "data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 dark:data-invalid:border-destructive/50 dark:data-invalid:ring-destructive/40",
     "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50",
     "has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
-    size === "sm" && "md:text-control",
   );
 }
 
@@ -37,7 +36,7 @@ export const listPopup = cn(
 
 /** One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). */
 export const listItem =
-  "grid cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
+  "grid cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
 
 /** Drops undefined props, for ui-sdk's types under exactOptionalPropertyTypes. */
 export function defined<T extends Record<string, unknown>>(props: T) {

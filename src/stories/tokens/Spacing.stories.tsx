@@ -111,10 +111,9 @@ function ControlHeights() {
           </span>
           <span className="flex h-control-md items-center rounded-full border px-3 text-control">Paid</span>
           <Select options={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
-          <span className="flex size-control-md items-center justify-center rounded-lg border border-input text-control">
+          <Button variant="outline" size="icon" aria-label="More">
             <span aria-hidden="true">⋯</span>
-            <span className="sr-only">More</span>
-          </span>
+          </Button>
         </div>
       </Section>
     </Page>
@@ -141,5 +140,17 @@ export const Heights: Story = {
     const select = canvas.getByRole("combobox", { name: "Dues year" });
     await expect(select.getBoundingClientRect().height).toBe(32);
     await expect(getComputedStyle(select).borderTopLeftRadius).toBe("10px");
+    // One row, one text size (AVE-29): from 768px wide, every control label in the toolbar is text-control.
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      const toolbar = select.parentElement;
+      if (!toolbar) throw new Error("The toolbar is missing");
+      // The Select's hidden form input is not a label anyone sees, so it is left out.
+      const labels = [...toolbar.children]
+        .filter((el) => !(el instanceof HTMLInputElement))
+        .map((el) => el.querySelector('[data-slot="select-value"]') ?? el);
+      const sizes = new Set(labels.map((el) => getComputedStyle(el).fontSize));
+      await expect([...sizes]).toEqual(["14px"]);
+      await expect(new Set(buttons.map((b) => getComputedStyle(b).fontSize))).toEqual(new Set(["14px"]));
+    }
   },
 };
