@@ -38,8 +38,22 @@ function TopBar({
   navLabel?: string | undefined;
 }) {
   const nav = useRef<HTMLElement>(null);
+  const shown = useRef<Element | null>(null);
   useEffect(() => {
-    nav.current?.querySelector("[aria-current=page]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    // Bring the current section into the strip when it first shows or changes. Only the strip scrolls:
+    // scrollIntoView would also scroll the page back up to the bar on every render. A section the person
+    // scrolled away from stays where they left it until the current one changes.
+    const strip = nav.current;
+    const link = strip?.querySelector("[aria-current=page]") ?? null;
+    if (!strip || !link || link === shown.current) return;
+    shown.current = link;
+    const box = strip.getBoundingClientRect();
+    const at = link.getBoundingClientRect();
+    const style = getComputedStyle(strip);
+    const start = box.left + (Number.parseFloat(style.scrollPaddingLeft) || 0);
+    const end = box.right - (Number.parseFloat(style.scrollPaddingRight) || 0);
+    if (at.left < start) strip.scrollBy({ left: at.left - start });
+    else if (at.right > end) strip.scrollBy({ left: Math.min(at.right - end, at.left - start) });
   });
   return (
     <header
