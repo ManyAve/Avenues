@@ -857,7 +857,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "form dialog frame", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=dialog-content]", frame: true },
     { label: "form dialog header", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-header]", avenueCrop: "[data-slot=dialog-header]", frame: true, allow: [
       { prop: "padding-left", app: "20px", avenue: "16px", because: DIALOG_INSET },
-      { prop: "padding-right", app: "20px", avenue: "48px", because: "AVE-61: the form dialog header keeps 48px on the right, clear of the close button; the app's keeps 20px" },
+      { prop: "padding-right", app: "20px", avenue: "48px", because: "AVE-2 §4: the close button sits 16px into the header's corner and is 24px wide, so the header's end padding is 48px and a long title stops 8px before it; the app's 20px lets a long title run under it (AVE-61)" },
     ] },
     { label: "form dialog footer", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-footer]", avenueCrop: "[data-slot=dialog-footer]", frame: true, allow: [
       { prop: "padding-left", app: "20px", avenue: "16px", because: DIALOG_INSET },

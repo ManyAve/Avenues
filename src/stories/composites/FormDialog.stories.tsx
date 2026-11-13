@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { FileTextIcon, ReceiptIcon } from "lucide-react";
 import { useState } from "react";
-import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
+import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Field, FieldLabel } from "#avenue/components/field";
 import { FormDialog } from "#avenue/components/form-dialog";
@@ -88,6 +88,11 @@ export const Open: Story = {
     const dialog = await screen.findByRole("dialog", { name: "Add document" });
     await expect(dialog).toHaveAttribute("aria-modal", "true");
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Title" })).toHaveFocus());
+    // The header's end padding keeps a title 8px clear of the close button, however long it gets (AVE-61).
+    const header = dialog.querySelector<HTMLElement>("[data-slot=dialog-header]")!;
+    const textEnd = header.getBoundingClientRect().right - Number.parseFloat(getComputedStyle(header).paddingRight);
+    const close = within(dialog).getByRole("button", { name: "Close" }).getBoundingClientRect();
+    await expect(Math.round(close.left - textEnd)).toBe(8);
   },
 };
 
