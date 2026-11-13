@@ -1,0 +1,121 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { CircleDollarSign, Megaphone } from "lucide-react";
+import { useRef, useState } from "react";
+import { expect, fn, userEvent, waitFor } from "storybook/test";
+import { Checkbox } from "#avenue/components/checkbox";
+import { SelectionBar, type SelectionAction } from "#avenue/components/selection-bar";
+
+// AVE-9 part 4: the floating selection bar. Addresses are fictional.
+
+const meta = { title: "Composites/Selection bar", parameters: { layout: "fullscreen" } } satisfies Meta;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const desktop = { viewport: { value: "desktop", isRotated: false } };
+const wide = { viewport: { value: "wide", isRotated: false } };
+
+const homes = ["12 Birch Lane", "14 Birch Lane", "17 Birch Lane", "3 Cedar Court"];
+const dueReason = "Set this year's assessment first.";
+const announce = fn();
+const requestDues = fn();
+
+function List({ initial = [] as string[], duesReady = false }) {
+  const [picked, setPicked] = useState<string[]>(initial);
+  const first = useRef<HTMLButtonElement>(null);
+  const actions: SelectionAction[] = [
+    { id: "dues", label: "Request dues", icon: <CircleDollarSign aria-hidden />, ...(duesReady ? { onSelect: requestDues } : { disabledReason: dueReason }) },
+    { id: "announce", label: "Announcement", icon: <Megaphone aria-hidden />, primary: true, onSelect: announce },
+  ];
+  return (
+    <div className="relative min-h-[420px] bg-background px-page py-inset">
+      <ul className="grid gap-2">
+        {homes.map((home, i) => (
+          <li key={home}>
+            <label className="flex items-center gap-2 text-control">
+              <Checkbox
+                ref={i === 0 ? first : undefined}
+                checked={picked.includes(home)}
+                onCheckedChange={(on) => setPicked((now) => (on ? [...now, home] : now.filter((h) => h !== home)))}
+              />
+              {home}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <SelectionBar
+        count={picked.length}
+        label={(n) => `${n} ${n === 1 ? "household" : "households"} selected`}
+        actions={actions}
+        onClear={() => {
+          setPicked([]);
+          // The bar goes away with the selection, so Clear hands focus back to the list.
+          first.current?.focus();
+        }}
+      />
+    </div>
+  );
+}
+
+/** Two households selected at 1440px: the count, Request dues, Announcement and Clear. */
+export const Wide: Story = {
+  globals: wide,
+  tags: ["agent"],
+  render: () => <List initial={["12 Birch Lane", "3 Cedar Court"]} duesReady />,
+  play: async ({ canvas }) => {
+    const bar = canvas.getByRole("toolbar", { name: "Selection actions" });
+    await expect(bar).toHaveTextContent("2 households selected");
+  },
+};
+
+/** 900px with no assessment set yet: Request dues says why it's unavailable, and the bar still fits. */
+export const DesktopMinimum: Story = {
+  globals: desktop,
+  render: () => <List initial={["14 Birch Lane"]} />,
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByText(dueReason)).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /Request dues/ })).toHaveAccessibleDescription(dueReason);
+    const bar = canvas.getByRole("toolbar", { name: "Selection actions" }).getBoundingClientRect();
+    const frame = canvasElement.getBoundingClientRect();
+    await expect(bar.left).toBeGreaterThanOrEqual(frame.left);
+    await expect(bar.right).toBeLessThanOrEqual(frame.right);
+  },
+};
+
+/**
+ * The count is announced as it changes, the first selection included; the bar is one Tab stop with arrows; a
+ * disabled action stays reachable; Clear says so and puts focus back in the list.
+ */
+export const KeyboardFlow: Story = {
+  globals: wide,
+  render: () => <List />,
+  play: async ({ canvas }) => {
+    const status = canvas.getByRole("status");
+    await expect(status).toHaveTextContent("");
+    await userEvent.tab();
+    await userEvent.keyboard(" ");
+    await waitFor(() => expect(status).toHaveTextContent("1 household selected"));
+    await userEvent.tab();
+    await userEvent.keyboard(" ");
+    await waitFor(() => expect(status).toHaveTextContent("2 households selected"));
+    // Into the bar: one Tab stop, landing on the first action that works.
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    const announcement = canvas.getByRole("button", { name: /Announcement/ });
+    await expect(announcement).toHaveFocus();
+    // The disabled action stays reachable, so its reason is read with it.
+    await userEvent.keyboard("{ArrowLeft}");
+    const dues = canvas.getByRole("button", { name: /Request dues/ });
+    await expect(dues).toHaveFocus();
+    await expect(dues).toHaveAttribute("aria-disabled", "true");
+    await expect(dues).toHaveAccessibleDescription(dueReason);
+    await userEvent.keyboard("{ArrowRight}{Enter}");
+    await expect(announce).toHaveBeenCalled();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(canvas.getByRole("button", { name: "Clear selection" })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(status).toHaveTextContent("Selection cleared"));
+    await expect(canvas.queryByRole("toolbar", { name: "Selection actions" })).toBeNull();
+    await expect(canvas.getAllByRole("checkbox")[0]).toHaveFocus();
+  },
+};
