@@ -75,7 +75,12 @@ const preview: Preview = {
     // `globals: { viewport: { value: "phone" } }`; the story tests then run that story at 390 x 844,
     // and the `touch` project runs every story there to measure touch targets (AVE-22).
     viewport: {
-      options: { phone: { name: "Phone (390px)", styles: { width: "390px", height: "844px" }, type: "mobile" } },
+      options: {
+        phone: { name: "Phone (390px)", styles: { width: "390px", height: "844px" }, type: "mobile" },
+        // The desktop app's smallest window, and a wide one (AVE-9: composites show both).
+        desktop: { name: "Desktop minimum (900px)", styles: { width: "900px", height: "700px" }, type: "desktop" },
+        wide: { name: "Wide (1440px)", styles: { width: "1440px", height: "900px" }, type: "desktop" },
+      },
     },
     // axe runs on every story in `bun run test:stories`, and any violation fails it: WCAG 2.2 AA plus
     // axe's best practices. The beforeEach below fails a story that weakens this; see a11y-guard.ts for

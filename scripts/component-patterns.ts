@@ -115,6 +115,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
 
   // Plain markup.
+  "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },
+  "page-header": { none: "Layout: the page's h1, a description and its actions." },
+  "section-card": { none: "Layout: a Card with a level-2 heading and one action." },
+  "detail-list": { none: "A description list and list rows, static text." },
   card: { none: "Layout only." },
   "choice-card": {
     none: "Composition over Field and ui-sdk's Radio or Checkbox; it changes no keys or ARIA beyond naming the control by its title, which the Choice card stories assert.",
