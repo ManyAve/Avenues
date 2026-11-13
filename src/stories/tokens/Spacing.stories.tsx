@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
+import { Button } from "#avenue/components/button";
+import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
-import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
+import { Code, Page, Section, useComputed } from "./token-docs";
 
-// AVE-2 sections 1 and 2: one 4px grid, named aliases, and four control heights.
+// AVE-2 sections 1 and 2: one 4px grid, named aliases, and four control heights. The heights are shown on Avenue's
+// Button, the one component that ships all four (Select ships sm and md only); the toolbar uses the real Select.
+
+const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const scale = [
   ["0.5", "w-0.5", "Optical nudges inside a control only"],
@@ -72,12 +78,14 @@ const heights = [
 ] as const;
 
 function Control({ size, use }: { size: (typeof heights)[number][0]; use: string }) {
-  const [ref, height] = useComputed<HTMLSpanElement>((s) => `${s.height}, ${s.borderTopLeftRadius} corner`);
+  const [ref, height] = useComputed<HTMLButtonElement>((s) => `${s.height}, ${s.borderTopLeftRadius} corner`);
   return (
     <div className="grid grid-cols-[3rem_9rem_8rem_1fr] items-center gap-4 border-b py-row-y">
       <Code className="text-foreground">{size}</Code>
       <Code>{height}</Code>
-      <SelectMock ref={ref} size={size} />
+      <Button ref={ref} variant="outline" size={size === "md" ? "default" : size} className="justify-self-start">
+        Save
+      </Button>
       <span className="text-meta text-muted-foreground">{use}</span>
     </div>
   );
@@ -102,7 +110,7 @@ function ControlHeights() {
             Owing
           </span>
           <span className="flex h-control-md items-center rounded-full border px-3 text-control">Paid</span>
-          <SelectMock size="md" />
+          <Select options={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
           <span className="flex size-control-md items-center justify-center rounded-lg border border-input text-control">
             <span aria-hidden="true">⋯</span>
             <span className="sr-only">More</span>
@@ -122,4 +130,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Scale: Story = { render: () => <SpacingScale /> };
-export const Heights: Story = { name: "Control heights", render: () => <ControlHeights /> };
+export const Heights: Story = {
+  name: "Control heights",
+  render: () => <ControlHeights />,
+  // Measured on the real components: Button's four sizes, and the toolbar's md Select at the toolbar's height.
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole("button", { name: "Save" });
+    await expect(buttons.map((b) => b.getBoundingClientRect().height)).toEqual([24, 28, 32, 40]);
+    await expect(buttons.map((b) => getComputedStyle(b).borderTopLeftRadius)).toEqual(["8px", "8px", "10px", "10px"]);
+    const select = canvas.getByRole("combobox", { name: "Dues year" });
+    await expect(select.getBoundingClientRect().height).toBe(32);
+    await expect(getComputedStyle(select).borderTopLeftRadius).toBe("10px");
+  },
+};
