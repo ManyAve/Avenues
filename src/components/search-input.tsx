@@ -15,7 +15,8 @@ const editable = (target: EventTarget | null) =>
  * nothing: pressing it anywhere outside a text field focuses the search. The hint is hidden where the main
  * pointer is touch, since there's usually no keyboard, and the key is announced through aria-keyshortcuts.
  *
- * Changes from the app, all AVE-2: md height (32px, was 30 or 29) to share the toolbar row; `filled` takes the md
+ * Changes from the app: AVE-29 text (16px below 768px so iOS does not zoom, 14px from 768px up, from Input).
+ * AVE-2: md height (32px, was 30 or 29) to share the toolbar row; `filled` takes the md
  * control corner (10px, was 5px literal); the hint takes the xs corner (4px, was 3px).
  */
 function SearchInput({
@@ -58,7 +59,7 @@ function SearchInput({
         }}
         aria-keyshortcuts={kbd}
         className={cn(
-          "ps-7 text-control md:text-control",
+          "ps-7",
           kbd && "pe-8 pointer-coarse:pe-2",
           filled && "border-border bg-[color-mix(in_oklab,var(--foreground)_8%,var(--background))] dark:bg-[color-mix(in_oklab,var(--foreground)_8%,var(--background))]",
         )}
