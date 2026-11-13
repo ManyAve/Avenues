@@ -134,6 +134,13 @@
   --container-grid: 80rem;
 }
 
+/* Wide (AVE-85): 1100px, where a page's actions fit as buttons. Management's TopBar and Toolbar both switch here.
+   `wide:` in classes; Toolbar's useWide reads the same variable, so the two can't drift. `static` keeps it on :root
+   for that read even when no class uses it. */
+@theme static {
+  --breakpoint-wide: 68.75rem;
+}
+
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
 :root {
   --avenue-page-inset: 1rem;

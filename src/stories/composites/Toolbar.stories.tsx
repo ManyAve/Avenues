@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Download, FileUp, Layers, Plus, SlidersHorizontal } from "lucide-react";
+import { Download, FileUp, Layers, Mail, Plus, Send, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -167,6 +167,83 @@ export const BelowTheFold: Story = {
     const bar = within(canvas.getByRole("toolbar", { name: "Households" }));
     await expect(bar.getByRole("button", { name: "More actions" })).toBeVisible();
     await expect(bar.queryByRole("button", { name: /Export/ })).toBeNull();
+  },
+};
+
+// A send carries `confirm`, so an agent asks a person before it runs (AGENTS.md rule 9, AVE-85). The attribute is on
+// the button at 1100px and up, and on the More item below it.
+const sendNotices = fn();
+const mailLetters = fn();
+const sends: ToolbarAction[] = [
+  { id: "mail", label: "Mail letters", icon: <Mail aria-hidden />, confirm: "Mails 42 dues letters", onSelect: mailLetters },
+];
+const sendPrimary: ToolbarAction = {
+  id: "send",
+  label: "Send notices",
+  icon: <Send aria-hidden />,
+  confirm: "Sends 42 dues notices",
+  onSelect: sendNotices,
+};
+
+function NoticesToolbar() {
+  return (
+    <div className="min-h-[360px] bg-background">
+      <Toolbar aria-label="Dues notices">
+        <ToolbarControls>
+          <ToolbarSearch placeholder="Search notices…" aria-label="Search notices" />
+          <ToolbarActions actions={sends} primary={sendPrimary} />
+        </ToolbarControls>
+      </Toolbar>
+    </div>
+  );
+}
+
+/** 1440px: Send notices and Mail letters are buttons, and each asks an agent to confirm before it runs. */
+export const SendsAskFirst: Story = {
+  globals: wide,
+  tags: ["agent"],
+  render: () => <NoticesToolbar />,
+  play: async ({ canvas }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Dues notices" }));
+    await expect(bar.getByRole("button", { name: /Send notices/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Sends 42 dues notices",
+    );
+    await expect(bar.getByRole("button", { name: /Mail letters/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Mails 42 dues letters",
+    );
+  },
+};
+
+/** 900px: Mail letters folds into More and keeps its confirmation there. */
+export const SendsAskFirstFolded: Story = {
+  globals: desktop,
+  tags: ["agent"],
+  render: () => <NoticesToolbar />,
+  play: async ({ canvas, canvasElement }) => {
+    const bar = within(canvas.getByRole("toolbar", { name: "Dues notices" }));
+    await expect(bar.getByRole("button", { name: /Send notices/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Sends 42 dues notices",
+    );
+    await expect(bar.queryByRole("button", { name: /Mail letters/ })).toBeNull();
+    bar.getByRole("button", { name: "More actions" }).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const mail = await within(canvasElement.ownerDocument.body).findByRole("menuitem", { name: /Mail letters/ });
+    await expect(mail).toHaveAttribute("data-agent-confirm", "Mails 42 dues letters");
+    await userEvent.keyboard("{Escape}");
+    await expect(mailLetters).not.toHaveBeenCalled();
+  },
+};
+
+/** The wide breakpoint is one value: the toolbar's fold reads the `--breakpoint-wide` token the `wide:` variant uses. */
+export const WideIsAToken: Story = {
+  globals: wide,
+  render: () => <NoticesToolbar />,
+  play: async ({ canvasElement }) => {
+    const width = getComputedStyle(canvasElement.ownerDocument.documentElement).getPropertyValue("--breakpoint-wide");
+    await expect(width.trim()).toBe("68.75rem");
   },
 };
 
