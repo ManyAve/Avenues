@@ -115,6 +115,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
 
   // Plain markup.
+  register: {
+    none: "ui-sdk's kit has no grid pattern to check; the Register stories press every key the grid handles (AVE-9).",
+  },
   "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },
   "page-header": { none: "Layout: the page's h1, a description and its actions." },
   "section-card": { none: "Layout: a Card with a level-2 heading and one action." },
