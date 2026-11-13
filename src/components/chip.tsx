@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import type { ComponentProps, FocusEvent, ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentProps, type FocusEvent, type ReactNode } from "react";
 import { Count } from "#avenue/components/status";
 import { Toggle } from "#avenue/components/toggle";
 import { cn } from "#avenue/lib/utils";
@@ -59,6 +59,22 @@ function ChipRow({
   onFocus,
   ...props
 }: ComponentProps<"div"> & { overflow?: "wrap" | "scroll" | undefined }) {
+  // The end fade hides once the row is scrolled to its end, where nothing is left to hint at (AVE-86).
+  const row = useRef<HTMLDivElement>(null);
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const el = row.current;
+    if (overflow !== "scroll" || !el) return;
+    const measure = () => setAtEnd(Math.ceil(el.scrollLeft + el.clientWidth) >= el.scrollWidth - 1);
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      observer.disconnect();
+    };
+  }, [overflow]);
   const reveal = (event: FocusEvent<HTMLDivElement>) => {
     onFocus?.(event);
     if (overflow === "scroll" && event.target !== event.currentTarget) {
@@ -68,7 +84,9 @@ function ChipRow({
   return (
     <div
       data-slot="chip-row"
+      ref={row}
       data-overflow={overflow}
+      data-scroll-end={(overflow === "scroll" && atEnd) || undefined}
       onFocus={reveal}
       className={cn(
         "flex gap-controls",
@@ -76,7 +94,7 @@ function ChipRow({
           ? "flex-wrap"
           : // A scroller clips its children's overflow, so on a phone it pads 8px above and below (and takes it
             // back with a negative margin) to keep each chip's 44px tap area inside it (AVE-22).
-            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-[700px]:scroll-pe-8 max-[700px]:pe-8 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]",
+            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-[700px]:scroll-pe-8 max-[700px]:pe-8 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] data-scroll-end:[mask-image:none]",
         className,
       )}
       {...props}
