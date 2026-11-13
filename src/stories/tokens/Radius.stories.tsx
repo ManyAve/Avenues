@@ -1,9 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
+import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
-import { Code, Page, Section, SelectMock, useComputed } from "./token-docs";
+import { Code, Page, Section, useComputed } from "./token-docs";
 
 // AVE-2 sections 3 to 6: five corner steps from --radius (10px), pills only for labels and tokens,
 // and rounded things inside rounded things.
+
+const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const steps = [
   ["xs", "rounded-xs", "Checkboxes, small marks, keyboard hints, progress tracks"],
@@ -69,12 +73,12 @@ function NestedCorners() {
         title="A control in a card's corner"
         note="The Dues card after AVE-2, in the app's header layout: DUES on the left; Account summary and an sm year select (28px, md corner) on the right, the select 8px from its label, 16px from the card's top and right edges and vertically centred on the header line. Never a pill inside a card's corner zone."
       >
-        <div className="w-full max-w-md rounded-xl border bg-card shadow-card">
-          <div className="flex items-center justify-between gap-group border-b px-inset py-row-y">
+        <div data-dues-card className="w-full max-w-md rounded-xl border bg-card shadow-card">
+          <div className="flex items-center justify-between gap-group border-b px-inset pt-inset pb-row-y">
             <h3 className="text-meta font-semibold tracking-wide text-muted-foreground uppercase">Dues</h3>
             <div className="flex items-center gap-group text-meta text-muted-foreground">
               <span>Account summary ·</span>
-              <SelectMock size="sm" />
+              <Select options={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
             </div>
           </div>
           <div className="flex flex-col gap-2 p-inset text-compact">
@@ -102,4 +106,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Scale: Story = { render: () => <CornerScale /> };
-export const Nested: Story = { name: "Rounded inside rounded", render: () => <NestedCorners /> };
+export const Nested: Story = {
+  name: "Rounded inside rounded",
+  render: () => <NestedCorners />,
+  // The card's select is the real component: sm (28px, 8px corner), 16px inside the card's top and right edges.
+  play: async ({ canvas, canvasElement }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Dues year" });
+    const card = canvasElement.querySelector<HTMLElement>("[data-dues-card]");
+    if (!card) throw new Error("The Dues card is missing");
+    const t = trigger.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    await expect(t.height).toBe(28);
+    await expect(getComputedStyle(trigger).borderTopLeftRadius).toBe("8px");
+    await expect(t.top - c.top - card.clientTop).toBe(16);
+    await expect(c.right - card.clientLeft - t.right).toBe(16);
+  },
+};

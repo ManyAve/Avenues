@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Select, type SelectOption } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
-import { Code, Page, Section, SelectMock } from "../tokens/token-docs";
+import { Code, Page, Section } from "../tokens/token-docs";
 import { DoDont, households, Rule, Rules, SeeTokens } from "./foundation-docs";
+
+const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 // AVE-2 sections 1 and 2 as rules people can follow. The scale and heights themselves are on Tokens/Spacing.
 
@@ -44,7 +47,7 @@ function ToolbarAfter() {
     <div className="flex flex-wrap items-center gap-group">
       <Chip label="Owing" active height="h-control-md" />
       <Chip label="Paid" height="h-control-md" />
-      <SelectMock size="md" />
+      <Select options={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
       <IconButton className="size-control-md rounded-lg" />
     </div>
   );
