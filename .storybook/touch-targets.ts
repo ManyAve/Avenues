@@ -110,7 +110,10 @@ function coveredByOtherPopup(hit: Element | null, control: HTMLElement): boolean
   if (!hit) return false;
   const popup = hit.closest(POPUP);
   if (popup) return !popup.contains(control);
-  return !!hit.closest(MODAL_LAYER) && !control.closest(MODAL);
+  // A sheet's own viewport holds the sheet (a Select or Combobox list is a listbox, not a dialog): for a control in
+  // that sheet a point on the viewport is past the sheet's edge, so it is a miss like a dialog's backdrop.
+  const layer = hit.closest(MODAL_LAYER);
+  return !!layer && !layer.contains(control) && !control.closest(MODAL);
 }
 
 /**
