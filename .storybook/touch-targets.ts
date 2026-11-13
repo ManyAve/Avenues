@@ -91,14 +91,24 @@ function landsOn(hit: Element | null, control: HTMLElement): boolean {
 }
 
 /**
- * An open popup (menu, popover, tooltip, dialog, or a modal's backdrop over the page behind it) drawn over part of a
- * control is meant to cover it, so a point on a popup the control isn't inside is not a miss. A point on the popup the control sits in still counts: that is a
- * menu item's own row, and its neighbours.
+ * An open popup (menu, popover, tooltip, dialog) drawn over part of a control is meant to cover it, so a point on a
+ * popup the control isn't inside is not a miss. A point on the popup the control sits in still counts: that is a menu
+ * item's own row, and its neighbours.
  */
-const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [role=tooltip], [data-slot$=-arrow], [data-slot$=-backdrop]";
+const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [role=tooltip], [data-slot$=-arrow]";
+/**
+ * The layer a modal lays over the page: its backdrop, and the drawer's full-screen viewport around the sheet. It covers
+ * the controls behind the modal, so a point on it is not a miss for them, even before ui-sdk has made the page behind
+ * inert (the Sheet's Bottom on desktop story flaked on that timing, AVE-67). For a control inside a dialog it is a
+ * miss: the control's 44px area runs past the dialog's edge, where a tap closes the dialog (AVE-65).
+ */
+const MODAL_LAYER = "[data-slot$=-backdrop], [data-slot=drawer-viewport]";
+const MODAL = "[role=dialog], [role=alertdialog]";
 function coveredByOtherPopup(hit: Element | null, control: HTMLElement): boolean {
-  const popup = hit?.closest(POPUP);
-  return !!popup && !popup.contains(control);
+  if (!hit) return false;
+  const popup = hit.closest(POPUP);
+  if (popup) return !popup.contains(control);
+  return !!hit.closest(MODAL_LAYER) && !control.closest(MODAL);
 }
 
 /**
@@ -129,7 +139,14 @@ export function touchTargetProblems(root: ParentNode = document.body): TouchProb
   for (const control of controls) {
     // Nested matches (an <a role=button> inside a <button>) are measured once, as the outer control.
     if (controls.some((other) => other !== control && other.contains(control))) continue;
-    control.scrollIntoView({ block: "center", inline: "center" });
+    // Bring a control that is scrolled out of sight (off the screen, or under a scroll container's edge or a sticky
+    // footer) into view, but leave one a finger can already reach where it is: scrolling that to the centre also
+    // scrolls the container it sits in (a dialog's body), which can move it away from an edge its 44px area runs past
+    // and hide the miss (AVE-65).
+    const placed = control.getBoundingClientRect();
+    if (!landsOn(document.elementFromPoint(placed.left + placed.width / 2, placed.top + placed.height / 2), control)) {
+      control.scrollIntoView({ block: "center", inline: "center" });
+    }
     const rect = control.getBoundingClientRect();
     const width = Math.max(rect.width, TOUCH_TARGET);
     const height = Math.max(rect.height, TOUCH_TARGET);
