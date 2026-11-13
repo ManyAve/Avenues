@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent } from "storybook/test";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "#avenue/components/field";
 import { Switch } from "#avenue/components/switch";
+import { Card, CardContent } from "#avenue/components/card";
+import { BOUNDARY_MIN_CONTRAST, BoundaryReadout, measureBoundaryContrast } from "./contrast-kit";
 import { Row, Rows } from "./story-kit";
 
 const meta = {
@@ -49,5 +51,39 @@ export const SettingsRow: Story = {
     await expect(toggle).toHaveFocus();
     await userEvent.keyboard(" ");
     await expect(toggle).toBeChecked();
+  },
+};
+
+const switchSamples = [
+  { where: "on the page", name: "Off on the page" },
+  { where: "on a card", name: "Off on a card" },
+] as const;
+
+/**
+ * A switch that is off, on the page and on a card. The off track is too faint to find on its own, so it carries a `muted-foreground` border. The line under it is measured from the rendered controls in the current theme; the play function fails if
+ * either outline drops under 3:1 against what is behind it (WCAG 1.4.11, AVE-38).
+ */
+export const UncheckedOutline: Story = {
+  render: () => (
+    <BoundaryReadout samples={switchSamples}>
+      <Rows>
+        <Row label="page">
+          <Switch aria-label="Off on the page" />
+        </Row>
+        <Card size="sm" className="max-w-xs">
+          <CardContent>
+            <Row label="card">
+              <Switch aria-label="Off on a card" />
+            </Row>
+          </CardContent>
+        </Card>
+      </Rows>
+    </BoundaryReadout>
+  ),
+  play: async ({ canvas }) => {
+    for (const { name } of switchSamples) {
+      const control = canvas.getByRole("switch", { name });
+      await expect(measureBoundaryContrast(control)).toBeGreaterThanOrEqual(BOUNDARY_MIN_CONTRAST);
+    }
   },
 };

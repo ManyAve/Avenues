@@ -3,6 +3,8 @@ import { useState } from "react";
 import { expect, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
+import { Card, CardContent } from "#avenue/components/card";
+import { BOUNDARY_MIN_CONTRAST, BoundaryReadout, measureBoundaryContrast } from "./contrast-kit";
 import { Row, Rows } from "./story-kit";
 
 const meta = {
@@ -95,5 +97,39 @@ export const RequiredInField: Story = {
     const box = canvas.getByRole("checkbox", { name: "I confirm the payment was received" });
     await expect(box).toHaveAttribute("aria-invalid", "true");
     await expect(box).toHaveAccessibleDescription("Confirm before recording the payment.");
+  },
+};
+
+const checkboxSamples = [
+  { where: "on the page", name: "Unchecked on the page" },
+  { where: "on a card", name: "Unchecked on a card" },
+] as const;
+
+/**
+ * An unchecked box on the page and on a card. Its outline is the only thing that shows it is there, so it uses `muted-foreground`, not the field border. The line under it is measured from the rendered controls in the current theme; the play function fails if
+ * either outline drops under 3:1 against what is behind it (WCAG 1.4.11, AVE-38).
+ */
+export const UncheckedOutline: Story = {
+  render: () => (
+    <BoundaryReadout samples={checkboxSamples}>
+      <Rows>
+        <Row label="page">
+          <Checkbox aria-label="Unchecked on the page" />
+        </Row>
+        <Card size="sm" className="max-w-xs">
+          <CardContent>
+            <Row label="card">
+              <Checkbox aria-label="Unchecked on a card" />
+            </Row>
+          </CardContent>
+        </Card>
+      </Rows>
+    </BoundaryReadout>
+  ),
+  play: async ({ canvas }) => {
+    for (const { name } of checkboxSamples) {
+      const control = canvas.getByRole("checkbox", { name });
+      await expect(measureBoundaryContrast(control)).toBeGreaterThanOrEqual(BOUNDARY_MIN_CONTRAST);
+    }
   },
 };
