@@ -390,6 +390,7 @@ export const PAIRS: Record<string, PairEntry> = {
           allow: [
             { prop: "padding-left", where: "root", app: "0px", avenue: "8px", because: "AVE-2 §1: the icon's off-grid 10px start margin becomes 8px inside the control, carried by the field's padding instead of the icon (AVE-59)" },
             { prop: "parts", because: "app: app/ui/components/time-zone-picker.tsx: the app's Base UI picker is a bare input and button beside its icon; Avenue's ui-sdk combobox names its input and trigger parts and wraps the icon. Same look (AVE-59)" },
+            ...(["width", "height"] as const).map((prop) => ({ prop, app: "14px", avenue: "16px", because: "AVE-84: picker icons follow the control size, 16px in an md field like Select's chevron and Button's icons; the app's time-zone picker draws 14px" })),
           ],
         },
       ],
@@ -405,6 +406,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
   "components-combobox--selected-text": { none: BEHAVIOUR("Combobox / Households") },
+  "components-select--icon-sizes": { none: "AVE-84: Select and Combobox side by side at md and sm, to show their icons follow the control size; the app has no story with both. Each is compared through Select / Default and Combobox / Time zone." },
   "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--pattern": { none: BEHAVIOUR("Combobox / Time zone") },

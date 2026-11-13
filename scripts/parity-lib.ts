@@ -25,6 +25,9 @@ export interface Allowance {
    *   selected chip, for WCAG 1.4.1). Each parity card closed by keeping Avenue's look counts too, for the
    *   UI Designer to confirm after the merge: `AVE-58: …` (the disclosure trigger is a sized, focusable button),
    *   `AVE-70: …` (the page title keeps the heading token's line) and `AVE-72: …` (the inline message keeps its icon).
+   *   Three UI Designer decisions from the after-merge reviews count too: `AVE-78: …` (the sorted column shows its
+   *   direction), `AVE-84: …` (picker icons follow the control size) and `AVE-89: …` (an inline message is a field
+   *   error's size).
    * - `AVE-<id>: …` a filed bug: the run passes while it is open, and the report lists it as known.
    * - `app: <file>: …` the app's story, not its component, draws this: the screen passes its own classes to
    *   the primitive (a card's shadow, a dialog's sections), so Avenue's component doesn't need to match it,
@@ -274,7 +277,7 @@ function covers(allowance: Allowance, d: Difference): boolean {
 }
 
 export function isAgreedFix(because: string): boolean {
-  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|58|70|72):/.test(because);
+  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|58|70|72|78|84|89):/.test(because);
 }
 
 export function isAppLocal(because: string): boolean {
