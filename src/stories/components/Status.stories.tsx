@@ -46,8 +46,10 @@ export const Tones: Story = {
     for (const { label } of tones) {
       for (const pill of canvas.getAllByText(label)) {
         await expect(pill).toBeVisible();
-        // Outline and filled are both 20px labels (AVE-2).
-        await expect(pill.getBoundingClientRect().height).toBe(20);
+        // Outline and filled share the app's height: the meta line plus 1px padding and 1px border each side,
+        // 24px on the web scale and 22px on desktop (AVE-56).
+        const line = Number.parseFloat(getComputedStyle(pill).lineHeight);
+        await expect(pill.getBoundingClientRect().height).toBe(line + 4);
       }
     }
   },
