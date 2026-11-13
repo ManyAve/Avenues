@@ -56,9 +56,9 @@ const preview: Preview = {
   // Then a story that asked for a viewport (the 390px phone) must have run at that width (.storybook/viewport-check.ts),
   // and the target-size measure (AVE-22, .storybook/touch-targets.ts): mouse minimums in the four fine-pointer
   // projects, the 44px hit test in the `touch` project (globals.pointer, vitest.config.ts).
-  afterEach: async ({ tags, parameters, globals, title }) => {
+  afterEach: async ({ tags, parameters, globals, storyGlobals, title }) => {
     await runAccessibilityChecks(tags, parameters["patternRoot"]);
-    runViewportCheck(globals, parameters);
+    runViewportCheck(globals, parameters, storyGlobals);
     runTouchTargetCheck(globals["pointer"], title);
   },
   decorators: [
