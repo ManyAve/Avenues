@@ -106,7 +106,10 @@ export const KeyboardFlow: Story = {
     loseReply();
     const alert = await screen.findByRole("alert");
     await expect(alert).toHaveTextContent("We couldn't confirm that the announcement went out.");
-    await waitFor(() => expect(screen.getByRole("button", { name: "Try again" })).toHaveFocus());
+    const tryAgain = screen.getByRole("button", { name: "Try again" });
+    await waitFor(() => expect(tryAgain).toHaveFocus());
+    // Read again whenever Try again gets focus, not only when the alert first appears (AVE-44).
+    await expect(tryAgain).toHaveAccessibleDescription(retry.message);
     await expect(screen.getByRole("button", { name: "Close" })).toBeEnabled();
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
@@ -132,18 +135,28 @@ export const UnknownCheckFirst: Story = {
   ),
   play: async () => {
     await screen.findByRole("alertdialog", { name: "Mark as mailed" });
-    await waitFor(() => expect(screen.getByRole("button", { name: "Open letter history" })).toHaveFocus());
+    const check = screen.getByRole("button", { name: "Open letter history" });
+    await waitFor(() => expect(check).toHaveFocus());
     await expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
     await expect(screen.getByRole("alert")).toHaveTextContent("Check the letter's history before trying again");
+    // The reason is read again whenever the recovery button gets focus (AVE-44).
+    await expect(check).toHaveAccessibleDescription(
+      "We couldn't confirm that the mailing was recorded. Check the letter's history before trying again, so it isn't recorded twice.",
+    );
   },
 };
 
-/** While pending, Cancel is disabled and the confirm button shows its pending label. */
+/**
+ * While pending, Cancel is disabled and the confirm button shows its pending label. Nobody can leave a pending
+ * dialog, so the caller must end it: give the call a timeout and move to "unknown" when it runs out or the reply is
+ * lost (the Keyboard flow story shows that step). A dialog left pending traps the person (AVE-44).
+ */
 export const Pending: Story = {
   render: () => <MarkAsMailed phase="pending" />,
   play: async () => {
     await screen.findByRole("alertdialog", { name: "Mark as mailed" });
     await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
     await expect(screen.getByRole("button", { name: "Confirming…" })).toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "Confirming…" })).not.toHaveAccessibleDescription();
   },
 };
