@@ -59,6 +59,9 @@ export default defineConfig({
         }),
       ],
       test: {
+        // A toast with an action stays 10s (AVE-41), and its stories wait it out in real time: storybook/test has
+        // no fake timers that reach ui-sdk's toaster. Vitest's browser default of 15s is too short for that.
+        testTimeout: 30_000,
         name: pointer === "coarse" ? "touch" : `${theme}-${typeScale}`,
         browser: {
           enabled: true,
