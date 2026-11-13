@@ -357,6 +357,56 @@ export const AgentExpandsAndSorts: Story = {
   },
 };
 
+/**
+ * The sorted column shows its direction (AVE-78): an arrow in place of the chevron, and the header's text and arrow in
+ * foreground. Unsorted columns keep the faint chevron in muted-foreground.
+ */
+async function expectSortShown(column: string, direction: "ascending" | "descending" | undefined) {
+  const header = screen.getByRole("columnheader", { name: new RegExp(column) });
+  const icon = header.querySelector("button svg:last-of-type")!;
+  if (direction) {
+    await expect(icon).toHaveAttribute("data-sorted", direction);
+    await expect(icon.getAttribute("class")).toMatch(direction === "ascending" ? /lucide-arrow-up/ : /lucide-arrow-down/);
+    await expect(getComputedStyle(icon).opacity).toBe("1");
+  } else {
+    await expect(icon).not.toHaveAttribute("data-sorted");
+    await expect(icon.getAttribute("class")).toMatch(/lucide-chevron-down/);
+  }
+  const text = getComputedStyle(header).color;
+  const probe = document.createElement("span");
+  probe.className = direction ? "text-foreground" : "text-muted-foreground";
+  header.append(probe);
+  const expected = getComputedStyle(probe).color;
+  probe.remove();
+  await expect(text).toBe(expected);
+}
+
+/**
+ * The sort popover at rest, open on Balance with High–low chosen: Balance shows a down arrow in foreground, beside
+ * Property and Neighbor's faint chevrons (AVE-78).
+ */
+export const SortPopoverOpen: Story = {
+  globals: desktop,
+  render: () => frame(<Households initialSort={{ field: "dues", direction: "desc" }} />),
+  play: async ({ canvas }) => {
+    await expectSortShown("Balance", "descending");
+    await expectSortShown("Property", undefined);
+    await expectSortShown("Neighbor", undefined);
+    await userEvent.click(canvas.getByRole("button", { name: "Sort Balance" }));
+    await expect(await screen.findByRole("button", { name: "Balance, High–low, descending" })).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
+/** Sorted from low to high, the arrow points up. */
+export const SortedAscending: Story = {
+  globals: wide,
+  render: () => frame(<Households initialSort={{ field: "dues", direction: "asc" }} />),
+  play: async () => {
+    await expectSortShown("Balance", "ascending");
+    await expectSortShown("Property", undefined);
+  },
+};
+
 /** The column popover sorts; aria-sort follows. Escape returns focus to the header, and the arrows go on. */
 export const SortPopover: Story = {
   globals: desktop,
@@ -378,6 +428,9 @@ export const SortPopover: Story = {
     await waitFor(() => expect(sortBalance).toHaveFocus());
     await expect(canvas.getByRole("columnheader", { name: /Balance/ })).toHaveAttribute("aria-sort", "descending");
     await expect(canvas.getByRole("columnheader", { name: /Property/ })).toHaveAttribute("aria-sort", "none");
+    // The sorted column shows its direction; the one it took over from goes back to the chevron (AVE-78).
+    await expectSortShown("Balance", "descending");
+    await expectSortShown("Property", undefined);
     const cedar = canvas.getAllByRole("link").filter((a) => a.textContent?.includes("Cedar"));
     await expect(cedar[0]).toHaveTextContent("5 Cedar Court");
     await userEvent.keyboard("{ArrowLeft}");

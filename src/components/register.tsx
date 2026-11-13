@@ -2,7 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { createParts } from "@ui-sdk/react/primitive";
-import { ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
@@ -90,6 +90,10 @@ function RegisterRow({
  * A column header, sticky at the top. With `sortMenu`, the header is a button that opens it in a popover, and `sort`
  * says which way the column is sorted (aria-sort). `control` passes focus to the one control inside, like the
  * select-all checkbox.
+ *
+ * The sorted column shows its direction (AVE-78, a named departure from Management, which shows the same faint chevron
+ * on every column): its chevron becomes an arrow, up for ascending and down for descending, and the header's text and
+ * arrow step up from muted-foreground to foreground. The arrow is aria-hidden, since aria-sort already says it.
  */
 function RegisterColumnHeader({
   icon: Icon,
@@ -97,6 +101,7 @@ function RegisterColumnHeader({
   sortLabel,
   numeric,
   control,
+  sort,
   className,
   children,
   ...props
@@ -109,11 +114,15 @@ function RegisterColumnHeader({
   /** A money column: the header sits at the end, over right-aligned figures. */
   numeric?: boolean | undefined;
 }) {
+  const sorted = sortMenu !== undefined && (sort === "ascending" || sort === "descending");
+  const SortArrow = sort === "ascending" ? ArrowUpIcon : ArrowDownIcon;
   const content = (
     <span className={cn("flex items-center gap-2", numeric && "justify-end")}>
       {Icon && <Icon className="size-3 shrink-0 opacity-80" aria-hidden />}
       <span className="truncate">{children}</span>
-      {sortMenu !== undefined && (
+      {sortMenu === undefined ? null : sorted ? (
+        <SortArrow data-sorted={sort} className={cn("size-2.75 shrink-0", !numeric && "ms-auto")} aria-hidden />
+      ) : (
         <ChevronDownIcon className={cn("size-2.75 shrink-0 opacity-60", !numeric && "ms-auto")} aria-hidden />
       )}
     </span>
@@ -126,9 +135,11 @@ function RegisterColumnHeader({
       scope="col"
       className={cn(
         "sticky top-0 z-10 h-9 pointer-coarse:h-11 bg-background px-3 text-start align-middle text-control font-[450] whitespace-nowrap text-muted-foreground",
+        sorted && "text-foreground",
         ring,
         className,
       )}
+      sort={sort}
       {...props}
       id={`0:${props.col}`}
     >
