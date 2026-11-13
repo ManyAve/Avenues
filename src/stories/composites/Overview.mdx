@@ -5,3 +5,9 @@ import { Meta } from "@storybook/addon-docs/blocks";
 # Composites
 
 Components put together the way the ManyAve app uses them.
+
+- **Form dialog**: every form in a dialog. Icon and title, fields, an error slot, Cancel and submit, and the discard
+  guard: with unsaved input, Esc, an outside press, Cancel or the close button ask "Discard changes?" first.
+- **Pending confirm dialog**: a confirm for a step that sends something or moves money. While it runs, focus holds on
+  the status line; if the reply is lost, it says "couldn't confirm" and offers Try again or the place to check
+  (UX.md's two wordings).

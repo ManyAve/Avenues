@@ -53,6 +53,15 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     why: "Changes keys: leaving the field with half-typed text restores the last choice.",
   },
 
+  "form-dialog": {
+    pattern: "dialog",
+    why: "Changes dismissal: with unsaved input, Esc, an outside press, Cancel and the close button ask first (AVE-9).",
+  },
+  "pending-confirm-dialog": {
+    pattern: "alertdialog",
+    why: "Changes keys: while the step runs, Tab stays on the status line and Esc does nothing (AVE-9).",
+  },
+
   // ui-sdk components, styled and wired: wiring tests plus the agent test.
   button: {
     upstream: "button",
@@ -82,6 +91,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   textarea: { upstream: "textarea" },
   field: { upstream: "field" },
   avatar: { upstream: "avatar" },
+  "file-field": {
+    upstream: "file-input",
+    note: "The testing kit has no file-input pattern; the File field stories press Choose, Remove and Try again by keyboard and check the names and live regions.",
+  },
   "initials-avatar": { upstream: "avatar", note: "ManyAve's tinted initials on Avatar." },
   status: { upstream: "tooltip", note: "The help is an InfoTip; the Status stories test focus, tap and Esc." },
   "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, tested in its story." },
@@ -103,6 +116,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
 
   // Plain markup.
   card: { none: "Layout only." },
+  "choice-card": {
+    none: "Composition over Field and ui-sdk's Radio or Checkbox; it changes no keys or ARIA beyond naming the control by its title, which the Choice card stories assert.",
+  },
   table: { none: "A static data table, not an interactive grid." },
   badge: { none: "Static text." },
   money: { none: "Static text; the Money stories test that it never wraps or truncates." },

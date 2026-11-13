@@ -9,6 +9,7 @@ import { cn } from "#avenue/lib/utils";
  * sits in a card or dialog header (sm), a larger one in a mobile primary row (lg).
  * Inside a Field it is the field's control: labelled, described and marked invalid by the Field.
  * Dates stay native inputs (type="date") for now.
+ * A placeholder is a hint in muted-foreground, never the label, the only instructions or an example value (AVE-25).
  */
 function Input({
   className,

@@ -1,6 +1,7 @@
 // Publishes the built Storybook at https://avenues.manyave.com: a Worker with static assets only
-// (no Worker code, no bindings). Deploy by hand with `bun run deploy` (README, "Publishing
-// Storybook", AVE-20); there is no CI. No secrets live here: `cf` uses whoever is signed in.
+// (no Worker code, no bindings). Cloudflare Workers Builds runs `bun run deploy` on every push to
+// `main` (README, "Publishing Storybook"); it checks nothing, and there is no CI. No secrets live
+// here: `cf` uses Workers Builds' own token, or whoever is signed in for a deploy by hand.
 //
 // The manyave.com zone sends every other subdomain to the neighborhood-sites Worker with a
 // `*.manyave.com/*` route, and a matching route beats a custom domain. The custom domain gives
