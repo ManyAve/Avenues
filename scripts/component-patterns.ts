@@ -85,6 +85,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   "initials-avatar": { upstream: "avatar", note: "ManyAve's tinted initials on Avatar." },
   status: { upstream: "tooltip", note: "The help is an InfoTip; the Status stories test focus, tap and Esc." },
   "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, tested in its story." },
+  toast: {
+    upstream: "toast",
+    note: "The app's timing rules are story tests. The agent story ends with a toast showing: ui-sdk's empty region appears in the agent snapshot without a name (0.1.0-beta.1).",
+  },
 
   // Plain markup.
   card: { none: "Layout only." },
