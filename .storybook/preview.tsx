@@ -64,6 +64,11 @@ const preview: Preview = {
   parameters: {
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
+    // A 390px phone, for stories that must be seen at phone width (AVE-23). A story picks it with
+    // `globals: { viewport: { value: "phone" } }`; the story tests then run that story at 390 x 844.
+    viewport: {
+      options: { phone: { name: "Phone (390px)", styles: { width: "390px", height: "844px" }, type: "mobile" } },
+    },
     // axe runs on every story in `bun run test:stories`, and any violation fails it: WCAG 2.2 AA plus
     // axe's best practices. The beforeEach below fails a story that weakens this; see a11y-guard.ts for
     // the one allowed exception (a rule turned off with a written reason).
