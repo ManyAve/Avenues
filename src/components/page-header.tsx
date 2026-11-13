@@ -10,6 +10,10 @@ import { cn } from "#avenue/lib/utils";
  * The actions are things you tap, so they sit `gap-controls` apart (8px with a mouse, 16px on a phone, AVE-69), in
  * case an app's own control there doesn't grow to 44px.
  *
+ * The title is the `heading` step, 24px on a 30px line, where the app's is 24px on a 24px line (an arbitrary
+ * `text-[1.5rem]` that inherits the body's line, AVE-70). Kept: a page title wraps on a phone, and on a 24px line two
+ * lines of 24px text touch.
+ *
  * The header doesn't pad itself: put it inside the page's frame (px-page, max-w-reading or max-w-grid), so the title
  * and the content under it share an edge.
  */
