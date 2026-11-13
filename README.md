@@ -138,7 +138,7 @@ Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the
 | `src/lib/utils.ts`       | `cn`, which knows Avenue's text scale.                          |
 | `src/lib/format.ts`      | `formatMoney`, `tintFor` and `initials`, for amounts in text and tints outside an avatar (AVE-8). |
 | `src/lib/control.ts`     | The shared field look (`controlSurface`), the AVE-2 height-and-corner pairing (`controlShape`) Button and Toggle use, and control sizes (`controlSize`) for inputs, textareas and select triggers. |
-| `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17), and ManyAve's own components built on them (AVE-8: Status and Count, Money, InitialsAvatar, AskAdmin, EmptyState and SectionEmpty). Stories in `src/stories/components/`. |
+| `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17), and ManyAve's own components built on them (AVE-8: Status and Count, Money, InitialsAvatar, AskAdmin, EmptyState and SectionEmpty, Toast). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Spacing and corners
