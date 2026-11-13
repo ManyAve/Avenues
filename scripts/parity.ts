@@ -38,6 +38,7 @@ import {
   explain,
   mapProblems,
   pixelJudgement,
+  reconcile,
   rootVariables,
   sameOffset,
   SUBPIXEL_MAX,
@@ -49,6 +50,7 @@ import {
   type Difference,
   type Pair,
   type Part,
+  type Reconciliation,
   type Verdict,
 } from "./parity-lib";
 import { PAIRS } from "./parity-pairs";
@@ -82,6 +84,16 @@ interface Result {
   stylesOnly?: string | undefined;
   error?: string | undefined;
   files?: { app: string; avenue: string; diff?: string | undefined };
+  /**
+   * Set when the pixels were judged after applying the allowed values to the app and the app's text to Avenue
+   * (AVE-77): what was applied, the pixels that still differ, and the captures.
+   */
+  reconciled?: {
+    styles: string[];
+    texts: number;
+    changedPixels: number;
+    files: { app: string; avenue: string; diff?: string | undefined };
+  };
 }
 
 async function run(cmd: string[], cwd: string, env?: Record<string, string>): Promise<number> {
@@ -250,7 +262,12 @@ async function open(page: Page, url: string, extraCss: string, fit = false): Pro
 }
 
 /** Captures the element `selector` finds (default: the story root's first child) and its visible parts. */
-async function shoot(page: Page, selector: string | undefined, keepFocus = false): Promise<Shot> {
+async function shoot(
+  page: Page,
+  selector: string | undefined,
+  keepFocus = false,
+  change?: Reconciliation,
+): Promise<Shot> {
   const target = page.locator(selector ?? "#storybook-root > *").first();
   await target.waitFor({ state: "visible", timeout: 10_000 });
   // Resting state on both sides: a story's play function or autofocus may leave the captured control focused or
@@ -262,6 +279,30 @@ async function shoot(page: Page, selector: string | undefined, keepFocus = false
     const inPopup = active?.closest("[role=menu],[role=listbox],[data-slot=popover-content],[data-slot=hover-card-content],[popover]");
     if (active instanceof HTMLElement && active !== document.body && !inPopup) active.blur();
   });
+  if (change) {
+    // Tag the parts as a first capture would, then apply the change to them by index (AVE-77).
+    await target.evaluate((el) => {
+      const visible = (e: Element) => {
+        const r = e.getBoundingClientRect();
+        const s = getComputedStyle(e);
+        return r.width >= 2 && r.height >= 2 && s.visibility !== "hidden" && s.display !== "none" && s.opacity !== "0";
+      };
+      const nodes = [el, ...[...el.querySelectorAll("*")].filter((e) => visible(e) && !(e.closest("svg") && e.tagName.toLowerCase() !== "svg"))];
+      nodes.forEach((e, i) => e.setAttribute("data-parity-i", String(i)));
+    });
+    await target.evaluate((el, { styles, texts, icons }) => {
+      const part = (i: number) => (i === 0 ? el : el.querySelector(`[data-parity-i="${i}"]`)) as HTMLElement | null;
+      for (const { index, prop, value } of styles) part(index)?.style.setProperty(prop, value, "important");
+      for (const { index, markup } of icons) {
+        const svg = part(index);
+        if (svg) svg.innerHTML = markup;
+      }
+      for (const { index, text } of texts) {
+        const own = [...(part(index)?.childNodes ?? [])].filter((n) => n.nodeType === 3 && n.textContent?.trim());
+        own.forEach((n, i) => (n.textContent = i === 0 ? text : ""));
+      }
+    }, change);
+  }
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const { parts, text } = await target.evaluate(
     (el, props) => {
@@ -270,18 +311,39 @@ async function shoot(page: Page, selector: string | undefined, keepFocus = false
         const s = getComputedStyle(e);
         return r.width >= 2 && r.height >= 2 && s.visibility !== "hidden" && s.display !== "none" && s.opacity !== "0";
       };
-      const nodes = [el, ...[...el.querySelectorAll("*")].filter((e) => visible(e) && !(e.closest("svg") && e.tagName.toLowerCase() !== "svg"))];
+      // Each part keeps the index it was first given (data-parity-i), so a second capture after reconcile() changed
+      // the page lists the same parts in the same order (AVE-77).
+      const tagged = el.hasAttribute("data-parity-i");
+      const nodes = tagged
+        ? [el, ...el.querySelectorAll("[data-parity-i]")].sort(
+            (a, b) => Number(a.getAttribute("data-parity-i")) - Number(b.getAttribute("data-parity-i")),
+          )
+        : [el, ...[...el.querySelectorAll("*")].filter((e) => visible(e) && !(e.closest("svg") && e.tagName.toLowerCase() !== "svg"))];
+      if (!tagged) nodes.forEach((e, i) => e.setAttribute("data-parity-i", String(i)));
       return {
         text: (el as HTMLElement).innerText.trim(),
-        parts: nodes.map((e) => {
+        parts: nodes.map((e, index) => {
           const s = getComputedStyle(e);
           return {
+            index,
             tag: e.tagName.toLowerCase(),
             slot: e.getAttribute("data-slot"),
             text: [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("").trim(),
             width: e.getBoundingClientRect().width,
             height: e.getBoundingClientRect().height,
             style: Object.fromEntries(props.map((p) => [p, s.getPropertyValue(p)])),
+            ...(e.tagName.toLowerCase() === "svg"
+              ? {
+                  // A lucide icon names itself in a class; any other is known by its shapes (AVE-77).
+                  glyph:
+                    [...e.classList].find((c) => c.startsWith("lucide-")) ??
+                    [...e.querySelectorAll("path,circle,rect,line,polyline,polygon,ellipse")]
+                      .map((n) => n.getAttribute("d") ?? [...n.attributes].map((a) => `${a.name}=${a.value}`).join(" "))
+                      .join("|")
+                      .slice(0, 200),
+                  markup: e.innerHTML,
+                }
+              : {}),
           };
         }),
       };
@@ -359,7 +421,10 @@ function html(results: Result[], unpaired: [string, string][], meta: Record<stri
       const imgs = r.files
         ? `<div class="imgs"><figure><figcaption>App</figcaption><img src="${r.files.app}"></figure><figure><figcaption>Avenue</figcaption><img src="${r.files.avenue}"></figure>${r.files.diff ? `<figure><figcaption>Diff${r.stylesOnly ? " (shown, not judged)" : ""}</figcaption><img src="${r.files.diff}"></figure>` : ""}</div>`
         : "";
-      return `<section class="${r.verdict}"><h3>${badge(r.verdict)} ${esc(r.avenueStory)} · ${esc(r.label)} · ${r.combo}</h3><p class="m">App: ${esc(r.app)}${r.changedPixels !== undefined ? ` · ${r.changedPixels} px differ` : ""}${r.stylesOnly ? ` · <b>styles only</b>: pixels not judged, ${esc(r.stylesOnly)}` : " · pixels judged"}${r.error ? ` · <b>${esc(r.error)}</b>` : ""}</p>${imgs}${diffs ? `<table><tr><th>Where</th><th>Property</th><th>App</th><th>Avenue</th><th>Because</th></tr>${diffs}</table>` : ""}</section>`;
+      const rec = r.reconciled
+        ? `<p class="m"><b>Reconciled</b> (AVE-77): ${r.reconciled.styles.length} allowed values applied to the app${r.reconciled.styles.length ? ` (${esc(r.reconciled.styles.join("; "))})` : ""}, ${r.reconciled.texts} texts given to Avenue · ${r.reconciled.changedPixels} px differ after</p><div class="imgs"><figure><figcaption>App, reconciled</figcaption><img src="${r.reconciled.files.app}"></figure><figure><figcaption>Avenue, reconciled</figcaption><img src="${r.reconciled.files.avenue}"></figure>${r.reconciled.files.diff ? `<figure><figcaption>Diff, reconciled</figcaption><img src="${r.reconciled.files.diff}"></figure>` : ""}</div>`
+        : "";
+      return `<section class="${r.verdict}"><h3>${badge(r.verdict)} ${esc(r.avenueStory)} · ${esc(r.label)} · ${r.combo}</h3><p class="m">App: ${esc(r.app)}${r.changedPixels !== undefined ? ` · ${r.changedPixels} px differ` : ""}${r.stylesOnly ? ` · <b>styles only</b>: pixels not judged, ${esc(r.stylesOnly)}` : r.reconciled ? " · pixels judged after reconciling" : " · pixels judged"}${r.error ? ` · <b>${esc(r.error)}</b>` : ""}</p>${imgs}${rec}${diffs ? `<table><tr><th>Where</th><th>Property</th><th>App</th><th>Avenue</th><th>Because</th></tr>${diffs}</table>` : ""}</section>`;
     })
     .join("\n");
   const counts = (["unexplained", "error", "known-bug", "app-local", "agreed-fix", "same"] as Verdict[])
@@ -478,6 +543,51 @@ async function main() {
       if (files.diff) await Bun.write(join(reportDir, files.diff), diff);
       const subpixel = !sameOffset(app.offset, avenue.offset);
       const j = pixelJudgement({ sameText, frame: pair.frame === true, differences, changed, subpixel });
+      if (!j.judged) {
+        // Pixels couldn't judge as captured: apply the allowed values to the app and the app's text to Avenue, and
+        // judge the pixels left over (AVE-77).
+        const plan = reconcile(app.parts, avenue.parts, differences, pair.frame === true);
+        if (plan) {
+          await open(tab, storyUrl(`http://localhost:${avenueServer.port}`, story, `theme:${combo.theme};typeScale:${combo.typeScale}`, pair.avenueArgs), "", true);
+          const avenue2 = await shoot(tab, pair.avenueCrop, pair.keepFocus, { styles: [], texts: plan.texts, icons: plan.icons });
+          await open(tab, storyUrl(`http://localhost:${appServer.port}`, pair.app, `theme:${combo.theme}`), desktop ? desktopCss : "");
+          const app2 = await shoot(tab, pair.appCrop, pair.keepFocus, { styles: plan.styles, texts: [], icons: [] });
+          const sameText2 = app2.text === avenue2.text;
+          // An icon given the app's drawing still carries its own lucide class, so its glyph difference is spent.
+          const left = explain(styleDifferences(app2.parts, avenue2.parts, sameText2, false), pair.allow).filter(
+            (d) => !(d.prop === "glyph" && plan.icons.some((icon) => icon.index === d.avenueIndex)),
+          );
+          const after = diffPngs(app2.png, avenue2.png);
+          const j2 = pixelJudgement({
+            sameText: sameText2,
+            frame: false,
+            differences: left,
+            changed: after.changed,
+            subpixel: !sameOffset(app2.offset, avenue2.offset),
+          });
+          // Reconciled pixels only judge when both crops sit on the same sub-pixel offset: a shifted edge on a
+          // reconciled border (the desktop switch, at 18.4px) is shading, not a difference.
+          if (j2.judged && sameOffset(app2.offset, avenue2.offset)) {
+            const reconciledFiles = {
+              app: `${stem}.app-reconciled.png`,
+              avenue: `${stem}.avenue-reconciled.png`,
+              diff: after.changed > 0 ? `${stem}.diff-reconciled.png` : undefined,
+            };
+            await Bun.write(join(reportDir, reconciledFiles.app), app2.png);
+            await Bun.write(join(reportDir, reconciledFiles.avenue), avenue2.png);
+            if (reconciledFiles.diff) await Bun.write(join(reportDir, reconciledFiles.diff), after.diff);
+            const reconciled = {
+              styles: plan.styles.map((x) => `${x.prop}: ${x.value}`),
+              texts: plan.texts.length,
+              changedPixels: after.changed,
+              files: reconciledFiles,
+            };
+            // Pixels the allowances don't explain make the comparison unexplained, whatever the styles said.
+            const v = after.changed > 0 ? "unexplained" : verdict(differences, false, sameText);
+            return { ...base, verdict: v, differences, changedPixels: changed, sameText, stylesOnly: undefined, files, reconciled };
+          }
+        }
+      }
       // Unjudged: say so, so "same" never stands for "looked at the styles only".
       const stylesOnly = j.judged ? undefined : j.why;
       return { ...base, verdict: verdict(differences, j.judged && changed > 0, sameText), differences, changedPixels: changed, sameText, stylesOnly, files };
