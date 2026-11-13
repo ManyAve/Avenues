@@ -24,12 +24,27 @@ export function viewportProblem(
   return undefined;
 }
 
+/** The problem with a story that asks for a viewport itself and also turns the viewport off, or undefined. */
+export function disabledViewportProblem(asked: unknown, disabled: boolean | undefined): string | undefined {
+  if (!disabled) return undefined;
+  const value = typeof asked === "object" && asked !== null ? (asked as { value?: unknown }).value : asked;
+  if (typeof value !== "string" || value === "") return undefined;
+  return `the story asks for viewport "${value}" but turns the viewport off (parameters.viewport.disabled), so it would run at the default width`;
+}
+
 /** Runs after each story under the story tests only (Playwright sets navigator.webdriver). */
-export function runViewportCheck(globals: Record<string, unknown>, parameters: Record<string, unknown>): void {
+export function runViewportCheck(
+  globals: Record<string, unknown>,
+  parameters: Record<string, unknown>,
+  storyGlobals: Record<string, unknown> = {},
+): void {
   if (typeof navigator === "undefined" || !navigator.webdriver) return;
   const viewport = parameters["viewport"] as { options?: Record<string, ViewportOption>; disabled?: boolean } | undefined;
   // A story that turns the viewport off (a desktop-window case) runs at the default width whatever the project's
-  // global asks for; the `touch` project asks for the phone on every story (AVE-22).
+  // global asks for; the `touch` project asks for the phone on every story (AVE-22). A story can't both ask for a
+  // viewport itself and turn it off: it would run at desktop width and its phone assertions would pass untested.
+  const conflict = disabledViewportProblem(storyGlobals["viewport"], viewport?.disabled);
+  if (conflict) throw new Error(`Viewport check: ${conflict}.`);
   if (viewport?.disabled) return;
   const problem = viewportProblem(globals["viewport"], viewport?.options, document.documentElement.clientWidth);
   if (problem) throw new Error(`Viewport check: ${problem}.`);

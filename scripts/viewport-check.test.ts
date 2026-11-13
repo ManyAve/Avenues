@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { viewportProblem } from "../.storybook/viewport-check";
+import { disabledViewportProblem, viewportProblem } from "../.storybook/viewport-check";
 
 const options = { phone: { styles: { width: "390px", height: "844px" } } };
 
@@ -17,4 +17,12 @@ test("an unknown viewport name fails instead of silently running at desktop widt
 test("a story that asks for no viewport is not checked", () => {
   expect(viewportProblem(undefined, options, 1280)).toBeUndefined();
   expect(viewportProblem({}, options, 1280)).toBeUndefined();
+});
+
+test("a story can't ask for the phone and turn the viewport off", () => {
+  expect(disabledViewportProblem({ value: "phone", isRotated: false }, true)).toContain('asks for viewport "phone"');
+  expect(disabledViewportProblem({ value: "phone" }, undefined)).toBeUndefined();
+  // The touch project's own phone global with a desktop-window story: the story asked for nothing itself.
+  expect(disabledViewportProblem(undefined, true)).toBeUndefined();
+  expect(disabledViewportProblem({ isRotated: false }, true)).toBeUndefined();
 });
