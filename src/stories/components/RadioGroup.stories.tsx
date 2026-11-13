@@ -3,6 +3,8 @@ import { useId } from "react";
 import { expect, userEvent } from "storybook/test";
 import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
 import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
+import { Card, CardContent } from "#avenue/components/card";
+import { BOUNDARY_MIN_CONTRAST, BoundaryReadout, measureBoundaryContrast } from "./contrast-kit";
 import { Row, Rows } from "./story-kit";
 
 const meta = {
@@ -94,5 +96,43 @@ export const Keyboard: Story = {
     await expect(none).toBeChecked();
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "After the group" })).toHaveFocus();
+  },
+};
+
+const radioSamples = [
+  { where: "on the page", name: "Unchosen on the page" },
+  { where: "on a card", name: "Unchosen on a card" },
+] as const;
+
+/**
+ * An unchosen radio on the page and on a card. Its outline is the only thing that shows it is there, so it uses `muted-foreground`, not the field border. The line under it is measured from the rendered controls in the current theme; the play function fails if
+ * either outline drops under 3:1 against what is behind it (WCAG 1.4.11, AVE-38).
+ */
+export const UncheckedOutline: Story = {
+  render: () => (
+    <BoundaryReadout samples={radioSamples}>
+      <Rows>
+        <Row label="page">
+          <RadioGroup aria-label="Page" defaultValue="b" className="w-fit">
+            <RadioGroupItem value="a" aria-label="Unchosen on the page" />
+          </RadioGroup>
+        </Row>
+        <Card size="sm" className="max-w-xs">
+          <CardContent>
+            <Row label="card">
+              <RadioGroup aria-label="Card" defaultValue="b" className="w-fit">
+                <RadioGroupItem value="a" aria-label="Unchosen on a card" />
+              </RadioGroup>
+            </Row>
+          </CardContent>
+        </Card>
+      </Rows>
+    </BoundaryReadout>
+  ),
+  play: async ({ canvas }) => {
+    for (const { name } of radioSamples) {
+      const control = canvas.getByRole("radio", { name });
+      await expect(measureBoundaryContrast(control)).toBeGreaterThanOrEqual(BOUNDARY_MIN_CONTRAST);
+    }
   },
 };
