@@ -5,7 +5,7 @@ import { Code, Page, Section } from "./token-docs";
 // Shadows and surface levels. Light surfaces are white and lift with a close shadow; dark ones step up in onyx.
 
 const shadows = [
-  ["shadow-control", "shadow-control", "Inputs, selects and secondary buttons"],
+  ["shadow-control", "shadow-control", "A raised part inside a control, such as a selected segment"],
   ["shadow-card", "shadow-card", "Cards and table frames"],
   ["shadow-popover", "shadow-popover", "Menus, popovers and dialogs"],
 ] as const;

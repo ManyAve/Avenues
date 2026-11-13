@@ -63,14 +63,15 @@ function DuesCard({ before }: { before?: boolean }) {
 
 function Segmented({ tight }: { tight?: boolean }) {
   return (
-    // 3px is the app's segmented-control padding: an optical inset inside a control, which AVE-2 allows.
-    // Drawn at twice the size so the corners can be compared.
-    <div className="inline-flex gap-0.5 rounded-lg border bg-muted p-[3px]" style={{ zoom: 1.75 }}>
+    // 3px is the app's segmented-control padding: an optical inset inside a control, which AVE-2 allows. Drawn at
+    // md (32px: 1px border, 3px padding, 24px items) with control text. Drawn, not Avenue's ToggleGroup, because that
+    // ships spaced or joined items, not a padded track, so it can't show this rule.
+    <div data-segmented className="inline-flex h-control-md gap-0.5 rounded-lg border bg-muted p-[3px]">
       {["Month", "Quarter", "Year"].map((label, i) => (
         <span
           key={label}
           className={cn(
-            "flex h-control-sm items-center px-3 text-control",
+            "flex h-full items-center px-3 text-control",
             tight ? "rounded-lg" : "rounded-sm",
             i === 2 ? "bg-card shadow-control" : "text-muted-foreground",
           )}
@@ -196,5 +197,10 @@ export const Corners: StoryObj<typeof meta> = {
     await expect(c.right - card.clientLeft - t.right).toBe(16);
     await expect(t.left - l.right).toBe(8);
     await expect(Math.abs((t.top + t.bottom) / 2 - (h.top + h.bottom) / 2)).toBeLessThanOrEqual(0.5);
+    // The segmented examples are drawn at md: a 32px track with 14px text, not enlarged.
+    for (const track of canvasElement.querySelectorAll<HTMLElement>("[data-segmented]")) {
+      await expect(track.getBoundingClientRect().height).toBe(32);
+      await expect(getComputedStyle(track.querySelector("span") ?? track).fontSize).toBe("14px");
+    }
   },
 };
