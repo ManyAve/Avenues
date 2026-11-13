@@ -846,6 +846,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--desktop-minimum": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--sort-popover": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
+  "composites-register--row-action-clicked-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
