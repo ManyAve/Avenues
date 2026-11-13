@@ -14,7 +14,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvas }) => {
     const input = canvas.getByRole("searchbox", { name: "Search" });
-    await expect(input.getBoundingClientRect().height).toBe(32);
+    // 32px with a mouse; a phone grows the field to 44px (AVE-22).
+    await expect(input.getBoundingClientRect().height).toBe(matchMedia("(pointer: coarse)").matches ? 44 : 32);
     await userEvent.type(input, "Maple");
     await expect(input).toHaveValue("Maple");
   },
@@ -33,7 +34,9 @@ export const WithShortcut: Story = {
   play: async ({ canvas }) => {
     const input = canvas.getByRole("searchbox", { name: "Search" });
     await expect(input).toHaveAttribute("aria-keyshortcuts", "/");
-    await expect(canvas.getByText("/")).toBeVisible();
+    // The key hint is for a keyboard: shown with a mouse, hidden on a touch screen.
+    if (matchMedia("(pointer: coarse)").matches) await expect(canvas.getByText("/")).not.toBeVisible();
+    else await expect(canvas.getByText("/")).toBeVisible();
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "Add household" })).toHaveFocus();
     await userEvent.keyboard("/");
