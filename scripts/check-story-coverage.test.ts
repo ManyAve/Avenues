@@ -62,3 +62,14 @@ test("AVE-71: a component story with no parity entry, or an entry for a removed 
   expect(problems.some((p) => p.includes("foundations-"))).toBe(false);
   expect(problems).toHaveLength(2);
 });
+
+test("AVE-77 QA: a glyph allowance that doesn't name both icons fails", () => {
+  const index = { entries: { a: { id: "components-button--sizes", type: "story", tags: ["test"] } } };
+  const pair = (allow: object[]) => ({ "components-button--sizes": [{ label: "sm", app: "ui-button--sm", allow }] });
+  const open = parityMapProblems(index, pair([{ prop: "glyph", because: "app: x.tsx: a different story icon" }]) as never);
+  expect(open).toEqual([
+    "components-button--sizes (sm): a glyph allowance must name the app's and Avenue's icon (scripts/parity-pairs.ts)",
+  ]);
+  const pinned = pair([{ prop: "glyph", app: "lucide-receipt", avenue: "lucide-download", because: "app: x.tsx: ..." }]);
+  expect(parityMapProblems(index, pinned as never)).toEqual([]);
+});

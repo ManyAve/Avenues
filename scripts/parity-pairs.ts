@@ -337,7 +337,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-button--sizes": [
     { label: "sm outline in a card", app: "detail-pieces--dues", appCrop: "[data-slot=button]:has-text('Record payment')", avenueCrop: "[data-slot=button] >> nth=5", allow: [
       ...SIDE_10_TO_8,
-      { prop: "glyph", because: "app: app/ui/components/detail.tsx: the dues card's Record payment button carries a Receipt icon; Avenue's sizes story shows its sm outline button as Export, with Download" },
+      { prop: "glyph", app: "lucide-receipt", avenue: "lucide-download", because: "app: app/ui/components/detail.tsx: the dues card's Record payment button carries a Receipt icon; Avenue's sizes story shows its sm outline button as Export, with Download" },
     ] },
     { label: "md", app: "primitives-button--primary", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=8", allow: BUTTON_MD },
   ],
