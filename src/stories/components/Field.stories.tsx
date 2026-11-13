@@ -60,6 +60,10 @@ export const Invalid: Story = {
       expect.stringContaining("Enter an amount of zero or more."),
     );
     await expect(canvas.getByRole("alert")).toHaveTextContent("Enter an amount of zero or more.");
+    // The field's own words are the value's size, at every width and type scale (AVE-53).
+    const size = (el: Element) => getComputedStyle(el).fontSize;
+    const words = ["Annual assessment", "The amount each household owes for the year.", "Enter an amount of zero or more."];
+    await expect(words.map((text) => size(canvas.getByText(text)))).toEqual(Array(3).fill(size(input)));
   },
 };
 

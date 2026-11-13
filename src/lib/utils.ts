@@ -31,6 +31,8 @@ export const TEXT_SIZE_NAMES = [
   "web-hero",
   "web-hero-narrow",
   "web-glyph",
+  // A utility (avenue.css), not a --text token: the field text size, AVE-53.
+  "field",
 ] as const;
 
 /**

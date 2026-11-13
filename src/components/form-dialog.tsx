@@ -114,9 +114,12 @@ export function FormDialog({
             if (!pending && !askAdmin) onSubmit();
           }}
         >
+          {/* pe-12 (48px), not the 16px inset (AVE-61): the close button is 24px, 16px from the corner, so a long
+              title stops 8px (gap-group) before it instead of running under it. The app's sectioned dialogs pad
+              20px on both sides, and their long titles meet the close button. */}
           <DialogHeader className="shrink-0 flex-row items-center gap-group border-b p-inset pe-12">
             <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <DialogTitle className="text-compact leading-6">{title}</DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
             <DialogDescription className="sr-only">{description}</DialogDescription>
           </DialogHeader>
           <FieldGroup className="min-h-0 gap-4 overflow-y-auto p-inset text-compact">

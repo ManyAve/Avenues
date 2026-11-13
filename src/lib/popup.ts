@@ -12,7 +12,12 @@ export const popupMotion =
  */
 export const modalSurface = "bg-popover p-inset text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none";
 /** Line height is the close button's 24px, so the title and the button share a centre line. */
-export const modalTitle = "text-base leading-6 font-medium";
+/**
+ * text-compact, as the app's dialogs set their titles (dues.tsx, dialogs.tsx): 16px on web, 14px at desktop scale
+ * (AVE-55). The line stays 24px at both scales, where the app's desktop line is 20px, so the title is centred on the
+ * 24px close button in the corner (AVE-2 section 4).
+ */
+export const modalTitle = "text-compact leading-6 font-medium";
 export const modalDescription =
   "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground";
 /**

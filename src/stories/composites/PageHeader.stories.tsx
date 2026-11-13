@@ -45,7 +45,7 @@ export const DesktopMinimum: Story = {
   globals: desktop,
   render: () => <Households />,
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { level: 1, name: "Households 128" })).toBeInTheDocument();
+    await expect(canvas.getByRole("heading", { level: 1, name: /^Households ?, 128$/ })).toBeInTheDocument();
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "Export" })).toHaveFocus();
     await userEvent.tab();
@@ -75,6 +75,9 @@ export const Phone: Story = {
     const add = canvas.getByRole("button", { name: "Add household" }).getBoundingClientRect();
     await expect(add.top).toBeGreaterThanOrEqual(title.bottom);
     await expect(Math.round(title.left)).toBe(16);
+    // The actions are gap-controls apart: 16px on a phone, 8px with a mouse (AVE-69).
+    const exportButton = canvas.getByRole("button", { name: "Export" }).getBoundingClientRect();
+    await expect(Math.round(add.left - exportButton.right)).toBe(matchMedia("(pointer: coarse)").matches ? 16 : 8);
   },
 };
 

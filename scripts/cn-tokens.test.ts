@@ -33,4 +33,8 @@ test("conflicts resolve with Avenue's names", () => {
   expect(cn("-mx-inset -mb-inset", "-mx-2")).toBe("-mb-inset -mx-2");
   expect(cn("p-inset", "p-0")).toBe("p-0");
   expect(cn("gap-group", "gap-2")).toBe("gap-2");
+  // AVE-53: a caller's text size replaces a field part's text-field whole, at every width.
+  expect(cn("text-field text-muted-foreground", "text-meta")).toBe("text-muted-foreground text-meta");
+  // AVE-63: the filled field's tint replaces the field surface's backgrounds.
+  expect(cn("bg-transparent dark:bg-input/30", "bg-field-filled dark:bg-field-filled")).toBe("bg-field-filled dark:bg-field-filled");
 });

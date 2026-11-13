@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { Count } from "#avenue/components/status";
+import { TitleWithCount } from "#avenue/components/status";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -10,10 +10,13 @@ import { cn } from "#avenue/lib/utils";
  *
  * The action follows AVE-2's corner rule through Card: on the title's line, a full 16px from the top and right
  * edges, sm size (28px, 8px corner), never a pill. The title is a level-2 heading under the page's h1.
+ *
+ * The outline is the app's border colour (`ring-border`, AVE-70), not Card's 10% foreground ring.
  */
 export function SectionCard({
   title,
   count,
+  countLabel,
   action,
   children,
   className,
@@ -22,16 +25,17 @@ export function SectionCard({
   title: string;
   /** Beside the title: a number, or text such as "2 open". */
   count?: ReactNode | undefined;
+  /** What a screen reader hears after the count: "open" reads the heading as "Complaints, 2 open". */
+  countLabel?: string | undefined;
   /** One control, sm size. */
   action?: ReactNode | undefined;
 }) {
   return (
-    <Card data-section="" className={cn("shadow-card", className)} {...props}>
+    <Card data-section="" className={cn("shadow-card ring-border", className)} {...props}>
       <CardHeader>
         <CardTitle>
           <h2 className="flex items-center gap-group text-compact">
-            {title}
-            {count !== undefined && <Count value={count} />}
+            <TitleWithCount title={title} count={count} countLabel={countLabel} />
           </h2>
         </CardTitle>
         {action && <CardAction>{action}</CardAction>}

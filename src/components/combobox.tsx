@@ -86,6 +86,9 @@ export interface ComboboxProps<T extends ComboboxOption> {
 /**
  * A field that searches as you type, for long lists (households, time zones). Arrow keys and Enter choose; Escape,
  * or leaving the field, closes the list and puts the current choice back in the field. Built on ui-sdk's Combobox.
+ *
+ * Icons are the app's 14px (its time-zone picker, AVE-59): the leading icon, the chevron and the check. The leading
+ * icon sits 8px from the edge where the app's sits 10px, the AVE-2 section 1 step inside a control.
  */
 export function Combobox<T extends ComboboxOption>({
   options,
@@ -141,7 +144,7 @@ export function Combobox<T extends ComboboxOption>({
         className={cn(fieldControl({ size }), "gap-0 pe-0 pointer-coarse:min-h-11", icon ? "ps-2" : "ps-0", className)}
       >
         {icon && (
-          <span aria-hidden className="flex shrink-0 text-muted-foreground [&_svg]:size-4">
+          <span aria-hidden className="flex shrink-0 text-muted-foreground [&_svg]:size-3.5">
             {icon}
           </span>
         )}
@@ -171,7 +174,7 @@ export function Combobox<T extends ComboboxOption>({
           aria-label={triggerLabel}
           className="flex h-full w-8 shrink-0 items-center pointer-coarse:w-11 justify-center text-muted-foreground outline-none disabled:cursor-not-allowed"
         >
-          <ChevronsUpDownIcon aria-hidden className="size-4" />
+          <ChevronsUpDownIcon aria-hidden className="size-3.5" />
         </ComboboxTrigger>
       </div>
       <ComboboxContent
@@ -199,7 +202,7 @@ export function Combobox<T extends ComboboxOption>({
               {...defined({ keywords: option.keywords })}
             >
               <ComboboxItemIndicator className="col-start-1 flex">
-                <CheckIcon aria-hidden className="size-4" />
+                <CheckIcon aria-hidden className="size-3.5" />
               </ComboboxItemIndicator>
               <span className="col-start-2 min-w-0">
                 <span className={option.value === NONE ? "text-muted-foreground" : undefined}>

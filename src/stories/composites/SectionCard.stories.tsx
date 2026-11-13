@@ -48,7 +48,7 @@ function HouseholdSections() {
           ]}
         />
       </SectionCard>
-      <SectionCard title="Documents" count="3 shared">
+      <SectionCard title="Documents" count={3} countLabel="shared">
         <ListItem title="Fence approval, 2025" meta="Architectural review · PDF" note="Board only" />
         <ListItem title="Welcome packet" meta="Governance · PDF" />
         <ListItem
@@ -77,6 +77,10 @@ export const DesktopMinimum: Story = {
   render: () => <HouseholdSections />,
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("heading", { level: 2, name: "Dues" })).toBeInTheDocument();
+    // A count reads after a comma, with its word, not run into the title (AVE-69). The hidden part is positioned, so
+    // the name computation may put a space before the comma; a screen reader says the same either way.
+    await expect(canvas.getByRole("heading", { level: 2, name: /^People ?, 2$/ })).toBeInTheDocument();
+    await expect(canvas.getByRole("heading", { level: 2, name: /^Documents ?, 3 shared$/ })).toBeInTheDocument();
     await userEvent.tab();
     await expect(canvas.getByRole("combobox", { name: "Dues year" })).toHaveFocus();
     await userEvent.tab();

@@ -76,6 +76,9 @@
   --color-slate-subtle-foreground: var(--slate-subtle-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  /* The filled field's tint (the toolbar search, AVE-63): 8% of the foreground over the background, so it follows the
+     theme. Inline, so it resolves where it's used. `muted` is lighter in light mode (L 0.977 vs 0.930), so not it. */
+  --color-field-filled: color-mix(in oklab, var(--foreground) 8%, var(--background));
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -148,6 +151,18 @@
 @media (min-width: 40rem) {
   :root {
     --avenue-page-inset: 1.25rem;
+  }
+}
+
+/* A field's own words (label, description, error; AVE-53): the field value's size, 16px below 768px so it matches the
+   field on phones, then text-control. One utility, not text-base md:text-control, so a caller's text-meta replaces
+   it whole in cn (TEXT_SIZE_NAMES knows "field"). A leading-* class still sets the line. */
+@utility text-field {
+  font-size: var(--text-base);
+  line-height: var(--tw-leading, var(--text-base--line-height));
+  @media (width >= 48rem) {
+    font-size: var(--text-control);
+    line-height: var(--tw-leading, var(--text-control--line-height));
   }
 }
 

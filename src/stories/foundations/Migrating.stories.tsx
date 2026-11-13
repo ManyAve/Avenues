@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
+import { expect } from "storybook/test";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "../tokens/token-docs";
 import { DoDont, Rule, Rules, SeeTokens } from "./foundation-docs";
@@ -275,11 +276,18 @@ function FeedRow({ cut }: { cut?: boolean }) {
         ) : (
           <p className="m-0 flex flex-col text-meta text-muted-foreground">
             <span className="text-foreground">{post.author}</span>
-            {/* Each part wraps whole, so "2 hours ago" never splits across lines. */}
+            {/* Each part wraps whole, so "2 hours ago" never splits across lines, and the dot stays with the part
+                before it, so a wrapped line starts flush with the text, never on a dot (AVE-66). */}
             <span>
-              <span className="whitespace-nowrap">{post.street}</span>{" "}
-              <span className="whitespace-nowrap">· {post.group}</span>{" "}
-              <span className="whitespace-nowrap">· {post.when}</span>
+              <span className="whitespace-nowrap">
+                {post.street}
+                <span aria-hidden="true"> ·</span>
+              </span>{" "}
+              <span className="whitespace-nowrap">
+                {post.group}
+                <span aria-hidden="true"> ·</span>
+              </span>{" "}
+              <span className="whitespace-nowrap">{post.when}</span>
             </span>
           </p>
         )}
@@ -392,7 +400,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Web: Story = { name: "Moving from older tokens (web)", render: () => <Migrating /> };
+export const Web: Story = {
+  name: "Moving from older tokens (web)",
+  render: () => <Migrating />,
+  play: async ({ canvas }) => {
+    // Each wrapping part starts with its own words; the dot ends the part before it (AVE-66).
+    for (const part of canvas.getAllByText("2 hours ago")) await expect(part.textContent).toBe("2 hours ago");
+    for (const part of canvas.getAllByText(/^Lost and found/)) await expect(part.textContent).toBe("Lost and found ·");
+  },
+};
 export const Desktop: Story = {
   name: "Moving from older tokens (desktop)",
   render: () => <Migrating />,

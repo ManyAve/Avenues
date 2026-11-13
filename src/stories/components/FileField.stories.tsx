@@ -104,21 +104,33 @@ export const DocumentStates: Story = {
   },
 };
 
+/** Checks a truncated name: whole for screen readers, cut in the middle on screen, with no gap at the cut. */
+async function expectMiddleCut(canvasElement: HTMLElement) {
+  const name = canvasElement.querySelector<HTMLElement>("[data-slot=file-name]")!;
+  await expect(name).toHaveAttribute("title", longName.name);
+  await expect(name.querySelector(".sr-only")).toHaveTextContent(longName.name);
+  const [head, tail] = [...name.querySelector("[aria-hidden]")!.children] as HTMLElement[];
+  await expect(tail).toBeVisible();
+  await expect(tail!.textContent).toMatch(/\.pdf$/);
+  // Cut to whole characters with its own ellipsis, which touches the tail (AVE-48).
+  await waitFor(() => expect(head!.textContent).toMatch(/…$/));
+  await expect(head!.scrollWidth).toBeLessThanOrEqual(head!.clientWidth);
+  await expect(tail!.getBoundingClientRect().left - head!.getBoundingClientRect().right).toBeLessThanOrEqual(0.5);
+}
+
 /** A long name truncates in the middle, so ".pdf" stays visible; the whole name is still read out. */
 export const LongName: Story = {
   args: { label: "Annual meeting minutes", kind: "document", hint: documentHint, file: longName, status: "chosen" },
   play: async ({ canvasElement, canvas }) => {
-    const name = canvasElement.querySelector<HTMLElement>("[data-slot=file-name]")!;
-    await expect(name).toHaveTextContent(longName.name);
-    const [head, tail] = [...name.children] as HTMLElement[];
-    await expect(tail).toBeVisible();
-    await expect(tail!.textContent).toMatch(/\.pdf$/);
-    await expect(head!.scrollWidth).toBeGreaterThan(head!.clientWidth);
+    await expectMiddleCut(canvasElement);
     await expect(canvas.getByRole("button", { name: `Remove ${longName.name}` })).toBeVisible();
   },
 };
 
-/** At 390px (358px inside the page inset) the row wraps; the buttons keep their 28px height. */
+/**
+ * At 390px (358px inside the page inset) the row wraps; the buttons keep their 28px height. The long name is cut in
+ * the middle, and the error doesn't repeat it.
+ */
 export const Phone: Story = {
   args: { kind: "document", label: "Annual meeting minutes", hint: documentHint, file: longName, status: "failed" },
   decorators: [
@@ -128,10 +140,15 @@ export const Phone: Story = {
       </div>
     ),
   ],
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     const replace = canvas.getByRole("button", { name: /Replace file/ });
     await expect(replace.getBoundingClientRect().height).toBe(28);
     await expect(replace.getBoundingClientRect().right).toBeLessThanOrEqual(358 + 24);
+    await expectMiddleCut(canvasElement);
+    // The name is shown above, so the error doesn't repeat it, and an icon carries the state with the colour (AVE-48).
+    const alert = canvas.getByRole("alert");
+    await expect(alert).toHaveTextContent("Couldn't upload this file. Check your connection and try again.");
+    await expect(alert.querySelector("svg")).not.toBeNull();
   },
 };
 
@@ -211,11 +228,15 @@ export const Upload: Story = {
     });
 
     await step("the first try fails: an alert says what happened, and Try again works by keyboard", async () => {
-      await waitFor(() => expect(canvas.getByRole("alert")).toHaveTextContent("Couldn't upload sunnydale-pool-rules.pdf"));
+      await waitFor(() => expect(canvas.getByRole("alert")).toHaveTextContent("Couldn't upload this file."));
       const retry = canvas.getByRole("button", { name: "Try again" });
       retry.focus();
       await userEvent.keyboard("{Enter}");
+      // Try again is gone once the upload restarts; focus moves to the trigger, not the page (AVE-49).
+      await waitFor(() => expect(retry).not.toBeInTheDocument());
+      await expect(canvas.getByRole("button", { name: /Uploading/ })).toHaveFocus();
       await waitFor(() => expect(canvas.getByRole("button", { name: /Replace file/ })).toBeEnabled());
+      await expect(canvas.getByRole("button", { name: /Replace file/ })).toHaveFocus();
       await expect(canvasElement.querySelector("[data-slot=file-field-status]")).toHaveTextContent("Uploaded");
     });
 
@@ -225,7 +246,9 @@ export const Upload: Story = {
       remove.focus();
       await userEvent.keyboard(" ");
       await expect(args.onRemove).toHaveBeenCalledOnce();
+      // The field is empty again; focus is on Choose file, not dropped on the page (AVE-49).
       await expect(canvas.getByRole("button", { name: /Choose file/ })).toBeVisible();
+      await expect(canvas.getByRole("button", { name: /Choose file/ })).toHaveFocus();
     });
   },
 };
@@ -279,5 +302,25 @@ export const DisabledWithReason: Story = {
     await expect(opened).not.toHaveBeenCalled();
     await userEvent.click(canvas.getByRole("button", { name: "Remove sunnydale-pool.jpg" }));
     await expect(args.onRemove).not.toHaveBeenCalled();
+  },
+};
+
+/** A failed upload while the field is disabled: Try again stays focusable and says why it can't be used (AVE-49). */
+export const DisabledRetry: Story = {
+  args: {
+    label: "Pool rules",
+    kind: "document",
+    file: { name: "sunnydale-pool-rules.pdf" },
+    status: "failed",
+    disabledReason: "Only board members can change the documents.",
+  },
+  play: async ({ canvas, args }) => {
+    const retry = canvas.getByRole("button", { name: "Try again" });
+    await expect(retry).toHaveAttribute("aria-disabled", "true");
+    await expect(retry).toHaveAccessibleDescription("Only board members can change the documents.");
+    retry.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onRetry).not.toHaveBeenCalled();
+    await expect(retry).toHaveFocus();
   },
 };

@@ -34,7 +34,7 @@ const DETAIL_CARD =
 const DUES_TABLE =
   "app: app/ui/components/dues-table.tsx: the Dues table sets its own 34px muted headers, background and 7px padding; the app's Table itself is h-10 px-2 font-medium text-foreground, as Avenue's";
 
-const MONEY_BOX: Allowance = { prop: "height", because: "AVE-55: Avenue's Money sits in a 24px box (20px desktop); the app's is an inline 21px line (18px)" };
+const MONEY_BOX: Allowance = { prop: "height", because: "app: app/ui/components/Money.stories.tsx: the app's story renders Money as a bare inline span (a 21px content box, 18px desktop); Avenue's story sets it in a flex row, where the same classes give a 24px line box (20px). The component's classes match" };
 const TOOLTIP_PAD = "AVE-2 §1: the tooltip's off-grid 6px top and bottom padding moves onto the 4px grid at 4px, so a one-line tooltip is 28px (24px desktop)";
 const MODE_DEV: Allowance[] = [
   { prop: "*-gap", app: "6px", avenue: "4px", because: "AVE-2 §1: the mode toggle's icon to label 6px becomes 4px" },
@@ -47,16 +47,22 @@ const MODE_SEGMENT: Allowance[] = [
   ...MODE_DEV.filter((a) => a.prop !== "border-*-radius"),
   { prop: "border-*-radius", because: "AVE-2 §3: segmented-control items take the md corner (8px) where the app's are 10px" },
 ];
+const COUNT_PART =
+  "app: app/ui/components/Badge.tsx: the app's chips and nav tabs use its Count too, a plain span with no data-slot; Avenue's Count names its part (data-slot=count), so the part lists differ while the count is the same component";
+// AVE-53: a field's own words follow AVE-29's rule for its value, 14px from 768px up on the web scale (the app's are
+// 16px there). Desktop scale is unchanged: both are 14px.
+const FIELD_TEXT_REASON = "AVE-29: a field's label, description and error follow its value's size, text-control (14px) from 768px up, so the value never looks lighter than the words around it (AVE-53)";
+const FIELD_TEXT: Allowance[] = ["font-size", "line-height", "height", "width"].map((prop) => ({ prop, because: FIELD_TEXT_REASON }));
 const MD_HEIGHT = "AVE-2 §2: toolbar controls share the md height, 32px (the app's are 29 or 30px)";
 const CHIP: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
   { prop: "*-gap", app: "5px", avenue: "4px", because: "AVE-2 §1: the chip's 5px gap becomes 4px" },
   { prop: "*-gap", where: "root", app: "6px", avenue: "8px", because: "AVE-2 §1: chips in a row are --space-group, 8px, apart (the app's off-grid 6px)" },
-  { prop: "parts", because: "AVE-56: the app's chip count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+  { prop: "parts", because: COUNT_PART },
 ];
 const CHIP_CHECK: Allowance[] = [
   ...CHIP,
-  { prop: "parts", because: "AVE-8: a selected chip shows a 16px check before its label (UI Designer, for WCAG 1.4.1), and uses Count (AVE-56)" },
+  { prop: "parts", because: "AVE-8: a selected chip shows a 16px check before its label (UI Designer, for WCAG 1.4.1), and its count is Avenue's named Count part" },
   { prop: "width", because: "AVE-8: the selected chip's check makes it wider (UI Designer, for WCAG 1.4.1)" },
 ];
 const NAV_TAB: Allowance[] = [
@@ -68,7 +74,11 @@ const NAV_TAB: Allowance[] = [
   { prop: "*-gap", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px gap becomes 8px" },
   { prop: "border-*-radius", app: "pill", avenue: "8px", because: "AVE-2 §5: a link acts, so it isn't a pill; sm controls take the md corner (§3)" },
   { prop: "width", because: "AVE-2 §1: the wider padding and gap make the same label wider" },
-  { prop: "parts", because: "AVE-56: the app's nav count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+  { prop: "parts", because: COUNT_PART },
+];
+const TOOLBAR_SEARCH: Allowance[] = [
+  { prop: "height", app: "29px", avenue: "32px", because: MD_HEIGHT },
+  { prop: "parts", app: "only here: input", avenue: "only here: toolbar-input", because: "AVE-16: inside a toolbar the field is ui-sdk's toolbar input, whose data-slot wins over Avenue's (AGENTS.md, data-slot names); the element is the same input" },
 ];
 const SEARCH: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
@@ -82,8 +92,6 @@ const TOOLBAR: Allowance[] = [
   { prop: "padding-right", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
   { prop: "border-*-radius", app: "pill", avenue: "10px", because: "AVE-2 §5: icon-only toolbar buttons stop being pills and take the md control corner" },
   { prop: "width", because: "AVE-2 §2: the taller md button and its padding make it wider" },
-  { prop: "width", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
-  { prop: "height", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
 ];
 const SECTIONED_DIALOG =
   "app: app/ui/components/dialogs.tsx: the account dialogs pass `gap-0 p-0` and draw their own bordered header, body and footer sections (px-5, footer py-3); Avenue's Dialog keeps the app's default p-4 gap-4 (app/ui/components/ui/dialog.tsx)";
@@ -121,28 +129,27 @@ const MENU_ITEM: Allowance[] = [
   { prop: "row-gap", because: MENU_ITEM_PAD },
   { prop: "border-*-radius", app: "8px", avenue: "6px", because: MENU_ITEM_CORNER },
 ];
+const BADGE_IN_STATUS =
+  "app: app/ui/components/Badge.tsx: the app's Status passes h-auto px-1.5 py-px bg-background font-[450] text-muted-foreground and a dot to its badge; the app's outline badge itself (ui/badge.tsx) is transparent, foreground, font-medium, 2px by 8px, as Avenue's. Avenue's Status is compared through Status / Tones";
 const STATUS: Allowance[] = [
   { prop: "padding-left", app: "6px", avenue: "8px", because: "AVE-2 §1: Status's 6px side padding becomes 8px" },
   { prop: "padding-right", app: "6px", avenue: "8px", because: "AVE-2 §1: Status's 6px side padding becomes 8px" },
   { prop: "*-gap", app: "5px", avenue: "4px", because: "AVE-2 §1: Status's 5px gap becomes 4px" },
   { prop: "border-*-radius", app: "26px", avenue: "pill", because: PILL },
   { prop: "width", because: "AVE-2 §1: the wider side padding makes the same label wider" },
-  { prop: "height", because: "AVE-56: Status is 20px tall; the app's is 24px (22px on desktop)" },
-  { prop: "padding-top", because: "AVE-56: the app's label has 1px top and bottom padding" },
-  { prop: "padding-bottom", because: "AVE-56: the app's label has 1px top and bottom padding" },
 ];
 const CARD_ACTION_ROW: Allowance[] = [
   { prop: "height", where: "card-action 1", avenue: "28px", because: "AVE-2 §6: the action row holds the 28px sm control, centred on the title's line" },
   { prop: "*-gap", where: "card-action 1", app: "6px", avenue: "8px", because: "AVE-2 §1: the off-grid 6px gap becomes 8px" },
   { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-2 §1: 4px is for an icon beside its own label; the header's title and its action are separate things, 8px (space-group) apart (AVE-57)" },
 ];
-const DESKTOP_TITLE: Allowance[] = [
-  { prop: "font-size", app: "14px", avenue: "16px", because: "AVE-55: Avenue's titles don't follow the desktop type scale" },
-  { prop: "line-height", because: "AVE-55: Avenue's titles don't follow the desktop type scale (and the card title's web line is 22px, the app's 24px)" },
-  { prop: "height", because: "AVE-55: the title's line height differs, so its height does" },
+const DIALOG_TITLE_LINE: Allowance[] = [
+  { prop: "line-height", app: "20px", avenue: "24px", because: "AVE-2 §4: a dialog title keeps a 24px line at desktop scale (14px text), so it stays centred on the 24px close button in the corner" },
+  { prop: "height", app: "20px", avenue: "24px", because: "AVE-2 §4: a dialog title keeps a 24px line at desktop scale (14px text), so it stays centred on the 24px close button in the corner" },
 ];
+const LEGEND_VARIANT =
+  "app: app/ui/components/forms.tsx: the People property form uses FieldLegend variant=\"label\" (text-sm); Avenue's Field / Form shows the legend variant, text-base, as the app's legend variant is";
 const CARD_TITLE: Allowance[] = [
-  ...DESKTOP_TITLE,
   { prop: "*-gap", app: "8px", avenue: "0px", because: "app: app/ui/components/detail.tsx: the detail card's title is a flex row (gap-2) so it can hold an icon; the app's CardTitle itself has no gap, as Avenue's" },
 ];
 
@@ -245,17 +252,10 @@ export const PAIRS: Record<string, PairEntry> = {
       app: "primitives-status--paid",
       appCrop: "[data-slot=badge]",
       avenueCrop: "[data-slot=badge] >> nth=10",
-      allow: [
-        ...STATUS,
-        { prop: "padding-left", because: "AVE-56: the app's badge has a status dot and 6px sides; Avenue's outline badge 4px and 8px" },
-        { prop: "padding-right", because: "AVE-56: the app's badge has a status dot and 6px sides; Avenue's outline badge 4px and 8px" },
-        { prop: "padding-top", because: "AVE-56: the app's badge has 1px top and bottom padding, Avenue's 2px" },
-        { prop: "padding-bottom", because: "AVE-56: the app's badge has 1px top and bottom padding, Avenue's 2px" },
-        { prop: "background-color", because: "AVE-56: the app's badge is filled with the card colour; Avenue's outline badge is transparent" },
-        { prop: "color", because: "AVE-56: the app's badge text is muted; Avenue's outline badge is foreground" },
-        { prop: "font-weight", because: "AVE-56: the app's badge is weight 450, Avenue's 500" },
-        { prop: "parts", because: "AVE-56: the app's badge draws a status dot; Avenue's Badge takes an icon instead" },
-      ],
+      // The app has no story of its plain Badge, so this crops the badge inside its Status story.
+      allow: ["padding-*", "background-color", "color", "font-weight", "parts", "height", "width", "*-gap", "border-*-radius"].map(
+        (prop) => ({ prop, because: BADGE_IN_STATUS }),
+      ),
     },
   ],
   "components-status--tones": [
@@ -275,7 +275,7 @@ export const PAIRS: Record<string, PairEntry> = {
         { prop: "padding-left", app: "5px", avenue: "4px", because: "AVE-2 §1: Count's 5px side padding becomes 4px" },
         { prop: "padding-right", app: "5px", avenue: "4px", because: "AVE-2 §1: Count's 5px side padding becomes 4px" },
         { prop: "width", because: "AVE-2 §1: the narrower side padding makes the same count 2px narrower" },
-        { prop: "height", because: "AVE-56: the app's count is an inline 17px box (16px desktop); Avenue's is 20px (18px)" },
+        { prop: "height", because: "app: app/ui/components/Count.stories.tsx: Count / Default renders a bare inline span (a 17px content box, 16px desktop); Avenue's story sets it in a flex row, as the app's Count / With label does, where the same classes give a 20px line box (18px)" },
       ],
     },
   ],
@@ -329,7 +329,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "checked row checkbox", app: "dues-table--selection", appCrop: "[data-slot=checkbox][aria-checked=true] >> nth=0", avenueCrop: "[data-slot=checkbox][aria-checked=true] >> nth=0" },
   ],
   "components-checkbox--required-in-field": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
   ],
   "components-radio-group--states": { none: NEW_IN_AVENUE("The radio group", "Checkbox / States (the same 16px control and ring)") },
   "components-radio-group--keyboard": { none: BEHAVIOUR("Checkbox / States") },
@@ -350,12 +350,8 @@ export const PAIRS: Record<string, PairEntry> = {
           appCrop: "div:has(> input[role=combobox])",
           avenueCrop: "[data-slot=combobox]",
           allow: [
-            { prop: "height", where: "svg 1", because: "AVE-59: the app's combobox icons are 14px, Avenue's 16px" },
-            { prop: "height", where: "svg 2", because: "AVE-59: the app's combobox icons are 14px, Avenue's 16px" },
-            { prop: "width", where: "svg 1", because: "AVE-59: the app's combobox icons are 14px, Avenue's 16px" },
-            { prop: "width", where: "svg 2", because: "AVE-59: the app's combobox icons are 14px, Avenue's 16px" },
-            { prop: "padding-left", where: "root", because: "AVE-59: the app's input group has no start padding (its icon has a 10px margin); Avenue's has 8px" },
-            { prop: "parts", because: "AVE-59: ui-sdk's combobox wraps the icon and names its input and trigger parts; the app's Base UI picker has a bare input and button" },
+            { prop: "padding-left", where: "root", app: "0px", avenue: "8px", because: "AVE-2 §1: the icon's off-grid 10px start margin becomes 8px inside the control, carried by the field's padding instead of the icon (AVE-59)" },
+            { prop: "parts", because: "app: app/ui/components/time-zone-picker.tsx: the app's Base UI picker is a bare input and button beside its icon; Avenue's ui-sdk combobox names its input and trigger parts and wraps the icon. Same look (AVE-59)" },
           ],
         },
       ],
@@ -377,7 +373,7 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Dialog (AVE-6)
   "components-dialog--open": [
     { label: "dialog frame", app: "primitives-deleteaccount--allowed", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=dialog-content]", frame: true, allow: [{ prop: "padding-*", app: "0px", avenue: "16px", because: SECTIONED_DIALOG }] },
-    { label: "dialog title", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-title]", avenueCrop: "[data-slot=dialog-title]", allow: DESKTOP_TITLE },
+    { label: "dialog title", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-title]", avenueCrop: "[data-slot=dialog-title]", allow: DIALOG_TITLE_LINE },
   ],
   "components-dialog--focus-on-open-and-close": { none: BEHAVIOUR("Dialog / Open") },
   "components-dialog--confirm-focuses-safe-button": [
@@ -396,12 +392,11 @@ export const PAIRS: Record<string, PairEntry> = {
           appCrop: "summary:has-text('Advanced')",
           avenueCrop: "[data-slot=collapsible-trigger]",
           allow: [
-            { prop: "padding-*", because: "AVE-58: Avenue's trigger adds 4px side padding" },
-            { prop: "border-*-radius", because: "AVE-58: Avenue's trigger adds a 4px corner" },
-            { prop: "*-gap", because: "AVE-58: Avenue's trigger adds a chevron 4px from the label" },
-            { prop: "parts", because: "AVE-58: Avenue's trigger draws a chevron; the app's summary uses the browser's marker" },
-            { prop: "width", because: "AVE-58: the app's summary fills the row; Avenue's trigger fits its label" },
-            { prop: "color", because: "AVE-58: Avenue's open trigger turns to foreground; the app's stays muted" },
+            { prop: "padding-*", because: "AVE-58: the trigger's 4px side padding gives its focus ring room; a -4px margin keeps the label where the app's sits" },
+            { prop: "border-*-radius", because: "AVE-58: the xs corner shapes the trigger's focus ring" },
+            { prop: "*-gap", because: "AVE-58: the trigger is a real button, so a chevron 4px from the label stands in for the browser's marker" },
+            { prop: "parts", because: "AVE-58: the trigger is a real button, so a chevron stands in for the browser's marker" },
+            { prop: "width", because: "AVE-58: the trigger fits its label, so a tap beside it doesn't toggle the section; the app's summary fills the row" },
           ],
         },
       ],
@@ -467,15 +462,15 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Field, input and textarea (AVE-6, AVE-25)
   "components-field--label-and-description": [
-    { label: "field label", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-label] >> nth=1", avenueCrop: "[data-slot=field-label]" },
+    { label: "field label", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-label] >> nth=1", avenueCrop: "[data-slot=field-label]", allow: FIELD_TEXT },
     { label: "input", app: "dues-dialogs--adjustment", appCrop: "[data-slot=input] >> nth=0", avenueCrop: "[data-slot=input]", allow: [
       ...SIDE_10_TO_8,
       { prop: "width", because: "app: app/ui/components/dues.tsx: the adjustment dialog sets its fields two to a row (grid-cols-2); an input fills whatever column it is in, as Avenue's" },
     ] },
-    { label: "field description", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-description] >> nth=0", avenueCrop: "[data-slot=field-description]" },
+    { label: "field description", app: "dues-dialogs--adjustment", appCrop: "[data-slot=field-description] >> nth=0", avenueCrop: "[data-slot=field-description]", allow: FIELD_TEXT },
   ],
   "components-field--invalid": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
     {
       label: "invalid input",
       app: "primitives-signin--bad-email",
@@ -492,7 +487,11 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-field--required-on-submit": { none: BEHAVIOUR("Field / Invalid") },
   "components-field--disabled": { none: STATE_ONLY("a disabled text field", "Field / Label and description, and disabled opacity through Button / Playground") },
   "components-field--form": [
-    { label: "field legend", app: "primitives-forms--people-property", appCrop: "[data-slot=field-legend] >> nth=0", avenueCrop: "[data-slot=field-legend]", allow: DESKTOP_TITLE },
+    { label: "field legend", app: "primitives-forms--people-property", appCrop: "[data-slot=field-legend] >> nth=0", avenueCrop: "[data-slot=field-legend]", allow: [
+      { prop: "font-size", app: "14px", avenue: "16px", because: LEGEND_VARIANT },
+      { prop: "line-height", because: LEGEND_VARIANT },
+      { prop: "height", because: LEGEND_VARIANT },
+    ] },
   ],
   "components-field--popup-in-field": [
     {
@@ -518,7 +517,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- File field (AVE-35)
   ...Object.fromEntries(
-    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "phone"].map((story) => [
+    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "disabled-retry", "phone"].map((story) => [
       `components-file-field--${story}`,
       { none: NEW_IN_AVENUE("The shared file and image field (AVE-35)", "Button / Sizes (its 28px buttons) and Field / Label and description") },
     ]),
@@ -564,11 +563,11 @@ export const PAIRS: Record<string, PairEntry> = {
       appCrop: "[data-slot=field-error]",
       avenueCrop: "[data-slot=inline-message]",
       allow: [
-        { prop: "font-size", because: "AVE-55: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "line-height", because: "AVE-55: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
-        { prop: "height", because: "AVE-55: the smaller line makes the message shorter" },
-        { prop: "*-gap", because: "AVE-55: Avenue's inline error leads with an icon; the app's error text has none" },
-        { prop: "parts", because: "AVE-55: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "font-size", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
+        { prop: "line-height", because: "AVE-72: Avenue's inline error is 14px (13px desktop); the app's error text is 16px (14px)" },
+        { prop: "height", because: "AVE-72: the smaller line makes the message shorter" },
+        { prop: "*-gap", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
+        { prop: "parts", because: "AVE-72: Avenue's inline error leads with an icon; the app's error text has none" },
       ],
     },
   ],
@@ -636,7 +635,7 @@ export const PAIRS: Record<string, PairEntry> = {
     },
   ],
   "components-select--invalid": [
-    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]" },
+    { label: "field error", app: "primitives-signin--bad-email", appCrop: "[data-slot=field-error]", avenueCrop: "[data-slot=field-error]", allow: FIELD_TEXT },
   ],
   "components-select--long-options": { none: "Same trigger as Select / Default with long text that truncates; compared there." },
   "components-select--native-on-phones": { none: "The operating system's own picker on phones; its look is the platform's, not Avenue's or the app's." },
@@ -730,7 +729,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- App controls ported in AVE-8 part 2: each app story has an Avenue story of the same name
   "components-chip--selected-beside-unselected": [
-    { label: "selected chip", app: "primitives-chip--pressed", appCrop: "[aria-pressed=true] >> nth=0", avenueCrop: "[aria-pressed=true] >> nth=0", allow: CHIP_CHECK.filter((a) => !a.because.startsWith("AVE-56")) },
+    { label: "selected chip", app: "primitives-chip--pressed", appCrop: "[aria-pressed=true] >> nth=0", avenueCrop: "[aria-pressed=true] >> nth=0", allow: CHIP_CHECK.filter((a) => a.because !== COUNT_PART) },
     { label: "unselected chip", app: "primitives-chip--default", appCrop: "[aria-pressed=false] >> nth=0", avenueCrop: "[aria-pressed=false] >> nth=0", allow: CHIP },
   ],
   "components-chip--filter-row": [{ label: "filter row", app: "primitives-chip--filter-row", avenueCrop: "[data-slot=chip-row]", allow: CHIP }],
@@ -762,6 +761,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-searchinput--with-shortcut": [
     { label: "search input with shortcut", app: "primitives-searchinput--with-shortcut", avenueCrop: "[data-slot=search-input]", allow: SEARCH },
   ],
+  "components-searchinput--shortcut-skips-open-list": { none: BEHAVIOUR("SearchInput / With shortcut") },
   "components-searchinput--filled": { none: STATE_ONLY("a search input with text in it", "SearchInput / Default") },
   "components-toolbarbutton--icon": [{ label: "icon toolbar button", app: "primitives-toolbarbutton--icon", allow: TOOLBAR }],
   "components-toolbarbutton--with-label": [{ label: "toolbar button with label", app: "primitives-toolbarbutton--with-label", allow: TOOLBAR }],
@@ -808,20 +808,18 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-page-header--desktop-minimum": [
     { label: "page header frame", app: "detail-pieces--page-header-story", appCrop: "header:has(h1) >> nth=0", avenueCrop: "[data-slot=page-header]", frame: true },
     { label: "page title", app: "detail-pieces--page-header-story", appCrop: "header h1 >> nth=0", avenueCrop: "[data-slot=page-header] h1", allow: [
-      { prop: "line-height", avenue: "30px", because: "AVE-70: Avenue's page title sits on a 30px line; the app's on 24px (20px on the desktop scale)" },
-      { prop: "height", avenue: "30px", because: "AVE-70: Avenue's page title sits on a 30px line; the app's on 24px (20px on the desktop scale)" },
-      { prop: "*-gap", app: "0px", avenue: "8px", because: "AVE-70: Avenue's title is a flex row that can hold a count (the count is new; the gap shows only with one)" },
-      { prop: "parts", because: "AVE-70: Avenue's page header story shows a count beside the title; the app's PageHeader has none" },
+      { prop: "line-height", avenue: "30px", because: "AVE-70: the page title keeps the heading token's 30px line, because it wraps on a phone and two 24px lines on a 24px line touch; the app's arbitrary text-[1.5rem] inherits the body's line (24px, 20px desktop)" },
+      { prop: "height", avenue: "30px", because: "AVE-70: the page title keeps the heading token's 30px line, because it wraps on a phone and two 24px lines on a 24px line touch; the app's arbitrary text-[1.5rem] inherits the body's line (24px, 20px desktop)" },
+      { prop: "*-gap", app: "0px", avenue: "8px", because: "AVE-70: the title is a flex row that can hold a count, new in Avenue; the gap shows only with one" },
+      { prop: "parts", because: "AVE-70: Avenue's page header can show a count beside the title; the app's PageHeader has none" },
     ] },
   ],
   "composites-page-header--wide": { none: "The page header inside the 1280px page frame; the frame is the page's, and the header is compared through Page header / Desktop minimum." },
   "composites-page-header--phone": { none: "The page header at phone width with its actions wrapped under the title; the desktop app has no phone story. Compared through Page header / Desktop minimum." },
   "composites-page-header--reading-width-long-title": { none: "A long title wrapping inside the 768px reading frame; the app has no such story. Compared through Page header / Desktop minimum." },
   "composites-section-card--desktop-minimum": [
-    { label: "section card frame", app: "detail-pieces--people", appCrop: "[data-slot=card] >> nth=0", avenueCrop: "[data-slot=card] >> nth=0", frame: true, allow: [
-      { prop: "box-shadow", because: "AVE-70: Avenue's SectionCard outline is Card's ring-foreground/10; the app's section card uses ring-border" },
-    ] },
-    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0", allow: DESKTOP_TITLE },
+    { label: "section card frame", app: "detail-pieces--people", appCrop: "[data-slot=card] >> nth=0", avenueCrop: "[data-slot=card] >> nth=0", frame: true },
+    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0" },
   ],
   "composites-section-card--detail-list-story": [
     { label: "detail label", app: "detail-pieces--people", appCrop: "dl >> nth=0 >> dt >> nth=0", avenueCrop: "[data-slot=detail-list] dt >> nth=0" },
@@ -851,12 +849,31 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
 
+  // ---- Composites part 4: the toolbars (AVE-9)
+  "composites-toolbar--wide": [
+    { label: "toolbar filters", app: "shell-toolbar--default", appCrop: "#storybook-root [role=toolbar] > div >> nth=0", avenueCrop: "[data-slot=toolbar-filters]", allow: [
+      ...CHIP,
+      { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
+    ] },
+    { label: "toolbar search", app: "shell-toolbar--default", appCrop: "#storybook-root [role=toolbar] input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },
+  ],
+  "composites-toolbar--phone": [
+    { label: "phone toolbar chips", app: "primitives-phone--toolbar", appCrop: "#storybook-root > div > div:nth-child(2)", avenueCrop: "[data-slot=chip-row]", allow: [
+      ...CHIP,
+      { prop: "padding-*", app: "16px", avenue: "20px", because: "AVE-2 §1: the strip's padding is the page inset, 16px on a phone and 20px from 640px; the capture is wider than a phone" },
+      { prop: "width", because: "AVE-2 §1: the chips' 8px gaps (the app's 6px) and 32px height make the row wider" },
+    ] },
+    { label: "phone toolbar search", app: "primitives-phone--toolbar", appCrop: "#storybook-root input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },
+  ],
+  "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
+
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [
     { label: "form dialog frame", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=dialog-content]", frame: true },
     { label: "form dialog header", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-header]", avenueCrop: "[data-slot=dialog-header]", frame: true, allow: [
       { prop: "padding-left", app: "20px", avenue: "16px", because: DIALOG_INSET },
-      { prop: "padding-right", app: "20px", avenue: "48px", because: "AVE-61: the form dialog header keeps 48px on the right, clear of the close button; the app's keeps 20px" },
+      { prop: "padding-right", app: "20px", avenue: "48px", because: "AVE-2 §4: the close button sits 16px into the header's corner and is 24px wide, so the header's end padding is 48px and a long title stops 8px before it; the app's 20px lets a long title run under it (AVE-61)" },
     ] },
     { label: "form dialog footer", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-footer]", avenueCrop: "[data-slot=dialog-footer]", frame: true, allow: [
       { prop: "padding-left", app: "20px", avenue: "16px", because: DIALOG_INSET },
