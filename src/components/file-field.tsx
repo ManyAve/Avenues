@@ -4,7 +4,7 @@ import {
   type FileInputController,
   type FileRejection,
 } from "@ui-sdk/react/file-input";
-import { FileUpIcon, ImageUpIcon, RotateCwIcon } from "lucide-react";
+import { CircleAlertIcon, FileUpIcon, ImageUpIcon, RotateCwIcon } from "lucide-react";
 import { useId, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Button, buttonVariants } from "#avenue/components/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
@@ -102,14 +102,17 @@ function FileField({
   const hasFile = !!file && status !== "empty";
   const Icon = kind === "image" ? ImageUpIcon : FileUpIcon;
   const percent = progress === undefined ? undefined : Math.round(Math.min(100, Math.max(0, progress)));
+  // When the name is already on screen above the row, the messages don't repeat it: a long name would wrap to
+  // several lines on a phone (AVE-48). Under a thumbnail, where the name isn't shown, they still name the file.
+  const nameShown = hasFile && (kind === "document" || !file.url);
+  const subject = file && !nameShown ? file.name : "this file";
   const failure =
     status === "failed"
-      ? (error ?? (file ? `Couldn't upload ${file.name}. Check your connection and try again.` : "Couldn't upload the file. Try again."))
+      ? (error ?? (file ? `Couldn't upload ${subject}. Check your connection and try again.` : "Couldn't upload the file. Try again."))
       : undefined;
   const unconfirmed =
     status === "unconfirmed"
-      ? (error ??
-        `Couldn't confirm ${file?.name ?? "the file"} was saved. Check again before choosing it a second time.`)
+      ? (error ?? `Couldn't confirm ${file ? subject : "the file"} was saved. Check again before choosing it a second time.`)
       : undefined;
   const describedBy = disabledReason ? reasonId : undefined;
 
@@ -151,7 +154,7 @@ function FileField({
         render={<div data-slot="file-field-row" className="flex flex-wrap items-center gap-controls text-foreground" />}
       >
         {kind === "image" && hasFile && file.url ? <FileThumbnail src={file.url} /> : null}
-        {hasFile && (kind === "document" || !file.url) ? (
+        {nameShown ? (
           <FileName name={file.name} className="max-w-full min-w-0 basis-full text-sm sm:basis-auto" />
         ) : null}
         <FileInputTrigger
@@ -210,7 +213,18 @@ function FileField({
       ) : null}
       {hint ? <FieldDescription className="text-meta">{hint}</FieldDescription> : null}
       <UploadStatus status={status} progress={percent} />
-      <FieldError>{failure}</FieldError>
+      <FieldError>
+        {failure ? (
+          // The icon, 4px, then the text, indented under it, like the unconfirmed row: colour never carries the
+          // state alone (AVE-48). The icon box is one line tall, so it sits on the first line at either type scale.
+          <span className="flex items-start gap-1">
+            <span className="flex h-lh shrink-0 items-center">
+              <CircleAlertIcon aria-hidden className="size-4" />
+            </span>
+            <span className="min-w-0">{failure}</span>
+          </span>
+        ) : null}
+      </FieldError>
       {status === "unconfirmed" ? <InlineMessage tone="warning">{unconfirmed}</InlineMessage> : null}
     </Field>
   );
@@ -230,18 +244,69 @@ function FileThumbnail({ src, className, ...props }: ComponentProps<"img">) {
 }
 
 /**
- * A file name that truncates in the middle, so the extension stays visible ("sunnydale-annual-…-rules.pdf" reads as
- * a PDF). Screen readers still read the whole name.
+ * A file name that truncates in the middle, so the extension stays visible ("sunnydale-annual-meeti…-rules.pdf" reads
+ * as a PDF). The head is cut to whole characters that fit and joined to its ellipsis and the tail with no gap: a
+ * CSS ellipsis leaves the unused part of the last character's width as a visible gap before the tail (AVE-48).
+ * Screen readers read the whole name; the cut copy is hidden from them.
  */
 function FileName({ name, className, ...props }: ComponentProps<"span"> & { name: string }) {
   const dot = name.lastIndexOf(".");
   const tailLength = Math.min(name.length - (dot > 0 ? dot : name.length) + 6, name.length);
   const head = name.slice(0, name.length - tailLength);
   const tail = name.slice(name.length - tailLength);
+  const headRef = useRef<HTMLSpanElement>(null);
+  // How many characters of the head fit; null shows it all.
+  const [fit, setFit] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const headEl = headRef.current;
+    const box = headEl?.parentElement?.parentElement;
+    const row = box?.parentElement;
+    if (!headEl || !box || !row) return;
+    const measure = () => {
+      const context = document.createElement("canvas").getContext("2d");
+      if (!context) return;
+      const style = getComputedStyle(headEl);
+      // Built from the longhands: Chromium leaves the `font` shorthand empty when it can't serialise it.
+      context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      context.letterSpacing = style.letterSpacing;
+      const width = (text: string) => context.measureText(text).width;
+      const rowStyle = getComputedStyle(row);
+      const room =
+        row.clientWidth - Number.parseFloat(rowStyle.paddingLeft) - Number.parseFloat(rowStyle.paddingRight) - width(tail);
+      if (width(head) <= room) {
+        setFit(null);
+        return;
+      }
+      let low = 0;
+      let high = head.length;
+      while (low < high) {
+        const mid = Math.ceil((low + high) / 2);
+        if (width(`${head.slice(0, mid)}…`) <= room) low = mid;
+        else high = mid - 1;
+      }
+      setFit(low);
+    };
+    measure();
+    // Measure again once the web font has loaded: until then the canvas measures the fallback font.
+    let live = true;
+    void document.fonts?.ready.then(() => live && measure());
+    const observer = new ResizeObserver(measure);
+    observer.observe(row);
+    return () => {
+      live = false;
+      observer.disconnect();
+    };
+  }, [head, tail]);
   return (
     <span data-slot="file-name" title={name} className={cn("flex min-w-0 whitespace-nowrap", className)} {...props}>
-      <span className="truncate">{head}</span>
-      <span className="shrink-0">{tail}</span>
+      <span className="sr-only">{name}</span>
+      <span aria-hidden className="flex min-w-0">
+        {/* truncate stays as the fallback before the first measure. */}
+        <span ref={headRef} className="truncate">
+          {fit === null ? head : `${head.slice(0, fit)}…`}
+        </span>
+        <span className="shrink-0">{tail}</span>
+      </span>
     </span>
   );
 }
