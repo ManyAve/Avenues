@@ -5,6 +5,9 @@
  * 1. Storybook's Vitest addon only runs stories that carry the `test` tag, which every story has unless
  *    it (or its meta, or the preview) removes it with `!test`; a story removed that way would never
  *    render in a test and nothing would say so.
+ * 3. AVE-71: every component and composite story has an entry in scripts/parity-pairs.ts (the app story it
+ *    was ported from, or a written reason it has none), and the map names no story that's gone. `bun run
+ *    parity` needs the app checked out, so `check` holds the map itself; parity then checks the app side.
  * 2. AVE-18: every file in src/components must be listed in scripts/component-patterns.ts. A component
  *    with a pattern needs a tested story tagged `pattern:<that pattern>` in its own stories file; an
  *    upstream ui-sdk component needs one tagged `agent`. The story tests run those checks
@@ -14,6 +17,8 @@
  */
 import { basename, resolve } from "node:path";
 import { COMPONENT_PROOF, PATTERNS, componentForStoryFile, requiredTag } from "./component-patterns";
+import { mapProblems, storiesToPair, type PairEntry } from "./parity-lib";
+import { PAIRS } from "./parity-pairs";
 
 interface Entry {
   id: string;
@@ -69,6 +74,17 @@ export function patternProblems(
   return problems;
 }
 
+/**
+ * Problems with the parity map, judged from Avenue's side only: a component or composite story with no entry, an
+ * entry for a story that no longer exists, an allowance without an accepted reason. Whether each app story exists is
+ * checked by `bun run parity`, which has the app's index.
+ */
+export function parityMapProblems(index: Index, map: Record<string, PairEntry> = PAIRS): string[] {
+  const avenue = storiesToPair(Object.values(index.entries).filter((e) => e.type === "story").map((e) => e.id));
+  const appNamed = Object.values(map).flatMap((entry) => (Array.isArray(entry) ? entry.map((pair) => pair.app) : []));
+  return mapProblems(map, avenue, appNamed).map((p) => `${p} (scripts/parity-pairs.ts)`);
+}
+
 if (import.meta.main) {
   const root = resolve(import.meta.dir, "..");
   const path = resolve(root, process.argv[2] ?? "storybook-static/index.json");
@@ -87,8 +103,11 @@ if (import.meta.main) {
   );
   const problems = patternProblems(components, index);
   for (const p of problems) console.log(p);
+  const parity = parityMapProblems(index);
+  for (const p of parity) console.log(p);
 
   console.log(`${stories} stories, ${missing.length} left out of the story tests.`);
   console.log(`${components.length} components, ${problems.length} pattern coverage problems.`);
-  process.exit(missing.length + problems.length > 0 ? 1 : 0);
+  console.log(`${Object.keys(PAIRS).length} parity map entries, ${parity.length} parity map problems.`);
+  process.exit(missing.length + problems.length + parity.length > 0 ? 1 : 0);
 }
