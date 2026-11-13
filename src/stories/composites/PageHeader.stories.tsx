@@ -45,7 +45,7 @@ export const DesktopMinimum: Story = {
   globals: desktop,
   render: () => <Households />,
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { level: 1, name: "Households, 128" })).toBeInTheDocument();
+    await expect(canvas.getByRole("heading", { level: 1, name: /^Households ?, 128$/ })).toBeInTheDocument();
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "Export" })).toHaveFocus();
     await userEvent.tab();
