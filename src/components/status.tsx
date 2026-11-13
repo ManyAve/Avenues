@@ -6,7 +6,11 @@ import { cn } from "#avenue/lib/utils";
 /**
  * ManyAve's Status and Count, ported from the app's app/ui/components/Badge.tsx (e01cc90). Colours unchanged.
  * AVE-2: Count's 4px corner is xs and its 5px side padding 4px; Status's 5px gap is 4px and its 6px side
- * padding 8px. Both stay 20px tall labels (pills allowed, AVE-2 section 5).
+ * padding 8px. Pills allowed (AVE-2 section 5).
+ *
+ * Status is as tall as the app's (AVE-56): its meta line plus 1px padding and a 1px border, so 24px on the web
+ * scale and 22px on desktop. The app pads its filled pill 3px instead, which is off the grid; here outline and
+ * filled share one height, so a register row of mixed labels lines up.
  */
 
 /** Small muted count next to a label, e.g. "Households 24". */
@@ -69,7 +73,7 @@ function Status({
       data-tone={tone}
       data-filled={filled ? "" : undefined}
       className={cn(
-        "h-5 gap-1 bg-background px-2 py-0 font-[450] text-muted-foreground",
+        "h-auto gap-1 bg-background px-2 py-px font-[450] text-muted-foreground",
         filled && ["border-transparent", fills[tone]],
         className,
       )}

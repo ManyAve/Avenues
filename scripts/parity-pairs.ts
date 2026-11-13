@@ -47,16 +47,18 @@ const MODE_SEGMENT: Allowance[] = [
   ...MODE_DEV.filter((a) => a.prop !== "border-*-radius"),
   { prop: "border-*-radius", because: "AVE-2 §3: segmented-control items take the md corner (8px) where the app's are 10px" },
 ];
+const COUNT_PART =
+  "app: app/ui/components/Badge.tsx: the app's chips and nav tabs use its Count too, a plain span with no data-slot; Avenue's Count names its part (data-slot=count), so the part lists differ while the count is the same component";
 const MD_HEIGHT = "AVE-2 §2: toolbar controls share the md height, 32px (the app's are 29 or 30px)";
 const CHIP: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
   { prop: "*-gap", app: "5px", avenue: "4px", because: "AVE-2 §1: the chip's 5px gap becomes 4px" },
   { prop: "*-gap", where: "root", app: "6px", avenue: "8px", because: "AVE-2 §1: chips in a row are --space-group, 8px, apart (the app's off-grid 6px)" },
-  { prop: "parts", because: "AVE-56: the app's chip count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+  { prop: "parts", because: COUNT_PART },
 ];
 const CHIP_CHECK: Allowance[] = [
   ...CHIP,
-  { prop: "parts", because: "AVE-8: a selected chip shows a 16px check before its label (UI Designer, for WCAG 1.4.1), and uses Count (AVE-56)" },
+  { prop: "parts", because: "AVE-8: a selected chip shows a 16px check before its label (UI Designer, for WCAG 1.4.1), and its count is Avenue's named Count part" },
   { prop: "width", because: "AVE-8: the selected chip's check makes it wider (UI Designer, for WCAG 1.4.1)" },
 ];
 const NAV_TAB: Allowance[] = [
@@ -68,7 +70,7 @@ const NAV_TAB: Allowance[] = [
   { prop: "*-gap", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px gap becomes 8px" },
   { prop: "border-*-radius", app: "pill", avenue: "8px", because: "AVE-2 §5: a link acts, so it isn't a pill; sm controls take the md corner (§3)" },
   { prop: "width", because: "AVE-2 §1: the wider padding and gap make the same label wider" },
-  { prop: "parts", because: "AVE-56: the app's nav count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+  { prop: "parts", because: COUNT_PART },
 ];
 const SEARCH: Allowance[] = [
   { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
@@ -121,15 +123,14 @@ const MENU_ITEM: Allowance[] = [
   { prop: "row-gap", because: MENU_ITEM_PAD },
   { prop: "border-*-radius", app: "8px", avenue: "6px", because: MENU_ITEM_CORNER },
 ];
+const BADGE_IN_STATUS =
+  "app: app/ui/components/Badge.tsx: the app's Status passes h-auto px-1.5 py-px bg-background font-[450] text-muted-foreground and a dot to its badge; the app's outline badge itself (ui/badge.tsx) is transparent, foreground, font-medium, 2px by 8px, as Avenue's. Avenue's Status is compared through Status / Tones";
 const STATUS: Allowance[] = [
   { prop: "padding-left", app: "6px", avenue: "8px", because: "AVE-2 §1: Status's 6px side padding becomes 8px" },
   { prop: "padding-right", app: "6px", avenue: "8px", because: "AVE-2 §1: Status's 6px side padding becomes 8px" },
   { prop: "*-gap", app: "5px", avenue: "4px", because: "AVE-2 §1: Status's 5px gap becomes 4px" },
   { prop: "border-*-radius", app: "26px", avenue: "pill", because: PILL },
   { prop: "width", because: "AVE-2 §1: the wider side padding makes the same label wider" },
-  { prop: "height", because: "AVE-56: Status is 20px tall; the app's is 24px (22px on desktop)" },
-  { prop: "padding-top", because: "AVE-56: the app's label has 1px top and bottom padding" },
-  { prop: "padding-bottom", because: "AVE-56: the app's label has 1px top and bottom padding" },
 ];
 const CARD_ACTION_ROW: Allowance[] = [
   { prop: "height", where: "card-action 1", avenue: "28px", because: "AVE-2 §6: the action row holds the 28px sm control, centred on the title's line" },
@@ -245,17 +246,10 @@ export const PAIRS: Record<string, PairEntry> = {
       app: "primitives-status--paid",
       appCrop: "[data-slot=badge]",
       avenueCrop: "[data-slot=badge] >> nth=10",
-      allow: [
-        ...STATUS,
-        { prop: "padding-left", because: "AVE-56: the app's badge has a status dot and 6px sides; Avenue's outline badge 4px and 8px" },
-        { prop: "padding-right", because: "AVE-56: the app's badge has a status dot and 6px sides; Avenue's outline badge 4px and 8px" },
-        { prop: "padding-top", because: "AVE-56: the app's badge has 1px top and bottom padding, Avenue's 2px" },
-        { prop: "padding-bottom", because: "AVE-56: the app's badge has 1px top and bottom padding, Avenue's 2px" },
-        { prop: "background-color", because: "AVE-56: the app's badge is filled with the card colour; Avenue's outline badge is transparent" },
-        { prop: "color", because: "AVE-56: the app's badge text is muted; Avenue's outline badge is foreground" },
-        { prop: "font-weight", because: "AVE-56: the app's badge is weight 450, Avenue's 500" },
-        { prop: "parts", because: "AVE-56: the app's badge draws a status dot; Avenue's Badge takes an icon instead" },
-      ],
+      // The app has no story of its plain Badge, so this crops the badge inside its Status story.
+      allow: ["padding-*", "background-color", "color", "font-weight", "parts", "height", "width", "*-gap", "border-*-radius"].map(
+        (prop) => ({ prop, because: BADGE_IN_STATUS }),
+      ),
     },
   ],
   "components-status--tones": [
@@ -275,7 +269,7 @@ export const PAIRS: Record<string, PairEntry> = {
         { prop: "padding-left", app: "5px", avenue: "4px", because: "AVE-2 §1: Count's 5px side padding becomes 4px" },
         { prop: "padding-right", app: "5px", avenue: "4px", because: "AVE-2 §1: Count's 5px side padding becomes 4px" },
         { prop: "width", because: "AVE-2 §1: the narrower side padding makes the same count 2px narrower" },
-        { prop: "height", because: "AVE-56: the app's count is an inline 17px box (16px desktop); Avenue's is 20px (18px)" },
+        { prop: "height", because: "app: app/ui/components/Count.stories.tsx: Count / Default renders a bare inline span (a 17px content box, 16px desktop); Avenue's story sets it in a flex row, as the app's Count / With label does, where the same classes give a 20px line box (18px)" },
       ],
     },
   ],
@@ -730,7 +724,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- App controls ported in AVE-8 part 2: each app story has an Avenue story of the same name
   "components-chip--selected-beside-unselected": [
-    { label: "selected chip", app: "primitives-chip--pressed", appCrop: "[aria-pressed=true] >> nth=0", avenueCrop: "[aria-pressed=true] >> nth=0", allow: CHIP_CHECK.filter((a) => !a.because.startsWith("AVE-56")) },
+    { label: "selected chip", app: "primitives-chip--pressed", appCrop: "[aria-pressed=true] >> nth=0", avenueCrop: "[aria-pressed=true] >> nth=0", allow: CHIP_CHECK.filter((a) => a.because !== COUNT_PART) },
     { label: "unselected chip", app: "primitives-chip--default", appCrop: "[aria-pressed=false] >> nth=0", avenueCrop: "[aria-pressed=false] >> nth=0", allow: CHIP },
   ],
   "components-chip--filter-row": [{ label: "filter row", app: "primitives-chip--filter-row", avenueCrop: "[data-slot=chip-row]", allow: CHIP }],
