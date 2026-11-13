@@ -48,7 +48,9 @@ function ToggleGroup({
     orientation,
     style: { "--gap": spacing } as CSSProperties,
     className: cn(
-      "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-lg data-[size=sm]:rounded-md data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
+      // On a phone, a spaced group wraps instead of running off the screen, and its items sit at least gap-controls
+      // (16px) apart in both directions, so their 44px hit areas don't overlap (AVE-22).
+      "group/toggle-group flex w-fit flex-row items-center pointer-coarse:not-data-[spacing=0]:flex-wrap pointer-coarse:not-data-[spacing=0]:gap-[max(calc(var(--spacing)*var(--gap)),var(--avenue-controls-gap))] gap-[--spacing(var(--gap))] rounded-lg data-[size=sm]:rounded-md data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
       className,
     ),
   };

@@ -14,7 +14,9 @@ import { cn } from "#avenue/lib/utils";
  * `closeOnEscape={false}` (for a step that must finish, like a payment being sent).
  *
  * The close button moves from 8px to 16px from the corner and shrinks from 28 to 24px, so it sits outside the
- * 14px corner's curve (AVE-2 section 4) and centres on the title's line; Button's shared hit area makes it 44px on phones.
+ * 14px corner's curve (AVE-2 section 4) and centres on the title's line; its hit area stays 40px with a mouse
+ * and is 44px on phones (the shared `hit-area`). It has no neighbour, so it stays 24px on phones where other xs controls
+ * become 28px.
  */
 function Dialog({
   closeOnEscape = true,
@@ -106,7 +108,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+        "-mx-4 -mb-4 flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
         className,
       )}
       {...props}

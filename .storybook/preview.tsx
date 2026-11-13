@@ -54,8 +54,8 @@ const preview: Preview = {
   // After the play function: ui-sdk's pattern check for stories tagged `pattern:<name>`, and the agent
   // test for stories tagged `agent` (AVE-18, .storybook/pattern-check.ts).
   // Then a story that asked for a viewport (the 390px phone) must have run at that width (.storybook/viewport-check.ts),
-  // and, in the `touch` project only (globals.pointer "coarse", vitest.config.ts), the 44px touch-target measure
-  // (AVE-22, .storybook/touch-targets.ts).
+  // and the target-size measure (AVE-22, .storybook/touch-targets.ts): mouse minimums in the four fine-pointer
+  // projects, the 44px hit test in the `touch` project (globals.pointer, vitest.config.ts).
   afterEach: async ({ tags, parameters, globals, title }) => {
     await runAccessibilityChecks(tags, parameters["patternRoot"]);
     runViewportCheck(globals, parameters);
@@ -69,6 +69,11 @@ const preview: Preview = {
     },
   ],
   parameters: {
+    // A phone-sized viewport (390 x 844, the width of most current phones) for the toolbar and for the `touch`
+    // story-test project, which measures touch targets at that width (AVE-22).
+    viewport: {
+      options: { phone: { name: "Phone", styles: { width: "390px", height: "844px" }, type: "mobile" } },
+    },
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
     // A 390px phone, for stories that must be seen at phone width (AVE-23). A story picks it with

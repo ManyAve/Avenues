@@ -88,10 +88,13 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
 ## Touch targets
 
 Every control composes the shared `hit-area` utility (`src/styles/avenue.css`): 44px on a phone, 24px with a
-mouse, invisible, never hand-written `after:-inset-*` (AVE-22, README "Touch targets"). Where neighbours are too
-close for that, the control grows on `pointer-coarse:` only, never at fine pointer, so `visual:diff` stays
-identical. The `touch` story-test project measures every control in the Components and Composites stories and
-fails on a tap area under 44px or two that overlap; fix the control or the layout, not the measure.
+mouse (more where `--hit-area-x/y` keeps a reach), invisible, never hand-written `after:-inset-*` (AVE-22, README
+"Touch targets"). `hit-area` owns the control's `::after`; decoration on a control uses `::before` or a child.
+Between two things you can tap, use `gap-controls` (16px on phones), not `gap-group` or a literal gap. Where
+neighbours are too close for an invisible extension, the control grows on `pointer-coarse:` only, never at fine
+pointer, so `visual:diff` stays identical. The story tests measure every control in the Components and Composites
+stories: the `touch` project fails on a tap area under 44px or two that overlap, the mouse projects on a reach
+smaller than `FINE_MINIMUMS`; fix the control or the layout, not the measure.
 
 ## Proving a change looks the same
 

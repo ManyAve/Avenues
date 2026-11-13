@@ -78,7 +78,7 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
           )}
           <ToastTitle />
           {item.action && (
-            <ToastAction className="relative cursor-pointer rounded-xs font-medium text-foreground underline underline-offset-3 outline-none after:absolute after:-inset-2 focus-visible:ring-3 focus-visible:ring-ring/50" />
+            <ToastAction className="relative cursor-pointer rounded-xs font-medium text-foreground underline underline-offset-3 outline-none hit-area [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] focus-visible:ring-3 focus-visible:ring-ring/50" />
           )}
           {item.type === "error" && (
             <ToastClose

@@ -51,7 +51,13 @@ export default defineConfig({
   test: {
     projects: matrix.map(([theme, typeScale, pointer]) => ({
       extends: true,
-      plugins: [storybookTest({ configDir: ".storybook", initialGlobals: { theme, typeScale, pointer } })],
+      plugins: [
+        storybookTest({
+          configDir: ".storybook",
+          // The touch project is also phone-sized: Storybook's viewport "phone", 390 x 844 (.storybook/preview.tsx).
+          initialGlobals: { theme, typeScale, pointer, ...(pointer === "coarse" ? { viewport: { value: "phone" } } : {}) },
+        }),
+      ],
       test: {
         name: pointer === "coarse" ? "touch" : `${theme}-${typeScale}`,
         browser: {

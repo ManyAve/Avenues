@@ -160,6 +160,58 @@ export function touchTargetProblems(root: ParentNode = document.body): TouchProb
   return problems;
 }
 
+/**
+ * Mouse minimums (UX Engineer, AVE-22): the reach a control had before the shared rule, kept so a later change can't
+ * quietly shrink it. Each is the extension past the control's padding box on each side, [x, y]; every other control
+ * needs at least 24 x 24px (WCAG 2.2 target size). Selectors name the control by its data-slot.
+ */
+export const FINE_MINIMUMS: readonly { selector: string; extend: readonly [number, number]; why: string }[] = [
+  { selector: "[data-slot=checkbox]", extend: [12, 8], why: "a register row checkbox has no visible label to click" },
+  { selector: "[data-slot=switch]", extend: [12, 8], why: "as before AVE-22" },
+  { selector: "[data-slot=radio]", extend: [12, 8], why: "as Checkbox: a radio's reach past its 16px dot" },
+  {
+    selector: "[data-slot=dialog-close], [data-slot=drawer-close]",
+    extend: [8, 8],
+    why: "the 24px close button (Dialog, Sheet) keeps a 40px reach",
+  },
+  { selector: "[data-slot=toast-action]", extend: [8, 8], why: "the toast's text action keeps its 8px reach" },
+  { selector: "[data-slot=tooltip-trigger][aria-label]", extend: [8, 8], why: "the 16px help button keeps a 32px reach" },
+];
+export const FINE_FLOOR = 24;
+
+/** The box a pointer can hit: the control's own box, or its hit-area ::after where that is bigger, in each direction. */
+function hitBox(control: HTMLElement): { width: number; height: number } {
+  const rect = control.getBoundingClientRect();
+  const after = getComputedStyle(control, "::after");
+  if (after.content === "none" || after.position !== "absolute") return { width: rect.width, height: rect.height };
+  return {
+    width: Math.max(rect.width, parseFloat(after.width) || 0),
+    height: Math.max(rect.height, parseFloat(after.height) || 0),
+  };
+}
+
+/**
+ * With a mouse (the four fine-pointer projects): every control's hit box is at least 24 x 24px, and the controls in
+ * FINE_MINIMUMS keep their reach. Sizes only: desktop galleries may let reaches touch, as they did before.
+ */
+export function fineTargetProblems(root: ParentNode = document.body): string[] {
+  const problems: string[] = [];
+  for (const control of root.querySelectorAll<HTMLElement>(CONTROL_SELECTOR)) {
+    if (!isTappable(control)) continue;
+    const box = hitBox(control);
+    const rule = FINE_MINIMUMS.find((r) => control.matches(r.selector));
+    // The extension is measured from the padding box (inside the border), as `after:-inset-*` was before.
+    const needWidth = rule ? control.clientWidth + 2 * rule.extend[0] : FINE_FLOOR;
+    const needHeight = rule ? control.clientHeight + 2 * rule.extend[1] : FINE_FLOOR;
+    if (box.width + 0.5 < needWidth || box.height + 0.5 < needHeight) {
+      problems.push(
+        `${describe(control)}: hit area ${Math.round(box.width)} x ${Math.round(box.height)}px, needs ${Math.round(needWidth)} x ${Math.round(needHeight)}px${rule ? ` (${rule.why})` : " (WCAG 2.2 target size)"}`,
+      );
+    }
+  }
+  return problems;
+}
+
 export function formatTouchProblems(problems: readonly TouchProblem[]): string {
   return problems
     .map(
@@ -170,15 +222,22 @@ export function formatTouchProblems(problems: readonly TouchProblem[]): string {
 }
 
 /**
- * Runs after every story in the `touch` project. Fails when the browser isn't actually emulating a coarse pointer
+ * Runs after every story. In the four mouse projects it checks hit-area sizes (fineTargetProblems); in the `touch`
+ * project it hit-tests 44px areas. Fails when the browser isn't actually emulating a coarse pointer
  * (so a broken setup can't pass silently), or when any control's tap area is short or overlaps another's.
  */
 export function runTouchTargetCheck(pointer: unknown, title: string): void {
-  if (pointer !== "coarse") return;
+  // Only under the story tests, which set the `pointer` global (vitest.config.ts); not while someone browses Storybook.
+  if (pointer !== "fine" && pointer !== "coarse") return;
+  if (!MEASURED_TITLES.some((prefix) => title.startsWith(prefix))) return;
+  if (pointer === "fine") {
+    const fine = fineTargetProblems();
+    if (fine.length > 0) throw new Error(`Mouse targets smaller than Avenue promises:\n- ${fine.join("\n- ")}`);
+    return;
+  }
   if (!matchMedia("(pointer: coarse)").matches) {
     throw new Error("Touch target check: the touch project is running without a coarse pointer (hasTouch is off).");
   }
-  if (!MEASURED_TITLES.some((prefix) => title.startsWith(prefix))) return;
   const problems = touchTargetProblems();
   if (problems.length > 0) {
     throw new Error(`Touch targets under ${TOUCH_TARGET} x ${TOUCH_TARGET}px on a phone:\n- ${formatTouchProblems(problems)}`);

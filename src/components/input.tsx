@@ -23,7 +23,8 @@ function Input({
       className={cn(
         controlSurface,
         controlSize({ size }),
-        "py-1 file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-control file:font-medium file:text-foreground",
+        // AVE-22: an <input> can't carry the invisible hit area, so on a phone it is 44px tall, at every size.
+        "py-1 pointer-coarse:min-h-11 file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-control file:font-medium file:text-foreground",
         className,
       )}
       {...props}

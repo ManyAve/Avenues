@@ -36,9 +36,10 @@ export type ControlSize = NonNullable<VariantProps<typeof controlShape>["size"]>
 /**
  * The field size: controlShape plus the field's side padding. Fields are never pills.
  *
- * On a phone (coarse pointer) every field is at least 44px tall (AVE-22). A text input is a replaced element, so it
- * can't carry the invisible `hit-area` that buttons and toggles use; the field grows instead. Desktop is unchanged.
+ * On a phone (coarse pointer), text fields (Input, the Combobox input) grow to 44px, because an <input> can't carry
+ * the invisible `hit-area`; Select triggers grow at md and keep their size with `hit-area` at sm (AVE-22). Each
+ * component adds that itself.
  */
 export function controlSize({ size = "md" }: { size?: ControlSize | undefined } = {}) {
-  return `${controlShape({ size })} ${size === "lg" ? "px-3" : "px-2"} pointer-coarse:min-h-11`;
+  return `${controlShape({ size })} ${size === "lg" ? "px-3" : "px-2"}`;
 }

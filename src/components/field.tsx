@@ -60,7 +60,7 @@ function FieldGroup({ className, ...props }: ComponentProps<typeof FieldPrimitiv
 // On a phone (coarse pointer), a field holding a checkbox or switch is at least 44px tall, so a list of them keeps
 // each control's 44px hit area its own (AVE-22). Desktop is unchanged.
 const fieldVariants = cva(
-  "group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground pointer-coarse:has-[>[role=checkbox]]:min-h-11 pointer-coarse:has-[>[role=switch]]:min-h-11",
+  "group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground pointer-coarse:has-[>[role=checkbox]]:min-h-11 pointer-coarse:has-[>[role=radio]]:min-h-11 pointer-coarse:has-[>[role=switch]]:min-h-11",
   {
   variants: {
     orientation: {

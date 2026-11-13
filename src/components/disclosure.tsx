@@ -41,7 +41,7 @@ export function Disclosure({
     >
       <CollapsibleTrigger
         className={cn(
-          "group/disclosure -mx-1 inline-flex items-center gap-1 rounded-xs px-1 text-meta text-muted-foreground outline-none select-none",
+          "group/disclosure relative hit-area -mx-1 inline-flex items-center gap-1 rounded-xs px-1 text-meta text-muted-foreground outline-none select-none",
           "hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-open:text-foreground",
           "data-disabled:cursor-not-allowed data-disabled:opacity-50",
         )}
