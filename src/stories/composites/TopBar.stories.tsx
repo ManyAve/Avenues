@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { NavTab } from "#avenue/components/nav-tab";
 import { TopBar } from "#avenue/components/top-bar";
@@ -52,6 +53,9 @@ export const Wide: Story = {
     await expect(canvas.getByRole("link", { name: /Households/ })).toHaveAttribute("aria-current", "page");
     const nav = canvas.getByRole("navigation", { name: "Neighborhood sections" });
     await expect(nav.querySelectorAll("a")).toHaveLength(sections.length);
+    // One row: the sections sit beside the brand, not on a row of their own.
+    const home = canvas.getByRole("link", { name: "manyave home" }).getBoundingClientRect();
+    await expect(nav.getBoundingClientRect().top).toBeLessThan(home.bottom);
     for (let i = 1; i < sections.length; i++) await userEvent.tab();
     await userEvent.tab();
     await expect(canvas.getByRole("button", { name: "Help" })).toHaveFocus();
@@ -82,5 +86,46 @@ export const Phone: Story = {
       return expect(link.right).toBeLessThanOrEqual(strip.right + 1);
     });
     await expect(canvas.getByText("manyave")).not.toBeVisible();
+  },
+};
+
+function LongPage() {
+  const [count, setCount] = useState(24);
+  return (
+    <div>
+      <TopBar org="LCHOA">
+        {sections.map((s) => (
+          <NavTab key={s.label} href={`#${s.label.toLowerCase()}`} current={s.label === "Households"} count={s.label === "Households" ? count : s.count}>
+            {s.label}
+          </NavTab>
+        ))}
+      </TopBar>
+      <div className="h-[2400px]" />
+      <div className="px-page pb-inset">
+        <button type="button" onClick={() => setCount((n) => n + 1)}>
+          Add a household
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A count in the bar changes while the page is scrolled down: the page stays where it is. Keeping the current
+ * section in view scrolls the strip only; it used to scroll the page back up to the bar on every render.
+ */
+export const UpdateKeepsThePage: Story = {
+  globals: wide,
+  render: () => <LongPage />,
+  play: async ({ canvas, canvasElement }) => {
+    const win = canvasElement.ownerDocument.defaultView!;
+    const add = canvas.getByRole("button", { name: "Add a household" });
+    add.scrollIntoView({ block: "end" });
+    await waitFor(() => expect(win.scrollY).toBeGreaterThan(1000));
+    const scrolled = win.scrollY;
+    await userEvent.click(add);
+    await expect(canvas.getByRole("link", { name: /Households/ })).toHaveTextContent("25");
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    await expect(win.scrollY).toBe(scrolled);
   },
 };
