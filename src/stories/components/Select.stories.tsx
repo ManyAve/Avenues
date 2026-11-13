@@ -637,8 +637,10 @@ export const IconSizes: Story = {
       const select = within(canvasElement).getByRole("combobox", { name: `Year, ${size}` });
       const combobox = within(canvasElement).getByRole("combobox", { name: `Household, ${size}` });
       const field = combobox.closest<HTMLElement>("[data-slot=combobox]")!;
-      const icons = [...select.querySelectorAll("svg"), ...field.querySelectorAll("svg")];
-      // Select's chevron, Combobox's house and up-down chevron.
+      // Select's chevron, Combobox's house and up-down chevron; not the phone's clear button (AVE-93).
+      const icons = [...select.querySelectorAll("svg"), ...field.querySelectorAll("svg")].filter(
+        (svg) => !svg.closest("[data-slot=combobox-clear]"),
+      );
       await expect(icons).toHaveLength(3);
       for (const icon of icons) await expect(icon.getBoundingClientRect().width).toBe(px);
     }
