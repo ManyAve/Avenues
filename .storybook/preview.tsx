@@ -5,6 +5,7 @@ import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
 import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
 import { runAccessibilityChecks } from "./pattern-check";
+import { runViewportCheck } from "./viewport-check";
 
 // ui-sdk's development warnings (a missing name, a part outside its root, ...) throw instead of logging,
 // so a story that misuses ui-sdk fails the story tests (the ui-sdk skill, references/testing.md).
@@ -51,8 +52,10 @@ const preview: Preview = {
   },
   // After the play function: ui-sdk's pattern check for stories tagged `pattern:<name>`, and the agent
   // test for stories tagged `agent` (AVE-18, .storybook/pattern-check.ts).
-  afterEach: async ({ tags, parameters }) => {
+  // Then a story that asked for a viewport (the 390px phone) must have run at that width (.storybook/viewport-check.ts).
+  afterEach: async ({ tags, parameters, globals }) => {
     await runAccessibilityChecks(tags, parameters["patternRoot"]);
+    runViewportCheck(globals, parameters);
   },
   decorators: [
     (Story, { globals }) => {
