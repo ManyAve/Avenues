@@ -886,6 +886,12 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--desktop-minimum": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--sort-popover": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--agent-expands-and-sorts": { none: BEHAVIOUR("Register / Wide") },
+  // AVE-78: the sort popover at rest, beside the app's sort menu with a direction chosen. The app's story shows the menu
+  // in a bordered box rather than a popover, so the frame isn't judged; the rows inside are.
+  "composites-register--sort-popover-open": [
+    { label: "sort menu", app: "primitives-sortmenu--active", appCrop: "#storybook-root > div", avenueCrop: "[data-slot=popover-content]", frame: true, allow: PANEL },
+  ],
+  "composites-register--sorted-ascending": { none: "AVE-78: the sorted column's up arrow is new in Avenue (the app shows the same chevron on every column). The header is compared through Register / Wide." },
   "composites-register--row-action-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--row-action-clicked-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
