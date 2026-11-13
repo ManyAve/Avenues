@@ -867,6 +867,8 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
   "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
+  "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
+  "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },
 
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [
