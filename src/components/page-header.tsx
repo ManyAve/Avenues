@@ -1,0 +1,52 @@
+import type { ComponentProps, ReactNode } from "react";
+import { Count } from "#avenue/components/status";
+import { cn } from "#avenue/lib/utils";
+
+/**
+ * The top of a page (AVE-9): an optional eyebrow, the title (the page's one h1, `heading` 24px), an optional count,
+ * a one-line description, and the page's actions at the end of the title line. On a phone the actions wrap under the
+ * title instead of squeezing it. From the app's PageHeader (detail.tsx) and Neighbors' hub pages (NEI-101).
+ *
+ * The header doesn't pad itself: put it inside the page's frame (px-page, max-w-reading or max-w-grid), so the title
+ * and the content under it share an edge.
+ */
+export function PageHeader({
+  eyebrow,
+  title,
+  count,
+  description,
+  actions,
+  className,
+  ...props
+}: Omit<ComponentProps<"header">, "title"> & {
+  /** A short label above the title: the section, or "Household". */
+  eyebrow?: ReactNode | undefined;
+  title: string;
+  /** Beside the title: how many things the page lists. */
+  count?: ReactNode | undefined;
+  /** One line under the title. */
+  description?: ReactNode | undefined;
+  actions?: ReactNode | undefined;
+}) {
+  return (
+    <header
+      data-slot="page-header"
+      className={cn("flex flex-wrap items-end justify-between gap-x-group gap-y-row-y", className)}
+      {...props}
+    >
+      <div className="min-w-0 basis-full sm:basis-auto">
+        {eyebrow && <p className="text-meta text-muted-foreground">{eyebrow}</p>}
+        <h1 className="flex items-center gap-group text-heading font-[620] tracking-[-0.7px] break-words">
+          {title}
+          {count !== undefined && <Count value={count} />}
+        </h1>
+        {description && <p className="mt-0.5 text-meta text-muted-foreground">{description}</p>}
+      </div>
+      {actions && (
+        <div data-slot="page-header-actions" className="flex flex-wrap items-center gap-group">
+          {actions}
+        </div>
+      )}
+    </header>
+  );
+}
