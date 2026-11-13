@@ -69,15 +69,11 @@ const preview: Preview = {
     },
   ],
   parameters: {
-    // A phone-sized viewport (390 x 844, the width of most current phones) for the toolbar and for the `touch`
-    // story-test project, which measures touch targets at that width (AVE-22).
-    viewport: {
-      options: { phone: { name: "Phone", styles: { width: "390px", height: "844px" }, type: "mobile" } },
-    },
     // The page background comes from Avenue's own tokens, not Storybook's backgrounds tool.
     backgrounds: { disable: true },
     // A 390px phone, for stories that must be seen at phone width (AVE-23). A story picks it with
-    // `globals: { viewport: { value: "phone" } }`; the story tests then run that story at 390 x 844.
+    // `globals: { viewport: { value: "phone" } }`; the story tests then run that story at 390 x 844,
+    // and the `touch` project runs every story there to measure touch targets (AVE-22).
     viewport: {
       options: { phone: { name: "Phone (390px)", styles: { width: "390px", height: "844px" }, type: "mobile" } },
     },

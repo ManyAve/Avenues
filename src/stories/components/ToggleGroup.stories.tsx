@@ -159,8 +159,10 @@ export const Phone: Story = {
   play: async ({ canvas }) => {
     const items = categories.map((c) => canvas.getByRole("radio", { name: c }));
     const widths = items.map((item) => item.getBoundingClientRect().width);
-    // Full width of the phone's content box (390 less 16px each side, less two 8px gaps), split evenly; no label is cut.
-    await expect(Math.round(widths.reduce((a, b) => a + b, 0))).toBe(390 - 32 - 16);
+    // Full width of the phone's content box (390 less 16px each side, less two gaps), split evenly; no label is cut.
+    // The gap is 8px with a mouse and 16px on a touch screen, so neighbouring 44px tap areas don't overlap (AVE-22).
+    const gap = matchMedia("(pointer: coarse)").matches ? 16 : 8;
+    await expect(Math.round(widths.reduce((a, b) => a + b, 0))).toBe(390 - 32 - 2 * gap);
     await expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1);
     for (const item of items) await expect(item.scrollWidth).toBeLessThanOrEqual(item.clientWidth);
     await userEvent.tab();
