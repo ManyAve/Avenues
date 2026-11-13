@@ -121,10 +121,10 @@ The pairs live in `scripts/parity-pairs.ts`. Each Avenue component and composite
 story (and what to crop on each side) it is compared with, or says in a sentence why it has none (a
 behaviour-only story, or something the app doesn't have). Each pair compares, per visible part, the computed
 padding, borders, corners, fill, text colour, type, shadow, gaps and size, plus the pixels where both
-captures show the same text. A difference passes only with an allowance whose reason says which kind it is:
+captures show the same text (not for a frame pair, which compares a container's own box). A difference passes only with an allowance whose reason says which kind it is:
 
-- `AVE-2 §<n>: …` an agreed spacing or corner fix, or `AVE-13: …` / `AVE-29: …`, the agreed contrast and
-  control-text decisions.
+- `AVE-2 §<n>: …` an agreed spacing or corner fix, or `AVE-13: …`, `AVE-29: …` or `AVE-8: …`, the
+  agreed contrast, control-text and selected-chip-check decisions.
 - `AVE-<id>: …` a filed bug that is still open; the report lists it as known.
 - `app: <file>: …` the app's screen passes its own classes to the component (a card's shadow, a dialog's
   sections), so Avenue's component isn't meant to match; name the app file that adds them.

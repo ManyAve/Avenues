@@ -20,8 +20,9 @@ export interface Allowance {
   /**
    * Why, in one of three forms:
    * - `AVE-2 §<n>: …` an agreed fix: a spacing or corner rule Zack asked for. Two other merged design
-   *   decisions count as agreed: `AVE-13: …` (dark colours raised to reach 4.5:1 contrast) and `AVE-29: …`
-   *   (control text is 14px from 768px up on both type scales).
+   *   decisions count as agreed: `AVE-13: …` (dark colours raised to reach 4.5:1 contrast), `AVE-29: …`
+   *   (control text is 14px from 768px up on both type scales) and `AVE-8: …` (the UI Designer's check on a
+   *   selected chip, for WCAG 1.4.1).
    * - `AVE-<id>: …` a filed bug: the run passes while it is open, and the report lists it as known.
    * - `app: <file>: …` the app's story, not its component, draws this: the screen passes its own classes to
    *   the primitive (a card's shadow, a dialog's sections), so Avenue's component doesn't need to match it,
@@ -249,7 +250,7 @@ function covers(allowance: Allowance, d: Difference): boolean {
 }
 
 export function isAgreedFix(because: string): boolean {
-  return /^AVE-2 §\d/.test(because) || /^AVE-(13|29):/.test(because);
+  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29):/.test(because);
 }
 
 export function isAppLocal(because: string): boolean {
@@ -300,7 +301,7 @@ export function mapProblems(map: Record<string, PairEntry>, avenueStories: strin
         if (!app.has(pair.app)) problems.push(`${id} pairs with ${pair.app}, which isn't an app story`);
         for (const a of pair.allow ?? []) {
           if (!isAgreedFix(a.because) && !isKnownBug(a.because) && !isAppLocal(a.because)) {
-            problems.push(`${id}: allowance for ${a.prop} must start "AVE-2 §<n>:", "AVE-13:", "AVE-29:", "AVE-<id>:" or "app: <file>:", not "${a.because}"`);
+            problems.push(`${id}: allowance for ${a.prop} must start "AVE-2 §<n>:", "AVE-8:", "AVE-13:", "AVE-29:", "AVE-<id>:" or "app: <file>:", not "${a.because}"`);
           }
         }
       }

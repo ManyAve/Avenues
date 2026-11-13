@@ -426,7 +426,8 @@ async function main() {
       if (files.diff) await Bun.write(join(reportDir, files.diff), diff);
       const subpixel = !sameOffset(app.offset, avenue.offset);
       const excused = sameText && subpixel && differences.length === 0 && changed > 0;
-      const judged = sameText && !excused;
+      // A frame compares a container's own box; its contents are compared by their own pairs.
+      const judged = sameText && !excused && !pair.frame;
       return { ...base, verdict: verdict(differences, judged && changed > 0, sameText), differences, changedPixels: changed, sameText, subpixel: excused || undefined, files };
     } catch (error) {
       return { ...base, verdict: "error", differences: [], error: error instanceof Error ? error.message.split("\n")[0] : String(error) };
@@ -437,7 +438,7 @@ async function main() {
     "App commit": `${appMeta.commit}${appMeta.dirty ? " (checkout had uncommitted changes; built from HEAD)" : ""}`,
     "Point packages": appMeta.stubbed ? "stubbed (no registry access)" : "installed",
     "Avenue commit": git(["rev-parse", "--short", "HEAD"], root),
-    "Pixel threshold": `${PIXEL_THRESHOLD} per pixel, 0 pixels allowed, judged only where both captures show the same text and, when every style matches, start at the same sub-pixel offset`,
+    "Pixel threshold": `${PIXEL_THRESHOLD} per pixel, 0 pixels allowed, judged only where both captures show the same text and, when every style matches, start at the same sub-pixel offset; not for frames`,
   };
   await Bun.write(join(reportDir, "report.json"), JSON.stringify({ meta, problems, unpaired, results }, null, 2));
   await Bun.write(join(reportDir, "index.html"), html(results, unpaired, meta, problems));

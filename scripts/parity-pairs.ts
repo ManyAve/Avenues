@@ -36,6 +36,55 @@ const DUES_TABLE =
 
 const MONEY_BOX: Allowance = { prop: "height", because: "AVE-55: Avenue's Money sits in a 24px box (20px desktop); the app's is an inline 21px line (18px)" };
 const TOOLTIP_PAD = "AVE-2 §1: the tooltip's off-grid 6px top and bottom padding moves onto the 4px grid at 4px, so a one-line tooltip is 28px (24px desktop)";
+const MODE_DEV: Allowance[] = [
+  { prop: "*-gap", app: "6px", avenue: "4px", because: "AVE-2 §1: the mode toggle's icon to label 6px becomes 4px" },
+  { prop: "padding-left", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
+  { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
+  { prop: "width", because: "AVE-2 §1: the narrower padding and gap make the same label narrower" },
+  { prop: "border-*-radius", app: "10px", avenue: "8px", because: "AVE-2 §3: the 28px sm toggle takes the md corner (8px) where the app's is 10px" },
+];
+const MODE_SEGMENT: Allowance[] = [
+  ...MODE_DEV.filter((a) => a.prop !== "border-*-radius"),
+  { prop: "border-*-radius", because: "AVE-2 §3: segmented-control items take the md corner (8px) where the app's are 10px" },
+];
+const MD_HEIGHT = "AVE-2 §2: toolbar controls share the md height, 32px (the app's are 29 or 30px)";
+const CHIP: Allowance[] = [
+  { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
+  { prop: "*-gap", app: "5px", avenue: "4px", because: "AVE-2 §1: the chip's 5px gap becomes 4px" },
+  { prop: "*-gap", where: "root", app: "6px", avenue: "8px", because: "AVE-2 §1: chips in a row are --space-group, 8px, apart (the app's off-grid 6px)" },
+  { prop: "parts", because: "AVE-56: the app's chip count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+];
+const CHIP_CHECK: Allowance[] = [
+  ...CHIP,
+  { prop: "parts", because: "AVE-8: a selected chip shows a 16px check before its label (UI Designer, for WCAG 1.4.1), and uses Count (AVE-56)" },
+  { prop: "width", because: "AVE-8: the selected chip's check makes it wider (UI Designer, for WCAG 1.4.1)" },
+];
+const NAV_TAB: Allowance[] = [
+  { prop: "height", app: "30px", avenue: "28px", because: "AVE-2 §2: a top-bar link is an sm control, 28px" },
+  { prop: "padding-top", app: "5px", avenue: "0px", because: "AVE-2 §2: the sm height sets the box, not 5px padding" },
+  { prop: "padding-bottom", app: "5px", avenue: "0px", because: "AVE-2 §2: the sm height sets the box, not 5px padding" },
+  { prop: "padding-left", app: "11px", avenue: "12px", because: "AVE-2 §1: the off-grid 11px side padding becomes 12px" },
+  { prop: "padding-right", app: "11px", avenue: "12px", because: "AVE-2 §1: the off-grid 11px side padding becomes 12px" },
+  { prop: "*-gap", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px gap becomes 8px" },
+  { prop: "border-*-radius", app: "pill", avenue: "8px", because: "AVE-2 §5: a link acts, so it isn't a pill; sm controls take the md corner (§3)" },
+  { prop: "width", because: "AVE-2 §1: the wider padding and gap make the same label wider" },
+  { prop: "parts", because: "AVE-56: the app's nav count is its own small span; Avenue uses Count, which is taller than the app's counts" },
+];
+const SEARCH: Allowance[] = [
+  { prop: "height", app: "30px", avenue: "32px", because: MD_HEIGHT },
+  { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
+  { prop: "width", because: GRID_10_TO_8 },
+  { prop: "border-*-radius", app: "3px", avenue: "4px", because: "AVE-2 §3: the shortcut hint's 3px literal becomes the xs corner, 4px" },
+];
+const TOOLBAR: Allowance[] = [
+  { prop: "height", app: "29px", avenue: "32px", because: MD_HEIGHT },
+  { prop: "padding-left", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
+  { prop: "padding-right", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
+  { prop: "border-*-radius", app: "pill", avenue: "10px", because: "AVE-2 §5: icon-only toolbar buttons stop being pills and take the md control corner" },
+  { prop: "width", because: "AVE-2 §2: the taller md button and its padding make it wider" },
+  { prop: "width", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
+  { prop: "height", app: "14px", avenue: "16px", because: "AVE-68: the md button draws 16px icons where the app's sm toolbar button draws 14px" },
+];
 const SECTIONED_DIALOG =
   "app: app/ui/components/dialogs.tsx: the account dialogs pass `gap-0 p-0` and draw their own bordered header, body and footer sections (px-5, footer py-3); Avenue's Dialog keeps the app's default p-4 gap-4 (app/ui/components/ui/dialog.tsx)";
 const DIALOG_INSET = "AVE-2 §1: dialog padding is --space-inset, 16px; the app's sectioned dialogs use 20px at the sides";
@@ -634,9 +683,50 @@ export const PAIRS: Record<string, PairEntry> = {
     ]),
   ),
 
+  // ---- App controls ported in AVE-8 part 2: each app story has an Avenue story of the same name
+  "components-chip--selected-beside-unselected": [
+    { label: "selected chip", app: "primitives-chip--pressed", appCrop: "[aria-pressed=true] >> nth=0", avenueCrop: "[aria-pressed=true] >> nth=0", allow: CHIP_CHECK.filter((a) => !a.because.startsWith("AVE-56")) },
+    { label: "unselected chip", app: "primitives-chip--default", appCrop: "[aria-pressed=false] >> nth=0", avenueCrop: "[aria-pressed=false] >> nth=0", allow: CHIP },
+  ],
+  "components-chip--filter-row": [{ label: "filter row", app: "primitives-chip--filter-row", avenueCrop: "[data-slot=chip-row]", allow: CHIP }],
+  "components-chip--press-by-keyboard": { none: BEHAVIOUR("Chip / Selected beside unselected") },
+  "components-chip--scrolling-row-on-a-phone": { none: "The chip row at phone width, scrolling sideways (AVE-22); the app has no phone story of it. Compared through Chip / Filter row." },
+  "components-modetoggle--default": [
+    { label: "dev toggle", app: "primitives-modetoggle--default", appCrop: "[data-slot=toggle-group-item] >> nth=0", avenueCrop: "[data-slot=toggle] >> nth=0", allow: MODE_DEV },
+    { label: "theme control", app: "primitives-modetoggle--default", appCrop: "[data-slot=toggle-group] >> nth=1", avenueCrop: "[data-slot=segmented-control]", frame: true },
+    { label: "chosen theme", app: "primitives-modetoggle--default", appCrop: "[data-slot=toggle-group] >> nth=1 >> [data-slot=toggle-group-item][aria-pressed=true]", avenueCrop: "[data-slot=segmented-control-item][aria-checked=true]", allow: MODE_SEGMENT },
+  ],
+  "components-modetoggle--dev-dark": [
+    { label: "dev toggle", app: "primitives-modetoggle--dev-dark", appCrop: "[data-slot=toggle-group-item] >> nth=0", avenueCrop: "[data-slot=toggle] >> nth=0", allow: MODE_DEV },
+    { label: "theme control", app: "primitives-modetoggle--dev-dark", appCrop: "[data-slot=toggle-group] >> nth=1", avenueCrop: "[data-slot=segmented-control]", frame: true },
+    { label: "chosen theme", app: "primitives-modetoggle--dev-dark", appCrop: "[data-slot=toggle-group] >> nth=1 >> [data-slot=toggle-group-item][aria-pressed=true]", avenueCrop: "[data-slot=segmented-control-item][aria-checked=true]", allow: MODE_SEGMENT },
+  ],
+  "components-modetoggle--system": [
+    { label: "dev toggle", app: "primitives-modetoggle--system", appCrop: "[data-slot=toggle-group-item] >> nth=0", avenueCrop: "[data-slot=toggle] >> nth=0", allow: MODE_DEV },
+    { label: "theme control", app: "primitives-modetoggle--system", appCrop: "[data-slot=toggle-group] >> nth=1", avenueCrop: "[data-slot=segmented-control]", frame: true },
+    { label: "chosen theme", app: "primitives-modetoggle--system", appCrop: "[data-slot=toggle-group] >> nth=1 >> [data-slot=toggle-group-item][aria-pressed=true]", avenueCrop: "[data-slot=segmented-control-item][aria-checked=true]", allow: MODE_SEGMENT },
+  ],
+  "components-modetoggle--without-dev": { none: "The mode toggle without the Dev segment; the app's stories always show it. The segments are compared through ModeToggle / Default." },
+  "components-modetoggle--by-keyboard": { none: BEHAVIOUR("ModeToggle / Default") },
+  "components-navtab--default": [{ label: "nav tab", app: "primitives-navtab--default", allow: NAV_TAB }],
+  "components-navtab--current": [{ label: "current nav tab", app: "primitives-navtab--current", allow: NAV_TAB }],
+  "components-navtab--with-count": [{ label: "nav tab with count", app: "primitives-navtab--with-count", allow: NAV_TAB }],
+  "components-navtab--sections": { none: "A column of nav tabs as the sidebar sections; the app shows its sidebar only inside full screens. Each tab is compared through NavTab / Default, Current and With count." },
+  "components-navtab--as-router-link": { none: BEHAVIOUR("NavTab / Default") },
+  "components-searchinput--default": [{ label: "search input", app: "primitives-searchinput--default", allow: SEARCH }],
+  "components-searchinput--with-shortcut": [
+    { label: "search input with shortcut", app: "primitives-searchinput--with-shortcut", avenueCrop: "[data-slot=search-input]", allow: SEARCH },
+  ],
+  "components-searchinput--filled": { none: STATE_ONLY("a search input with text in it", "SearchInput / Default") },
+  "components-toolbarbutton--icon": [{ label: "icon toolbar button", app: "primitives-toolbarbutton--icon", allow: TOOLBAR }],
+  "components-toolbarbutton--with-label": [{ label: "toolbar button with label", app: "primitives-toolbarbutton--with-label", allow: TOOLBAR }],
+  "components-toolbarbutton--group": [
+    { label: "toolbar button group", app: "primitives-toolbarbutton--group", allow: [...TOOLBAR, { prop: "*-gap", where: "root", app: "4px", avenue: "8px", because: "AVE-2 §1: controls in a toolbar are --space-group, 8px, apart" }] },
+  ],
+
   // ---- Toggle and toggle group (AVE-6)
   "components-toggle--variants": {
-    none: "The app's only Toggles are the filter chips, which AVE-8 builds as ManyAve's Chip (pills, AVE-2 §5); the plain shadcn Toggle has no counterpart in the app. Pair the Chip story when it lands.",
+    none: "The app's only Toggles are the filter chips, which Avenue builds as Chip (AVE-8); the plain shadcn Toggle has no counterpart in the app. Chip is compared through Chip / Selected beside unselected and Filter row.",
   },
   "components-toggle--keyboard": { none: BEHAVIOUR("Toggle group / Variants") },
   "components-toggle-group--variants": [
