@@ -33,7 +33,10 @@ export const Open: Story = {
     </HoverCard>
   ),
   play: async () => {
-    await expect(await screen.findByText("Robin Avery, owner since 2019")).toBeVisible();
+    // The card mounts at its starting style and fades in; on a loaded machine it can still be at opacity 0 when
+    // it is first found, so wait for it to be visible rather than checking once.
+    const owner = await screen.findByText("Robin Avery, owner since 2019");
+    await waitFor(() => expect(owner).toBeVisible());
   },
 };
 
