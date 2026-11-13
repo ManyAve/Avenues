@@ -32,7 +32,7 @@
     "tokens:compare": "bun scripts/compare-tokens.ts",
     "visual:diff": "bun scripts/visual-diff.ts",
     "ui-sdk:css": "bun scripts/ui-sdk-css.ts",
-    "deploy": "bun run build-storybook && cf deploy storybook-static",
+    "deploy": "bun run build-storybook && bun scripts/stamp-version.ts && cf deploy storybook-static",
     "check": "bun run typecheck && bun run lint && bun run check:classes && bun run test:scripts && bun run test:stories && bun run build-storybook && bun run check:story-coverage"
   },
   "peerDependencies": {
