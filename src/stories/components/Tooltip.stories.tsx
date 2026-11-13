@@ -74,7 +74,7 @@ export const HelpOnALabel: Story = {
     await waitFor(() => expect(queryTip()).toBeNull());
     // A press or tap opens it too, and a second press closes it (ui-sdk's toggleable tooltip).
     await userEvent.click(help);
-    await expect(await findTip()).toBeVisible();
+    await waitFor(async () => expect(await findTip()).toBeVisible()); // fades in from opacity 0
     await userEvent.click(help);
     await waitFor(() => expect(queryTip()).toBeNull());
   },

@@ -79,7 +79,8 @@ export const WithHelp: Story = {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(queryTip()).toBeNull());
     await userEvent.click(help);
-    await expect(await findTip()).toBeVisible();
+    // The tip fades in from opacity 0 (data-starting-style), so wait for it to finish rather than check once.
+    await waitFor(async () => expect(await findTip()).toBeVisible());
     await userEvent.click(help);
     await waitFor(() => expect(queryTip()).toBeNull());
     await expect(canvas.getByRole("button", { name: "About Waiting on board" })).toBeVisible();
