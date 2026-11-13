@@ -109,22 +109,41 @@ Controls and the Docs args table.
 ## Publishing Storybook
 
 The built Storybook is published at **https://avenues.manyave.com**, a Cloudflare Worker that serves
-only static files (`cloudflare.config.ts`; no Worker code, no bindings, no secrets). It deploys with
-Cloudflare's `cf` CLI, which needs Node.js 22.18 or newer on the machine. There is no CI, so publishing
-is a command run by hand from a clean checkout of `main`:
+only static files (`cloudflare.config.ts`; no Worker code, no bindings, no secrets).
+
+**Every push to `main` publishes itself.** The `avenue-storybook` Worker is connected to this repo with
+Cloudflare Workers Builds: on each push to `main`, Cloudflare clones the commit, installs with Bun
+and runs `bun run deploy`, which builds `storybook-static/`, stamps it with the commit and uploads it
+with `cf deploy storybook-static`. Nobody runs anything after a merge. Workers Builds runs no checks
+and blocks nothing: the gate is still `bun run check` and `visual:diff main` on your machine before you
+merge (there is no CI). Its settings live in the Cloudflare dashboard (Worker `avenue-storybook`,
+Settings, Builds), not in this repo, and it uses Cloudflare's own build token, so the repo holds no
+credentials. Other branches do not deploy.
+
+To see which commit is live:
+
+```sh
+curl -s https://avenues.manyave.com/version.json   # {"commit": "...", "by": "workers-builds", ...}
+```
+
+A build that fails shows in the dashboard under Builds and leaves the previous upload serving. To
+undo a bad upload, roll back to the previous deployment in the dashboard, or revert the commit on
+`main`, which publishes again.
+
+To publish by hand (say Workers Builds is down), from a clean checkout of `main`, with Node.js 22.18
+or newer for `cf`:
 
 ```sh
 bunx cf auth whoami   # must show ManyAve's account; if not, `bunx cf auth login` once per machine
 bun run check         # the same gate as a pull request
-bun run deploy        # builds storybook-static/ and uploads it with `cf deploy storybook-static`
+bun run deploy        # builds storybook-static/, stamps version.json, uploads with `cf deploy`
 ```
 
-The first deploy also creates the `avenues.manyave.com` DNS record and certificate, because the domain
-is on the `manyave.com` zone in the same account. The config also claims the route
+The first deploy created the `avenues.manyave.com` DNS record and certificate, because the domain is
+on the `manyave.com` zone in the same account. The config also claims the route
 `avenues.manyave.com/*`: the zone sends every other subdomain to the neighborhood-sites Worker with a
-`*.manyave.com/*` route, which would otherwise answer here instead of Storybook. Every story uses fictional data, so the whole
-Storybook is safe to publish; keep it that way. To undo a bad upload, deploy the previous commit of
-`main` again.
+`*.manyave.com/*` route, which would otherwise answer here instead of Storybook. Every story uses
+fictional data, so the whole Storybook is safe to publish; keep it that way.
 
 ## Layout
 

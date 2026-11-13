@@ -7,6 +7,8 @@ points here.
 ## Rules for the package
 
 - Bun for scripts and dependencies. There is no CI: run `bun run check` before opening a pull request.
+- A push to `main` publishes Storybook to avenues.manyave.com by itself (Cloudflare Workers Builds runs
+  `bun run deploy`; README, "Publishing Storybook"). It checks nothing, so what you merge is what ships.
 - Avenue may use any outside npm package. It never imports from another ManyAve repository.
 - Fictional data only. No secrets, no real HOA data.
 - Imports inside the package use the `#avenue/*` subpaths with no file extension (README, "Imports
