@@ -81,16 +81,31 @@ export function comparePngs(a: Buffer, b: Buffer): { changed: number; diff: Buff
 }
 
 /**
- * The commit to build for `ref`: the ref itself when it names a commit here, else `origin/<ref>`.
- * Undefined when neither exists.
+ * The commit to build for `ref`. A local branch that is only behind `origin/<ref>` is stale (a clone's `main` stays
+ * where it was cloned while fetches move `origin/main`), so `origin/<ref>` wins; a missing local ref also falls back
+ * to it. A local ref with commits of its own is kept. Undefined when neither exists.
  */
-export function resolveRef(ref: string, exists: (candidate: string) => boolean): string | undefined {
-  return [ref, `origin/${ref}`].find(exists);
+export function resolveRef(
+  ref: string,
+  exists: (candidate: string) => boolean,
+  strictlyBehind: (older: string, newer: string) => boolean = () => false,
+): string | undefined {
+  const remote = `origin/${ref}`;
+  if (!exists(ref)) return exists(remote) ? remote : undefined;
+  if (!ref.startsWith("origin/") && exists(remote) && strictlyBehind(ref, remote)) return remote;
+  return ref;
 }
 
 function isCommit(candidate: string): boolean {
   const proc = Bun.spawnSync(["git", "rev-parse", "--verify", "--quiet", `${candidate}^{commit}`], { cwd: root });
   return proc.exitCode === 0;
+}
+
+/** True when `older` is an ancestor of `newer` and not the same commit. */
+function isStrictlyBehind(older: string, newer: string): boolean {
+  const git = (...args: string[]) => Bun.spawnSync(["git", ...args], { cwd: root });
+  const [a, b] = git("rev-parse", older, newer).stdout.toString().trim().split("\n");
+  return a !== b && git("merge-base", "--is-ancestor", older, newer).exitCode === 0;
 }
 
 async function run(cmd: string[], cwd: string): Promise<void> {
@@ -176,9 +191,13 @@ async function main() {
   const reuse = args.includes("--reuse");
   const allowNew = args.includes("--allow-new");
   const asked = args.find((a) => !a.startsWith("--")) ?? "main";
-  const ref = reuse ? asked : resolveRef(asked, isCommit);
+  const ref = reuse ? asked : resolveRef(asked, isCommit, isStrictlyBehind);
   if (ref === undefined) throw new Error(`${asked} is not a commit here, and neither is origin/${asked}; fetch it first`);
-  if (ref !== asked) console.log(`${asked} isn't a local ref; using ${ref}.`);
+  if (ref !== asked) {
+    console.log(
+      isCommit(asked) ? `${asked} is behind ${ref}; using ${ref}.` : `${asked} isn't a local ref; using ${ref}.`,
+    );
+  }
   const baseDir = join(out, "build-base");
   const headDir = join(out, "build-head");
   const reportDir = join(out, "report");
