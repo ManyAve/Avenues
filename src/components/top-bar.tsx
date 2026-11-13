@@ -1,0 +1,90 @@
+import { CircleHelp } from "lucide-react";
+import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import { Button } from "#avenue/components/button";
+import { cn } from "#avenue/lib/utils";
+
+/**
+ * ManyAve's top bar (the app's app/ui/components/TopBar.tsx at e01cc90): the home link, the association's name, the
+ * section links (NavTab) and trailing actions, which default to a Help button. Avenue never ships ManyAve's logo
+ * file, so the app passes its mark as `logo`.
+ *
+ * From 1100px down the section links take their own full-width row; at 700px and narrower they are one scrolling
+ * strip that keeps the current section in view, and the brand shows its mark only.
+ *
+ * Changes from the app (AVE-2): 56px tall (was 53), its sides take the page inset (was 20px, 14px on a phone), the
+ * brand's off-grid 7px gap becomes 8px, the section links' 4px gap becomes gap-controls (they are tap targets),
+ * and the actions keep 8px between them. When the links take their own row, it sits 16px under the first, as in the app,
+ * so their tap areas on a phone don't reach the Help button's, and the strip runs to the bar's edges
+ * with the page inset as scroll padding, so a link it snaps to the edge keeps its whole tap area inside it.
+ */
+function TopBar({
+  logo,
+  name = "manyave",
+  homeHref = "/",
+  org,
+  actions,
+  navLabel = "Neighborhood sections",
+  children,
+  className,
+  ...props
+}: ComponentProps<"header"> & {
+  /** The brand mark, decorative: the home link is named by `name`. */
+  logo?: ReactNode;
+  name?: string | undefined;
+  homeHref?: string | undefined;
+  /** The association's name. */
+  org?: ReactNode;
+  actions?: ReactNode;
+  navLabel?: string | undefined;
+}) {
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => {
+    nav.current?.querySelector("[aria-current=page]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+  return (
+    <header
+      data-slot="top-bar"
+      className={cn(
+        "flex min-h-14 flex-wrap items-center gap-4 border-b bg-background px-page py-3 text-meta max-[700px]:gap-x-3",
+        className,
+      )}
+      {...props}
+    >
+      <a
+        href={homeHref}
+        aria-label={`${name} home`}
+        className="relative hit-area flex shrink-0 items-center gap-2 rounded-md border-e pe-4 text-post font-[650] tracking-[-0.4px] text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-[700px]:border-0 max-[700px]:pe-0"
+      >
+        {logo ? (
+          <span aria-hidden className="contents">
+            {logo}
+          </span>
+        ) : null}
+        <span aria-hidden className="max-[700px]:hidden">
+          {name}
+        </span>
+      </a>
+      {org ? (
+        <span data-slot="top-bar-org" className="min-w-0 max-w-fit flex-1 break-words px-1 text-muted-foreground uppercase">
+          {org}
+        </span>
+      ) : null}
+      <nav
+        ref={nav}
+        aria-label={navLabel}
+        className="flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-[1100px]:order-last max-[1100px]:-mx-page max-[1100px]:basis-full max-[1100px]:scroll-px-page max-[1100px]:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-[700px]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)]"
+      >
+        {children}
+      </nav>
+      <div data-slot="top-bar-actions" className="ms-auto flex shrink-0 items-center gap-controls">
+        {actions ?? (
+          <Button variant="ghost" size="icon-sm" aria-label="Help">
+            <CircleHelp aria-hidden />
+          </Button>
+        )}
+      </div>
+    </header>
+  );
+}
+
+export { TopBar };

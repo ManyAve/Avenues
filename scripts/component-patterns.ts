@@ -103,6 +103,14 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "The Chip stories test the check, keyboard pressing and the scrolling row's focus reveal.",
   },
   "toolbar-button": { upstream: "button" },
+  "selection-bar": {
+    upstream: "toolbar",
+    note: "ui-sdk's toolbar holding Buttons; the Selection bar stories test the announced count, the visible disabled reason and the keys.",
+  },
+  "display-options": {
+    upstream: "popover",
+    note: "A Popover from a toolbar button, holding Checkbox, ToggleGroup and Button; the Display options stories press each by keyboard.",
+  },
   toolbar: {
     upstream: "toolbar",
     note: "ui-sdk's toolbar, styled; the fold into More renders one or the other, so no key changes. The Toolbar stories press every control by keyboard (AVE-9).",
@@ -122,6 +130,8 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   register: {
     none: "ui-sdk's kit has no grid pattern to check; the Register stories press every key the grid handles (AVE-9).",
   },
+  "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
+  "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
   "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },
   "page-header": { none: "Layout: the page's h1, a description and its actions." },
   "section-card": { none: "Layout: a Card with a level-2 heading and one action." },
