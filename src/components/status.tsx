@@ -26,6 +26,35 @@ function Count({ value, className, ...props }: ComponentProps<"span"> & { value:
   );
 }
 
+/**
+ * A heading's title and its count (PageHeader, SectionCard). The visible Count is hidden from screen readers and the
+ * heading's name reads "Complaints, 2 open" instead of "Complaints 2", which in a headings list sounds like a title
+ * with a typo (AVE-69). `countLabel` is the word after the number ("open"); without it the name is "Complaints, 2".
+ */
+function TitleWithCount({
+  title,
+  count,
+  countLabel,
+}: {
+  title: ReactNode;
+  count?: ReactNode | undefined;
+  countLabel?: string | undefined;
+}) {
+  if (count === undefined) return <>{title}</>;
+  return (
+    <>
+      <span>
+        {title}
+        <span className="sr-only">
+          , {count}
+          {countLabel ? ` ${countLabel}` : ""}
+        </span>
+      </span>
+      <Count aria-hidden value={count} />
+    </>
+  );
+}
+
 type StatusTone = "success" | "warning" | "primary" | "info" | "neutral";
 
 const dots: Record<StatusTone, string> = {
@@ -94,4 +123,4 @@ function Status({
   );
 }
 
-export { Count, Status, type StatusTone };
+export { Count, Status, TitleWithCount, type StatusTone };
