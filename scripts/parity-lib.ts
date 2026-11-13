@@ -139,6 +139,11 @@ export interface Part {
   markup?: string;
   /** The part's own text, not its children's. */
   text: string;
+  /** A field's value and placeholder (AVE-77): text a field shows that isn't a text node. */
+  value?: string;
+  placeholder?: string;
+  /** How the part sets its text in its box (AVE-77). Not compared; it decides whether Avenue's root may take the app's width. */
+  align?: string;
   width: number;
   height: number;
   style: Record<string, string>;
@@ -188,7 +193,8 @@ function matters(prop: string, a: Part, b: Part): boolean {
   if (prop === "column-gap" || prop === "row-gap") return flexOrGrid(a) || flexOrGrid(b);
   if (prop === "border-top-color") return bordered(a) || bordered(b);
   if (prop === "outline-width") return [a, b].some((p) => (p.style["outline-style"] ?? "none") !== "none");
-  const hasText = a.text !== "" || b.text !== "";
+  // A field's value and placeholder are text too, though not a text node (AVE-77).
+  const hasText = [a, b].some((p) => p.text !== "" || !!p.value || !!p.placeholder);
   if (TYPE_PROPS.has(prop)) return hasText;
   if (prop === "color") return hasText || a.tag === "svg" || b.tag === "svg";
   // An icon's look: lucide draws with stroke = currentColor and no fill; a swapped or filled icon shows here.
@@ -292,6 +298,13 @@ export interface Reconciliation {
   texts: { index: number; text: string }[];
   /** The app's drawing for an Avenue icon whose different drawing is allowed. */
   icons: { index: number; markup: string }[];
+  /** The app's value for an Avenue field (input, textarea) that shows a different one. */
+  values?: { index: number; value: string; placeholder: string }[] | undefined;
+  /**
+   * A frame (AVE-77): both sides hide everything inside the root, and Avenue's root takes the app's size, so the
+   * pixels judge the box alone: its border, corners, fill and shadow. Its contents are their own pairs.
+   */
+  frame?: { width: number; height: number } | undefined;
 }
 
 const BORDER_COLORS = ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"];
@@ -304,7 +317,20 @@ const BORDER_COLORS = ["border-top-color", "border-right-color", "border-bottom-
  * decided without pixels then).
  */
 export function reconcile(app: Part[], avenue: Part[], diffs: Difference[], frame = false): Reconciliation | null {
-  if (frame || diffs.some((d) => d.because === undefined)) return null;
+  if (diffs.some((d) => d.because === undefined)) return null;
+  if (frame) {
+    // Only the root is compared: its own allowed values go on the app's root, its contents are hidden on both sides.
+    const root = app[0];
+    if (!root || !avenue[0]) return null;
+    const styles: Reconciliation["styles"] = [];
+    for (const d of diffs) {
+      if (d.appIndex !== 0 || d.avenueIndex !== 0 || !(STYLE_PROPS as readonly string[]).includes(d.prop)) continue;
+      const value = avenue[0].style[d.prop];
+      if (value === undefined) continue;
+      for (const prop of d.prop === "border-top-color" ? BORDER_COLORS : [d.prop]) styles.push({ index: 0, prop, value });
+    }
+    return { styles, texts: [], icons: [], frame: { width: root.width, height: root.height } };
+  }
   // A part on one side only (an agreed check icon, a wrapping span) can't be applied to the other side, and the scale
   // variables are the whole page's; pixels would only find what the allowance already says.
   if (diffs.some((d) => d.prop === "parts" || d.where === ":root")) return null;
@@ -329,7 +355,14 @@ export function reconcile(app: Part[], avenue: Part[], diffs: Difference[], fram
   for (const [a, b] of matchParts(app, avenue).pairs) {
     if (b.index !== undefined && a.text !== b.text && a.text !== "" && b.text !== "") texts.push({ index: b.index, text: a.text });
   }
-  return styles.length + texts.length + icons.length > 0 ? { styles, texts, icons } : null;
+  const values: NonNullable<Reconciliation["values"]> = [];
+  for (const [a, b] of matchParts(app, avenue).pairs) {
+    if (b.index === undefined || a.value === undefined || b.value === undefined) continue;
+    if (a.value !== b.value || a.placeholder !== b.placeholder) {
+      values.push({ index: b.index, value: a.value, placeholder: a.placeholder ?? "" });
+    }
+  }
+  return styles.length + texts.length + icons.length + values.length > 0 ? { styles, texts, icons, values } : null;
 }
 
 function covers(allowance: Allowance, d: Difference): boolean {

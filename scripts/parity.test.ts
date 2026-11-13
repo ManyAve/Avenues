@@ -259,6 +259,16 @@ describe("reconcile (AVE-77)", () => {
     expect(diffs).toContainEqual(expect.objectContaining({ prop: "glyph", app: "lucide-dollar-sign", avenue: "lucide-download" }));
     expect(reconcile(app, avenue, explain(diffs, []))).toBeNull();
   });
+  test("a frame reconciles its root alone, at the app's size", () => {
+    const app = [part({ index: 0, width: 300, height: 120, style: { ...border, "border-top-color": "rgb(200, 200, 200)" } }), part({ index: 1, text: "Sort" })];
+    const avenue = [part({ index: 0, width: 280, height: 110, style: { ...border, "border-top-color": "rgb(90, 90, 90)" } }), part({ index: 1, text: "Order" })];
+    const diffs = explain(styleDifferences(app, avenue, false, true), [{ prop: "border-top-color", because: "AVE-38: outline" }]);
+    const plan = reconcile(app, avenue, diffs, true);
+    expect(plan?.frame).toEqual({ width: 300, height: 120 });
+    expect(plan?.texts).toEqual([]);
+    expect(plan?.styles.every((x) => x.index === 0)).toBe(true);
+    expect(reconcile(app, avenue, explain(styleDifferences(app, avenue, false, true), []), true)).toBeNull();
+  });
   test("an allowed icon takes the app's drawing on Avenue's side", () => {
     const icon = (glyph: string) => part({ index: 1, tag: "svg", width: 16, height: 16, glyph, markup: `<path d="${glyph}"/>` });
     const app = [part({ index: 0 }), icon("lucide-dollar-sign")];

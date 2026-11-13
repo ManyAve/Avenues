@@ -266,7 +266,13 @@ async function shoot(
   page: Page,
   selector: string | undefined,
   keepFocus = false,
-  change?: Reconciliation,
+  change?: Reconciliation & {
+    frameSize?: { width: number; height: number } | undefined;
+    /** The app's sub-pixel offset, which Avenue's part is laid out at, so both shade their edges alike (AVE-77). */
+    phase?: [number, number] | undefined;
+    /** The app's root width, which Avenue's root takes: the story around each sizes it, not the component (AVE-77). */
+    width?: number | undefined;
+  },
 ): Promise<Shot> {
   const target = page.locator(selector ?? "#storybook-root > *").first();
   await target.waitFor({ state: "visible", timeout: 10_000 });
@@ -290,18 +296,81 @@ async function shoot(
       const nodes = [el, ...[...el.querySelectorAll("*")].filter((e) => visible(e) && !(e.closest("svg") && e.tagName.toLowerCase() !== "svg"))];
       nodes.forEach((e, i) => e.setAttribute("data-parity-i", String(i)));
     });
-    await target.evaluate((el, { styles, texts, icons }) => {
+    await target.evaluate((el, { styles, texts, icons, values, frame, size, width, crop }) => {
       const part = (i: number) => (i === 0 ? el : el.querySelector(`[data-parity-i="${i}"]`)) as HTMLElement | null;
+      // A frame keeps its box and hides what it holds (AVE-77); Avenue's box takes the app's size.
+      if (frame) {
+        // Only the box paints: nothing around it (a dialog's close button over a header's corner), nothing in it, and
+        // not its own text (a textarea's value).
+        // A stylesheet hides the page, so a popup swapped for a fresh element before the screenshot (the app's hover
+        // card is) is still shown when the crop is plain CSS; the box's own inline styles win over the sheet.
+        const valid = (() => {
+          try {
+            document.querySelector(crop);
+            return true;
+          } catch {
+            return false;
+          }
+        })();
+        const shown = "visibility: visible !important; color: transparent !important; -webkit-text-fill-color: transparent !important;";
+        const sheet = document.createElement("style");
+        sheet.textContent = `body * { visibility: hidden !important; }${valid ? ` ${crop} { ${shown} }` : ""}`;
+        document.head.append(sheet);
+        const box = el as HTMLElement;
+        box.style.setProperty("visibility", "visible", "important");
+        box.style.setProperty("color", "transparent", "important");
+        box.style.setProperty("-webkit-text-fill-color", "transparent", "important");
+      }
+      if (width !== undefined && !size) {
+        const rootBox = el as HTMLElement;
+        rootBox.style.setProperty("box-sizing", "border-box", "important");
+        rootBox.style.setProperty("width", `${width}px`, "important");
+        rootBox.style.setProperty("min-width", "0", "important");
+        rootBox.style.setProperty("max-width", "none", "important");
+        rootBox.style.setProperty("flex", "none", "important");
+      }
+      if (size) {
+        const rootBox = el as HTMLElement;
+        rootBox.style.setProperty("box-sizing", "border-box", "important");
+        rootBox.style.setProperty("width", `${size.width}px`, "important");
+        rootBox.style.setProperty("height", `${size.height}px`, "important");
+        rootBox.style.setProperty("min-width", "0", "important");
+        rootBox.style.setProperty("min-height", "0", "important");
+        rootBox.style.setProperty("max-width", "none", "important");
+        rootBox.style.setProperty("max-height", "none", "important");
+      }
       for (const { index, prop, value } of styles) part(index)?.style.setProperty(prop, value, "important");
       for (const { index, markup } of icons) {
         const svg = part(index);
         if (svg) svg.innerHTML = markup;
       }
+      for (const { index, value, placeholder } of values ?? []) {
+        const field = part(index) as HTMLInputElement | HTMLTextAreaElement | null;
+        if (!field) continue;
+        field.value = value;
+        field.placeholder = placeholder;
+      }
       for (const { index, text } of texts) {
         const own = [...(part(index)?.childNodes ?? [])].filter((n) => n.nodeType === 3 && n.textContent?.trim());
         own.forEach((n, i) => (n.textContent = i === 0 ? text : ""));
       }
-    }, change);
+    }, { ...change, frame: !!change.frame, size: change.frameSize, width: change.width, crop: selector ?? "#storybook-root > *" });
+  }
+  if (change?.phase) {
+    // Lay the part out at the app's fraction of a pixel (relative offsets, so nothing else moves): a transform only
+    // moves the painted layer, and Chrome shades edges from the layout position.
+    await target.evaluate((el, [px, py]) => {
+      const box = el as HTMLElement;
+      const r = box.getBoundingClientRect();
+      const shift = (at: number, want: number) => (((want - (at - Math.floor(at))) % 1) + 1) % 1;
+      const dx = shift(r.x, px);
+      const dy = shift(r.y, py);
+      if (dx === 0 && dy === 0) return;
+      if (getComputedStyle(box).position === "static") box.style.setProperty("position", "relative");
+      const s = getComputedStyle(box);
+      box.style.setProperty("left", `${(Number.parseFloat(s.left) || 0) + dx}px`, "important");
+      box.style.setProperty("top", `${(Number.parseFloat(s.top) || 0) + dy}px`, "important");
+    }, change.phase);
   }
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const { parts, text } = await target.evaluate(
@@ -344,6 +413,8 @@ async function shoot(
                   markup: e.innerHTML,
                 }
               : {}),
+            ...(e instanceof HTMLInputElement || e instanceof HTMLTextAreaElement ? { value: e.value, placeholder: e.placeholder } : {}),
+            align: s.textAlign,
           };
         }),
       };
@@ -403,6 +474,38 @@ function diffPngs(a: Buffer, b: Buffer): { changed: number; diff: Buffer } {
     threshold: PIXEL_THRESHOLD,
   });
   return { changed, diff: PNG.sync.write(diff) };
+}
+
+/**
+ * Whether the two match exactly once one is moved by a whole pixel (AVE-77). After reconciling, Chrome can round a
+ * line of text a pixel lower on one side; that is layout rounding, not a difference pixels can judge, so the
+ * comparison stays styles-only rather than being called unexplained.
+ */
+function matchesShifted(a: Buffer, b: Buffer): boolean {
+  const pa = PNG.sync.read(a);
+  const pb = PNG.sync.read(b);
+  if (pa.width !== pb.width || pa.height !== pb.height) return false;
+  const { width: w, height: h } = pa;
+  for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]] as const) {
+    const moved = new PNG({ width: w, height: h });
+    moved.data.fill(255);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const sx = x - dx;
+        const sy = y - dy;
+        if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue;
+        pb.data.copy(moved.data, (y * w + x) * 4, (sy * w + sx) * 4, (sy * w + sx) * 4 + 4);
+      }
+    }
+    // Compare inside a 1px margin, where the moved image has no gap.
+    const inner = (img: PNG) => {
+      const cropped = new PNG({ width: w - 2, height: h - 2 });
+      PNG.bitblt(img, cropped, 1, 1, w - 2, h - 2, 0, 0);
+      return cropped.data;
+    };
+    if (w > 2 && h > 2 && pixelmatch(inner(pa), inner(moved), null, w - 2, h - 2, { threshold: PIXEL_THRESHOLD }) === 0) return true;
+  }
+  return false;
 }
 
 function storyUrl(base: string, id: string, globals: string, args?: string): string {
@@ -543,18 +646,42 @@ async function main() {
       if (files.diff) await Bun.write(join(reportDir, files.diff), diff);
       const subpixel = !sameOffset(app.offset, avenue.offset);
       const j = pixelJudgement({ sameText, frame: pair.frame === true, differences, changed, subpixel });
+      // Why reconciling didn't get the pixels to judge, for the report (AVE-77).
+      let unreconciled = "";
       if (!j.judged) {
         // Pixels couldn't judge as captured: apply the allowed values to the app and the app's text to Avenue, and
         // judge the pixels left over (AVE-77).
         const plan = reconcile(app.parts, avenue.parts, differences, pair.frame === true);
         if (plan) {
-          await open(tab, storyUrl(`http://localhost:${avenueServer.port}`, story, `theme:${combo.theme};typeScale:${combo.typeScale}`, pair.avenueArgs), "", true);
-          const avenue2 = await shoot(tab, pair.avenueCrop, pair.keepFocus, { styles: [], texts: plan.texts, icons: plan.icons });
           await open(tab, storyUrl(`http://localhost:${appServer.port}`, pair.app, `theme:${combo.theme}`), desktop ? desktopCss : "");
-          const app2 = await shoot(tab, pair.appCrop, pair.keepFocus, { styles: plan.styles, texts: [], icons: [] });
-          const sameText2 = app2.text === avenue2.text;
+          const app2 = await shoot(tab, pair.appCrop, pair.keepFocus, {
+            styles: plan.styles,
+            texts: [],
+            icons: [],
+            frame: plan.frame,
+            // Both boxes keep the app's size: an allowed border width would otherwise shrink the app's.
+            frameSize: plan.frame,
+          });
+          await open(tab, storyUrl(`http://localhost:${avenueServer.port}`, story, `theme:${combo.theme};typeScale:${combo.typeScale}`, pair.avenueArgs), "", true);
+          const avenue2 = await shoot(tab, pair.avenueCrop, pair.keepFocus, {
+            styles: [],
+            texts: plan.texts,
+            icons: plan.icons,
+            values: plan.values,
+            frame: plan.frame,
+            frameSize: plan.frame,
+            phase: app2.offset,
+            // Only a block that sets its text alike: an inline amount right-aligned by the app's table cell would
+            // otherwise just move its text across a wider box.
+            width:
+              app2.parts[0] && avenue.parts[0] && app2.parts[0].align === avenue.parts[0].align && !/^inline/.test(avenue.parts[0].style["display"] ?? "")
+                ? app2.parts[0].width
+                : undefined,
+          });
+          // A frame's contents are hidden on both sides, so its text is not compared here.
+          const sameText2 = plan.frame ? true : app2.text === avenue2.text;
           // An icon given the app's drawing still carries its own lucide class, so its glyph difference is spent.
-          const left = explain(styleDifferences(app2.parts, avenue2.parts, sameText2, false), pair.allow).filter(
+          const left = explain(styleDifferences(app2.parts, avenue2.parts, sameText2, !!plan.frame), pair.allow).filter(
             (d) => !(d.prop === "glyph" && plan.icons.some((icon) => icon.index === d.avenueIndex)),
           );
           const after = diffPngs(app2.png, avenue2.png);
@@ -567,7 +694,8 @@ async function main() {
           });
           // Reconciled pixels only judge when both crops sit on the same sub-pixel offset: a shifted edge on a
           // reconciled border (the desktop switch, at 18.4px) is shading, not a difference.
-          if (j2.judged && sameOffset(app2.offset, avenue2.offset)) {
+          const shifted = j2.judged && after.changed > 0 && matchesShifted(app2.png, avenue2.png);
+          if (j2.judged && sameOffset(app2.offset, avenue2.offset) && !shifted) {
             const reconciledFiles = {
               app: `${stem}.app-reconciled.png`,
               avenue: `${stem}.avenue-reconciled.png`,
@@ -586,10 +714,17 @@ async function main() {
             const v = after.changed > 0 ? "unexplained" : verdict(differences, false, sameText);
             return { ...base, verdict: v, differences, changedPixels: changed, sameText, stylesOnly: undefined, files, reconciled };
           }
+          unreconciled = shifted
+            ? "reconciled, but the drawing lands a whole pixel apart (layout rounding)"
+            : !sameOffset(app2.offset, avenue2.offset)
+            ? "reconciled, but the two sit at different sub-pixel offsets"
+            : `reconciled, but ${j2.judged ? "" : j2.why}${left.length ? ` (${[...new Set(left.map((d) => d.prop))].slice(0, 4).join(", ")})` : ""}`;
+        } else {
+          unreconciled = "nothing to reconcile, or a part shows on one side only";
         }
       }
       // Unjudged: say so, so "same" never stands for "looked at the styles only".
-      const stylesOnly = j.judged ? undefined : j.why;
+      const stylesOnly = j.judged ? undefined : unreconciled ? `${j.why}; ${unreconciled}` : j.why;
       return { ...base, verdict: verdict(differences, j.judged && changed > 0, sameText), differences, changedPixels: changed, sameText, stylesOnly, files };
     } catch (error) {
       return { ...base, verdict: "error", differences: [], error: error instanceof Error ? error.message.split("\n")[0] : String(error) };
