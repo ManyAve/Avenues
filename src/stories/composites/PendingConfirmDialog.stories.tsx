@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { act, useState } from "react";
+import { useState } from "react";
 import { Button } from "#avenue/components/button";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import {
@@ -101,8 +101,9 @@ export const KeyboardFlow: Story = {
     await userEvent.keyboard("{Escape}");
     await expect(dialog).toBeInTheDocument();
 
-    // The network's part: the reply never arrives.
-    act(() => loseReply());
+    // The network's part: the reply never arrives. A plain call, not React's act(), which production builds of React
+    // don't support: in the built Storybook it stopped the play here and left the dialog pending (AVE-60).
+    loseReply();
     const alert = await screen.findByRole("alert");
     await expect(alert).toHaveTextContent("We couldn't confirm that the announcement went out.");
     await waitFor(() => expect(screen.getByRole("button", { name: "Try again" })).toHaveFocus());
