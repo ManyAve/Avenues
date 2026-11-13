@@ -759,6 +759,35 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-toggle-group--keyboard-multiple": { none: BEHAVIOUR("Toggle group / Variants") },
   "components-toggle-group--phone": { none: "The segmented control at phone width (AVE-33); the app's segmented controls are desktop-only. Compared through Toggle group / Variants." },
 
+  // ---- Composites part 2 (AVE-9)
+  "composites-page-header--desktop-minimum": [
+    { label: "page header frame", app: "detail-pieces--page-header-story", appCrop: "header:has(h1) >> nth=0", avenueCrop: "[data-slot=page-header]", frame: true },
+    { label: "page title", app: "detail-pieces--page-header-story", appCrop: "header h1 >> nth=0", avenueCrop: "[data-slot=page-header] h1", allow: [
+      { prop: "line-height", avenue: "30px", because: "AVE-70: Avenue's page title sits on a 30px line; the app's on 24px (20px on the desktop scale)" },
+      { prop: "height", avenue: "30px", because: "AVE-70: Avenue's page title sits on a 30px line; the app's on 24px (20px on the desktop scale)" },
+      { prop: "*-gap", app: "0px", avenue: "8px", because: "AVE-70: Avenue's title is a flex row that can hold a count (the count is new; the gap shows only with one)" },
+      { prop: "parts", because: "AVE-70: Avenue's page header story shows a count beside the title; the app's PageHeader has none" },
+    ] },
+  ],
+  "composites-page-header--wide": { none: "The page header inside the 1280px page frame; the frame is the page's, and the header is compared through Page header / Desktop minimum." },
+  "composites-page-header--phone": { none: "The page header at phone width with its actions wrapped under the title; the desktop app has no phone story. Compared through Page header / Desktop minimum." },
+  "composites-page-header--reading-width-long-title": { none: "A long title wrapping inside the 768px reading frame; the app has no such story. Compared through Page header / Desktop minimum." },
+  "composites-section-card--desktop-minimum": [
+    { label: "section card frame", app: "detail-pieces--people", appCrop: "[data-slot=card] >> nth=0", avenueCrop: "[data-slot=card] >> nth=0", frame: true, allow: [
+      { prop: "box-shadow", because: "AVE-70: Avenue's SectionCard outline is Card's ring-foreground/10; the app's section card uses ring-border" },
+    ] },
+    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0", allow: DESKTOP_TITLE },
+  ],
+  "composites-section-card--detail-list-story": [
+    { label: "detail label", app: "detail-pieces--people", appCrop: "dl >> nth=0 >> dt >> nth=0", avenueCrop: "[data-slot=detail-list] dt >> nth=0" },
+    { label: "detail value", app: "detail-pieces--people", appCrop: "dl >> nth=0 >> dd >> nth=0", avenueCrop: "[data-slot=detail-list] dd:not(:has([data-slot=money])) >> nth=0" },
+  ],
+  "composites-section-card--wide": { none: "Two columns of section cards inside the 1280px frame; the columns are the page's layout. Each card is compared through Section card / Desktop minimum." },
+  "composites-icon-tile--tones": [
+    { label: "money-in icon tile (success)", app: "components-activity--board", appCrop: "span.size-9:not(:has(span)) >> nth=0", avenueCrop: "[data-slot=icon-tile] >> nth=1" },
+  ],
+  "composites-icon-tile--phone-row": { none: "An icon tile in a feed row at phone width; the app has no phone story. The tile is compared through Icon tile / Tones." },
+
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [
     { label: "form dialog frame", app: "dues-dialogs--adjustment", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=dialog-content]", frame: true },
