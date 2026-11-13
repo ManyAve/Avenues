@@ -101,7 +101,7 @@ export function Select<V extends string = string>({
 }: SelectProps<V>) {
   const coarsePointer = useCoarsePointer();
   const useNative = native === "always" || (native === "auto" && coarsePointer);
-  const chevron = <ChevronDownIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />;
+  const chevron = <ChevronDownIcon aria-hidden className="shrink-0 text-muted-foreground" />;
   // The native overlay below shows the chosen label itself, so it tracks an uncontrolled value.
   const [uncontrolled, setUncontrolled] = useState<V | null>(defaultValue ?? null);
   const current = value !== undefined ? value : uncontrolled;

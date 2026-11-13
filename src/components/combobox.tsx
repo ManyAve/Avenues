@@ -145,7 +145,7 @@ export function Combobox<T extends ComboboxOption>({
         className={cn(fieldControl({ size }), "gap-0 pe-0 pointer-coarse:min-h-11", icon ? "ps-2" : "ps-0", className)}
       >
         {icon && (
-          <span aria-hidden className="flex shrink-0 text-muted-foreground [&_svg]:size-3.5">
+          <span aria-hidden className="flex shrink-0 text-muted-foreground">
             {icon}
           </span>
         )}
@@ -193,7 +193,7 @@ export function Combobox<T extends ComboboxOption>({
           aria-label={triggerLabel}
           className="flex h-full w-8 shrink-0 items-center pointer-coarse:w-11 justify-center text-muted-foreground outline-none disabled:cursor-not-allowed"
         >
-          <ChevronsUpDownIcon aria-hidden className="size-3.5" />
+          <ChevronsUpDownIcon aria-hidden />
         </ComboboxTrigger>
       </div>
       <ComboboxContent

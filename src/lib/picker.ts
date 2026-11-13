@@ -22,6 +22,9 @@ export function fieldControl({ size = "md" }: { size?: PickerSize | null | undef
     controlSurface,
     controlSize({ size: size ?? "md" }),
     "flex items-center gap-2 text-foreground",
+    // Icons follow the control size, as Button's do (AVE-84): 16px in an md field, 14px in an sm one. The chevron,
+    // the Combobox's up-down chevron and a leading icon all take it, so Select and Combobox can't drift apart.
+    size === "sm" ? "[&_svg:not([class*='size-'])]:size-3.5" : "[&_svg:not([class*='size-'])]:size-4",
     "data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 dark:data-invalid:border-destructive/50 dark:data-invalid:ring-destructive/40",
     "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50",
     "has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
