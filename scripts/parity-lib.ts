@@ -96,13 +96,30 @@ export const STYLE_PROPS = [
   "font-weight",
   "line-height",
   "letter-spacing",
+  "font-style",
+  "text-decoration-line",
+  "text-transform",
   "box-shadow",
+  "outline-style",
+  "outline-width",
+  "transform",
+  "fill",
+  "stroke",
   "opacity",
   "column-gap",
   "row-gap",
 ] as const;
 
-const TYPE_PROPS = new Set(["font-family", "font-size", "font-weight", "line-height", "letter-spacing"]);
+const TYPE_PROPS = new Set([
+  "font-family",
+  "font-size",
+  "font-weight",
+  "line-height",
+  "letter-spacing",
+  "font-style",
+  "text-decoration-line",
+  "text-transform",
+]);
 const BORDER_WIDTHS = ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width"];
 
 /** One visible part of a captured element (the element itself first), as the browser computed it. */
@@ -156,9 +173,12 @@ function matters(prop: string, a: Part, b: Part): boolean {
   if (prop === "display") return false;
   if (prop === "column-gap" || prop === "row-gap") return flexOrGrid(a) || flexOrGrid(b);
   if (prop === "border-top-color") return bordered(a) || bordered(b);
+  if (prop === "outline-width") return [a, b].some((p) => (p.style["outline-style"] ?? "none") !== "none");
   const hasText = a.text !== "" || b.text !== "";
   if (TYPE_PROPS.has(prop)) return hasText;
   if (prop === "color") return hasText || a.tag === "svg" || b.tag === "svg";
+  // An icon's look: lucide draws with stroke = currentColor and no fill; a swapped or filled icon shows here.
+  if (prop === "fill" || prop === "stroke") return a.tag === "svg" || b.tag === "svg";
   return true;
 }
 
@@ -233,7 +253,9 @@ export function styleDifferences(app: Part[], avenue: Part[], sameText: boolean,
     if (!(frame && i === 0) && !textFollows && Math.round(a.height) !== Math.round(b.height)) {
       out.push({ where, prop: "height", app: `${Math.round(a.height)}px`, avenue: `${Math.round(b.height)}px` });
     }
-    if (sameText && !frame && Math.round(a.width) !== Math.round(b.width)) {
+    // An icon's width never follows text, so it is compared even where the texts differ.
+    const icon = a.tag === "svg" && b.tag === "svg";
+    if ((sameText || icon) && !frame && Math.round(a.width) !== Math.round(b.width)) {
       out.push({ where, prop: "width", app: `${Math.round(a.width)}px`, avenue: `${Math.round(b.width)}px` });
     }
   }
@@ -331,4 +353,31 @@ export function rootVariables(css: string): Record<string, string> {
  */
 export function sameOffset(a: [number, number], b: [number, number]): boolean {
   return Math.abs(a[0] - b[0]) < 0.01 && Math.abs(a[1] - b[1]) < 0.01;
+}
+
+/** The most edge pixels a sub-pixel offset may account for: a curved control's outline, not a changed glyph. */
+export const SUBPIXEL_MAX = 32;
+
+/**
+ * Whether the pixel diff decides this comparison, and if not, why it was judged on styles only. Pixels decide
+ * only where they can: the same text on both sides (else every glyph differs), not a frame (its contents are
+ * their own pairs), and no style difference at all (an allowed padding or height change moves every pixel after
+ * it, so changed pixels prove nothing either way). A few edge pixels from a different sub-pixel offset are
+ * forgiven, up to SUBPIXEL_MAX.
+ */
+export function pixelJudgement(o: {
+  sameText: boolean;
+  frame: boolean;
+  differences: Difference[];
+  changed: number;
+  subpixel: boolean;
+}): { judged: true } | { judged: false; why: string } {
+  if (o.frame) return { judged: false, why: "a frame: its contents are compared by their own pairs" };
+  if (!o.sameText) return { judged: false, why: "the two show different text" };
+  // A part on one side only (a wrapping span) is a difference only if it shows.
+  if (o.differences.some((d) => d.prop !== "parts")) return { judged: false, why: "an allowed difference moves the pixels" };
+  if (o.subpixel && o.changed > 0 && o.changed <= SUBPIXEL_MAX) {
+    return { judged: false, why: `${o.changed} edge pixels from a different sub-pixel offset` };
+  }
+  return { judged: true };
 }
