@@ -267,3 +267,30 @@ The package is source-shipped (no build step) and exposes:
 
 `react`, `react-dom` and `tailwindcss` are peer dependencies so a consumer never gets a second
 copy.
+
+### Versions
+
+An app installs Avenue from a tag, never from `main`:
+
+```json
+"@manyave/avenue": "github:ManyAve/Avenues#v0.1.0"
+```
+
+A merge to `main` changes Storybook only; no app moves until it changes its tag, in its own pull request, with
+the same visual proof as any other change to its screens. Each tag has an entry in `CHANGELOG.md` saying what
+changed for apps.
+
+While Avenue is 0.x, the minor number (0.**1**.0) moves on any change an app has to react to, and the patch number
+(0.1.**1**) on everything else. A change an app has to react to is any change to:
+
+- a component's props, parts, or `data-slot` names;
+- a public utility: `hit-area`, `gap-controls`, `chosen`, the token aliases;
+- a token's name, or a class Avenue retires (for example a corner class its scale clears);
+- the ui-sdk version or Avenue's patches to it (an app carries the same patches; see below).
+
+A new component, a new token or a bug fix that keeps the API is a patch.
+
+**ui-sdk patches.** Bun applies `patchedDependencies` only from the project that runs `bun install`, so Avenue's
+patches under `patches/` don't apply inside an app. An app copies the same files into its own `patches/` and lists
+them under its own `patchedDependencies`, and checks that its copies match the ones in the tag it installs (the
+tag's files are at `node_modules/@manyave/avenue/patches/`).
