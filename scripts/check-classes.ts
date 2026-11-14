@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 /**
  * Flags class names that break AVE-2's spacing and corner rules:
  *
@@ -13,6 +14,9 @@
  *   avenue.css (`phone`, `desktop`, `wide`), so use max-phone:, wide: and the like (AVE-85).
  *
  *   bun run check:classes [paths...]   (default: src)
+ *
+ * An app runs the same rules over its own source as `avenue-check-classes [paths...]` (README, "Checks for apps").
+ * Paths are read from the folder it runs in.
  */
 import { relative, resolve } from "node:path";
 
@@ -65,7 +69,7 @@ export function findViolations(file: string, text: string): Finding[] {
 }
 
 if (import.meta.main) {
-  const root = resolve(import.meta.dir, "..");
+  const root = process.cwd();
   const targets = process.argv.length > 2 ? process.argv.slice(2) : ["src"];
   const glob = new Bun.Glob("**/*.{ts,tsx,mdx,css}");
   const findings: Finding[] = [];

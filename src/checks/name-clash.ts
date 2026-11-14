@@ -9,7 +9,7 @@
 //
 // Names that are exactly the same (a Remove button on every row) are left alone: the bridge tells those apart by
 // their row text, and a story shows them on purpose.
-import { CONTROL_SELECTOR, MEASURED_TITLES } from "./touch-targets";
+import { CONTROL_SELECTOR } from "#avenue/checks/touch-targets";
 
 /** The words of a name, as the bridge compares them: lowercase, accents and punctuation dropped, in sorted order. */
 export function nameWords(name: string): string {
@@ -111,11 +111,4 @@ export function namedControls(root: ParentNode = document.body): NamedControl[] 
     // Two popups that read the same are still two places.
     return { scope: describeScope(popup), scopeKey: String(popups.indexOf(popup)), name: controlName(el) };
   });
-}
-
-export function runNameClashCheck(title: string): void {
-  if (typeof navigator === "undefined" || !navigator.webdriver) return;
-  if (!MEASURED_TITLES.some((prefix) => title.startsWith(prefix))) return;
-  const problems = nameClashes(namedControls());
-  if (problems.length > 0) throw new Error(`Control names an agent can't tell apart:\n- ${problems.join("\n- ")}`);
 }

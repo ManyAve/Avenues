@@ -226,7 +226,7 @@ beside them), menu and list rows, toggle-group items along the group's axis, and
 checkbox or switch are at least 44px there. An sm Select (a card or dialog header) keeps its size: its trigger
 takes `hit-area`, and its phone picker's `<select>` lies invisibly over a 44px band. Spaced toggle groups wrap.
 
-**The proof** is in the story tests (`.storybook/touch-targets.ts`). The `touch` project runs the Components and
+**The proof** is in the story tests (`src/checks/touch-targets.ts`). The `touch` project runs the Components and
 Composites stories with Playwright's `hasTouch` (so `(pointer: coarse)` matches) and, after each story, hit-tests
 a grid of points over the 44px area centred on every enabled control. Each point must land on that control or a
 label of it; a point that lands on the page misses (too small), and one that lands on another control fails both
@@ -297,6 +297,37 @@ Tags are pushed by a person with write access; an app may pin the tag's commit i
 patches under `patches/` don't apply inside an app. An app copies the same files into its own `patches/` and lists
 them under its own `patchedDependencies`, and checks that its copies match the ones in the tag it installs (the
 tag's files are at `node_modules/@manyave/avenue/patches/`).
+
+### Checks for apps
+
+An app proves each screen it moves onto Avenue with the same checks Avenue runs on itself (AVE-104, AVE-105). None
+is tied to a Storybook version.
+
+- **`avenue-check-patches`**, in the app's `check` script, run from the app's root: fails when a patch in the
+  installed tag's `patches/` is missing from the app's `patches/`, differs from it, or isn't under the app's
+  `patchedDependencies`. Copy the files across and list each as Avenue's `package.json` does.
+- **`avenue-check-classes [paths...]`**: Avenue's class rules over the app's own source (for example
+  `avenue-check-classes app/ui`), relative to where it runs. It catches classes that produce no CSS under Avenue's
+  theme, such as `rounded-4xl`. Run it over the files a slice moves; an app's unmoved screens may still fail it.
+- **`@manyave/avenue/checks/touch-targets`** and **`@manyave/avenue/checks/name-clash`**: plain functions over the
+  DOM, to call after a story or a browser test renders a screen:
+
+```ts
+import { nameClashes, namedControls } from "@manyave/avenue/checks/name-clash";
+import { fineTargetProblems, formatTouchProblems, touchTargetProblems } from "@manyave/avenue/checks/touch-targets";
+
+// With a touch pointer (Playwright's hasTouch, or a coarse-pointer story project): every 44px tap lands on its control.
+const touch = touchTargetProblems(document.body);
+if (touch.length > 0) throw new Error(formatTouchProblems(touch));
+// With a mouse: every hit area is at least 24 x 24px, and Avenue's controls keep their reach.
+const fine = fineTargetProblems(document.body);
+// Anywhere: no two controls in one place have names an agent reads as the same words.
+const clashes = nameClashes(namedControls(document.body));
+```
+
+They measure Avenue's controls and ui-sdk's parts (anything with a `data-slot` and a control's role). From
+Playwright outside a story runner, bundle them into the page (`page.addScriptTag`) or call them in a browser-mode
+test. `.storybook/story-checks.ts` shows how Avenue's own story tests run them after every story.
 
 To move an app onto Avenue, and to report Avenue bugs or ask for features, see [ADOPTING.md](ADOPTING.md): a
 ready-to-paste prompt for the app's own Claude.

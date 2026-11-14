@@ -42,9 +42,6 @@ const CONTROL_ROLES = [
 ];
 export const CONTROL_SELECTOR = CONTROL_ROLES.map((selector) => `${selector}[data-slot]`).join(", ");
 
-/** Story groups whose stories are measured: the components and the composites built from them. */
-export const MEASURED_TITLES = ["Components/", "Composites/", "Overview"];
-
 export interface TouchProblem {
   control: string;
   size: string;
@@ -241,27 +238,4 @@ export function formatTouchProblems(problems: readonly TouchProblem[]): string {
         `${p.control} (${p.size}): ${p.missed} of ${p.sampled} taps in its ${TOUCH_TARGET} x ${TOUCH_TARGET}px area missed it, landing on ${p.landedOn.join(", ")}`,
     )
     .join("\n- ");
-}
-
-/**
- * Runs after every story. In the four mouse projects it checks hit-area sizes (fineTargetProblems); in the `touch`
- * project it hit-tests 44px areas. Fails when the browser isn't actually emulating a coarse pointer
- * (so a broken setup can't pass silently), or when any control's tap area is short or overlaps another's.
- */
-export function runTouchTargetCheck(pointer: unknown, title: string): void {
-  // Only under the story tests, which set the `pointer` global (vitest.config.ts); not while someone browses Storybook.
-  if (pointer !== "fine" && pointer !== "coarse") return;
-  if (!MEASURED_TITLES.some((prefix) => title.startsWith(prefix))) return;
-  if (pointer === "fine") {
-    const fine = fineTargetProblems();
-    if (fine.length > 0) throw new Error(`Mouse targets smaller than Avenue promises:\n- ${fine.join("\n- ")}`);
-    return;
-  }
-  if (!matchMedia("(pointer: coarse)").matches) {
-    throw new Error("Touch target check: the touch project is running without a coarse pointer (hasTouch is off).");
-  }
-  const problems = touchTargetProblems();
-  if (problems.length > 0) {
-    throw new Error(`Touch targets under ${TOUCH_TARGET} x ${TOUCH_TARGET}px on a phone:\n- ${formatTouchProblems(problems)}`);
-  }
 }

@@ -4,9 +4,8 @@ import type { Preview } from "@storybook/react-vite";
 import "../src/styles/avenue.css";
 import desktopCss from "../src/styles/desktop.css?inline";
 import { AXE_TAGS, a11yGuardProblems } from "./a11y-guard";
-import { runNameClashCheck } from "./name-clash";
 import { runAccessibilityChecks } from "./pattern-check";
-import { runTouchTargetCheck } from "./touch-targets";
+import { runNameClashCheck, runTouchTargetCheck } from "./story-checks";
 import { runViewportCheck } from "./viewport-check";
 
 // ui-sdk's development warnings (a missing name, a part outside its root, ...) throw instead of logging,
@@ -55,9 +54,9 @@ const preview: Preview = {
   // After the play function: ui-sdk's pattern check for stories tagged `pattern:<name>`, and the agent
   // test for stories tagged `agent` (AVE-18, .storybook/pattern-check.ts).
   // Then a story that asked for a viewport (the 390px phone) must have run at that width (.storybook/viewport-check.ts),
-  // and the target-size measure (AVE-22, .storybook/touch-targets.ts): mouse minimums in the four fine-pointer
+  // and the target-size measure (AVE-22, src/checks/touch-targets.ts): mouse minimums in the four fine-pointer
   // projects, the 44px hit test in the `touch` project (globals.pointer, vitest.config.ts). Before those, no two
-  // controls in one place may have names an agent reads as the same words (AVE-92, .storybook/name-clash.ts).
+  // controls in one place may have names an agent reads as the same words (AVE-92, src/checks/name-clash.ts).
   afterEach: async ({ tags, parameters, globals, storyGlobals, title }) => {
     await runAccessibilityChecks(tags, parameters["patternRoot"]);
     runNameClashCheck(title);
