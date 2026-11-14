@@ -2,6 +2,11 @@
 
 What changed for apps that install Avenue. See the README, "Versions", for what moves the minor and patch numbers.
 
+## v0.1.1 (2026-11-14)
+
+- Toast: `showWith`'s returned function types its options in full, so an app's type check no longer fails on
+  `action` (TS7031) when it reads Avenue's source (found installing Avenue in Management, MANA-1118). No API change.
+
 ## v0.1.0 (2026-11-14)
 
 The first version an app can install (AVE-103).

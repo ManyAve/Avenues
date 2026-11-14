@@ -290,6 +290,9 @@ While Avenue is 0.x, the minor number (0.**1**.0) moves on any change an app has
 
 A new component, a new token or a bug fix that keeps the API is a patch.
 
+Tags are pushed by a person with write access; an app may pin the tag's commit instead
+(`github:ManyAve/Avenues#<full sha>`), which is just as fixed. `CHANGELOG.md` gives each version's commit once tagged.
+
 **ui-sdk patches.** Bun applies `patchedDependencies` only from the project that runs `bun install`, so Avenue's
 patches under `patches/` don't apply inside an app. An app copies the same files into its own `patches/` and lists
 them under its own `patchedDependencies`, and checks that its copies match the ones in the tag it installs (the
