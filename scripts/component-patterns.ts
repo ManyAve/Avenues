@@ -123,7 +123,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   "nav-tab": { none: "A plain link with aria-current; no behavior beyond the browser's." },
   toast: {
     upstream: "toast",
-    note: "The app's timing rules are story tests. The agent stories cover a toast showing and the empty region, which a patch to ui-sdk 0.1.0-beta.1 leaves out of the agent snapshot (AVE-43; see AGENTS.md).",
+    note: "The app's timing rules are story tests. The agent stories cover a toast showing and the empty region, which a patch to ui-sdk 0.1 leaves out of the agent snapshot (AVE-43; see AGENTS.md).",
   },
 
   // Avenue primitives with no kit pattern: built with definePrimitive, but ui-sdk's kit has no pattern of their kind
