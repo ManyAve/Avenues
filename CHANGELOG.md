@@ -2,6 +2,15 @@
 
 What changed for apps that install Avenue. See the README, "Versions", for what moves the minor and patch numbers.
 
+## v0.1.2 (2026-11-14)
+
+- Checks for apps (AVE-104, AVE-105; README, "Checks for apps"). Nothing an app already uses changes.
+  - `avenue-check-patches`: fails when the app doesn't carry or list Avenue's ui-sdk patches, or its copies differ.
+  - `avenue-check-classes [paths...]`: Avenue's class rules (retired corners, off-grid spacing, `hit-area` with
+    `after:`, literal breakpoints) over the app's own source.
+  - `@manyave/avenue/checks/touch-targets` and `@manyave/avenue/checks/name-clash`: the 44px tap measure, the mouse
+    minimums and the name-clash check, as plain DOM functions an app's story or browser tests call.
+
 ## v0.1.1 (2026-11-14)
 
 - Toast: `showWith`'s returned function types its options in full, so an app's type check no longer fails on

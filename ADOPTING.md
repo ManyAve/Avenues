@@ -42,7 +42,12 @@ the steps below in order and stop where a step says to.
      Never add ui-sdk at another version.
    - Carry Avenue's ui-sdk patches in this app's own `patchedDependencies`. Bun doesn't apply a
      dependency's patches, so without them the fixes silently don't apply here. README "Versions"
-     says how, and CHANGELOG.md lists the patches each tag needs.
+     says how, and CHANGELOG.md lists the patches each tag needs. Add `avenue-check-patches` to this
+     app's check so a missing or stale copy fails it (README, "Checks for apps").
+   - If this app's Storybook or dev server runs on Vite, leave `@manyave/avenue` out of Vite's
+     dependency pre-bundling (`optimizeDeps.exclude`) and pre-bundle every `@ui-sdk/react` entry
+     and `@ui-sdk/core` instead (`optimizeDeps.include`). Otherwise Vite can load ui-sdk twice,
+     and ui-sdk's shared state (the agent snapshot, open popups) splits between the copies.
    - Move to a newer Avenue tag only on purpose, in its own pull request, after reading that tag's
      CHANGELOG.md entry.
    - Never copy Avenue's files into the app and never edit them under node_modules. A fork is the
@@ -64,7 +69,8 @@ the steps below in order and stop where a step says to.
      Playwright suite and `bun size`; for Management: `bun run check` and `bun run test:outcomes`).
    - The visual diff: every changed story is either listed in Avenue's parity map or is the slice's
      named change. Anything else fails.
-   - Tap areas (44px on a phone, no overlaps), the name-clash check, and one keyboard-only
+   - Tap areas (44px on a phone, no overlaps), the name-clash check (both from
+     `@manyave/avenue/checks/*`), `avenue-check-classes` over the slice's files, and one keyboard-only
      Playwright journey that asserts where focus lands after a dialog closes or a row goes away.
    - The pull request lists what users will notice, especially where keyboard, focus or dismissal
      behaviour changes.

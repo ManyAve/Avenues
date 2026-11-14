@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { nameClashes, nameWords } from "../.storybook/name-clash";
+import { nameClashes, nameWords } from "../src/checks/name-clash";
 
 describe("nameWords (AVE-92)", () => {
   test("drops case, accents, punctuation and order", () => {

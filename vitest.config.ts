@@ -9,7 +9,7 @@ import { defineConfig } from "vitest/config";
 //
 // The fifth project, `touch`, runs the light web set again as a phone: Playwright's hasTouch makes
 // `(pointer: coarse)` match, and the `pointer` global turns on the 44px touch-target measure after each story
-// (AVE-22, .storybook/touch-targets.ts).
+// (AVE-22, src/checks/touch-targets.ts).
 const matrix = [
   ["light", "web", "fine"],
   ["dark", "web", "fine"],
