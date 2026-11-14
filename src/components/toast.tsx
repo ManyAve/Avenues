@@ -57,7 +57,9 @@ function showWith(toaster: Toaster<ReactNode>): ShowToast {
     waiting = undefined;
     next();
   });
-  return (text, { action, variant = "success" } = {}) => {
+  // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
+  // contextual type into the destructured default (MANA-1118, TS7031 in Management).
+  return (text: string, { action, variant = "success" }: ToastOptions = {}) => {
     const options = action ? { action } : {};
     if (variant === "error") {
       // A success waiting behind the old error keeps waiting behind the new one.
