@@ -294,3 +294,6 @@ A new component, a new token or a bug fix that keeps the API is a patch.
 patches under `patches/` don't apply inside an app. An app copies the same files into its own `patches/` and lists
 them under its own `patchedDependencies`, and checks that its copies match the ones in the tag it installs (the
 tag's files are at `node_modules/@manyave/avenue/patches/`).
+
+To move an app onto Avenue, and to report Avenue bugs or ask for features, see [ADOPTING.md](ADOPTING.md): a
+ready-to-paste prompt for the app's own Claude.

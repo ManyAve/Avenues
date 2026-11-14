@@ -1,0 +1,111 @@
+# Adopting Avenue in an app
+
+This page is for the Management and Neighbors teams, and for their Claude. The prompt below is ready to paste into a
+Claude session opened in the app's own repository. It explains how to start using Avenue, and how to report Avenue
+bugs and ask for new things.
+
+The full rollout plan is AVE-100 in Linear ("Plan moving Management and Neighbors onto Avenue"). Each app's slices
+are filed as cards there: Management MANA-1118 to MANA-1132, Neighbors NEI-202 to NEI-213.
+
+## The prompt
+
+```text
+We are moving this app's UI onto Avenue, ManyAve's design system. Avenue is a public repository,
+github.com/ManyAve/Avenues, and its Storybook is live at https://avenues.manyave.com. Work through
+the steps below in order and stop where a step says to.
+
+1. Read before you change anything
+   - Avenue's README.md (especially "Using Avenue from another package", "Versions", "Touch
+     targets" and "Spacing and corners"), CHANGELOG.md, AGENTS.md and ADOPTING.md, at the tag you
+     will install.
+   - The rollout plan, Linear AVE-100: Part A is for both apps, Part B is Management, Part C is
+     Neighbors. Then this app's slice cards (Management MANA-1118 to MANA-1132, Neighbors NEI-202
+     to NEI-213). Each card names the screens it moves, the changes it is allowed to make, and the
+     proof it needs.
+   - Browse the matching components in Storybook before replacing one of this app's primitives.
+
+2. Check that you are allowed to start
+   - No slice starts until Zack has agreed to the rollout. If you can't find his agreement on
+     AVE-100 or this app's slice 0 card (MANA-1118 or NEI-202), stop and ask him.
+   - Slice 0 needs an Avenue tag. Run `git ls-remote --tags https://github.com/ManyAve/Avenues`.
+     If v0.1.0 (or a later tag) isn't there, or AVE-103, AVE-104 and AVE-105 aren't Done, stop and
+     say so. Do not install from `main` or from a commit instead.
+
+3. How Avenue goes into the app
+   - A Bun Git dependency pinned to a tag, never `main`:
+     "@manyave/avenue": "github:ManyAve/Avenues#v0.1.0"
+   - Import `@manyave/avenue/styles.css` (Tailwind, the base layer and the tokens; the app's own
+     stylesheet stops importing Tailwind itself), `@manyave/avenue/desktop.css` on desktop surfaces
+     only, and one component at a time from `@manyave/avenue/components/<name>`. `cn` is in
+     `@manyave/avenue/utils`, and `formatMoney` is in `@manyave/avenue/format`.
+   - One copy each of React (^19.3), Tailwind (^4.3) and ui-sdk (exactly the version Avenue pins).
+     Never add ui-sdk at another version.
+   - Carry Avenue's ui-sdk patches in this app's own `patchedDependencies`. Bun doesn't apply a
+     dependency's patches, so without them the fixes silently don't apply here. README "Versions"
+     says how, and CHANGELOG.md lists the patches each tag needs.
+   - Move to a newer Avenue tag only on purpose, in its own pull request, after reading that tag's
+     CHANGELOG.md entry.
+   - Never copy Avenue's files into the app and never edit them under node_modules. A fork is the
+     problem Avenue exists to end. If Avenue is wrong or missing something, report it (step 6).
+
+4. Move one slice at a time, in the plan's order
+   - Slice 0 installs Avenue with no visible change, proves the plan's seven conditions, and adds a
+     visual diff of every story. Zack sees each app's first pull request before it merges.
+   - After that, one slice per pull request, each small enough to merge the day it starts and to
+     undo with one revert. Screens import Avenue directly as they move; the old primitives stay for
+     screens that haven't moved, until the last slice deletes them.
+   - Money, mail and billing screens go last, each in its own release, with the extra proof on
+     their cards.
+   - Don't change routes, data, the backend, RPC schemas, or the Android and iOS apps, except where
+     a slice card says so.
+
+5. Prove each slice before it merges
+   - This app's own gates as its AGENTS.md says (for Neighbors: `bun check`, `bun vt run`, the
+     Playwright suite and `bun size`; for Management: `bun run check` and `bun run test:outcomes`).
+   - The visual diff: every changed story is either listed in Avenue's parity map or is the slice's
+     named change. Anything else fails.
+   - Tap areas (44px on a phone, no overlaps), the name-clash check, and one keyboard-only
+     Playwright journey that asserts where focus lands after a dialog closes or a row goes away.
+   - The pull request lists what users will notice, especially where keyboard, focus or dismissal
+     behaviour changes.
+   - Fictional data only in stories, tests and screenshots (for example Sunnydale HOA). No real HOA
+     data, ever, and never Chimney Hills North.
+
+6. Report Avenue bugs and ask for features in Linear, not in the app
+   File in team "Avenues" (key AVE), project "Avenue design system". Search AVE first: if a card
+   already covers it, comment there instead of filing a new one. Add the "AI reported" label when
+   you file it yourself.
+
+   A bug (label "Bug"): something Avenue does wrong, against its own docs or stories.
+   - Title: what goes wrong, in plain words ("Select's menu covers the field on a phone").
+   - Where: the app, the screen, and the Avenue component.
+   - A screenshot of the screen, and a link to the Avenue story that shows it, if there is one.
+   - Steps to see it, what you expected, and what happened instead.
+   - Avenue tag, light or dark, desktop or web type scale, browser or desktop app, phone or desktop
+     width, mouse or touch.
+
+   A feature request (label "Feature" for something new, "Improvement" for a change to something
+   Avenue already has):
+   - The ask, word for word, and who asked.
+   - The problem behind it: the screen, the job the person is doing there, and the device. Describe
+     the problem; don't design the component.
+   - Which apps need it. Something only one app uses usually stays in that app.
+   - A screenshot of the screen today.
+
+   For both: fictional data only in the text and screenshots, never secrets and never real HOA
+   data. Avenue tests every request against research, UX and UI before building it, and will push
+   back on the card when a request doesn't hold up; reply there.
+
+   While you wait, keep this app's old part for that one control, write the AVE card number next
+   to it in a comment, and carry on with the slice. Link the AVE card from the slice's card.
+   When Avenue fixes it, it cuts a new tag; this app moves to it on purpose, in its own pull
+   request, with the same proof as a slice.
+
+Start with step 1, then tell me in a few sentences which slice is next for this app and whether
+anything blocks it.
+```
+
+## For the Avenue team
+
+Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in
+lane F skip research; everything else gets the UX and UI tests.
