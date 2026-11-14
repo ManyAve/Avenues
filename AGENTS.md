@@ -60,10 +60,10 @@ component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`
 for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies
 and is still needed. To change one, `bun patch <package>`, edit `node_modules`, then `bun patch --commit`.
 
-- `@ui-sdk/core` 0.1.0-beta.1, toast (AVE-43): an empty toast region was listed in the agent snapshot as an
+- `@ui-sdk/core` 0.1.0-beta.2 (since beta.1), toast (AVE-43): an empty toast region was listed in the agent snapshot as an
   unnamed `toast`, failing the agent test on nearly every screen. The patch leaves the region out of the snapshot
   while no toast shows, using the primitive's `agent.shown`. `Toast/EmptyRegion` fails if the patch stops applying.
-- `@ui-sdk/core` 0.1.0-beta.1, positioning (AVE-21): popups were placed at fractional pixels (a menu at
+- `@ui-sdk/core` 0.1.0-beta.2 (since beta.1), positioning (AVE-21): popups were placed at fractional pixels (a menu at
   593.688px), so their text rendered softer than the page's on 1x screens; Base UI rounded. The patch rounds a
   popup's `left` and `top` to whole device pixels. `Dropdown menu/Open` fails if the patch stops applying.
 
