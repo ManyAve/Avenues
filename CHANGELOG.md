@@ -4,6 +4,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.1.5 (2026-11-15)
+
+- Status: a `destructive` tone, for the board's "Needs attention" (an announcement whose emails didn't go out),
+  with the app's colours: a red dot outlined, or a red tint filled. Nothing an app already uses changes. The Android
+  and AvenueUI Status keep their five tones for now.
+
 ## v0.1.4 (2026-11-15)
 
 - Toast (AVE-118). Nothing an app already uses changes.
