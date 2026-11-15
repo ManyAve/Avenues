@@ -9,6 +9,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     `EmptyState` and `InlineMessage` for Jetpack Compose, with the web's names and options, on Material 3 controls.
   - `bun run native:android` records their Paparazzi screenshots to `native/screenshots/android/`;
     `bun run native:android:check` fails when they are stale.
+- AvenueUI, Avenue's SwiftUI components for the iPhone apps (README, "Native apps"). Nothing an app already uses
+  changes. `Package.swift` at the repository root makes the repository a Swift package; add it at the tag and
+  `import AvenueUI`.
+  - Button (`.buttonStyle(.avenue(variant, size:))`, `.disabledReason(_:)`), Badge, Status, Chip and ChipRow,
+    InitialsAvatar, Card (CardHeader, CardContent, footer), InlineMessage, and `.avenueTheme()` for stock controls:
+    the web's names, variants, sizes and look, with the iPhone's own behaviour (VoiceOver, Dynamic Type, 44pt taps).
+  - `AvenueCatalog` renders each one; `bun run native:ios` (on a Mac) turns the catalog into the screenshots that
+    Storybook's `Native/*` stories show beside the web component and the Android one.
 
 ## v0.1.3 (2026-11-15)
 

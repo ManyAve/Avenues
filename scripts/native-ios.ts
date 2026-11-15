@@ -22,7 +22,7 @@ function simulator(): string {
   const devices = Object.entries(JSON.parse(list.stdout).devices as Record<string, { name: string }[]>)
     .filter(([runtime]) => runtime.includes("iOS"))
     .sort(([a], [b]) => b.localeCompare(a, undefined, { numeric: true }))
-    .flatMap(([, list]) => list)
+    .flatMap(([, onRuntime]) => onRuntime)
     .filter((d) => d.name.startsWith("iPhone"));
   const first = devices[0];
   if (!first) throw new Error("No iPhone simulator is installed (Xcode, Settings, Components).");
