@@ -42,6 +42,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run tokens:compare`  | Compares the tokens with a ManyAve Management checkout (default `../manyave-management`, or pass a path) and lists every difference; fails on any that isn't an agreed one. Not part of `check`, because it needs the app checked out. |
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`; `origin/<ref>` when there is no local branch of that name) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
 | `bun run parity [--app <path>]` | Builds the ManyAve Management app's Storybook from a local checkout (default `../manyave-management`) and Avenue's, then captures every Avenue component and composite story beside the app story it was ported from, in all four combinations, and compares them. Fails on any difference without a recorded reason, or any story with no pair and no reason; the report goes to `.parity/report/index.html`. Not part of `check`, because it needs the app checked out (below). |
+| `bun run tokens:native`   | Regenerates `native/AvenueTokens.swift`, `native/AvenueTokens.kt` and `native/tokens.json` from the stylesheets (below, "Native apps"); `test:scripts` fails until you do after changing a token. |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
@@ -248,6 +249,34 @@ that import would resolve to the app's file instead. Don't add a `.ts` or `.tsx`
 app's TypeScript settings reject it. `components.json` uses the same subpaths, so
 `bunx shadcn add <component>` writes these imports as they should be.
 
+## Native apps
+
+Neighbors and Management each ship an iPhone app (SwiftUI) and an Android app (Jetpack Compose). ui-sdk renders in
+web frameworks only, so those apps can't run Avenue's components; they share its look through its tokens instead,
+and build each screen from the platform's own control. `Foundations/Native` in Storybook pairs every component with
+the SwiftUI and Compose control to use.
+
+`bun run tokens:native` (`scripts/native-tokens.ts`) writes three files under `native/`, committed and shipped in the
+package:
+
+- `AvenueTokens.swift`: `AvenueTokens.light` and `.dark` (each role as `0xRRGGBB`), `TypeScale`, `Radius`, `Spacing`
+  and `touchMinimum`, in points, plus `Color.avenue(\.primary)`, which follows light and dark mode. Foundation only
+  outside an iOS build.
+- `AvenueTokens.kt`: package `com.manyave.avenue`; `AvenueTokens.Light` and `.Dark` (`AvenueColors`), `TypeScale` in
+  sp, `Radius`, `Spacing` and `TouchMinimum` in dp.
+- `tokens.json`: the same values for anything else.
+
+What they hold: every semantic colour role and the four avatar tints, in light and dark, resolved the way the browser
+cascades `tokens.css` and converted from OKLCH to sRGB; the app type scale; the five corners; the spacing names and
+control heights at their phone values (16 between controls, 28 for an xs control, a 16 page inset); and the 44pt tap
+minimum. Names are the web's in camel case (`--card-foreground` is `cardForeground`). Left out on purpose: the palette
+ramps, the desktop sidebar, the public site's display type, shadows and the `color-mix` colours, which phones draw
+with the platform's own.
+
+An app copies the file it needs from the tag it installs (`node_modules/@manyave/avenue/native/`) into its own
+source, with a script, never by hand; Swift and Gradle can't read an npm package, and Avenue never reaches into an
+app. A changed token without a regenerated file fails `bun run test:scripts`.
+
 ## Using Avenue from another package
 
 The package is source-shipped (no build step) and exposes:
@@ -256,6 +285,7 @@ The package is source-shipped (no build step) and exposes:
   covers the package's own files, so the consumer needs no extra content paths.
 - `@manyave/avenue/tokens.css`: the tokens alone.
 - `@manyave/avenue/desktop.css`: the desktop type scale; load it after `styles.css` on desktop surfaces.
+- `@manyave/avenue/native/*`: the tokens for the phone apps, as Swift, Kotlin and JSON (below, "Native apps").
 - `@manyave/avenue/components/*`: one entry per component.
 - `@manyave/avenue/utils`: `cn`.
 - `@manyave/avenue/format`: `formatMoney`, `tintFor`, `initials`.
