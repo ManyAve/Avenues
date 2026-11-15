@@ -1,5 +1,4 @@
 #if canImport(UIKit)
-import SnapshotTesting
 import SwiftUI
 import UIKit
 import XCTest
@@ -30,31 +29,21 @@ final class CatalogScreenshots: XCTestCase {
         }
     }
 
+    /// Draws through SwiftUI's own renderer, the one the screen uses. SnapshotTesting's `.image` draws the hosting
+    /// view's layer tree on the CPU instead, and that path strokes a `Capsule` with stray marks at its round ends
+    /// (outlined Status, Chip, outline Badge) that the device never shows (checked against a simulator screenshot).
     private func render(_ view: some View, dark: Bool) throws -> UIImage {
-        let traits = UITraitCollection(traitsFrom: [
-            UITraitCollection(displayScale: 3),
-            UITraitCollection(userInterfaceStyle: dark ? .dark : .light),
-            UITraitCollection(preferredContentSizeCategory: .large),
-        ])
-        let host = UIHostingController(
-            rootView: view
+        let renderer = ImageRenderer(
+            content: view
                 .frame(width: 390)
                 .fixedSize(horizontal: false, vertical: true)
                 .environment(\.colorScheme, dark ? .dark : .light)
+                .environment(\.dynamicTypeSize, .large)
+                .environment(\.displayScale, 3)
         )
-        host.overrideUserInterfaceStyle = dark ? .dark : .light
-        let height = host.sizeThatFits(in: CGSize(width: 390, height: CGFloat.greatestFiniteMagnitude)).height
-        var rendered: UIImage?
-        let done = expectation(description: "rendered")
-        Snapshotting<UIViewController, UIImage>
-            .image(precision: 1, size: CGSize(width: 390, height: ceil(height)), traits: traits)
-            .snapshot(host)
-            .run { image in
-                rendered = image
-                done.fulfill()
-            }
-        wait(for: [done], timeout: 10)
-        return try XCTUnwrap(rendered)
+        renderer.scale = 3
+        renderer.proposedSize = ProposedViewSize(width: 390, height: nil)
+        return try XCTUnwrap(renderer.uiImage, "nothing rendered")
     }
 }
 #endif

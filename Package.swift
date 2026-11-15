@@ -10,19 +10,12 @@ let package = Package(
     products: [
         .library(name: "AvenueUI", targets: ["AvenueUI"]),
     ],
-    dependencies: [
-        // Tests only: renders each catalog view to the PNGs Storybook shows beside the web component.
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.7"),
-    ],
     targets: [
         // AvenueTokens.swift in this folder is a link to the generated native/AvenueTokens.swift.
         .target(name: "AvenueUI", path: "native/ios/Sources/AvenueUI"),
         .testTarget(
             name: "AvenueUITests",
-            dependencies: [
-                "AvenueUI",
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-            ],
+            dependencies: ["AvenueUI"],
             path: "native/ios/Tests/AvenueUITests"
         ),
     ]
