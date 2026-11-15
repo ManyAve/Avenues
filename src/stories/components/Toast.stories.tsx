@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
+import { useState, type CSSProperties } from "react";
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
@@ -319,6 +320,106 @@ export const PhoneAboveSheetFooter: Story = {
     const footer = document.querySelector<HTMLElement>("[data-slot=sheet-footer]")!;
     await waitFor(() =>
       expect(Math.round(footer.getBoundingClientRect().top - toast.getBoundingClientRect().bottom)).toBe(8),
+    );
+  },
+};
+
+// AVE-118: what the board app's own toast did that Avenue's didn't. Each story renders its own trigger, so the stories
+// above keep their pixels.
+
+/** Progress: something started that hasn't finished. A send icon instead of the check; timed and announced like a success. */
+export const Progress: Story = {
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <Trigger label="Send announcement" text="Sending to 42 households…" options={{ variant: "progress" }} />
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send announcement" }));
+    const toast = await findToast();
+    await expect(toast).toHaveTextContent("Sending to 42 households…");
+    await expect(toast.querySelector("svg.lucide-send")).not.toBeNull();
+    await expect(toast.querySelector("svg.lucide-check")).toBeNull();
+    await waitFor(() => expect(liveText("polite")).toContain("Sending to 42 households…"));
+    await gone(6000);
+  },
+};
+
+const restore = fn();
+
+function RemoveSection() {
+  const toast = useToast();
+  const [removed, setRemoved] = useState(false);
+  return removed ? (
+    <p>No sections.</p>
+  ) : (
+    <Button
+      variant="outline"
+      onClick={() => {
+        setRemoved(true);
+        toast("Section removed", { action: { label: "Undo", onAction: () => { restore(); setRemoved(false); } }, focus: true });
+      }}
+    >
+      Remove section
+    </Button>
+  );
+}
+
+/** `focus`: the button the person pressed is gone, so focus goes to Undo instead of falling to the page. */
+export const FocusesAction: Story = {
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <RemoveSection />
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async ({ canvas }) => {
+    restore.mockClear();
+    canvas.getByRole("button", { name: "Remove section" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await findToast();
+    const action = await screen.findByRole("button", { name: "Undo" });
+    await waitFor(() => expect(action).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    await expect(restore).toHaveBeenCalledOnce();
+    await expect(await canvas.findByRole("button", { name: "Remove section" })).toBeVisible();
+  },
+};
+
+/** Without `focus`, focus stays where it is: the toast never takes it on its own. */
+export const KeepsFocusWithoutFocusOption: Story = {
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Archive notice" });
+    trigger.focus();
+    await userEvent.keyboard("{Enter}");
+    await findToast();
+    await wait(300);
+    await expect(trigger).toHaveFocus();
+  },
+};
+
+/** `--avenue-toast-bottom` lifts the toast 8px above a bar pinned to the bottom edge, so it never covers it. */
+export const LiftedAboveBar: Story = {
+  render: () => (
+    // On a wrapper around the provider, because the region renders beside the provider's children.
+    <div style={{ "--avenue-toast-bottom": "44px" } as CSSProperties}>
+      <ToastProvider>
+        <Rows>
+          <Trigger label="Add household" text="Household added" />
+        </Rows>
+        <div data-testid="bar" className="fixed inset-x-0 bottom-0 h-11 border-t bg-muted" />
+      </ToastProvider>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    const toast = await findToast();
+    const bar = canvas.getByTestId("bar");
+    await waitFor(() =>
+      expect(Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom)).toBe(8),
     );
   },
 };

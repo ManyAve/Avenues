@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.1.4 (2026-11-15)
+
+- Toast (AVE-118). Nothing an app already uses changes.
+  - `variant: "progress"`: something started that hasn't finished, such as a send. A send icon instead of the check;
+    timed and announced like a success.
+  - `focus: true` moves focus to the action as the toast shows, for when the control the person used is gone (a
+    removed section's Undo).
+  - `--avenue-toast-bottom` lifts the toast above a bar pinned to the bottom edge, such as a status bar: set it to the
+    bar's height and the toast sits 8px above it.
 - Android components (README, "Android components"). Nothing an app already uses changes.
   - `native/android`: `AvenueTheme`, `Button`, `Badge`, `Status`, `Chip`, `ChipRow`, `InitialsAvatar`, `Card`,
     `EmptyState` and `InlineMessage` for Jetpack Compose, with the web's names and options, on Material 3 controls.
