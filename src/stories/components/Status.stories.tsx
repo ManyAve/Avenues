@@ -16,6 +16,7 @@ type Story = StoryObj<typeof meta>;
 const tones: { tone: StatusTone; label: string }[] = [
   { tone: "success", label: "Paid" },
   { tone: "warning", label: "Owing" },
+  { tone: "destructive", label: "Needs attention" },
   { tone: "primary", label: "In progress" },
   { tone: "info", label: "Scheduled" },
   { tone: "neutral", label: "Closed" },

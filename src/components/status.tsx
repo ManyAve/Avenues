@@ -11,6 +11,9 @@ import { cn } from "#avenue/lib/utils";
  * Status is as tall as the app's (AVE-56): its meta line plus 1px padding and a 1px border, so 24px on the web
  * scale and 22px on desktop. The app pads its filled pill 3px instead, which is off the grid; here outline and
  * filled share one height, so a register row of mixed labels lines up.
+ *
+ * `destructive` is the board's "Needs attention" (MANA-1054, added to the app after the port): something the board
+ * has to fix, such as an announcement whose emails didn't go out. Same colours as the app's.
  */
 
 /** Small muted count next to a label, e.g. "Households 24". */
@@ -55,11 +58,12 @@ function TitleWithCount({
   );
 }
 
-type StatusTone = "success" | "warning" | "primary" | "info" | "neutral";
+type StatusTone = "success" | "warning" | "destructive" | "primary" | "info" | "neutral";
 
 const dots: Record<StatusTone, string> = {
   success: "bg-success",
   warning: "bg-warning",
+  destructive: "bg-destructive",
   primary: "bg-primary",
   info: "bg-info",
   neutral: "bg-slate-subtle-foreground",
@@ -68,6 +72,7 @@ const dots: Record<StatusTone, string> = {
 const fills: Record<StatusTone, string> = {
   success: "bg-success-subtle text-success-subtle-foreground",
   warning: "bg-warning-subtle text-warning-subtle-foreground",
+  destructive: "bg-destructive-subtle text-destructive-subtle-foreground",
   primary: "bg-primary-subtle text-primary-subtle-foreground",
   info: "bg-info-subtle text-info-subtle-foreground",
   neutral: "bg-slate-subtle text-slate-subtle-foreground",
