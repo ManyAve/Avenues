@@ -7,7 +7,7 @@ import {
   ToastTitle,
   type Toaster,
 } from "@ui-sdk/react/toast";
-import { CheckIcon, CircleAlertIcon, XIcon } from "lucide-react";
+import { CheckIcon, CircleAlertIcon, SendIcon, XIcon } from "lucide-react";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
 import { buttonVariants } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
@@ -31,13 +31,27 @@ import { cn } from "#avenue/lib/utils";
  *
  * On a phone (AVE-40): the toast keeps a 16px gutter each side and wraps a long message rather than cutting it; it
  * sits above the home indicator and above an open bottom Sheet's footer.
+ *
+ * A page with something pinned to the bottom edge, such as a status bar, lifts the toast above it with
+ * `--avenue-toast-bottom` (the gap under the toast, minus 8px; 16px plus the safe area by default), so a toast never
+ * covers it (AVE-118).
  */
 
 type ToastOptions = {
   /** A button or link after the text: "Undo", or a link with `href`. */
   action?: { label: string; onAction?: () => unknown; href?: string } | undefined;
-  /** `error`: a failure. It stays until the user dismisses it and is announced at once. */
-  variant?: "success" | "error" | undefined;
+  /**
+   * `error`: a failure. It stays until the user dismisses it and is announced at once.
+   * `progress`: something started that hasn't finished, such as an announcement sending: a send icon instead of the
+   * success check, otherwise timed and announced like a success (AVE-118).
+   */
+  variant?: "success" | "error" | "progress" | undefined;
+  /**
+   * Move focus to the action as the toast shows. Only for when the control the person just used is gone, such as a
+   * removed section's Undo, so focus lands on the way back instead of falling to the page (AVE-118). Otherwise
+   * leave focus where it is; F6 reaches the toast.
+   */
+  focus?: boolean | undefined;
 };
 
 type ShowToast = (text: string, options?: ToastOptions) => void;
@@ -59,8 +73,8 @@ function showWith(toaster: Toaster<ReactNode>): ShowToast {
   });
   // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
   // contextual type into the destructured default (MANA-1118, TS7031 in Management).
-  return (text: string, { action, variant = "success" }: ToastOptions = {}) => {
-    const options = action ? { action } : {};
+  return (text: string, { action, variant = "success", focus = false }: ToastOptions = {}) => {
+    const options = action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {};
     if (variant === "error") {
       // A success waiting behind the old error keeps waiting behind the new one.
       replacingError = true;
@@ -69,13 +83,24 @@ function showWith(toaster: Toaster<ReactNode>): ShowToast {
       replacingError = false;
       return;
     }
-    const show = () => {
+    const showNow = () => {
       toaster.dismiss();
-      toaster.success(text, { ...options, duration: action ? ACTION_MS : SUCCESS_MS });
+      // A progress toast is ui-sdk's info type: announced politely and timed like a success (not `loading`, which
+      // stays until it's updated).
+      const show = variant === "progress" ? toaster.info : toaster.success;
+      show(text, { ...options, duration: action ? ACTION_MS : SUCCESS_MS });
     };
-    if (showingError()) waiting = show;
-    else show();
+    if (showingError()) waiting = showNow;
+    else showNow();
   };
+}
+
+function focusOnMount(element: HTMLElement | null) {
+  element?.focus();
+}
+
+function focusesAction(data: unknown) {
+  return typeof data === "object" && data !== null && "focusAction" in data && data.focusAction === true;
 }
 
 const ToastContext = createContext<ShowToast>(() => {});
@@ -89,7 +114,8 @@ function useToast() {
 function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
   return (
     // ui-sdk centres a region with translate: -50% outside any layer, so only an important utility undoes it.
-    // 24px above the bottom edge plus the home-indicator safe area; while a bottom Sheet is open, 8px above its
+    // 24px above the bottom edge plus the home-indicator safe area, or 8px above --avenue-toast-bottom where a page sets
+    // it (a status bar, AVE-118); while a bottom Sheet is open, 8px above its
     // footer instead (CSS anchor positioning on the footer's anchor-name), so it never covers the sheet's actions
     // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it.
     // The name is the landmark's while a toast shows. Empty, the region is no landmark and, with Avenue's ui-sdk patch,
@@ -100,7 +126,7 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
       side="bottom"
       align="center"
       maxVisible={1}
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(anchor(--avenue-sheet-footer_top,calc(--spacing(4)+env(safe-area-inset-bottom)))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(anchor(--avenue-sheet-footer_top,var(--avenue-toast-bottom,calc(--spacing(4)+env(safe-area-inset-bottom))))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
     >
       {(item) => (
         <ToastPart
@@ -112,12 +138,17 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
         >
           {item.type === "error" ? (
             <CircleAlertIcon className="size-4 shrink-0 text-destructive-subtle-foreground" aria-hidden />
+          ) : item.type === "info" ? (
+            <SendIcon className="size-4 shrink-0 text-info-subtle-foreground" aria-hidden />
           ) : (
             <CheckIcon className="size-4 shrink-0 text-success-subtle-foreground" aria-hidden />
           )}
           <ToastTitle />
           {item.action && (
-            <ToastAction className="relative cursor-pointer rounded-xs font-medium text-foreground underline underline-offset-3 outline-none hit-area [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] focus-visible:ring-3 focus-visible:ring-ring/50" />
+            <ToastAction
+              // `focus: true` only: the control the person used is gone, so focus would fall to the page (AVE-118).
+              ref={focusesAction(item.data) ? focusOnMount : undefined}
+              className="relative cursor-pointer rounded-xs font-medium text-foreground underline underline-offset-3 outline-none hit-area [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] focus-visible:ring-3 focus-visible:ring-ring/50" />
           )}
           {item.type === "error" && (
             <ToastClose
