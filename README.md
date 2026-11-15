@@ -299,6 +299,38 @@ is built on the Material 3 control (its ripple, focus, TalkBack role and 48dp to
   fails when a committed screenshot is missing, stale or extra. Both need Java 17+ and the Android SDK (`ANDROID_HOME`
   or `sdk.dir` in `native/android/local.properties`); neither is part of `bun run check`, which runs without them.
 
+### Components for iPhone (AvenueUI)
+
+The components both iPhone apps were drawing by hand are Avenue components on the iPhone too: a Swift package,
+`AvenueUI`, in `native/ios/` (`Package.swift` at the repository root). Each keeps the web component's name, options
+and look, and the iPhone's own behaviour: VoiceOver, Dynamic Type, and a tap area of at least 44pt that never grows
+what is drawn.
+
+| Web                      | SwiftUI                                                                     |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `Button`                 | `Button("Save") { }.buttonStyle(.avenue(.outline, size: .sm))`, `.disabledReason("Why")` |
+| `Badge`                  | `Badge("Past due", variant: .destructive)`                                  |
+| `Status`                 | `Status("Paid", tone: .success, filled: false)`                              |
+| `Chip`, `ChipRow`        | `ChipRow(overflow: .scroll) { Chip("Open", count: 4, isSelected: $open) }`  |
+| `InitialsAvatar`         | `InitialsAvatar(name:, tintKey:, size: .sm)` (the web's tint hash)           |
+| `Card` and its parts     | `Card { CardHeader("Title", description:) { action }; CardContent { } } footer: { }` |
+| `InlineMessage`          | `InlineMessage(message, tone: .error)` (announced once per new message)      |
+| `EmptyState`             | None: the system's `ContentUnavailableView`                                  |
+
+`.avenueTheme()` on an app's root tints the stock controls (toggles, pickers, links) with Avenue's primary. The
+module is `AvenueUI`, not `Avenue`, because the Neighbors app already has a type named `Avenue`. Only what both apps
+rebuild is here; everything else stays the platform's own control (the `Foundations/Native` table).
+
+An app adds the repository as a Swift package at the tag it uses, the same tag as its web install
+(`.package(url: "https://github.com/ManyAve/Avenues", exact: "<version>")`).
+
+**Seeing them.** `AvenueCatalog` shows every component in each of its states with fictional data, for an Xcode
+preview or a debug screen. `bun run native:ios` (`scripts/native-ios.ts`, a Mac with Xcode only; `check` doesn't run
+it) builds the package for the first iPhone simulator, runs its tests, and renders the catalog in light and dark to
+`native/screenshots/ios/<slug>-<light|dark>.png`. Storybook's `Native/*` stories show each one beside the live web
+component and the Android capture of the same slug, or "Not built yet" while one is missing. Commit the PNGs it
+changes. The captures use the simulator's own fonts, so compare them only across the same Xcode version.
+
 ## Using Avenue from another package
 
 The package is source-shipped (no build step) and exposes:
