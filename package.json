@@ -38,6 +38,8 @@
     "test:stories": "vitest run",
     "tokens:compare": "bun scripts/compare-tokens.ts",
     "tokens:native": "bun scripts/native-tokens.ts",
+    "native:android": "bun scripts/native-android.ts",
+    "native:android:check": "bun scripts/native-android.ts --check",
     "visual:diff": "bun scripts/visual-diff.ts",
     "parity": "bun scripts/parity.ts",
     "ui-sdk:css": "bun scripts/ui-sdk-css.ts",

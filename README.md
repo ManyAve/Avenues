@@ -43,6 +43,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`; `origin/<ref>` when there is no local branch of that name) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
 | `bun run parity [--app <path>]` | Builds the ManyAve Management app's Storybook from a local checkout (default `../manyave-management`) and Avenue's, then captures every Avenue component and composite story beside the app story it was ported from, in all four combinations, and compares them. Fails on any difference without a recorded reason, or any story with no pair and no reason; the report goes to `.parity/report/index.html`. Not part of `check`, because it needs the app checked out (below). |
 | `bun run tokens:native`   | Regenerates `native/AvenueTokens.swift`, `native/AvenueTokens.kt` and `native/tokens.json` from the stylesheets (below, "Native apps"); `test:scripts` fails until you do after changing a token. |
+| `bun run native:android`  | Builds the Compose components in `native/android`, runs their unit tests and records their screenshots to `native/screenshots/android/` (below, "Android components"). Needs Java and the Android SDK, so not part of `check`; `native:android:check` fails on a stale screenshot. |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
@@ -276,6 +277,27 @@ with the platform's own.
 An app copies the file it needs from the tag it installs (`node_modules/@manyave/avenue/native/`) into its own
 source, with a script, never by hand; Swift and Gradle can't read an npm package, and Avenue never reaches into an
 app. A changed token without a regenerated file fails `bun run test:scripts`.
+
+### Android components
+
+`native/android` is a Gradle project holding Avenue's components for Jetpack Compose, in package
+`com.manyave.avenue`: `AvenueTheme`, `Button`, `Badge`, `Status`, `Chip` and `ChipRow`, `InitialsAvatar`, `Card`,
+`EmptyState` and `InlineMessage`. These are the ones both Android apps rebuild by hand today. Names, options and
+sizes are the web's (`Button(variant = ButtonVariant.Outline, size = ButtonSize.Sm)`); behaviour is Android's: each
+is built on the Material 3 control (its ripple, focus, TalkBack role and 48dp touch target), styled from
+`AvenueTokens.kt`. The iPhone set uses the same names and story slugs.
+
+- `AvenueTheme` puts Avenue's colours, type and corners into `MaterialTheme`, so stock Material controls (text
+  fields, switches, dialogs, snackbars) take Avenue's look unwrapped; `Avenue.colors` reads the roles Material has
+  no slot for.
+- The source compiles with the older of the two apps' toolchains (Kotlin 2.0, AGP 8.9, Compose BOM 2024.12), so an
+  app copies `native/android/avenue/src/main/kotlin/com/manyave/avenue/` and `native/AvenueTokens.kt` into its own
+  source from the tag it installs, with a script, as with the tokens. It needs `material3`, nothing else.
+- `bun run native:android` builds the module, runs its unit tests (tint and initials match the web's) and records
+  each component with Paparazzi in light and dark on a 393dp phone, writing
+  `native/screenshots/android/<slug>-<light|dark>.png` for the side-by-side stories. `bun run native:android:check`
+  fails when a committed screenshot is missing, stale or extra. Both need Java 17+ and the Android SDK (`ANDROID_HOME`
+  or `sdk.dir` in `native/android/local.properties`); neither is part of `bun run check`, which runs without them.
 
 ## Using Avenue from another package
 

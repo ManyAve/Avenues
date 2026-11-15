@@ -2,6 +2,14 @@
 
 What changed for apps that install Avenue. See the README, "Versions", for what moves the minor and patch numbers.
 
+## Unreleased
+
+- Android components (README, "Android components"). Nothing an app already uses changes.
+  - `native/android`: `AvenueTheme`, `Button`, `Badge`, `Status`, `Chip`, `ChipRow`, `InitialsAvatar`, `Card`,
+    `EmptyState` and `InlineMessage` for Jetpack Compose, with the web's names and options, on Material 3 controls.
+  - `bun run native:android` records their Paparazzi screenshots to `native/screenshots/android/`;
+    `bun run native:android:check` fails when they are stale.
+
 ## v0.1.3 (2026-11-15)
 
 - Native tokens for the iPhone and Android apps (AVE-101; README, "Native apps"). Nothing an app already uses changes.
