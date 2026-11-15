@@ -43,7 +43,7 @@ final class CatalogScreenshots: XCTestCase {
                 .environment(\.colorScheme, dark ? .dark : .light)
         )
         host.overrideUserInterfaceStyle = dark ? .dark : .light
-        let height = host.sizeThatFits(in: CGSize(width: 390, height: .greatestFiniteMagnitude)).height
+        let height = host.sizeThatFits(in: CGSize(width: 390, height: CGFloat.greatestFiniteMagnitude)).height
         var rendered: UIImage?
         let done = expectation(description: "rendered")
         Snapshotting<UIViewController, UIImage>

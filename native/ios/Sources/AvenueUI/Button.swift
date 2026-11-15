@@ -73,7 +73,7 @@ public extension ButtonStyle where Self == AvenueButtonStyle {
     static var avenue: AvenueButtonStyle { AvenueButtonStyle() }
 
     /// An Avenue button of the given variant and size.
-    static func avenue(_ variant: AvenueButtonStyle.Variant, size: AvenueButtonStyle.Size = .default, fullWidth: Bool = false) -> AvenueButtonStyle {
+    static func avenue(_ variant: AvenueButtonStyle.Variant = .default, size: AvenueButtonStyle.Size = .default, fullWidth: Bool = false) -> AvenueButtonStyle {
         AvenueButtonStyle(variant, size: size, fullWidth: fullWidth)
     }
 }
