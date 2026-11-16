@@ -1,5 +1,6 @@
 import * as React from "react"
 import * as AvatarPrimitive from "@ui-sdk/react/avatar"
+import { defined, type Loose } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -12,7 +13,7 @@ function Avatar({
   className,
   size = "default",
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Avatar> & {
+}: Loose<React.ComponentProps<typeof AvatarPrimitive.Avatar>> & {
   size?: "default" | "sm" | "lg" | undefined
 }) {
   return (
@@ -23,12 +24,12 @@ function Avatar({
         "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className
       )}
-      {...props}
+      {...defined(props)}
     />
   )
 }
 
-function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.AvatarImage>) {
+function AvatarImage({ className, ...props }: Loose<React.ComponentProps<typeof AvatarPrimitive.AvatarImage>>) {
   return (
     <AvatarPrimitive.AvatarImage
       data-slot="avatar-image"
@@ -36,7 +37,7 @@ function AvatarImage({ className, ...props }: React.ComponentProps<typeof Avatar
         "aspect-square size-full rounded-full object-cover",
         className
       )}
-      {...props}
+      {...defined(props)}
     />
   )
 }
@@ -44,7 +45,7 @@ function AvatarImage({ className, ...props }: React.ComponentProps<typeof Avatar
 function AvatarFallback({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.AvatarFallback>) {
+}: Loose<React.ComponentProps<typeof AvatarPrimitive.AvatarFallback>>) {
   return (
     <AvatarPrimitive.AvatarFallback
       data-slot="avatar-fallback"
@@ -52,7 +53,7 @@ function AvatarFallback({
         "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
         className
       )}
-      {...props}
+      {...defined(props)}
     />
   )
 }

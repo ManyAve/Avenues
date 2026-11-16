@@ -2,6 +2,7 @@ import { Input as InputPrimitive } from "@ui-sdk/react/input";
 import type { ComponentProps } from "react";
 import { controlSize, controlSurface, type ControlSize } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/input.tsx (e01cc90). Same look; the side padding moves from 10px to
@@ -15,7 +16,7 @@ function Input({
   className,
   size = "md",
   ...props
-}: Omit<ComponentProps<typeof InputPrimitive>, "size"> & { size?: ControlSize | undefined }) {
+}: Omit<Loose<ComponentProps<typeof InputPrimitive>>, "size"> & { size?: ControlSize | undefined }) {
   return (
     <InputPrimitive
       data-slot="input"
@@ -27,7 +28,7 @@ function Input({
         "py-1 pointer-coarse:min-h-11 file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-control file:font-medium file:text-foreground",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }

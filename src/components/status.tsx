@@ -114,7 +114,7 @@ function Status({
       {...props}
     >
       {!filled && <span aria-hidden className={cn("size-1.5 rounded-full", dots[tone])} />}
-      {children as ReactNode}
+      {children}
     </Badge>
   );
   if (!help) return pill;

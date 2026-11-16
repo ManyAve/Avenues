@@ -2,6 +2,7 @@ import * as HoverCardPrimitive from "@ui-sdk/react/hover-card";
 import type { ComponentProps } from "react";
 import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/hover-card.tsx (e01cc90): a preview of where a link goes, shown while a
@@ -11,12 +12,12 @@ import { cn } from "#avenue/lib/utils";
  * Touch and screen-reader users may never see the preview, so everything in it must also be on the page the link
  * opens (the register's cells open a dialog with the same content). The stories show that pairing.
  */
-function HoverCard(props: ComponentProps<typeof HoverCardPrimitive.HoverCard>) {
-  return <HoverCardPrimitive.HoverCard {...props} />;
+function HoverCard(props: Loose<ComponentProps<typeof HoverCardPrimitive.HoverCard>>) {
+  return <HoverCardPrimitive.HoverCard {...defined(props)} />;
 }
 
-function HoverCardTrigger(props: ComponentProps<typeof HoverCardPrimitive.HoverCardTrigger>) {
-  return <HoverCardPrimitive.HoverCardTrigger data-slot="hover-card-trigger" {...props} />;
+function HoverCardTrigger(props: Loose<ComponentProps<typeof HoverCardPrimitive.HoverCardTrigger>>) {
+  return <HoverCardPrimitive.HoverCardTrigger data-slot="hover-card-trigger" {...defined(props)} />;
 }
 
 function HoverCardContent({
@@ -26,7 +27,7 @@ function HoverCardContent({
   align = "center",
   alignOffset = 4,
   ...props
-}: ComponentProps<typeof HoverCardPrimitive.HoverCardContent>) {
+}: Loose<ComponentProps<typeof HoverCardPrimitive.HoverCardContent>>) {
   return (
     <HoverCardPrimitive.HoverCardContent
       data-slot="hover-card-content"
@@ -39,7 +40,7 @@ function HoverCardContent({
         popupMotion,
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }

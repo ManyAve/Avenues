@@ -1,9 +1,10 @@
 import * as DrawerPrimitive from "@ui-sdk/react/drawer";
 import { XIcon } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { Button } from "#avenue/components/button";
 import { modalCloseButton, modalDescription, modalSurface, modalTitle, sheetHandle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * A modal sheet from an edge of the screen (AVE-32): a form or filters on a phone, or a side panel on a wide screen.
@@ -20,24 +21,24 @@ import { cn } from "#avenue/lib/utils";
  * For a list of options on a phone, don't build a sheet: Select and Combobox present as this same bottom sheet on a phone
  * by themselves (`presentation`, AVE-39).
  */
-function Sheet({ side = "bottom", ...props }: ComponentProps<typeof DrawerPrimitive.Drawer>) {
-  return <DrawerPrimitive.Drawer side={side} {...props} />;
+function Sheet({ side = "bottom", ...props }: Loose<ComponentProps<typeof DrawerPrimitive.Drawer>>) {
+  return <DrawerPrimitive.Drawer side={side} {...defined(props)} />;
 }
 
-function SheetTrigger(props: ComponentProps<typeof DrawerPrimitive.DrawerTrigger>) {
-  return <DrawerPrimitive.DrawerTrigger {...props} />;
+function SheetTrigger(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerTrigger>>) {
+  return <DrawerPrimitive.DrawerTrigger {...defined(props)} />;
 }
 
-function SheetClose(props: ComponentProps<typeof DrawerPrimitive.DrawerClose>) {
-  return <DrawerPrimitive.DrawerClose {...props} />;
+function SheetClose(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerClose>>) {
+  return <DrawerPrimitive.DrawerClose {...defined(props)} />;
 }
 
 /** Dialog's dim. The drawer drives its opacity, so it has no transition of its own. */
-function SheetOverlay({ className, ...props }: ComponentProps<typeof DrawerPrimitive.DrawerBackdrop>) {
+function SheetOverlay({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerBackdrop>>) {
   return (
     <DrawerPrimitive.DrawerBackdrop
       className={cn("fixed inset-0 isolate z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs", className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -52,7 +53,7 @@ function SheetContent({
   children,
   showCloseButton = true,
   ...props
-}: ComponentProps<typeof DrawerPrimitive.DrawerContent> & { showCloseButton?: boolean | undefined }) {
+}: NodeChildren<Loose<ComponentProps<typeof DrawerPrimitive.DrawerContent>>> & { showCloseButton?: boolean | undefined }) {
   return (
     <>
       <SheetOverlay />
@@ -69,7 +70,7 @@ function SheetContent({
           "data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:rounded-l-xl data-[side=right]:after:inset-y-0 data-[side=right]:after:left-full data-[side=right]:after:w-24 sm:data-[side=right]:max-w-sm",
           className,
         )}
-        {...props}
+        {...defined(props)}
       >
         {/* Decorative: the drawer drags from anywhere on the sheet, and the Close button and Esc always close it. */}
         <div
@@ -77,7 +78,7 @@ function SheetContent({
           aria-hidden
           className={cn(sheetHandle, "hidden group-data-[side=bottom]/sheet:block")}
         />
-        {children as ReactNode}
+        {children}
         {showCloseButton && (
           <DrawerPrimitive.DrawerClose
             render={
@@ -135,12 +136,12 @@ function SheetFooter({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** Named by this title. It wraps; it never truncates. */
-function SheetTitle({ className, ...props }: ComponentProps<typeof DrawerPrimitive.DrawerTitle>) {
-  return <DrawerPrimitive.DrawerTitle className={cn(modalTitle, "text-pretty", className)} {...props} />;
+function SheetTitle({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerTitle>>) {
+  return <DrawerPrimitive.DrawerTitle className={cn(modalTitle, "text-pretty", className)} {...defined(props)} />;
 }
 
-function SheetDescription({ className, ...props }: ComponentProps<typeof DrawerPrimitive.DrawerDescription>) {
-  return <DrawerPrimitive.DrawerDescription className={cn(modalDescription, className)} {...props} />;
+function SheetDescription({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerDescription>>) {
+  return <DrawerPrimitive.DrawerDescription className={cn(modalDescription, className)} {...defined(props)} />;
 }
 
 export {

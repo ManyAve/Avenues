@@ -1,7 +1,8 @@
 import * as AlertDialogPrimitive from "@ui-sdk/react/alert-dialog";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * A question that must be answered before anything else happens ("Discard changes?", "Remove household?").
@@ -9,23 +10,23 @@ import { cn } from "#avenue/lib/utils";
  * returns focus. Looks like Avenue's Dialog (xl corner, 16px inset, muted footer strip) without a close button,
  * because each answer is a button in the footer. Put the safe answer first: it is then where focus starts.
  */
-function AlertDialog(props: ComponentProps<typeof AlertDialogPrimitive.AlertDialog>) {
-  return <AlertDialogPrimitive.AlertDialog {...props} />;
+function AlertDialog(props: Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialog>>) {
+  return <AlertDialogPrimitive.AlertDialog {...defined(props)} />;
 }
 
-function AlertDialogTrigger(props: ComponentProps<typeof AlertDialogPrimitive.AlertDialogTrigger>) {
-  return <AlertDialogPrimitive.AlertDialogTrigger {...props} />;
+function AlertDialogTrigger(props: Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialogTrigger>>) {
+  return <AlertDialogPrimitive.AlertDialogTrigger {...defined(props)} />;
 }
 
-function AlertDialogClose(props: ComponentProps<typeof AlertDialogPrimitive.AlertDialogClose>) {
-  return <AlertDialogPrimitive.AlertDialogClose {...props} />;
+function AlertDialogClose(props: Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialogClose>>) {
+  return <AlertDialogPrimitive.AlertDialogClose {...defined(props)} />;
 }
 
 function AlertDialogContent({
   className,
   children,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.AlertDialogContent>) {
+}: NodeChildren<Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialogContent>>>) {
   return (
     <>
       <AlertDialogPrimitive.AlertDialogBackdrop className="fixed inset-0 isolate z-50 bg-black/10 transition-opacity duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none" />
@@ -35,9 +36,9 @@ function AlertDialogContent({
           "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 m-0 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl transition-[opacity,scale] duration-100 backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
-        {...props}
+        {...defined(props)}
       >
-        {children as ReactNode}
+        {children}
       </AlertDialogPrimitive.AlertDialogContent>
     </>
   );
@@ -61,18 +62,18 @@ function AlertDialogFooter({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
-function AlertDialogTitle({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.AlertDialogTitle>) {
-  return <AlertDialogPrimitive.AlertDialogTitle className={cn(modalTitle, className)} {...props} />;
+function AlertDialogTitle({ className, ...props }: Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialogTitle>>) {
+  return <AlertDialogPrimitive.AlertDialogTitle className={cn(modalTitle, className)} {...defined(props)} />;
 }
 
 function AlertDialogDescription({
   className,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.AlertDialogDescription>) {
+}: Loose<ComponentProps<typeof AlertDialogPrimitive.AlertDialogDescription>>) {
   return (
     <AlertDialogPrimitive.AlertDialogDescription
       className={cn(modalDescription, className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }

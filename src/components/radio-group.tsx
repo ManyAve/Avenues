@@ -2,6 +2,7 @@ import { Radio, RadioGroup as RadioGroupPrimitive, RadioIndicator } from "@ui-sd
 import type { ComponentProps } from "react";
 import { useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * shadcn's radio group (base-nova), built on ui-sdk's Radio. The app has no radio group of its own yet, so the look
@@ -13,11 +14,11 @@ import { cn } from "#avenue/lib/utils";
  * Name the group with a FieldLegend in a FieldSet (`aria-labelledby`), or `aria-label`. Each item is named by the
  * FieldLabel of its own Field, or by a ChoiceCard's title.
  */
-function RadioGroup({ className, ...props }: ComponentProps<typeof RadioGroupPrimitive>) {
-  return <RadioGroupPrimitive className={cn("grid w-full gap-3", className)} {...props} />;
+function RadioGroup({ className, ...props }: Loose<ComponentProps<typeof RadioGroupPrimitive>>) {
+  return <RadioGroupPrimitive className={cn("grid w-full gap-3", className)} {...defined(props)} />;
 }
 
-function RadioGroupItem({ className, ...props }: ComponentProps<typeof Radio>) {
+function RadioGroupItem({ className, ...props }: Loose<ComponentProps<typeof Radio>>) {
   // In a ChoiceCard, named by the card's title alone.
   const titleId = useChoiceCardTitleId();
   return (
@@ -27,7 +28,7 @@ function RadioGroupItem({ className, ...props }: ComponentProps<typeof Radio>) {
         "peer group/radio relative flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-colors outline-none group-has-disabled/field:opacity-50 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-muted-foreground hit-area [--hit-area-x:--spacing(3)] [--hit-area-y:--spacing(2)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-disabled:cursor-not-allowed data-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground group-has-[:focus-visible]/field-label:data-checked:border-primary dark:data-checked:bg-primary",
         className,
       )}
-      {...props}
+      {...defined(props)}
     >
       <RadioIndicator className="flex size-4 items-center justify-center">
         <span aria-hidden className="size-2 rounded-full bg-primary-foreground" />

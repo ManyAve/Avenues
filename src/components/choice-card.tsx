@@ -1,8 +1,9 @@
-import { mergeProps, renderElement, type PartProps } from "@ui-sdk/react/primitive";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "#avenue/components/field";
 import { ChoiceCardContext, useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * A choice card (AVE-33, made API in AVE-37): a whole card that is the label of one RadioGroupItem or Checkbox, with
@@ -64,7 +65,7 @@ function ChoiceCardContent(props: ComponentProps<typeof FieldContent>) {
 }
 
 /** The card's title, and its control's name. An icon before the text is drawn 16px and muted. */
-function ChoiceCardTitle({ className, render, ...props }: PartProps<"div">) {
+function ChoiceCardTitle({ className, render, ...props }: OwnPartProps<"div">) {
   const titleId = useChoiceCardTitleId();
   return renderElement(
     "div",
@@ -76,7 +77,7 @@ function ChoiceCardTitle({ className, render, ...props }: PartProps<"div">) {
           className,
         ),
       },
-      props,
+      defined(props),
       { id: titleId },
     ),
     render,
