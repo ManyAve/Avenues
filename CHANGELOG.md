@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.2.0 (2026-11-16)
+
+- Dialog, Alert dialog and Sheet (AVE-109): the first click on the page after a dialog closes now lands, even while
+  the dialog is still fading out. ui-sdk swallowed a press on a closing dialog's backdrop, so after Cancel, Escape or
+  a submit, a person who moved straight on to a link had to click it twice. A double click outside a dialog still
+  closes it with the first click only: the second lands on the fading backdrop, not the page under it.
+  - **Apps react:** Avenue's ui-sdk patch changes, so copy `patches/@ui-sdk%2Fcore@0.1.0-beta.2.patch` from the tag
+    into the app's `patches/` (`avenue-check-patches` fails until you do), run `bun install`, and clear Vite's cache.
+    Tests that wait for a dialog to detach before the next click (Management's AVE-109 workaround) can drop the wait.
+
 ## v0.1.5 (2026-11-15)
 
 - Status: a `destructive` tone, for the board's "Needs attention" (an announcement whose emails didn't go out),

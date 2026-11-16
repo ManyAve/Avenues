@@ -22,6 +22,47 @@ index 7e08cca5c9d2963b7299eb41dd39e77742786587..cecdf99e8c332ca05b9e6145f1f74916
  });
  var toastRegion = toastRegionPrimitive;
  export {
+diff --git a/dist/foundation/platform/layers.js b/dist/foundation/platform/layers.js
+index 0a5024561ec68097c6885e44c11131584ab1248b..25054c1096c5a2701fe79a8947c18c589a3a8390 100644
+--- a/dist/foundation/platform/layers.js
++++ b/dist/foundation/platform/layers.js
+@@ -142,7 +142,10 @@ function listen(doc, win) {
+         if (layer.modal === false) {
+           continue;
+         }
+-        if (layer.overBackdrop?.(point.x, point.y)) {
++        // Avenue patch (AVE-109): a press on a closing dialog's backdrop is consumed only when an outside press
++        // closed it just before (a double click on the backdrop), not after Cancel, Escape or a submit, so the
++        // first click on the page after a dialog closes lands. Drop this patch once ui-sdk does the same upstream.
++        if (layer.overBackdrop?.(point.x, point.y) && performance.now() - (layer.pressedOutAt ?? -Infinity) < 1e3) {
+           consume = true;
+         }
+         break;
+@@ -150,10 +153,14 @@ function listen(doc, win) {
+     }
+     return { dismissed, consume };
+   }
++  function pressOut(layer, event) {
++    layer.pressedOutAt = performance.now();
++    layer.onOutsidePress?.(event);
++  }
+   function dismiss(event, target, point) {
+     const { dismissed, consume } = plan(event, target, point);
+     for (const layer of dismissed) {
+-      layer.onOutsidePress?.(event);
++      pressOut(layer, event);
+     }
+     return consume;
+   }
+@@ -190,7 +197,7 @@ function listen(doc, win) {
+         swallowClick = true;
+       }
+       for (const layer of dismissed) {
+-        layer.onOutsidePress?.(event);
++        pressOut(layer, event);
+       }
+     },
+     { capture: true }
 diff --git a/dist/foundation/platform/position.js b/dist/foundation/platform/position.js
 index e90f951f61954a463d4d3ae3140b013e90709516..2ea576f5df4bdde389b77a249078af0640e53f39 100644
 --- a/dist/foundation/platform/position.js
