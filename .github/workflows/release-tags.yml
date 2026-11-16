@@ -1,0 +1,61 @@
+# Publishes Avenue's release tags. This is deployment, not a check: it builds nothing and tests nothing.
+# Apps install Avenue from a tag (README, "Versions"), and cloud sessions can't push tags with git, so a merge to
+# main that changes package.json's version, with an entry for it in CHANGELOG.md, tags that commit here and opens
+# a GitHub release carrying that entry. It walks main's whole history each run, so a version that never got its tag (or a failed run) is
+# backfilled on the next one. It never moves or deletes a tag that exists.
+name: Release tags
+
+on:
+  push:
+    branches: [main]
+    paths: [package.json, .github/workflows/release-tags.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tags
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Tag each version bump on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          version_at() { git show "$1:package.json" 2>/dev/null | jq -r '.version // empty' || true; }
+          for commit in $(git log --first-parent --reverse --format=%H origin/main -- package.json); do
+            version=$(version_at "$commit")
+            [ -n "$version" ] || continue
+            [ "$version" != "$(version_at "$commit^")" ] || continue
+            tag="v$version"
+            # The version's CHANGELOG.md entry, from its heading to the next one, as the tag's commit has it.
+            git show "$commit:CHANGELOG.md" 2>/dev/null \
+              | awk -v h="## $tag " 'index($0, h) == 1 { on = 1; next } /^## / { on = 0 } on' > notes.md || true
+            if ! git show "$commit:CHANGELOG.md" 2>/dev/null | grep -q "^## $tag "; then
+              echo "$tag at $commit has no CHANGELOG.md entry; not a release, so not tagged"
+              continue
+            fi
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "$tag exists at $(git rev-list -n1 "$tag"); left as it is"
+            else
+              git tag -a "$tag" "$commit" -m "Avenue $tag"
+              git push origin "refs/tags/$tag"
+              echo "Tagged $tag at $commit"
+            fi
+            if ! gh release view "$tag" >/dev/null 2>&1; then
+              [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
+              gh release create "$tag" --verify-tag --title "Avenue $tag" --notes-file notes.md
+            fi
+          done

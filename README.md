@@ -374,8 +374,14 @@ While Avenue is 0.x, the minor number (0.**1**.0) moves on any change an app has
 
 A new component, a new token or a bug fix that keeps the API is a patch.
 
-Tags are pushed by a person with write access; an app may pin the tag's commit instead
-(`github:ManyAve/Avenues#<full sha>`), which is just as fixed. `CHANGELOG.md` gives each version's commit once tagged.
+Nobody pushes tags by hand. To release, a pull request raises `version` in `package.json` and adds that version's
+`## vX.Y.Z (date)` entry to `CHANGELOG.md`; when it merges, the Release tags workflow
+(`.github/workflows/release-tags.yml`) tags the merge commit `vX.Y.Z` and opens a GitHub release with the entry as
+its notes. A bump with no changelog entry isn't tagged. The workflow never moves a tag, and each run tags any
+earlier version on `main` that is still missing one, so re-running it from the Actions tab (or the next bump)
+repairs a failed run. It is Avenue's one GitHub Actions workflow and it is deployment, not a check: it builds and
+tests nothing. An app may pin the tag's commit instead (`github:ManyAve/Avenues#<full sha>`), which is just as
+fixed; `git ls-remote --tags https://github.com/ManyAve/Avenues` lists each tag's commit.
 
 **ui-sdk patches.** Bun applies `patchedDependencies` only from the project that runs `bun install`, so Avenue's
 patches under `patches/` don't apply inside an app. An app copies the same files into its own `patches/` and lists
