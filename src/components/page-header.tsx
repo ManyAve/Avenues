@@ -14,7 +14,7 @@ import { cn } from "#avenue/lib/utils";
  * `text-[1.5rem]` that inherits the body's line, AVE-70). Kept: a page title wraps on a phone, and on a 24px line two
  * lines of 24px text touch.
  *
- * The header doesn't pad itself: put it inside the page's frame (px-page, max-w-reading or max-w-grid), so the title
+ * The header doesn't pad itself: put it inside the page's frame (px-page, max-w-reading or max-w-layout), so the title
  * and the content under it share an edge.
  */
 export function PageHeader({

@@ -21,7 +21,7 @@ const years = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 function HouseholdSections() {
   return (
-    <div className="mx-auto grid max-w-grid gap-inset px-page py-section lg:grid-cols-2">
+    <div className="mx-auto grid max-w-layout gap-inset px-page py-section lg:grid-cols-2">
       <SectionCard
         title="Dues"
         action={<Select size="sm" aria-label="Dues year" options={years} defaultValue="2026" />}
@@ -97,7 +97,7 @@ export const DesktopMinimum: Story = {
   },
 };
 
-/** Wide (1440px): two columns inside max-w-grid. */
+/** Wide (1440px): two columns inside max-w-layout. */
 export const Wide: Story = {
   globals: wide,
   render: () => <HouseholdSections />,

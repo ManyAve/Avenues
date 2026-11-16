@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.2.0 (2026-11-16)
+## v0.3.0 (2026-11-16)
 
 - Dialog, Alert dialog and Sheet (AVE-109): the first click on the page after a dialog closes now lands, even while
   the dialog is still fading out. ui-sdk swallowed a press on a closing dialog's backdrop, so after Cancel, Escape or
@@ -13,6 +13,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   - **Apps react:** Avenue's ui-sdk patch changes, so copy `patches/@ui-sdk%2Fcore@0.1.0-beta.2.patch` from the tag
     into the app's `patches/` (`avenue-check-patches` fails until you do), run `bun install`, and clear Vite's cache.
     Tests that wait for a dialog to detach before the next click (Management's AVE-109 workaround) can drop the wait.
+
+## v0.2.0 (2026-11-16)
+
+- **The content-width token `grid` is now `layout`** (AVE-114): `max-w-grid` becomes `max-w-layout`, still 1280px,
+  and `--container-grid` becomes `--container-layout`. The old name made Tailwind give the class `inline-grid` an
+  80rem width as well as `display: inline-grid`, so every inline-grid badge or tile in an app that loads Avenue's
+  stylesheet stretched to 1280px. An app that used `max-w-grid` renames it; an app that worked around the bug with
+  `--container-grid: initial` drops the workaround.
 
 ## v0.1.5 (2026-11-15)
 
