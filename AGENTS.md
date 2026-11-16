@@ -11,6 +11,10 @@ points here.
   `bun run deploy`; README, "Publishing Storybook"). It checks nothing, so what you merge is what ships.
 - Avenue may use any outside npm package. It never imports from another ManyAve repository.
 - Fictional data only. No secrets, no real HOA data.
+- Releases tag themselves. Raise `version` in `package.json` and add its `CHANGELOG.md` entry in the pull request;
+  on merge the Release tags workflow tags that commit `vX.Y.Z` and opens its GitHub release (README, "Versions").
+  Never push a tag, or ask a person to: cloud sessions can't, and nobody needs to. It is the only workflow, and it is
+  deployment; don't add checks to it or add other CI.
 - Imports inside the package use the `#avenue/*` subpaths with no file extension (README, "Imports
   inside Avenue").
 
@@ -54,6 +58,10 @@ an element with `data-ui-sdk-skin`, because globally they restyle Avenue (they s
 `a`, and use the same `data-slot` names as shadcn). Don't add `data-ui-sdk-skin` to an Avenue
 component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`, run
 `bun run ui-sdk:css`; `bun run test:scripts` fails until you do.
+
+`avenue.css` never imports from `shadcn`: shadcn is a dev dependency (for its CLI), and apps don't install a
+package's dev dependencies. It loads Avenue's copy, `src/styles/shadcn.css`, instead; after upgrading shadcn, run
+`bun run shadcn:css` (AVE-107). `test:scripts` fails on a stale copy or a stylesheet that imports `shadcn`.
 
 **Patched ui-sdk.** `patches/` holds Bun patches to ui-sdk, applied by `bun install` (listed under
 `patchedDependencies` in `package.json`), so they survive installs and the Cloudflare build. Each is a stopgap

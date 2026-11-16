@@ -14,7 +14,7 @@ import {
   WrenchIcon,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { expect } from "storybook/test";
+import { expect, within } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "#avenue/components/avatar";
 import { Badge } from "#avenue/components/badge";
 import { Button } from "#avenue/components/button";
@@ -170,7 +170,12 @@ function InviteBoard() {
           <div className="flex gap-controls">
             <Input readOnly defaultValue="https://example.com/invite/k7q2" className="min-w-0 flex-1" />
             <Tooltip>
-              <TooltipTrigger render={<Button variant="outline" size="icon" aria-label="Copy invite link" />}>
+              <TooltipTrigger
+                render={
+                  // Shares the link field's height on touch (AVE-94, AVE-99): the field is 44px on a coarse pointer.
+                  <Button variant="outline" size="icon" aria-label="Copy invite link" className="pointer-coarse:size-11" />
+                }
+              >
                 <CopyIcon aria-hidden />
               </TooltipTrigger>
               <TooltipContent>Copy invite link</TooltipContent>
@@ -441,9 +446,8 @@ function Filters() {
         <div className="flex flex-wrap items-center justify-between gap-controls border-t pt-3">
           <span className="text-meta text-muted-foreground">Row height</span>
           <ToggleGroup
-            variant="outline"
+            variant="choice"
             size="sm"
-            spacing={0}
             value={density}
             onValueChange={(v) => {
               if (v) setDensity(v);
@@ -451,7 +455,7 @@ function Filters() {
             aria-label="Row height"
           >
             {["Compact", "Comfortable"].map((d) => (
-              <ToggleGroupItem key={d} value={d}>
+              <ToggleGroupItem key={d} value={d} className="text-control">
                 {d}
               </ToggleGroupItem>
             ))}
@@ -609,7 +613,7 @@ function Messages() {
           <Badge>Default</Badge>
           <Badge variant="secondary">Secondary</Badge>
           <Badge variant="outline">Outline</Badge>
-          <Badge variant="destructive">Overdue</Badge>
+          <Badge variant="destructive">Payment failed</Badge>
         </div>
         <div className="flex flex-wrap gap-2">
           <Status tone="success">Paid</Status>
@@ -665,7 +669,7 @@ function Upcoming() {
 
 function Reminders() {
   return (
-    <Card size="sm">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BellIcon aria-hidden className="size-4 text-muted-foreground" />
@@ -729,6 +733,13 @@ export const AtAGlance: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 1, name: "Avenue at a glance" })).toBeVisible();
     await expect(canvas.getAllByRole("combobox").length).toBeGreaterThan(5);
+    // AVE-99: Row height always has a chosen item; red is for a failure, not for overdue; every card has a 16px inset.
+    const rowHeight = canvas.getByRole("radiogroup", { name: "Row height" });
+    await expect(within(rowHeight).getByRole("radio", { name: "Comfortable" })).toBeChecked();
+    await expect(canvas.queryByText("Overdue")).toBeNull();
+    for (const header of canvas.getByTestId("overview-grid").querySelectorAll<HTMLElement>("[data-slot=card-header]")) {
+      await expect(getComputedStyle(header).paddingInlineStart).toBe("16px");
+    }
   },
 };
 
@@ -739,5 +750,9 @@ export const Phone: Story = {
   play: async ({ canvas }) => {
     const grid = canvas.getByTestId("overview-grid");
     await expect(getComputedStyle(grid).columnCount).toBe("1");
+    // AVE-99: controls in a row share a height, on touch too (the link field is 44px on a coarse pointer).
+    const link = canvas.getByDisplayValue("https://example.com/invite/k7q2");
+    const copy = canvas.getByRole("button", { name: "Copy invite link" });
+    await expect(copy.getBoundingClientRect().height).toBe(link.getBoundingClientRect().height);
   },
 };

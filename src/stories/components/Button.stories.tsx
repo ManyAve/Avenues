@@ -49,6 +49,33 @@ export const Variants: Story = {
   ),
 };
 
+/**
+ * Every variant on a card, where most buttons sit (AVE-99). In dark the page is darker than a card, so an outline
+ * button takes the card's own surface, never the page's: it must not read as a hole in the card.
+ */
+export const VariantsOnACard: Story = {
+  render: () => (
+    <div data-testid="card" className="m-inset rounded-xl bg-card p-inset text-card-foreground ring-1 ring-foreground/10">
+      <Rows>
+        {variants.map((variant) => (
+          <Row key={variant} label={variant}>
+            <Button variant={variant}>Record payment</Button>
+            <Button variant={variant}>
+              <PlusIcon aria-hidden data-icon="inline-start" />
+              Add another person
+            </Button>
+          </Row>
+        ))}
+      </Rows>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const card = getComputedStyle(canvas.getByTestId("card")).backgroundColor;
+    const outline = canvas.getAllByRole("button", { name: "Record payment" })[variants.indexOf("outline")]!;
+    await expect(getComputedStyle(outline).backgroundColor).toBe(card);
+  },
+};
+
 /** AVE-2 heights: xs 24 and sm 28 with an 8px corner, default 32 and lg 40 with a 10px corner. Icon buttons match. */
 export const Sizes: Story = {
   render: () => (

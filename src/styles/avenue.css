@@ -9,7 +9,9 @@
 @import "./ui-sdk.css";
 @import "tailwindcss" source("..");
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* shadcn's Tailwind stylesheet (its data-* variants, accordion keyframes, scroll-fade and shimmer), copied in
+   by scripts/shadcn-css.ts so an app needs no shadcn install of its own (AVE-107). */
+@import "./shadcn.css";
 /* Palette, semantic colours, light and dark. */
 @import "./tokens.css";
 /* ui-sdk's --ui-* tokens, from Avenue's. */
