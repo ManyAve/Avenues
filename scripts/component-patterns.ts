@@ -135,6 +135,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
+  skeleton: {
+    none: "Decorative shapes (aria-hidden) and a busy region with one polite status; no control and nothing to focus. The Skeleton stories check the status, the hidden shapes and that Tab passes by (AVE-128).",
+  },
   "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },
   "page-header": { none: "Layout: the page's h1, a description and its actions." },
   "section-card": { none: "Layout: a Card with a level-2 heading and one action." },

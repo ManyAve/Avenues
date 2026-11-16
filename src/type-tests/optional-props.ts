@@ -43,6 +43,7 @@ import type * as sectionCard from "#avenue/components/section-card";
 import type * as select from "#avenue/components/select";
 import type * as selectionBar from "#avenue/components/selection-bar";
 import type * as sheet from "#avenue/components/sheet";
+import type * as skeleton from "#avenue/components/skeleton";
 import type * as statusBar from "#avenue/components/status-bar";
 import type * as status from "#avenue/components/status";
 import type * as switchControl from "#avenue/components/switch";
@@ -95,6 +96,7 @@ type Modules = {
   "select": typeof select;
   "selection-bar": typeof selectionBar;
   "sheet": typeof sheet;
+  "skeleton": typeof skeleton;
   "status-bar": typeof statusBar;
   "status": typeof status;
   "switch": typeof switchControl;
@@ -159,4 +161,5 @@ export const plainChildren: ReactNode[] = [
   null as unknown as Children<typeof dropdownMenu.DropdownMenuItem>,
   null as unknown as Children<typeof toggleGroup.ToggleGroup>,
   null as unknown as Children<typeof status.Status>,
+  null as unknown as Children<typeof skeleton.Loading>,
 ];

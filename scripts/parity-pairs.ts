@@ -500,6 +500,14 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-dropdown-menu--action-from-keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
 
   // ---- Empty state (AVE-8)
+  // ---- Skeleton (AVE-128)
+  "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+  "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+  "components-skeleton--list-rows": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+  "components-skeleton--full-page": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+  "components-skeleton--phone": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+  "components-skeleton--reduced-motion": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-muted) and the type scale its lines follow") },
+
   "components-empty-state--default": [
     { label: "empty state action", app: "primitives-emptystate--default", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", allow: SIDE_10_TO_8 },
     {

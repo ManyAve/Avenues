@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.8.0 (2026-11-16)
+
+- **Loading skeleton** (AVE-128), new in `@manyave/avenue/components/skeleton`. Nothing existing changes.
+  - `Skeleton` is one placeholder shape, filled `bg-accent` with a slow pulse that stops under reduced motion.
+    `shape="text"` is one line as tall as the text it stands for (give it the text class, such as `text-meta`, and
+    a width), `"circle"` an avatar (`size-8`), `"block"` (the default) anything else (`h-*`). `SkeletonText lines={3}`
+    is a paragraph whose last line is shorter.
+  - `Loading label="households"` wraps the shapes: it marks the region `aria-busy` and gives screen readers one polite
+    "Loading households", instead of nothing or one bar at a time. Every shape is hidden from them. Replace the
+    whole `Loading` with the content when it arrives.
+  - Show it after about 300ms, at the real layout's size, for loads of a second or more where the layout is known.
+  - Neighbors: replace `apps/web/src/design-system/ui/skeleton.tsx` (23 files). The fill stays `bg-accent`, and each screen's shapes go inside a `Loading` with a label.
+  - Management: optional. The "Loading…" lines on screens whose layout is known can become a `Loading` of shapes.
+
 ## v0.7.0 (2026-11-16)
 
 - **Lifted surfaces, opt-in** (AVE-115). `data-surface="lifted"` on `<html>` gives a tinted page under white cards and
