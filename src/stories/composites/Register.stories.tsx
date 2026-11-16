@@ -267,7 +267,7 @@ function Households({
 }
 
 function frame(children: React.ReactNode) {
-  return <div className="mx-auto max-w-grid px-page py-section">{children}</div>;
+  return <div className="mx-auto max-w-layout px-page py-section">{children}</div>;
 }
 
 const grid = () => screen.getByRole("grid", { name: "Households" });
@@ -317,7 +317,7 @@ export const DesktopMinimum: Story = {
   },
 };
 
-/** Wide: the page frame stops at max-w-grid (1280px); the columns keep their widths. */
+/** Wide: the page frame stops at max-w-layout (1280px); the columns keep their widths. */
 export const Wide: Story = {
   globals: wide,
   render: () => frame(<Households />),

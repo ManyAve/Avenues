@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.2.0 (2026-11-16)
+
+- **The content-width token `grid` is now `layout`** (AVE-114): `max-w-grid` becomes `max-w-layout`, still 1280px,
+  and `--container-grid` becomes `--container-layout`. The old name made Tailwind give the class `inline-grid` an
+  80rem width as well as `display: inline-grid`, so every inline-grid badge or tile in an app that loads Avenue's
+  stylesheet stretched to 1280px. An app that used `max-w-grid` renames it; an app that worked around the bug with
+  `--container-grid: initial` drops the workaround.
+
 ## v0.1.5 (2026-11-15)
 
 - Status: a `destructive` tone, for the board's "Needs attention" (an announcement whose emails didn't go out),
