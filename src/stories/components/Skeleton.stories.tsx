@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor } from "storybook/test";
+import { Button } from "#avenue/components/button";
 import { Card, CardContent, CardHeader } from "#avenue/components/card";
 import { Loading, Skeleton, SkeletonText } from "#avenue/components/skeleton";
 
@@ -243,5 +244,36 @@ export const ReducedMotion: Story = {
     for (const shape of document.querySelectorAll<HTMLElement>("[data-slot=skeleton]")) {
       await expect(shape).toHaveClass("animate-pulse", "motion-reduce:animate-none");
     }
+  },
+};
+
+/**
+ * A control an app leaves inside the region while it loads (here a "View all" button beside the placeholder lines)
+ * can't be reached: the region is `inert`, so Tab passes it and a click does nothing until the content arrives.
+ */
+export const ControlsWait: Story = {
+  render: () => (
+    <div className="flex max-w-sm flex-col gap-4 p-inset">
+      <Loading label="the notices" className="flex flex-col items-start gap-3">
+        <SkeletonText lines={2} className="text-meta" />
+        <Button variant="outline" size="sm">
+          View all
+        </Button>
+      </Loading>
+      <Button variant="outline" size="sm">
+        After
+      </Button>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await waitFor(() => expect(canvas.getByRole("status")).toHaveTextContent("Loading the notices"));
+    const region = document.querySelector<HTMLElement>("[data-slot=loading]")!;
+    await expect(region.inert).toBe(true);
+    // Even focusing it from script does nothing while the region is inert.
+    const viewAll = canvas.getByText("View all").closest("button")!;
+    viewAll.focus();
+    await expect(viewAll).not.toHaveFocus();
+    // The browser skips it when tabbing too (user-event's own tab order doesn't model inert, so it isn't used here).
+    await expect(canvas.getByRole("button", { name: "After" })).toBeVisible();
   },
 };

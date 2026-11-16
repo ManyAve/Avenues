@@ -93,7 +93,8 @@ function SkeletonText({
  * polite status, "Loading <label>" (`label` names what is loading: "households", "the dues card"). The status text
  * is filled in just after it mounts, because a live region that arrives already holding its text isn't read by
  * every screen reader. Replace the whole `Loading` with the content when it arrives; nothing announces "loaded",
- * the content itself is the news. Nothing inside takes focus, so Tab goes straight past a loading region.
+ * the content itself is the news. The region is `inert`, so nothing inside takes focus or a click, even a real control
+ * an app leaves in it while it loads, and Tab goes straight past it. The status sits outside it, so it is still read.
  */
 function Loading({
   label,
@@ -112,7 +113,7 @@ function Loading({
       <output ref={status} data-slot="loading-status" className="sr-only" />
       {renderElement(
         "div",
-        mergeProps({ "data-slot": "loading", "aria-busy": true, className }, defined(props)),
+        mergeProps({ "data-slot": "loading", "aria-busy": true, inert: true, className }, defined(props)),
         render,
       )}
     </>
