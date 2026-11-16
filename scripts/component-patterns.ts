@@ -83,6 +83,14 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   toggle: { upstream: "toggle" },
   "toggle-group": { upstream: "segmented-control", note: "UX Engineer, AVE-17: the radio-group pattern." },
   disclosure: { upstream: "collapsible" },
+  "collapsible-section": {
+    upstream: "collapsible",
+    note: "AVE-121: the Collapsible section stories press each variant's trigger by keyboard and check aria-expanded, aria-controls and focus returning from a closed panel.",
+  },
+  calendar: {
+    upstream: "calendar",
+    note: "AVE-121: the testing kit has no calendar pattern; the Calendar stories test one Tab stop, the arrows, Page Down, Enter and the names.",
+  },
   accordion: { upstream: "accordion" },
   tabs: { upstream: "tabs" },
   "radio-group": { upstream: "radio" },
@@ -130,6 +138,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   // to run checkPattern against. Their stories press every key the primitive handles instead (AVE-79).
   register: {
     none: "ui-sdk's kit has no grid pattern to check; the Register stories press every key the grid handles, and Register / Agent expands and sorts is its agent test (AVE-9, AVE-79).",
+  },
+
+  "month-grid": {
+    none: "AVE-121: ui-sdk's kit has no grid pattern to check; the Month grid stories press every key the grid handles, run across weeks and past the last week, and open a day's popover from the grid; Month grid / Agent is its agent test.",
   },
 
   // Plain markup.
