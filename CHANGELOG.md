@@ -20,6 +20,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     (Kotlin) and `lifted` in `tokens.json`. AvenueUI's `AvenueTheme` doesn't pick them yet (follow-up card), so a
     phone app that wants them passes them in itself.
 
+## v0.6.1 (2026-11-16)
+
+- **Select takes `aria-labelledby`** (AVE-98), for a select named by visible text it doesn't own, such as a column
+  header plus its row ("Role for person 1"). Nothing an app already uses changes.
+- **The At a glance page follows its own rules** (AVE-98). Each of its 16 cards has an h2 under the page's h1, so
+  heading keys move from card to card, and the Invite the board rows show "Email" and "Role" column headers that
+  name each field. Storybook only.
+
 ## v0.6.0 (2026-11-16)
 
 - **TopBar lets the app handle its home link** (AVE-110). New props, nothing existing changes:

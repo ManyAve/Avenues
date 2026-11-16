@@ -13,7 +13,7 @@ import {
   UsersIcon,
   WrenchIcon,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { expect, within } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "#avenue/components/avatar";
 import { Badge } from "#avenue/components/badge";
@@ -81,7 +81,9 @@ function DuesSummary() {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
+        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+          <h2>Dues</h2>
+        </CardTitle>
         <CardAction className="gap-group text-meta text-muted-foreground">
           <span className="whitespace-nowrap">Account summary ·</span>
           <Select aria-label="Dues year" options={years} defaultValue="2026" size="sm" />
@@ -145,20 +147,46 @@ const roles = [
 ];
 
 function InviteBoard() {
+  // AVE-98: the rows share one visible "Email" and "Role" header (AVE-25: a field always has a visible label), and
+  // each field is named by its column header plus its row, "Email for person 1".
+  const id = useId();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Invite the board</CardTitle>
+        <CardTitle>
+          <h2>Invite the board</h2>
+        </CardTitle>
         <CardDescription>Board members can see dues, complaints and votes.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-group">
+        <div className="flex gap-controls text-field leading-snug font-medium">
+          <span id={`${id}-email`} className="min-w-0 flex-1">
+            Email
+          </span>
+          <span id={`${id}-role`} className="w-32">
+            Role
+          </span>
+        </div>
         {[
           { email: "robin@example.com", role: "treasurer" },
           { email: "sam@example.com", role: "member" },
         ].map((row, i) => (
           <div key={row.email} className="flex gap-controls">
-            <Input type="email" defaultValue={row.email} aria-label={`Email ${i + 1}`} className="min-w-0 flex-1" />
-            <Select aria-label={`Role ${i + 1}`} options={roles} defaultValue={row.role} className="w-32" />
+            <span id={`${id}-person-${i}`} className="sr-only">
+              for person {i + 1}
+            </span>
+            <Input
+              type="email"
+              defaultValue={row.email}
+              aria-labelledby={`${id}-email ${id}-person-${i}`}
+              className="min-w-0 flex-1"
+            />
+            <Select
+              aria-labelledby={`${id}-role ${id}-person-${i}`}
+              options={roles}
+              defaultValue={row.role}
+              className="w-32"
+            />
           </div>
         ))}
         <Button variant="outline">
@@ -206,7 +234,9 @@ function ReportIssue() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Report an issue</CardTitle>
+        <CardTitle>
+          <h2>Report an issue</h2>
+        </CardTitle>
         <CardDescription>The board sees it within a day.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -252,7 +282,9 @@ function MailingAddress() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mailing address</CardTitle>
+        <CardTitle>
+          <h2>Mailing address</h2>
+        </CardTitle>
         <CardDescription>Where paper notices go.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -363,7 +395,9 @@ function Collection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>2026 dues collected</CardTitle>
+        <CardTitle>
+          <h2>2026 dues collected</h2>
+        </CardTitle>
         <CardAction>
           <InfoTip label="About dues collected">Paid dues as a share of everything billed for 2026.</InfoTip>
         </CardAction>
@@ -402,6 +436,7 @@ function NoBoard() {
     <Card>
       <EmptyState
         size="compact"
+        headingLevel={2}
         icon={UsersIcon}
         title="No committee members yet"
         description="Add neighbors to the landscaping committee so they can see its requests."
@@ -432,7 +467,9 @@ function Filters() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Find a household</CardTitle>
+        <CardTitle>
+          <h2>Find a household</h2>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <SearchInput placeholder="Address, owner or ID" aria-label="Search households" />
@@ -470,7 +507,9 @@ function Notifications() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notifications</CardTitle>
+        <CardTitle>
+          <h2>Notifications</h2>
+        </CardTitle>
         <CardDescription>What the association sends you.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -569,7 +608,9 @@ function SendNotice() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Send a notice</CardTitle>
+        <CardTitle>
+          <h2>Send a notice</h2>
+        </CardTitle>
         <CardDescription>By email, and on paper where an owner asked for it.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -603,7 +644,9 @@ function Messages() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Messages in a form</CardTitle>
+        <CardTitle>
+          <h2>Messages in a form</h2>
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <InlineMessage tone="error">Couldn't save. Check the ZIP code and try again.</InlineMessage>
@@ -631,7 +674,9 @@ function Toasts() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Confirmations</CardTitle>
+        <CardTitle>
+          <h2>Confirmations</h2>
+        </CardTitle>
         <CardDescription>Short notes after something happens.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-controls">
@@ -671,9 +716,11 @@ function Reminders() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BellIcon aria-hidden className="size-4 text-muted-foreground" />
-          Late fee in 3 days
+        <CardTitle>
+          <h2 className="flex items-center gap-2">
+            <BellIcon aria-hidden className="size-4 text-muted-foreground" />
+            Late fee in 3 days
+          </h2>
         </CardTitle>
         <CardDescription>9 households still owe 2026 dues.</CardDescription>
       </CardHeader>
@@ -694,32 +741,37 @@ function Overview() {
     <ToastProvider>
       <main className="min-h-screen bg-background p-inset text-foreground">
         <header className="mb-6 max-w-2xl">
-          <h1 className="text-2xl font-semibold">Avenue at a glance</h1>
+          <h1 id="overview-title" className="text-2xl font-semibold">
+            Avenue at a glance
+          </h1>
           <p className="mt-1 text-compact text-muted-foreground">
             Avenue's components together, as the cards of a fictional association's screens. Every control works.
           </p>
         </header>
-        <div
-          data-testid="overview-grid"
-          className="columns-1 gap-4 md:columns-2 xl:columns-3 2xl:columns-4 [&>*]:mb-4 [&>*]:break-inside-avoid"
-        >
-          <DuesSummary />
-          <InviteBoard />
-          <Collection />
-          <Payments />
-          <ReportIssue />
-          <Notifications />
-          <Filters />
-          <Activity />
-          <MailingAddress />
-          <NoBoard />
-          <People />
-          <SendNotice />
-          <Messages />
-          <Reminders />
-          <Toasts />
-          <Upcoming />
-        </div>
+        {/* AVE-98: each card's title is an h2, so heading keys move from card to card. */}
+        <section aria-labelledby="overview-title">
+          <div
+            data-testid="overview-grid"
+            className="columns-1 gap-4 md:columns-2 xl:columns-3 2xl:columns-4 [&>*]:mb-4 [&>*]:break-inside-avoid"
+          >
+            <DuesSummary />
+            <InviteBoard />
+            <Collection />
+            <Payments />
+            <ReportIssue />
+            <Notifications />
+            <Filters />
+            <Activity />
+            <MailingAddress />
+            <NoBoard />
+            <People />
+            <SendNotice />
+            <Messages />
+            <Reminders />
+            <Toasts />
+            <Upcoming />
+          </div>
+        </section>
       </main>
     </ToastProvider>
   );
@@ -733,11 +785,25 @@ export const AtAGlance: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 1, name: "Avenue at a glance" })).toBeVisible();
     await expect(canvas.getAllByRole("combobox").length).toBeGreaterThan(5);
+    // AVE-98: one h2 per card under the h1, and the Invite rows' fields are named by their visible column headers.
+    const grid = canvas.getByTestId("overview-grid");
+    await expect(grid.children).toHaveLength(16);
+    await expect(within(grid).getAllByRole("heading", { level: 2 })).toHaveLength(16);
+    await expect(canvas.getByRole("region", { name: "Avenue at a glance" })).toContainElement(grid);
+    const inviteCard = canvas.getByRole("heading", { level: 2, name: "Invite the board" }).closest<HTMLElement>("[data-slot=card]");
+    if (!inviteCard) throw new Error("Invite the board is not in a card");
+    const invite = within(inviteCard);
+    await expect(invite.getByText("Email", { exact: true })).toBeVisible();
+    await expect(invite.getByText("Role", { exact: true })).toBeVisible();
+    await expect(invite.getByRole("textbox", { name: "Email for person 1" })).toHaveValue("robin@example.com");
+    await expect(invite.getByRole("textbox", { name: "Email for person 2" })).toHaveValue("sam@example.com");
+    await expect(invite.getByRole("combobox", { name: "Role for person 1" })).toBeVisible();
+    await expect(invite.getByRole("combobox", { name: "Role for person 2" })).toBeVisible();
     // AVE-99: Row height always has a chosen item; red is for a failure, not for overdue; every card has a 16px inset.
     const rowHeight = canvas.getByRole("radiogroup", { name: "Row height" });
     await expect(within(rowHeight).getByRole("radio", { name: "Comfortable" })).toBeChecked();
     await expect(canvas.queryByText("Overdue")).toBeNull();
-    for (const header of canvas.getByTestId("overview-grid").querySelectorAll<HTMLElement>("[data-slot=card-header]")) {
+    for (const header of grid.querySelectorAll<HTMLElement>("[data-slot=card-header]")) {
       await expect(getComputedStyle(header).paddingInlineStart).toBe("16px");
     }
   },
