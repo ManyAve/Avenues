@@ -55,7 +55,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
 
   "form-dialog": {
     pattern: "dialog",
-    why: "Changes dismissal: with unsaved input, Esc, an outside press, Cancel and the close button ask first (AVE-9).",
+    why: "Changes dismissal: with unsaved input, Esc, an outside press, Cancel and the close button ask first (AVE-9); while a save is held or the dialog is locked, none of them close it (AVE-120).",
   },
   "pending-confirm-dialog": {
     pattern: "alertdialog",
@@ -147,6 +147,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   badge: { none: "Static text." },
   money: { none: "Static text; the Money stories test that it never wraps or truncates." },
   "ask-admin": { none: "Static text that controls point aria-describedby at." },
+  callout: { none: "Static text: a tinted note, not a live region." },
   "inline-message": {
     none: "A live region; its announcements are covered by the Inline message stories.",
   },
