@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.8.0 (2026-11-16)
+
+- **Tabs** (AVE-117): `Tabs`, `TabsList`, `TabsTrigger` and `TabsContent` from `@manyave/avenue/components/tabs`,
+  on ui-sdk's tabs. The app's `line` look only: text tabs, 16px between labels, a 2px underline under the chosen one
+  on a 40px list with a bottom line. One Tab stop into the list, arrow keys move and choose, Home and End jump, a
+  disabled tab still takes focus. A list wider than its space scrolls sideways; on a phone it is 48px tall with labels
+  24px apart, so every tap area is 44px. Horizontal only. Parts keep ui-sdk's data-slot names (`tabs-tab`,
+  `tabs-panel`, not shadcn's `tabs-trigger`, `tabs-content`); the chosen tab carries `data-selected`.
+  - Management: the announcement composer moves from `./ui/tabs` to Avenue's (MANA-1125). Drop `variant="line"`,
+    `border-b` and the triggers' `flex-none px-0`, and set the list's padding to `px-3` (each tab keeps 4px inside
+    the list for its focus ring, so `px-3` puts the labels within 1px of where `px-5` did). Then delete `app/ui/components/ui/tabs.tsx`.
+  - Neighbors: nothing to do; its own `tabs.tsx` has no user yet. Use Avenue's when a screen needs tabs.
+  - Phone apps: nothing; Tabs is web only.
+
 ## v0.7.0 (2026-11-16)
 
 - **Lifted surfaces, opt-in** (AVE-115). `data-surface="lifted"` on `<html>` gives a tinted page under white cards and
