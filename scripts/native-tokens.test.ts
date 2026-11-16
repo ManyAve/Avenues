@@ -32,6 +32,12 @@ describe("native tokens (AVE-101)", () => {
     }
     expect(tokens.light.background).toBe("#ffffff");
     expect(tokens.dark.background).not.toBe(tokens.light.background);
+    // Lifted (AVE-115): a tinted page under a white card, and dark muted no longer the card's colour.
+    expect(tokens.lifted.light.card).toBe("#ffffff");
+    expect(tokens.lifted.light.background).not.toBe(tokens.light.background);
+    expect(tokens.dark.muted).toBe(tokens.dark.card);
+    expect(tokens.lifted.dark.muted).not.toBe(tokens.lifted.dark.card);
+    expect(tokens.lifted.dark.primary).toBe(tokens.dark.primary);
     expect(Object.keys(tokens.light).filter((k) => k.startsWith("tint-"))).toHaveLength(12);
     // Phone values: 16px between controls, 28px xs controls, so 28 + 16 reaches the 44pt minimum (AVE-22).
     expect(tokens.spacing.controls).toBe(16);

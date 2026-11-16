@@ -34,6 +34,9 @@ const pairs: FilePair[] = [
 
 const AVE2 = "AVE-2 corner scale";
 const AVE2_SPACING = "AVE-2 spacing and control heights";
+const AVE115 = "AVE-115 opt-in lifted surfaces";
+const LIFTED_LIGHT = ':root[data-surface="lifted"]:not(.dark), :root:not(.dark) [data-surface="lifted"]';
+const LIFTED_DARK = ':root.dark[data-surface="lifted"], :root.dark [data-surface="lifted"]';
 
 /** Value changes Avenue makes on purpose. */
 const intendedChanges: Record<string, string> = {
@@ -64,6 +67,10 @@ const intendedAdditions: Record<string, string> = {
   "@theme inline :: --spacing-control-lg": `${AVE2_SPACING}: 40px`,
   ":root :: --avenue-page-inset": `${AVE2_SPACING}: page inset below 640px`,
   "@media (min-width: 40rem) > :root :: --avenue-page-inset": `${AVE2_SPACING}: page inset from 640px`,
+  [`${LIFTED_LIGHT} :: --background`]: `${AVE115}: the page steps down so a borderless card lifts off it`,
+  [`${LIFTED_LIGHT} :: --muted`]: `${AVE115}: a field's fill shows on a card`,
+  [`${LIFTED_LIGHT} :: --accent`]: `${AVE115}: a hover or skeleton fill shows on a card`,
+  [`${LIFTED_DARK} :: --muted`]: `${AVE115}: dark muted one step above the card instead of equal to it`,
 };
 
 const appDir = resolve(process.argv[2] ?? process.env.AVENUE_APP_DIR ?? "../manyave-management");
