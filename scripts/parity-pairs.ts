@@ -513,6 +513,29 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-disclosure--keyboard": { none: BEHAVIOUR("Disclosure / Closed") },
   "components-disclosure--agent": { none: BEHAVIOUR("Disclosure / Open") },
 
+  // ---- Collapsible section, Calendar, Month grid (AVE-121). The board draws these by hand today (activity.tsx,
+  // activity-timegrid.tsx, messages.tsx, activity-month.tsx) and has no story of any of them on its own; they are
+  // compared when those screens move to Avenue.
+  "components-collapsible-section--day-bar": { none: NEW_IN_AVENUE("The collapsible section", "the board's day header in app/ui/components/activity.tsx, once the Activity screen moves") },
+  "components-collapsible-section--day-bar-closed": { none: STATE_ONLY("a closed day header", "Collapsible section / Day header") },
+  "components-collapsible-section--fold": { none: NEW_IN_AVENUE("The quiet-hours fold", "the board's fold in app/ui/components/activity-timegrid.tsx, once the time grid moves") },
+  "components-collapsible-section--message-row": { none: NEW_IN_AVENUE("The message row", "the board's message list in app/ui/components/messages.tsx, once Messages moves") },
+  "components-collapsible-section--keyboard": { none: BEHAVIOUR("Collapsible section / Day header") },
+  "components-collapsible-section--fold-and-message-keyboard": { none: BEHAVIOUR("Collapsible section / Quiet hours fold") },
+  "components-collapsible-section--agent": { none: BEHAVIOUR("Collapsible section / Day header") },
+  "components-calendar--default": { none: NEW_IN_AVENUE("The calendar", "the board's small month (MiniMonth in app/ui/components/activity-month.tsx), once the Activity screen moves") },
+  "components-calendar--picked": { none: STATE_ONLY("a picked day (its small month jumps and closes)", "Calendar / Default") },
+  "components-calendar--with-limits": { none: STATE_ONLY("unavailable or out-of-range days", "Calendar / Default") },
+  "components-calendar--keyboard": { none: BEHAVIOUR("Calendar / Default") },
+  "components-calendar--turn-the-month": { none: BEHAVIOUR("Calendar / Default") },
+  "components-calendar--controlled": { none: BEHAVIOUR("Calendar / Default") },
+  "components-calendar--agent": { none: BEHAVIOUR("Calendar / Default") },
+  "components-month-grid--default": { none: NEW_IN_AVENUE("The month grid", "the board's Activity month (app/ui/components/activity-month.tsx), once the Activity screen moves") },
+  "components-month-grid--keyboard": { none: BEHAVIOUR("Month grid / Default") },
+  "components-month-grid--past-the-edges": { none: BEHAVIOUR("Month grid / Default") },
+  "components-month-grid--press-moves-the-stop": { none: BEHAVIOUR("Month grid / Default") },
+  "components-month-grid--agent": { none: BEHAVIOUR("Month grid / Default") },
+
   // ---- Dropdown menu (AVE-6)
   "components-dropdown-menu--open": [
     { label: "menu panel", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-content]", avenueCrop: "[data-slot=menu-content]", frame: true },
