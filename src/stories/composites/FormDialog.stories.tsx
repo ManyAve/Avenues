@@ -431,7 +431,8 @@ export const WithCallouts: Story = {
   ),
   play: async () => {
     const dialog = await screen.findByRole("dialog", { name: "Set the 2027 assessment" });
-    await expect(within(dialog).getByText("Households already at this amount are skipped.")).toBeVisible();
+    // The dialog fades in from opacity 0 (data-starting-style), so wait for it to show (AVE-99: failed 1 run in 3).
+    await waitFor(() => expect(within(dialog).getByText("Households already at this amount are skipped.")).toBeVisible());
     // Static notes, not live regions: they are read in order with the fields.
     await expect(within(dialog).queryByRole("status", { name: /Households/ })).not.toBeInTheDocument();
   },

@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.4.2 (2026-11-16)
+
+- **Outline buttons in dark take the card's surface** (AVE-99). They filled with the page colour, which is darker than
+  a card, so on every card they read as holes. Hover and open now go one step lighter (`accent`). Light is unchanged.
+  Management's own outline button has the same fill, so its screens change in dark when they take this version.
+- **Avatar groups keep every avatar's initials readable** (AVE-99). An avatar covers at most a quarter of the one
+  before (4px at the default size, was 8px), the ring between them is the card's colour, and a covered avatar's
+  initials centre in the part that shows. Default-size initials in a group use the meta size, as small ones did.
+
 ## v0.4.1 (2026-11-16)
 
 - **FormDialog covers what the board's DuesForm does** (AVE-120), so the board's forms can move onto it. Nothing an
