@@ -436,6 +436,7 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "dialog footer", app: "primitives-deleteaccount--allowed", appCrop: "[data-slot=dialog-footer]", avenueCrop: "[data-slot=dialog-footer]", frame: true, allow: [{ prop: "padding-*", because: SECTIONED_DIALOG }] },
   ],
   "components-dialog--escape-blocked-while-pending": { none: BEHAVIOUR("Dialog / Open") },
+  "components-dialog--click-right-after-close": { none: BEHAVIOUR("Dialog / Open") },
 
   // ---- Disclosure (AVE-7)
   ...Object.fromEntries(

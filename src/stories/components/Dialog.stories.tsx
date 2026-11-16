@@ -125,3 +125,72 @@ export const EscapeBlockedWhilePending: Story = {
     await expect(dialog).toBeInTheDocument();
   },
 };
+
+/** AVE-109: the page takes a click as soon as the dialog starts closing, not only once its exit animation ends. */
+export const ClickRightAfterClose: Story = {
+  render: function ClickAfterClose() {
+    const [page, setPage] = useState("Households");
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <nav className="flex gap-controls">
+          <Button variant="link" onClick={() => setPage("Households")}>
+            Households
+          </Button>
+          <Button variant="link" onClick={() => setPage("Announcements")}>
+            Announcements
+          </Button>
+        </nav>
+        <output className="text-meta text-muted-foreground">{page}</output>
+        <PaymentForm />
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const parts = () => document.querySelectorAll<HTMLElement>("[data-slot=dialog-content], [data-slot=dialog-backdrop]");
+    // Close only once the dialog has finished opening: a dialog closed while it is still entering leaves at once.
+    const opened = async () => {
+      const dialog = await screen.findByRole("dialog", { name: "Record payment" });
+      await waitFor(() => {
+        for (const part of parts()) expect(part).not.toHaveAttribute("data-starting-style");
+        expect(screen.getByRole("textbox", { name: "Amount" })).toHaveFocus();
+      });
+      return dialog;
+    };
+    const exitsSlowly = () => {
+      // Under test the preview turns animations off, so the dialog would leave at once. Give this one a 30s exit, so
+      // the page click below lands while the dialog is still closing, as it does for a person, even on a busy machine.
+      for (const part of parts()) part.style.setProperty("transition-duration", "30s", "important");
+    };
+    // Then end the exit, rather than wait it out.
+    const finishExit = () => {
+      for (const part of parts()) for (const animation of part.getAnimations()) animation.finish();
+    };
+    const announcements = canvas.getByRole("button", { name: "Announcements" });
+    for (const close of ["Cancel", "Escape"] as const) {
+      await userEvent.click(canvas.getByRole("button", { name: "Households" }));
+      await userEvent.click(canvas.getByRole("button", { name: "Record payment" }));
+      const dialog = await opened();
+      exitsSlowly();
+      if (close === "Cancel") await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      else await userEvent.keyboard("{Escape}");
+      await expect(dialog).toHaveAttribute("data-ending-style");
+      // AVE-109: ui-sdk swallowed this click while the backdrop faded out (Avenue's ui-sdk patch fixes it).
+      await userEvent.click(announcements);
+      await expect(canvas.getByText("Announcements", { selector: "output" })).toBeInTheDocument();
+      finishExit();
+      await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    }
+    // A double click outside still closes the dialog with its first click only: the second lands on the fading
+    // backdrop, not on the page under it.
+    await userEvent.click(canvas.getByRole("button", { name: "Households" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Record payment" }));
+    const dialog = await opened();
+    exitsSlowly();
+    await userEvent.click(announcements);
+    await expect(dialog).toHaveAttribute("data-ending-style");
+    await userEvent.click(announcements);
+    await expect(canvas.getByText("Households", { selector: "output" })).toBeInTheDocument();
+    finishExit();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
