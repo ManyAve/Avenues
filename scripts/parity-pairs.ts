@@ -476,6 +476,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-dropdown-menu--keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
   "components-dropdown-menu--open-by-click": { none: BEHAVIOUR("Dropdown menu / Open") },
+  "components-dropdown-menu--action-from-keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
 
   // ---- Empty state (AVE-8)
   "components-empty-state--default": [
