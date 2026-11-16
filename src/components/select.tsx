@@ -11,7 +11,6 @@ import {
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useState, useSyncExternalStore, type ChangeEvent } from "react";
 import {
-  defined,
   fieldControl,
   listItem,
   listPopup,
@@ -20,6 +19,7 @@ import {
   type PickerSize,
   type Presentation,
 } from "#avenue/lib/picker";
+import { defined } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export interface SelectOption<V extends string = string> {

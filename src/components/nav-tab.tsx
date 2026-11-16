@@ -1,6 +1,7 @@
-import { mergeProps, renderElement, type PartProps } from "@ui-sdk/react/primitive";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { Count } from "#avenue/components/status";
 import { cn } from "#avenue/lib/utils";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * One section link in ManyAve's top bar (the app's app/ui/components/TopBar.tsx at e01cc90). A real link:
@@ -16,7 +17,7 @@ function NavTab({
   children,
   render,
   ...props
-}: PartProps<"a"> & { current?: boolean | undefined; count?: number | undefined }) {
+}: OwnPartProps<"a"> & { current?: boolean | undefined; count?: number | undefined }) {
   return renderElement(
     "a",
     mergeProps(
@@ -37,7 +38,7 @@ function NavTab({
           </>
         ),
       },
-      props,
+      defined(props),
     ),
     render,
   );

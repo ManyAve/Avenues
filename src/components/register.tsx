@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popo
 import { tintFor } from "#avenue/lib/format";
 import { register } from "#avenue/lib/register";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * The Register (AVE-9): the board's table of households, payments or requests. A grid with one Tab stop, arrow keys
@@ -53,12 +54,12 @@ function Register({
   className,
   density = "normal",
   ...props
-}: ComponentProps<typeof parts.Root> & { density?: Density | undefined }) {
+}: Loose<ComponentProps<typeof parts.Root>> & { density?: Density | undefined }) {
   return (
     <parts.Root
       data-density={density}
       className={cn("w-full table-fixed border-separate border-spacing-0 text-compact", rowHeight[density], className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -76,7 +77,7 @@ function RegisterRow({
   className,
   selected,
   ...props
-}: ComponentProps<typeof parts.Row> & { selected?: boolean | undefined }) {
+}: Loose<ComponentProps<typeof parts.Row>> & { selected?: boolean | undefined }) {
   return (
     <parts.Row
       data-selected={selected ? "" : undefined}
@@ -84,7 +85,7 @@ function RegisterRow({
         "group/row [&>td]:bg-background hover:[&>td]:bg-muted data-selected:[&>td]:bg-primary-subtle",
         className,
       )}
-      {...props}
+      {...defined(props)}
       id={`${props.row}`}
     />
   );
@@ -109,7 +110,7 @@ function RegisterColumnHeader({
   className,
   children,
   ...props
-}: Omit<ComponentProps<typeof parts.Columnheader>, "row" | "children"> & {
+}: Omit<Loose<ComponentProps<typeof parts.Columnheader>>, "row" | "children"> & {
   children?: ReactNode;
   icon?: LucideIcon | undefined;
   sortMenu?: ReactNode | undefined;
@@ -144,7 +145,7 @@ function RegisterColumnHeader({
         className,
       )}
       sort={sort}
-      {...props}
+      {...defined(props)}
       id={`0:${props.col}`}
     >
       {sortMenu === undefined ? (
@@ -167,11 +168,11 @@ function RegisterColumnHeader({
 }
 
 /** A body cell. `control` passes focus to the one control inside it (a checkbox, a link, a row action). */
-function RegisterCell({ className, ...props }: ComponentProps<typeof parts.Cell>) {
+function RegisterCell({ className, ...props }: Loose<ComponentProps<typeof parts.Cell>>) {
   return (
     <parts.Cell
       className={cn("overflow-hidden px-3 align-middle whitespace-nowrap text-ellipsis", ring, className)}
-      {...props}
+      {...defined(props)}
       id={`${props.row}:${props.col}`}
     />
   );
@@ -186,7 +187,7 @@ function RegisterSelectColumn({ className, ...props }: ComponentProps<"col">) {
 }
 
 /** The selection cell that leads each row. Its checkbox sits centred in the selection column. */
-function RegisterSelectCell({ className, ...props }: Omit<ComponentProps<typeof parts.Cell>, "col" | "control">) {
+function RegisterSelectCell({ className, ...props }: Omit<Loose<ComponentProps<typeof parts.Cell>>, "col" | "control">) {
   return <RegisterCell col={0} control className={cn("px-0 [&>*]:mx-auto", className)} {...props} />;
 }
 

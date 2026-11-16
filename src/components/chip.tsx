@@ -2,6 +2,7 @@ import { Check } from "lucide-react";
 import { useEffect, useRef, useState, type ComponentProps, type FocusEvent, type ReactNode } from "react";
 import { Count } from "#avenue/components/status";
 import { Toggle } from "#avenue/components/toggle";
+import { type NodeChildren } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -18,7 +19,7 @@ function Chip({
   children,
   className,
   ...props
-}: ComponentProps<typeof Toggle> & {
+}: NodeChildren<ComponentProps<typeof Toggle>> & {
   count?: number | undefined;
   /** A leading icon, shown while the chip is not selected. */
   icon?: ReactNode;
@@ -39,7 +40,7 @@ function Chip({
           {icon}
         </span>
       ) : null}
-      {children as ReactNode}
+      {children}
       {count !== undefined && <Count value={count} className="bg-transparent px-0 text-current opacity-80" />}
     </Toggle>
   );

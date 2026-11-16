@@ -3,6 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { controlShape } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/button.tsx (e01cc90). Colours and states are unchanged.
@@ -53,7 +54,7 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = ComponentProps<typeof ButtonPrimitive> &
+type ButtonProps = Loose<ComponentProps<typeof ButtonPrimitive>> &
   VariantProps<typeof buttonVariants> & {
     /**
      * Why the action is unavailable. Disables the button but keeps it focusable, shows the reason as one muted
@@ -70,7 +71,7 @@ function Button({ className, variant = "default", size = "default", disabledReas
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
+      {...defined(props)}
       {...(disabledReason
         ? {
             disabled: true,

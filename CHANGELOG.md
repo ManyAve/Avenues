@@ -4,13 +4,47 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.4.5 (2026-11-16)
+## v0.6.1 (2026-11-16)
 
 - **Select takes `aria-labelledby`** (AVE-98), for a select named by visible text it doesn't own, such as a column
   header plus its row ("Role for person 1"). Nothing an app already uses changes.
 - **The At a glance page follows its own rules** (AVE-98). Each of its 16 cards has an h2 under the page's h1, so
   heading keys move from card to card, and the Invite the board rows show "Email" and "Role" column headers that
   name each field. Storybook only.
+
+## v0.6.0 (2026-11-16)
+
+- **TopBar lets the app handle its home link** (AVE-110). New props, nothing existing changes:
+  - `onHome` runs on a plain click or Enter on the home link instead of following `homeHref`. A cmd, ctrl, shift or
+    alt click still follows the link, so home can open in a new tab or window.
+  - `homeRender` swaps the home link for the app's own, such as its router's link, the way NavTab's `render` does.
+    It keeps the bar's name, classes and look.
+  - `windowDrag` makes the bar the desktop window's drag area (`-webkit-app-region: drag`), with the home link, the
+    section links and the actions left clickable, and the bar's text unselectable while the window moves. A
+    browser ignores it.
+
+  Management can drop its wrapper that catches clicks on the bar and matches the home link by its label: pass
+  `onHome` (or `homeRender` with its router link) and, in the desktop window only, `windowDrag`. Its own
+  `[data-window-header]` rules for the window controls' inset can stay. Neighbors needs no change.
+
+## v0.5.0 (2026-11-16)
+
+- **Every optional prop now takes `undefined`** (AVE-108). ui-sdk declares its optional props without
+  `| undefined`, so in an app with `exactOptionalPropertyTypes` on (Management) a maybe-undefined value failed with
+  TS2375: `<Button onClick={onSave}>`, `<Dialog onOpenChange={onClose}>`, `<Checkbox disabled={locked}>` and
+  about 630 other props across 86 components. Each component now accepts `undefined` for every optional prop and
+  passes it on as if left out. The typecheck fails if a prop rejects `undefined` again.
+- **Components that wrap their children take plain `children`**: Badge, Chip, Status, Dialog / Alert dialog /
+  Sheet content, Tooltip content, the dropdown menu's items and sub-content, and Toggle group. Their type used to
+  allow a function of ui-sdk's state, which these components would have drawn as a function, and which an app
+  couldn't pass on as a `ReactNode`. Badge, Nav tab and Choice card title also take a plain `className` and `style`
+  (they have no state for a function to read).
+  - **Apps react:** Management can delete the loosening in `app/ui/avenue.ts` (`loose`, `plain`, `defined`) and
+    import Button, Dialog, Badge, Toggle, Switch, the menu parts, Popover and Hover card triggers straight from
+    Avenue. Its Checkbox (`indeterminate` and a boolean `onCheckedChange`) and DialogContent (a ref for
+    `initialFocus`) wrappers are app conveniences, not type workarounds; keep them or move them into Avenue on a
+    new card. `nativeButton` is a Base UI prop that ui-sdk doesn't have: drop it, `render={<a href=… />}` alone makes
+    a link.
 
 ## v0.4.4 (2026-11-16)
 

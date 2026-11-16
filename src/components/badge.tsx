@@ -1,6 +1,7 @@
-import { mergeProps, renderElement, type PartProps } from "@ui-sdk/react/primitive"
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "#avenue/lib/utils";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/badge.tsx (e01cc90). 20px tall; the 4xl corner (retired in Avenue)
@@ -37,10 +38,10 @@ function Badge({
   variant = "default",
   render,
   ...props
-}: PartProps<"span"> & VariantProps<typeof badgeVariants>) {
+}: OwnPartProps<"span"> & VariantProps<typeof badgeVariants>) {
   return renderElement(
     "span",
-    mergeProps({ "data-slot": "badge", "data-variant": variant, className: cn(badgeVariants({ variant }), className) }, props),
+    mergeProps({ "data-slot": "badge", "data-variant": variant, className: cn(badgeVariants({ variant }), className) }, defined(props)),
     render,
   )
 }

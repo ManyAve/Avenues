@@ -1011,6 +1011,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-top-bar--desktop-minimum": { none: "Top bar / Wide at the 900px minimum, where the links take their own row; compared through Top bar / Wide." },
   "composites-top-bar--phone": { none: "Top bar / Wide on a phone, a scrolling strip; compared through Top bar / Wide and Nav tab." },
   "composites-top-bar--update-keeps-the-page": { none: BEHAVIOUR("Top bar / Wide") },
+  "composites-top-bar--home-handled-by-the-app": { none: BEHAVIOUR("Top bar / Wide") },
+  "composites-top-bar--home-as-a-router-link": { none: BEHAVIOUR("Top bar / Wide") },
+  "composites-top-bar--window-drag-area": { none: BEHAVIOUR("Top bar / Wide") },
   // The bar's own box (44px, 16px sides) is asserted in Status bar / Wide; its mode toggle is compared through Mode
   // toggle, whose single-choice group holds ui-sdk's hidden input, so a crop of the whole bar shifts every part after it.
   "composites-status-bar--wide": [

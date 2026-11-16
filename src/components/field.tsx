@@ -2,6 +2,7 @@ import * as FieldPrimitive from "@ui-sdk/react/field";
 import { cva, type VariantProps } from "class-variance-authority";
 import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/field.tsx (e01cc90), with the app's Label folded in.
@@ -16,7 +17,7 @@ import { cn } from "#avenue/lib/utils";
  * group and stays one step above.
  */
 
-function FieldSet({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldSet>) {
+function FieldSet({ className, ...props }: Loose<ComponentProps<typeof FieldPrimitive.FieldSet>>) {
   return (
     <FieldPrimitive.FieldSet
       data-slot="field-set"
@@ -24,7 +25,7 @@ function FieldSet({ className, ...props }: ComponentProps<typeof FieldPrimitive.
         "flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -33,7 +34,7 @@ function FieldLegend({
   className,
   variant = "legend",
   ...props
-}: ComponentProps<typeof FieldPrimitive.FieldLegend> & { variant?: "legend" | "label" | undefined }) {
+}: Loose<ComponentProps<typeof FieldPrimitive.FieldLegend>> & { variant?: "legend" | "label" | undefined }) {
   return (
     <FieldPrimitive.FieldLegend
       // A native <legend> sits outside the fieldset's flex flow; a div keeps the app's spacing and still names the set.
@@ -44,12 +45,12 @@ function FieldLegend({
         "mb-2 font-medium data-[variant=label]:text-field data-[variant=legend]:text-base",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
 
-function FieldGroup({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldGroup>) {
+function FieldGroup({ className, ...props }: Loose<ComponentProps<typeof FieldPrimitive.FieldGroup>>) {
   return (
     <FieldPrimitive.FieldGroup
       data-slot="field-group"
@@ -57,7 +58,7 @@ function FieldGroup({ className, ...props }: ComponentProps<typeof FieldPrimitiv
         "group/field-group @container/field-group flex w-full flex-col gap-5 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -92,14 +93,14 @@ function Field({
   className,
   orientation = "vertical",
   ...props
-}: ComponentProps<typeof FieldPrimitive.Field> & VariantProps<typeof fieldVariants>) {
+}: Loose<ComponentProps<typeof FieldPrimitive.Field>> & VariantProps<typeof fieldVariants>) {
   return (
     <FieldContext.Provider value={{ invalid: !!props.invalid }}>
       <FieldPrimitive.Field
         data-slot="field"
         data-orientation={orientation}
         className={cn(fieldVariants({ orientation }), className)}
-        {...props}
+        {...defined(props)}
       />
     </FieldContext.Provider>
   );
@@ -116,7 +117,7 @@ function FieldContent({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** The control's label (the app's Label, folded in). For a card that is a whole label, use ChoiceCard. */
-function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldLabel>) {
+function FieldLabel({ className, ...props }: Loose<ComponentProps<typeof FieldPrimitive.FieldLabel>>) {
   return (
     <FieldPrimitive.FieldLabel
       data-slot="field-label"
@@ -124,7 +125,7 @@ function FieldLabel({ className, ...props }: ComponentProps<typeof FieldPrimitiv
         "group/field-label peer/field-label flex w-fit items-center gap-2 text-field leading-snug font-medium select-none group-data-disabled/field:pointer-events-none group-data-disabled/field:opacity-50",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -143,7 +144,7 @@ function FieldTitle({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** Describes the field's control, or the field set it sits in. */
-function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPrimitive.FieldDescription>) {
+function FieldDescription({ className, ...props }: Loose<ComponentProps<typeof FieldPrimitive.FieldDescription>>) {
   return (
     <FieldPrimitive.FieldDescription
       data-slot="field-description"
@@ -153,7 +154,7 @@ function FieldDescription({ className, ...props }: ComponentProps<typeof FieldPr
         "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -189,7 +190,7 @@ function FieldError({
   children,
   errors,
   ...props
-}: ComponentProps<typeof FieldPrimitive.FieldError> & {
+}: Loose<ComponentProps<typeof FieldPrimitive.FieldError>> & {
   errors?: Array<{ message?: string | undefined } | undefined> | undefined;
 }) {
   // A Field the screen marked invalid always shows its error; otherwise ui-sdk shows it on a failed native check.
@@ -215,7 +216,7 @@ function FieldError({
       data-slot="field-error"
       className={cn("text-field font-normal text-destructive-subtle-foreground", className)}
       {...(invalid && props.match === undefined ? { match: true } : {})}
-      {...props}
+      {...defined(props)}
     >
       {content}
     </FieldPrimitive.FieldError>

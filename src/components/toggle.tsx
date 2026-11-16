@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { controlShape } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/toggle.tsx (e01cc90). Colours and pressed state unchanged.
@@ -36,9 +37,9 @@ function Toggle({
   variant = "default",
   size = "default",
   ...props
-}: ComponentProps<typeof TogglePrimitive> & VariantProps<typeof toggleVariants>) {
+}: Loose<ComponentProps<typeof TogglePrimitive>> & VariantProps<typeof toggleVariants>) {
   return (
-    <TogglePrimitive data-slot="toggle" className={cn(toggleVariants({ variant, size, className }))} {...props} />
+    <TogglePrimitive data-slot="toggle" className={cn(toggleVariants({ variant, size, className }))} {...defined(props)} />
   );
 }
 

@@ -5,6 +5,7 @@ import type { VariantProps } from "class-variance-authority";
 import { createContext, useContext, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { toggleVariants } from "#avenue/components/toggle";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/toggle-group.tsx (e01cc90). `spacing` is in 4px steps (default 2,
@@ -35,8 +36,8 @@ const ToggleGroupContext = createContext<GroupStyle & { multiple: boolean }>({
   multiple: false,
 });
 
-type SingleProps = { multiple?: false | undefined } & ComponentProps<typeof SegmentedControl>;
-type MultipleProps = { multiple: true } & Omit<ComponentProps<typeof ToggleGroupPrimitive>, "multiple">;
+type SingleProps = { multiple?: false | undefined } & Loose<ComponentProps<typeof SegmentedControl>>;
+type MultipleProps = { multiple: true } & Omit<Loose<ComponentProps<typeof ToggleGroupPrimitive>>, "multiple">;
 
 function ToggleGroup({
   className,
@@ -46,7 +47,7 @@ function ToggleGroup({
   orientation = "horizontal",
   children,
   ...props
-}: (SingleProps | MultipleProps) & GroupStyle) {
+}: NodeChildren<SingleProps | MultipleProps> & GroupStyle) {
   const shared = {
     "data-variant": variant,
     "data-size": size,
@@ -67,19 +68,19 @@ function ToggleGroup({
   };
   const items = (
     <ToggleGroupContext.Provider value={{ variant, size, spacing, orientation, multiple: !!props.multiple }}>
-      {children as ReactNode}
+      {children}
     </ToggleGroupContext.Provider>
   );
   if (props.multiple) {
     return (
-      <ToggleGroupPrimitive {...shared} {...props} multiple>
+      <ToggleGroupPrimitive {...shared} {...defined(props)} multiple>
         {items}
       </ToggleGroupPrimitive>
     );
   }
   const { multiple: _single, ...single } = props;
   return (
-    <SegmentedControl {...shared} {...single}>
+    <SegmentedControl {...shared} {...defined(single)}>
       {items}
     </SegmentedControl>
   );
@@ -96,7 +97,7 @@ function ToggleGroupItem({
   size = "default",
   value,
   ...props
-}: Omit<ComponentProps<typeof Toggle>, "value" | "children"> & {
+}: Omit<Loose<ComponentProps<typeof Toggle>>, "value" | "children"> & {
   value: string;
   children?: ReactNode;
 } & VariantProps<typeof toggleVariants>) {
@@ -140,13 +141,13 @@ function ToggleGroupItem({
   };
   if (context.multiple) {
     return (
-      <Toggle {...itemProps} {...props}>
+      <Toggle {...itemProps} {...defined(props)}>
         {content}
       </Toggle>
     );
   }
   return (
-    <SegmentedControlItem {...itemProps} {...(props as ComponentProps<typeof SegmentedControlItem>)}>
+    <SegmentedControlItem {...itemProps} {...defined(props as Loose<ComponentProps<typeof SegmentedControlItem>>)}>
       {content}
     </SegmentedControlItem>
   );
