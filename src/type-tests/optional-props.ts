@@ -48,6 +48,7 @@ import type * as statusBar from "#avenue/components/status-bar";
 import type * as status from "#avenue/components/status";
 import type * as switchControl from "#avenue/components/switch";
 import type * as table from "#avenue/components/table";
+import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
 import type * as toast from "#avenue/components/toast";
 import type * as toggleGroup from "#avenue/components/toggle-group";
@@ -101,6 +102,7 @@ type Modules = {
   "status": typeof status;
   "switch": typeof switchControl;
   "table": typeof table;
+  "tabs": typeof tabs;
   "textarea": typeof textarea;
   "toast": typeof toast;
   "toggle-group": typeof toggleGroup;
