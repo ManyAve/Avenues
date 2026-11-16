@@ -59,6 +59,10 @@ an element with `data-ui-sdk-skin`, because globally they restyle Avenue (they s
 component; style it with Avenue's tokens instead. After upgrading `@ui-sdk/core`, run
 `bun run ui-sdk:css`; `bun run test:scripts` fails until you do.
 
+`avenue.css` never imports from `shadcn`: shadcn is a dev dependency (for its CLI), and apps don't install a
+package's dev dependencies. It loads Avenue's copy, `src/styles/shadcn.css`, instead; after upgrading shadcn, run
+`bun run shadcn:css` (AVE-107). `test:scripts` fails on a stale copy or a stylesheet that imports `shadcn`.
+
 **Patched ui-sdk.** `patches/` holds Bun patches to ui-sdk, applied by `bun install` (listed under
 `patchedDependencies` in `package.json`), so they survive installs and the Cloudflare build. Each is a stopgap
 for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies

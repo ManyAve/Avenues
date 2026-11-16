@@ -45,6 +45,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run tokens:native`   | Regenerates `native/AvenueTokens.swift`, `native/AvenueTokens.kt` and `native/tokens.json` from the stylesheets (below, "Native apps"); `test:scripts` fails until you do after changing a token. |
 | `bun run native:android`  | Builds the Compose components in `native/android`, runs their unit tests and records their screenshots to `native/screenshots/android/` (below, "Android components"). Needs Java and the Android SDK, so not part of `check`; `native:android:check` fails on a stale screenshot. |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
+| `bun run shadcn:css`      | Regenerates `src/styles/shadcn.css`, Avenue's copy of `shadcn/tailwind.css`, after a shadcn upgrade (`test:scripts` fails until you do). |
 | `bun run storybook`       | Starts Storybook at http://localhost:6006 (interactive).        |
 
 The toolbar's theme switch flips the `.dark` class on `<html>`, the same switch the ManyAve app
@@ -351,6 +352,11 @@ The package is source-shipped (no build step) and exposes:
 
 `react`, `react-dom` and `tailwindcss` are peer dependencies so a consumer never gets a second
 copy.
+
+What an app installs to build `styles.css`: `@manyave/avenue` itself and the three peers, with Tailwind's Vite
+plugin or PostCSS plugin. Not shadcn: Avenue carries its own copy of `shadcn/tailwind.css` (`src/styles/shadcn.css`,
+AVE-107), and `tw-animate-css` comes in as Avenue's dependency. An app that has shadcn for its own CLI keeps it; the
+two don't clash.
 
 ### Versions
 

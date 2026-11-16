@@ -4,6 +4,13 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.4.3 (2026-11-16)
+
+- **`styles.css` builds in an app without shadcn installed** (AVE-107). It imported `shadcn/tailwind.css`, which only
+  resolved because the app happened to install shadcn itself. Avenue now carries that stylesheet byte for byte, so
+  the built CSS is unchanged and nothing looks different. An app can drop shadcn if it only had it for Avenue;
+  Management and Neighbors keep theirs for the shadcn CLI, and need no change beyond taking this version.
+
 ## v0.4.2 (2026-11-16)
 
 - **Outline buttons in dark take the card's surface** (AVE-99). They filled with the page colour, which is darker than
