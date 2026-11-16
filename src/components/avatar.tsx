@@ -3,7 +3,7 @@ import * as AvatarPrimitive from "@ui-sdk/react/avatar"
 import { cn } from "#avenue/lib/utils";
 
 /**
- * Ported from the app's app/ui/components/ui/avatar.tsx (e01cc90), unchanged: circles at 24, 32 and 40px (avatars
+ * Ported from the app's app/ui/components/ui/avatar.tsx (e01cc90), unchanged but for the group (AVE-99, below): circles at 24, 32 and 40px (avatars
  * may be pills, AVE-2 section 5). ManyAve's tinted-initials Avatar (AVE-8) wraps this. When a name is shown beside
  * the avatar, hide the initials from screen readers (aria-hidden on AvatarFallback) so the name isn't read twice.
  */
@@ -78,7 +78,13 @@ function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="avatar-group"
       className={cn(
-        "group/avatar-group flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background",
+        // AVE-99: the initials stay readable. Each avatar covers at most a quarter of the one before (4px at default,
+        // 8px at lg; sm avatars only meet, as 14px web initials fill a 24px circle). The 2px ring is the card's colour,
+        // since groups sit on cards. A covered avatar centres its initials in the part that shows (end padding), and
+        // default initials use the meta size, as sm already does.
+        "group/avatar-group flex -space-x-1 has-data-[size=sm]:space-x-0 has-data-[size=lg]:-space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-card",
+        "[&>[data-slot=avatar][data-size=default]>[data-slot=avatar-fallback]]:text-xs",
+        "[&>[data-slot=avatar]:not(:last-child)>[data-slot=avatar-fallback]]:pe-1 [&>[data-slot=avatar][data-size=lg]:not(:last-child)>[data-slot=avatar-fallback]]:pe-2 [&>[data-slot=avatar][data-size=sm]:not(:last-child)>[data-slot=avatar-fallback]]:pe-0.5",
         className
       )}
       {...props}
@@ -94,7 +100,7 @@ function AvatarGroupCount({
     <div
       data-slot="avatar-group-count"
       className={cn(
-        "relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-background group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3",
+        "relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-card group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3",
         className
       )}
       {...props}

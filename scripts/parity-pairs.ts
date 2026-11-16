@@ -114,6 +114,11 @@ const BUTTON_MD: Allowance[] = [
   // The 4px of extra padding makes the same label 4px wider.
   { prop: "width", because: GRID_10_TO_12_MD },
 ];
+// AVE-99: in dark the app's outline button takes the page colour, darker than the card it sits on.
+const OUTLINE_DARK_FILL: Allowance = {
+  prop: "background-color",
+  because: "AVE-99: in dark an outline button's fill is the card's surface, not the darker page colour",
+};
 const SIDE_10_TO_8: Allowance[] = [
   { prop: "padding-left", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
   { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
@@ -274,6 +279,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-avatar--sizes": {
     none: "Avenue's plain Avatar is the shadcn base with a neutral fallback; every avatar the app draws is ManyAve's tinted initials, compared through Initials avatar / Tints.",
   },
+  "components-avatar--group-on-a-card": {
+    none: "AVE-99: the app draws no avatar group; this story proves a group keeps every avatar's initials readable on a card.",
+  },
   "components-avatar--with-name": {
     none: "Avenue's plain Avatar is the shadcn base with a neutral fallback; every avatar the app draws is ManyAve's tinted initials, compared through Initials avatar / Tints.",
   },
@@ -329,17 +337,21 @@ export const PAIRS: Record<string, PairEntry> = {
   // ---- Button (AVE-6)
   "components-button--playground": [
     { label: "primary", app: "primitives-button--primary", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", avenueArgs: "children:Button", allow: BUTTON_MD },
-    { label: "outline", app: "primitives-button--outline", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", avenueArgs: "children:Button;variant:outline", allow: BUTTON_MD },
+    { label: "outline", app: "primitives-button--outline", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", avenueArgs: "children:Button;variant:outline", allow: [...BUTTON_MD, OUTLINE_DARK_FILL] },
     { label: "ghost", app: "primitives-button--ghost", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", avenueArgs: "children:Button;variant:ghost", allow: BUTTON_MD },
   ],
   "components-button--variants": [
     { label: "default", app: "primitives-button--primary", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=0", allow: BUTTON_MD },
-    { label: "outline", app: "primitives-button--outline", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=3", allow: BUTTON_MD },
+    { label: "outline", app: "primitives-button--outline", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=3", allow: [...BUTTON_MD, OUTLINE_DARK_FILL] },
     { label: "ghost", app: "primitives-button--ghost", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=9", allow: BUTTON_MD },
   ],
+  "components-button--variants-on-a-card": {
+    none: "AVE-99: the app has no story of every variant on a card; its outline button is compared through Button / Variants and the sm outline in Sizes, which sits on the dues card.",
+  },
   "components-button--sizes": [
     { label: "sm outline in a card", app: "detail-pieces--dues", appCrop: "[data-slot=button]:has-text('Record payment')", avenueCrop: "[data-slot=button] >> nth=5", allow: [
       ...SIDE_10_TO_8,
+      OUTLINE_DARK_FILL,
       { prop: "glyph", app: "lucide-receipt", avenue: "lucide-download", because: "app: app/ui/components/detail.tsx: the dues card's Record payment button carries a Receipt icon; Avenue's sizes story shows its sm outline button as Export, with Download" },
     ] },
     { label: "md", app: "primitives-button--primary", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button] >> nth=8", allow: BUTTON_MD },
