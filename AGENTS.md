@@ -88,6 +88,12 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
 3. **One shape.** A root and its parts, nested as the component page's Composition shows. Change a
    part's element with `render`, never an `as` prop. For a part of Avenue's own, use `renderElement`
    and `mergeProps` from `@ui-sdk/react/primitive` so it takes `render` like every other part.
+   **Props take `undefined`** (AVE-108): ui-sdk's optional props reject it under `exactOptionalPropertyTypes`, which
+   Management turns on. Take a ui-sdk part's props as `Loose<ComponentProps<typeof Part>>` and spread them onto the
+   part as `{...defined(props)}`; a part of Avenue's own takes `OwnPartProps<"div">`; a component that puts its
+   children inside its own markup wraps its props in `NodeChildren<…>` (all from `#avenue/lib/props`).
+   `src/type-tests/optional-props.ts` fails the typecheck, naming the prop, if any optional prop rejects `undefined`;
+   list a new component file there (`scripts/optional-props.test.ts` fails until you do).
 4. **Style from state.** Target the `data-slot` and state attributes (`data-open`, `data-checked`,
    `data-highlighted`, `data-disabled`, `data-side`, ...) and the CSS variables each component page
    lists, with Tailwind data variants and Avenue's tokens. Read the attribute from the component page

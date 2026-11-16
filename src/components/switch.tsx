@@ -1,6 +1,7 @@
 import { Switch as SwitchPrimitive, SwitchThumb } from "@ui-sdk/react/switch";
 import type { ComponentProps } from "react";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/switch.tsx (e01cc90), unchanged: track and thumb are pills (AVE-2
@@ -13,7 +14,7 @@ function Switch({
   className,
   size = "default",
   ...props
-}: ComponentProps<typeof SwitchPrimitive> & { size?: "sm" | "default" | undefined }) {
+}: Loose<ComponentProps<typeof SwitchPrimitive>> & { size?: "sm" | "default" | undefined }) {
   return (
     <SwitchPrimitive
       data-slot="switch"
@@ -22,7 +23,7 @@ function Switch({
         "peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-all outline-none group-has-[:focus-visible]/field-label:border-transparent group-has-[:focus-visible]/field-label:ring-0 hit-area [--hit-area-x:--spacing(3)] [--hit-area-y:--spacing(2)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] pointer-coarse:data-[size=sm]:w-7 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-input data-unchecked:not-aria-invalid:not-focus-visible:border-muted-foreground dark:data-unchecked:bg-input/80 data-disabled:cursor-not-allowed data-disabled:opacity-50",
         className,
       )}
-      {...props}
+      {...defined(props)}
     >
       <SwitchThumb
         data-slot="switch-thumb"

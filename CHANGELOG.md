@@ -4,6 +4,25 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.5.0 (2026-11-16)
+
+- **Every optional prop now takes `undefined`** (AVE-108). ui-sdk declares its optional props without
+  `| undefined`, so in an app with `exactOptionalPropertyTypes` on (Management) a maybe-undefined value failed with
+  TS2375: `<Button onClick={onSave}>`, `<Dialog onOpenChange={onClose}>`, `<Checkbox disabled={locked}>` and
+  about 630 other props across 86 components. Each component now accepts `undefined` for every optional prop and
+  passes it on as if left out. The typecheck fails if a prop rejects `undefined` again.
+- **Components that wrap their children take plain `children`**: Badge, Chip, Status, Dialog / Alert dialog /
+  Sheet content, Tooltip content, the dropdown menu's items and sub-content, and Toggle group. Their type used to
+  allow a function of ui-sdk's state, which these components would have drawn as a function, and which an app
+  couldn't pass on as a `ReactNode`. Badge, Nav tab and Choice card title also take a plain `className` and `style`
+  (they have no state for a function to read).
+  - **Apps react:** Management can delete the loosening in `app/ui/avenue.ts` (`loose`, `plain`, `defined`) and
+    import Button, Dialog, Badge, Toggle, Switch, the menu parts, Popover and Hover card triggers straight from
+    Avenue. Its Checkbox (`indeterminate` and a boolean `onCheckedChange`) and DialogContent (a ref for
+    `initialFocus`) wrappers are app conveniences, not type workarounds; keep them or move them into Avenue on a
+    new card. `nativeButton` is a Base UI prop that ui-sdk doesn't have: drop it, `render={<a href=… />}` alone makes
+    a link.
+
 ## v0.4.4 (2026-11-16)
 
 - **Popovers and menus stay on a phone screen** (AVE-112). `PopoverContent`, `HoverCardContent`,

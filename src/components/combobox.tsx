@@ -12,7 +12,6 @@ import {
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  defined,
   fieldControl,
   listItem,
   listPopup,
@@ -21,6 +20,7 @@ import {
   type PickerSize,
   type Presentation,
 } from "#avenue/lib/picker";
+import { defined } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /** One choice a Combobox offers. `value` is the stored id; `label` is what the field shows once it is chosen. */

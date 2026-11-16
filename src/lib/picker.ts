@@ -68,9 +68,3 @@ export const listSheetHandle = cn(sheetHandle, "hidden sheet:order-first sheet:b
 export const listItem =
   "grid pointer-coarse:min-h-11 sheet:min-h-11 cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
 
-/** Drops undefined props, for ui-sdk's types under exactOptionalPropertyTypes. */
-export function defined<T extends Record<string, unknown>>(props: T) {
-  return Object.fromEntries(Object.entries(props).filter(([, v]) => v !== undefined)) as {
-    [K in keyof T]?: Exclude<T[K], undefined>;
-  };
-}

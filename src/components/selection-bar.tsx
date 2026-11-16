@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode, type RefObject } from "react";
 import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 export type SelectionAction = {
   id: string;
@@ -51,7 +52,7 @@ function SelectionBar({
   onFocus,
   onBlur,
   ...props
-}: Omit<ComponentProps<typeof ToolbarPrimitive>, "children"> & {
+}: Omit<Loose<ComponentProps<typeof ToolbarPrimitive>>, "children"> & {
   count: number;
   /** The count's words, such as "3 households selected". */
   label?: ((count: number) => string) | undefined;
@@ -77,7 +78,7 @@ function SelectionBar({
             "absolute bottom-12 start-1/2 z-10 flex -translate-x-1/2 items-start gap-controls reasons-hang rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
             className,
           )}
-          {...props}
+          {...defined(props)}
           onFocus={(event) => {
             focusInside.current = true;
             onFocus?.(event);

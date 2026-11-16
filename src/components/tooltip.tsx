@@ -3,6 +3,7 @@ import { CircleHelpIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/tooltip.tsx (e01cc90). md corner (8px, AVE-2 "tooltips"); padding
@@ -13,12 +14,12 @@ import { cn } from "#avenue/lib/utils";
  * hover and keyboard focus. The trigger is a real button; don't render it as a span. For help text on a
  * non-interactive label (the Status help) use InfoTip, which also opens on tap.
  */
-function Tooltip({ delay = 0, ...props }: ComponentProps<typeof TooltipPrimitive.Tooltip>) {
-  return <TooltipPrimitive.Tooltip delay={delay} {...props} />;
+function Tooltip({ delay = 0, ...props }: Loose<ComponentProps<typeof TooltipPrimitive.Tooltip>>) {
+  return <TooltipPrimitive.Tooltip delay={delay} {...defined(props)} />;
 }
 
-function TooltipTrigger(props: ComponentProps<typeof TooltipPrimitive.TooltipTrigger>) {
-  return <TooltipPrimitive.TooltipTrigger data-slot="tooltip-trigger" {...props} />;
+function TooltipTrigger(props: Loose<ComponentProps<typeof TooltipPrimitive.TooltipTrigger>>) {
+  return <TooltipPrimitive.TooltipTrigger data-slot="tooltip-trigger" {...defined(props)} />;
 }
 
 function TooltipContent({
@@ -29,7 +30,7 @@ function TooltipContent({
   alignOffset = 0,
   children,
   ...props
-}: ComponentProps<typeof TooltipPrimitive.TooltipContent>) {
+}: NodeChildren<Loose<ComponentProps<typeof TooltipPrimitive.TooltipContent>>>) {
   return (
     <TooltipPrimitive.TooltipContent
       data-slot="tooltip-content"
@@ -42,9 +43,9 @@ function TooltipContent({
         popupMotion,
         className,
       )}
-      {...props}
+      {...defined(props)}
     >
-      {children as ReactNode}
+      {children}
       <TooltipPrimitive.TooltipArrow className="absolute size-2.5 rotate-45 rounded-xs bg-foreground data-[side=bottom]:-top-1 data-[side=left]:-right-1 data-[side=right]:-left-1 data-[side=top]:-bottom-1" />
     </TooltipPrimitive.TooltipContent>
   );
@@ -67,7 +68,7 @@ function InfoTip({
   label: string;
   children: ReactNode;
   icon?: ReactNode;
-  side?: ComponentProps<typeof TooltipPrimitive.TooltipContent>["side"];
+  side?: Loose<ComponentProps<typeof TooltipPrimitive.TooltipContent>>["side"];
   className?: string | undefined;
 }) {
   return (

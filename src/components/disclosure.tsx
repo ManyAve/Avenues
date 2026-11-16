@@ -1,7 +1,7 @@
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@ui-sdk/react/collapsible";
 import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { defined } from "#avenue/lib/picker";
+import { defined } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export interface DisclosureProps {

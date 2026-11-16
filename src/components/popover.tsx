@@ -2,6 +2,7 @@ import * as PopoverPrimitive from "@ui-sdk/react/popover";
 import type { ComponentProps } from "react";
 import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/popover.tsx (e01cc90). lg corner (10px) as in the app. Padding moves
@@ -9,12 +10,12 @@ import { cn } from "#avenue/lib/utils";
  * ui-sdk renders it in place, in the browser's top layer (no portal), moves focus into it on open, returns focus to
  * the trigger on close, and closes on Esc, an outside press or focus leaving.
  */
-function Popover(props: ComponentProps<typeof PopoverPrimitive.Popover>) {
-  return <PopoverPrimitive.Popover {...props} />;
+function Popover(props: Loose<ComponentProps<typeof PopoverPrimitive.Popover>>) {
+  return <PopoverPrimitive.Popover {...defined(props)} />;
 }
 
-function PopoverTrigger(props: ComponentProps<typeof PopoverPrimitive.PopoverTrigger>) {
-  return <PopoverPrimitive.PopoverTrigger data-slot="popover-trigger" {...props} />;
+function PopoverTrigger(props: Loose<ComponentProps<typeof PopoverPrimitive.PopoverTrigger>>) {
+  return <PopoverPrimitive.PopoverTrigger data-slot="popover-trigger" {...defined(props)} />;
 }
 
 
@@ -25,7 +26,7 @@ function PopoverContent({
   side = "bottom",
   sideOffset = 4,
   ...props
-}: ComponentProps<typeof PopoverPrimitive.PopoverContent>) {
+}: Loose<ComponentProps<typeof PopoverPrimitive.PopoverContent>>) {
   return (
     <PopoverPrimitive.PopoverContent
       data-slot="popover-content"
@@ -39,7 +40,7 @@ function PopoverContent({
         popupMotion,
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -48,22 +49,22 @@ function PopoverHeader({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="popover-header" className={cn("flex flex-col gap-1 text-sm", className)} {...props} />;
 }
 
-function PopoverTitle({ className, ...props }: ComponentProps<typeof PopoverPrimitive.PopoverTitle>) {
+function PopoverTitle({ className, ...props }: Loose<ComponentProps<typeof PopoverPrimitive.PopoverTitle>>) {
   return (
     <PopoverPrimitive.PopoverTitle
       data-slot="popover-title"
       className={cn("text-sm font-medium", className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }
 
-function PopoverDescription({ className, ...props }: ComponentProps<typeof PopoverPrimitive.PopoverDescription>) {
+function PopoverDescription({ className, ...props }: Loose<ComponentProps<typeof PopoverPrimitive.PopoverDescription>>) {
   return (
     <PopoverPrimitive.PopoverDescription
       data-slot="popover-description"
       className={cn("text-muted-foreground", className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }

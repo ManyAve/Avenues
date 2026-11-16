@@ -1,9 +1,10 @@
 import * as DialogPrimitive from "@ui-sdk/react/dialog";
 import { XIcon } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { Button } from "#avenue/components/button";
 import { modalCloseButton, modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/dialog.tsx (e01cc90). xl corner (14px) and 16px inset as in the app.
@@ -22,7 +23,7 @@ function Dialog({
   closeOnEscape = true,
   onOpenChange,
   ...props
-}: ComponentProps<typeof DialogPrimitive.Dialog> & { closeOnEscape?: boolean | undefined }) {
+}: Loose<ComponentProps<typeof DialogPrimitive.Dialog>> & { closeOnEscape?: boolean | undefined }) {
   return (
     <DialogPrimitive.Dialog
       onOpenChange={(open, details) => {
@@ -32,27 +33,27 @@ function Dialog({
         }
         onOpenChange?.(open, details);
       }}
-      {...props}
+      {...defined(props)}
     />
   );
 }
 
-function DialogTrigger(props: ComponentProps<typeof DialogPrimitive.DialogTrigger>) {
-  return <DialogPrimitive.DialogTrigger data-slot="dialog-trigger" {...props} />;
+function DialogTrigger(props: Loose<ComponentProps<typeof DialogPrimitive.DialogTrigger>>) {
+  return <DialogPrimitive.DialogTrigger data-slot="dialog-trigger" {...defined(props)} />;
 }
 
-function DialogClose(props: ComponentProps<typeof DialogPrimitive.DialogClose>) {
-  return <DialogPrimitive.DialogClose data-slot="dialog-close" {...props} />;
+function DialogClose(props: Loose<ComponentProps<typeof DialogPrimitive.DialogClose>>) {
+  return <DialogPrimitive.DialogClose data-slot="dialog-close" {...defined(props)} />;
 }
 
-function DialogOverlay({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogBackdrop>) {
+function DialogOverlay({ className, ...props }: Loose<ComponentProps<typeof DialogPrimitive.DialogBackdrop>>) {
   return (
     <DialogPrimitive.DialogBackdrop
       className={cn(
         "fixed inset-0 isolate z-50 bg-black/10 transition-opacity duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none",
         className,
       )}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -62,7 +63,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   ...props
-}: ComponentProps<typeof DialogPrimitive.DialogContent> & { showCloseButton?: boolean | undefined }) {
+}: NodeChildren<Loose<ComponentProps<typeof DialogPrimitive.DialogContent>>> & { showCloseButton?: boolean | undefined }) {
   return (
     <>
       <DialogOverlay />
@@ -73,9 +74,9 @@ function DialogContent({
           "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-100 backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
-        {...props}
+        {...defined(props)}
       >
-        {children as ReactNode}
+        {children}
         {showCloseButton && (
           <DialogPrimitive.DialogClose
             data-slot="dialog-close"
@@ -120,22 +121,22 @@ function DialogFooter({
 }
 
 /** Line height is the close button's 24px, so the title and the button share a centre line. */
-function DialogTitle({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogTitle>) {
+function DialogTitle({ className, ...props }: Loose<ComponentProps<typeof DialogPrimitive.DialogTitle>>) {
   return (
     <DialogPrimitive.DialogTitle
       data-slot="dialog-title"
       className={cn(modalTitle, className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }
 
-function DialogDescription({ className, ...props }: ComponentProps<typeof DialogPrimitive.DialogDescription>) {
+function DialogDescription({ className, ...props }: Loose<ComponentProps<typeof DialogPrimitive.DialogDescription>>) {
   return (
     <DialogPrimitive.DialogDescription
       data-slot="dialog-description"
       className={cn(modalDescription, className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }

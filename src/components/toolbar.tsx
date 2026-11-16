@@ -17,6 +17,7 @@ import {
 } from "#avenue/components/dropdown-menu";
 import { SearchInput } from "#avenue/components/search-input";
 import { cn } from "#avenue/lib/utils";
+import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * ManyAve's page toolbar (the app's app/ui/components/Toolbar.tsx and the phone's MobileToolbar in mobile.tsx, at
@@ -33,11 +34,11 @@ import { cn } from "#avenue/lib/utils";
  * share the md height and line up along their tops, so a disabled action's reason line hangs under its button and
  * the bar grows to hold it, instead of lifting the button off the row.
  */
-function Toolbar({ className, ...props }: ComponentProps<typeof ToolbarPrimitive>) {
+function Toolbar({ className, ...props }: Loose<ComponentProps<typeof ToolbarPrimitive>>) {
   return (
     <ToolbarPrimitive
       className={cn("flex flex-wrap items-start justify-between gap-3 px-page py-3", className)}
-      {...props}
+      {...defined(props)}
     />
   );
 }
@@ -53,8 +54,8 @@ function ToolbarControls({ className, ...props }: ComponentProps<"div">) {
 }
 
 /** A control in the toolbar's focus order. Pass the Avenue control to draw as `render`. */
-function ToolbarItem(props: ComponentProps<typeof ToolbarItemPrimitive>) {
-  return <ToolbarItemPrimitive {...props} />;
+function ToolbarItem(props: Loose<ComponentProps<typeof ToolbarItemPrimitive>>) {
+  return <ToolbarItemPrimitive {...defined(props)} />;
 }
 
 /**
@@ -208,14 +209,14 @@ function PhoneToolbar({
   moreMenu,
   className,
   ...props
-}: ComponentProps<typeof ToolbarPrimitive> & {
+}: Loose<ComponentProps<typeof ToolbarPrimitive>> & {
   filters?: ReactNode;
   searchProps?: ComponentProps<typeof SearchInput> | undefined;
   newMenu?: ReactNode;
   moreMenu?: ReactNode;
 }) {
   return (
-    <ToolbarPrimitive className={cn("grid gap-2 px-page py-2", className)} {...props}>
+    <ToolbarPrimitive className={cn("grid gap-2 px-page py-2", className)} {...defined(props)}>
       <div data-slot="toolbar-controls" className="flex items-center gap-controls">
         <SearchInput filled placeholder="Search…" className="min-w-0 flex-1" render={<ToolbarInput />} {...searchProps} />
         {newMenu ? (
