@@ -106,6 +106,35 @@ const CONTROL_ROW: Allowance[] = [
   { prop: "height", app: "32px", avenue: "28px", because: "AVE-29: menu and list rows follow the 14px line, so they are 4px shorter on the web scale (the desktop scale's height already)" },
 ];
 
+// AVE-117: Tabs. The list scrolls sideways when its tabs don't fit, and a scrolling box clips what crosses its edge.
+const TABS_SCROLL =
+  "AVE-117: the tab list scrolls sideways, so each tab keeps 4px inside it for its focus ring (tab and list px-1) and the bottom line is an inset shadow the scroll can't clip";
+const TABS_LIST: Allowance[] = [
+  { prop: "padding-top", app: "3px", avenue: "0px", because: "AVE-117: the tabs centre in the 40px list by their own margins, not the app's 3px list padding" },
+  { prop: "padding-bottom", app: "3px", avenue: "0px", because: "AVE-117: the tabs centre in the 40px list by their own margins, not the app's 3px list padding" },
+  { prop: "padding-left", app: "20px", avenue: "4px", because: "app: app/ui/components/announcements.tsx: the sent dialog passes `px-5`; on Avenue it passes `px-3`, which with the tab's own 4px keeps the labels in place" },
+  { prop: "padding-right", app: "20px", avenue: "4px", because: "app: app/ui/components/announcements.tsx: the sent dialog passes `px-5`; on Avenue it passes `px-3`" },
+  { prop: "background-color", because: "app: app/ui/components/announcements.tsx: the sent dialog passes `bg-popover` to keep its sticky list opaque" },
+  { prop: "border-bottom-width", app: "1px", avenue: "0px", because: TABS_SCROLL },
+  { prop: "box-shadow", because: TABS_SCROLL },
+];
+// The app's sent dialog opens with focus on the chosen tab, so its capture shows the ring; Avenue's story rests.
+const TABS_FOCUSED =
+  "app: app/ui/components/announcements.tsx: the sent dialog opens with focus on the chosen tab, so the app's capture shows its focus ring and the border that carries it; Avenue's story is at rest";
+const TABS_TAB: Allowance[] = [
+  ...CONTROL_TEXT,
+  { prop: "parts", because: COUNT_PART },
+  { prop: "padding-left", app: "0px", avenue: "4px", because: TABS_SCROLL },
+  { prop: "padding-right", app: "0px", avenue: "4px", because: TABS_SCROLL },
+  { prop: "padding-top", app: "2px", avenue: "0px", because: "AVE-117: the tab is the 24px of the app's, set by its margins in the list instead of padding" },
+  { prop: "padding-bottom", app: "2px", avenue: "0px", because: "AVE-117: the tab is the 24px of the app's, set by its margins in the list instead of padding" },
+  { prop: "*-gap", app: "6px", avenue: "4px", because: GRID_ICON_GAP },
+  { prop: "border-*-width", because: TABS_FOCUSED },
+  { prop: "border-*-color", because: TABS_FOCUSED },
+  { prop: "box-shadow", because: TABS_FOCUSED },
+  { prop: "outline-*", because: TABS_FOCUSED },
+];
+
 const BUTTON_MD: Allowance[] = [
   ...CONTROL_TEXT,
   { prop: "padding-left", app: "10px", avenue: "12px", because: GRID_10_TO_12_MD },
@@ -782,6 +811,28 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: NEW_IN_AVENUE("The Sheet for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
     ]),
   ),
+
+  // ---- Tabs (AVE-117): the sent announcement dialog's line tabs
+  "components-tabs--default": [
+    {
+      label: "tab list",
+      app: "announcements-dialogs--sent",
+      appCrop: "[data-slot=tabs-list]",
+      avenueCrop: "[data-slot=tabs-list]",
+      frame: true,
+      allow: TABS_LIST,
+    },
+    {
+      label: "chosen tab",
+      app: "announcements-dialogs--sent",
+      appCrop: "[data-slot=tabs-trigger][data-active]",
+      avenueCrop: "[data-slot=tabs-tab][aria-selected=true]",
+      allow: TABS_TAB,
+    },
+  ],
+  "components-tabs--with-a-disabled-tab": { none: STATE_ONLY("a disabled tab", "Tabs / Default") },
+  "components-tabs--many-tabs-on-a-phone": { none: STATE_ONLY("more tabs than fit", "Tabs / Default") },
+  "components-tabs--controlled": { none: BEHAVIOUR("Tabs / Default") },
 
   // ---- Switch (AVE-6)
   "components-switch--unchecked-outline": { none: OUTLINE("switch") },
