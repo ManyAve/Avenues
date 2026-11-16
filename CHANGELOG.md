@@ -23,6 +23,21 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     new card. `nativeButton` is a Base UI prop that ui-sdk doesn't have: drop it, `render={<a href=… />}` alone makes
     a link.
 
+## v0.4.1 (2026-11-16)
+
+- **FormDialog covers what the board's DuesForm does** (AVE-120), so the board's forms can move onto it. Nothing an
+  app already uses changes: a pending save is still held by default.
+  - After 8 seconds of `pending` (`slowAfter`), a line in the footer says the save is slow and will finish, in the
+    app's words (MANA-1039). `again="record"` adds "so don't record it again".
+  - `holdWhilePending={false}` for a save that finishes on its own: Cancel stays on and closing doesn't ask
+    "Discard changes?". `locked` holds the dialog shut whether or not it is saving (the app's `preventClose`).
+  - With `askAdmin`, the fields are disabled too, not only submit (MANA-953).
+  - `submitDisabled` turns submit off while not saving, e.g. during an upload.
+  - `alternate={{ label, onSubmit }}`: a second submit before the main one ("Save & prepare letter").
+  - `closeOnly`: a single Close button and no ✕, for a dialog with nothing to submit.
+- **Callout**: the board's info and warning note (`#avenue/components/callout`, or `@manyave/avenue/components/callout`).
+  Its top and bottom padding is 8px, not the app's off-grid 10px (AVE-2).
+
 ## v0.4.0 (2026-11-16)
 
 - **Dropdown menu: an item's `onClick` now runs from Enter and Space as well as a click** (AVE-111). ui-sdk fires

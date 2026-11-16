@@ -11,6 +11,7 @@ import type * as avatar from "#avenue/components/avatar";
 import type * as badge from "#avenue/components/badge";
 import type * as button from "#avenue/components/button";
 import type * as card from "#avenue/components/card";
+import type * as callout from "#avenue/components/callout";
 import type * as checkbox from "#avenue/components/checkbox";
 import type * as chip from "#avenue/components/chip";
 import type * as choiceCard from "#avenue/components/choice-card";
@@ -62,6 +63,7 @@ type Modules = {
   "badge": typeof badge;
   "button": typeof button;
   "card": typeof card;
+  "callout": typeof callout;
   "checkbox": typeof checkbox;
   "chip": typeof chip;
   "choice-card": typeof choiceCard;

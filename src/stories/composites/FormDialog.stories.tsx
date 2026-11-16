@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FileTextIcon, ReceiptIcon } from "lucide-react";
+import { FileTextIcon, ReceiptIcon, TriangleAlertIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
+import { Callout } from "#avenue/components/callout";
 import { Field, FieldDescription, FieldLabel } from "#avenue/components/field";
 import { FormDialog } from "#avenue/components/form-dialog";
 import { Input } from "#avenue/components/input";
@@ -30,14 +31,28 @@ type Story = StoryObj<typeof meta>;
 function AddDocument({
   defaultOpen = false,
   pending = false,
+  holdWhilePending,
+  locked,
+  again,
+  slowAfter,
   error,
   askAdmin,
+  submitLabel = "Save document",
+  submitDisabled,
+  alternate,
   onSubmit = () => {},
 }: {
   defaultOpen?: boolean;
   pending?: boolean;
+  holdWhilePending?: boolean;
+  locked?: boolean;
+  again?: string;
+  slowAfter?: number;
   error?: string;
   askAdmin?: string;
+  submitLabel?: string;
+  submitDisabled?: boolean;
+  alternate?: { label: string; onSubmit: () => void };
   onSubmit?: (title: string) => void;
 }) {
   const [title, setTitle] = useState("");
@@ -49,9 +64,15 @@ function AddDocument({
       icon={FileTextIcon}
       title="Add document"
       description="A file or written document for the neighborhood or one household."
-      submitLabel="Save document"
+      submitLabel={submitLabel}
+      submitDisabled={submitDisabled}
+      alternate={alternate}
       pendingLabel="Saving…"
       pending={pending}
+      holdWhilePending={holdWhilePending}
+      locked={locked}
+      again={again}
+      slowAfter={slowAfter}
       dirty={title !== "" || body !== ""}
       error={error}
       askAdmin={askAdmin}
@@ -234,7 +255,10 @@ export const WithError: Story = {
   },
 };
 
-/** A plain member: submit is disabled, with the reason in the footer and linked to the button. */
+/**
+ * A plain member or a read-only board: the fields are disabled before anyone types, not only submit, with the reason
+ * in the footer and linked to the button (MANA-953).
+ */
 export const AskAdmin: Story = {
   render: () => <AddDocument defaultOpen askAdmin="Only a board admin can add documents." />,
   play: async () => {
@@ -242,6 +266,174 @@ export const AskAdmin: Story = {
     const save = screen.getByRole("button", { name: "Save document" });
     await expect(save).toHaveAttribute("aria-disabled", "true");
     await expect(save).toHaveAccessibleDescription("Only a board admin can add documents.");
+    await expect(screen.getByRole("textbox", { name: "Title" })).toBeDisabled();
+    await expect(screen.getByRole("textbox", { name: "Text" })).toBeDisabled();
+    await expect(screen.getByRole("combobox", { name: "Category" })).toBeDisabled();
+    // Cancel is a way out, so it stays on.
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+  },
+};
+
+/**
+ * A slow save that is held (the default, and the right one for money): after `slowAfter` (8 seconds in the app,
+ * shortened here) the footer says it is slow and will finish, and nothing closes the dialog until it does (MANA-1039).
+ */
+export const SlowSave: Story = {
+  render: () => <AddDocument defaultOpen pending again="record" slowAfter={50} submitLabel="Record payment" />,
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    const status = dialog.querySelector<HTMLElement>("[data-slot=slow-save]")!;
+    await expect(status.tagName).toBe("OUTPUT");
+    await waitFor(() =>
+      expect(status).toHaveTextContent(
+        "This is taking longer than usual. Keep this open. It will finish on its own. Closing now won’t stop it, so don’t record it again.",
+      ),
+    );
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+  },
+};
+
+/**
+ * A slow save that isn't held (`holdWhilePending={false}`): it finishes even if the dialog closes, so Cancel stays on,
+ * the line says so, and closing doesn't ask "Discard changes?".
+ */
+export const SlowSaveNotHeld: Story = {
+  render: () => <AddDocument pending holdWhilePending={false} again="add" slowAfter={50} />,
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Add document" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    await waitFor(() =>
+      expect(dialog.querySelector("[data-slot=slow-save]")).toHaveTextContent(
+        "This is taking longer than usual. It will finish on its own, even if you close this, so don’t add it again.",
+      ),
+    );
+    const cancel = screen.getByRole("button", { name: "Cancel" });
+    await expect(cancel).toBeEnabled();
+    cancel.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/** Locked: nothing closes it, saving or not, e.g. a payment whose result is unknown and has to be retried. */
+export const Locked: Story = {
+  render: () => <AddDocument defaultOpen locked submitLabel="Try again" />,
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    await expect(screen.queryByRole("button", { name: "Close" })).not.toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "Try again" })).not.toHaveAttribute("aria-disabled");
+  },
+};
+
+/** Submit off while not saving, e.g. while a file uploads: the label shows the progress, and Enter does nothing. */
+export const SubmitDisabled: Story = {
+  render: function Uploading() {
+    const [submitted, setSubmitted] = useState("");
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <AddDocument defaultOpen submitDisabled submitLabel="Uploading… 40%" onSubmit={() => setSubmitted("Submitted")} />
+        <output className="text-meta text-muted-foreground">{submitted}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    await screen.findByRole("dialog", { name: "Add document" });
+    await expect(screen.getByRole("button", { name: "Uploading… 40%" })).toHaveAttribute("aria-disabled", "true");
+    const title = screen.getByRole("textbox", { name: "Title" });
+    await waitFor(() => expect(title).toHaveFocus());
+    await userEvent.keyboard("Bylaws{Enter}");
+    await expect(canvas.queryByText("Submitted")).not.toBeInTheDocument();
+  },
+};
+
+/** A second way to save, before submit ("Save & prepare letter"). Enter in a field still runs the main submit. */
+export const SecondSubmit: Story = {
+  render: function Second() {
+    const [saved, setSaved] = useState("");
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <AddDocument
+          defaultOpen
+          submitLabel="Save"
+          alternate={{ label: "Save & prepare letter", onSubmit: () => setSaved("Saved, letter next") }}
+          onSubmit={() => setSaved("Saved")}
+        />
+        <output className="text-meta text-muted-foreground">{saved}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    await screen.findByRole("dialog", { name: "Add document" });
+    const second = screen.getByRole("button", { name: "Save & prepare letter" });
+    second.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(canvas.getByText("Saved, letter next")).toBeInTheDocument());
+    const title = screen.getByRole("textbox", { name: "Title" });
+    title.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(canvas.getByText("Saved")).toBeInTheDocument());
+  },
+};
+
+/** Close only: nothing to submit (an empty list). One Close button, no ✕, and Esc closes. */
+export const CloseOnly: Story = {
+  render: () => (
+    <FormDialog
+      closeOnly
+      trigger={<Button variant="outline">Household changes</Button>}
+      icon={UsersIcon}
+      title="Household changes"
+      description="Owner and address changes waiting for the board."
+    >
+      <p className="text-muted-foreground">No changes are waiting.</p>
+    </FormDialog>
+  ),
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Household changes" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "Household changes" });
+    await expect(within(dialog).getAllByRole("button")).toHaveLength(1);
+    const close = within(dialog).getByRole("button", { name: "Close" });
+    close.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/** Callouts among the fields: an info note and a warning (AVE-120). */
+export const WithCallouts: Story = {
+  render: () => (
+    <FormDialog
+      defaultOpen
+      icon={ReceiptIcon}
+      title="Set the 2027 assessment"
+      description="The yearly dues every household owes."
+      submitLabel="Set assessment"
+      onSubmit={fn()}
+    >
+      <Callout>Households already at this amount are skipped.</Callout>
+      <Field>
+        <FieldLabel>Amount</FieldLabel>
+        <Input inputMode="decimal" autoComplete="off" defaultValue="240.00" />
+      </Field>
+      <Callout tone="warning" icon={TriangleAlertIcon}>
+        3 households have payments recorded for 2027. Their balances change with the new amount.
+      </Callout>
+    </FormDialog>
+  ),
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "Set the 2027 assessment" });
+    await expect(within(dialog).getByText("Households already at this amount are skipped.")).toBeVisible();
+    // Static notes, not live regions: they are read in order with the fields.
+    await expect(within(dialog).queryByRole("status", { name: /Households/ })).not.toBeInTheDocument();
   },
 };
 

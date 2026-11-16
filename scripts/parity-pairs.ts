@@ -618,6 +618,27 @@ export const PAIRS: Record<string, PairEntry> = {
     none: "The help icon beside a label is an Avenue pattern; the app's tooltips sit on toolbar buttons. The tooltip panel is compared through Tooltip / Open.",
   },
 
+  // ---- Callout (AVE-120)
+  "components-callout--info": [
+    {
+      label: "info callout",
+      app: "dues-dialogs--set-assessment",
+      appCrop: "p.bg-info-subtle >> nth=0",
+      avenueCrop: "[data-slot=callout]",
+      allow: [{ prop: "padding-*", app: "10px", avenue: "8px", because: "AVE-2 §1: the callout's off-grid 10px top and bottom padding becomes 8px" }],
+    },
+  ],
+  "components-callout--warning": [
+    {
+      label: "warning callout",
+      app: "dues-late-notice--unreconciled-balance",
+      appCrop: "p.bg-warning-subtle >> nth=0",
+      avenueCrop: "[data-slot=callout]",
+      allow: [{ prop: "padding-*", app: "10px", avenue: "8px", because: "AVE-2 §1: the callout's off-grid 10px top and bottom padding becomes 8px" }],
+    },
+  ],
+  "components-callout--tones": { none: "Both tones and a custom icon side by side, an Avenue overview; each tone is compared through its own story." },
+
   // ---- Inline message (AVE-7)
   "components-inline-message--error-tone": [
     {
@@ -1008,6 +1029,13 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-form-dialog--discard-guard-keep-editing": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--escape-when-clean": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--keyboard-flow": { none: BEHAVIOUR("Form dialog / Open") },
+  "composites-form-dialog--slow-save": { none: BEHAVIOUR("Form dialog / Open; the app's slow line needs 8 seconds of a real save, so it has no resting story") },
+  "composites-form-dialog--slow-save-not-held": { none: BEHAVIOUR("Form dialog / Open") },
+  "composites-form-dialog--locked": { none: "Form dialog / Open with the close button left out while locked; compared there." },
+  "composites-form-dialog--submit-disabled": { none: "Form dialog / Open with submit off; compared there." },
+  "composites-form-dialog--second-submit": { none: BEHAVIOUR("Form dialog / Open; the second submit is an outline sm Button, compared through Button") },
+  "composites-form-dialog--close-only": { none: BEHAVIOUR("Form dialog / Open") },
+  "composites-form-dialog--with-callouts": { none: "Form dialog / Open with two callouts; compared there, and the callouts through Callout / Info and Callout / Warning." },
   "composites-pending-confirm-dialog--ready": [
     { label: "confirm dialog frame", app: "primitives-deleteaccount--allowed", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=alert-dialog-content]", frame: true, allow: [{ prop: "padding-*", app: "0px", avenue: "16px", because: SECTIONED_DIALOG }] },
   ],
