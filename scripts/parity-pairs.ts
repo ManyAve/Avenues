@@ -425,6 +425,12 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--small": {
     none: "The 28px combobox for card and dialog headers is new in Avenue (AVE-2 §2); the app's only combobox is the 32px time-zone picker, compared through Combobox / Time zone.",
   },
+  "components-combobox--in-a-phone-card": {
+    none: "AVE-113: Management's join-request card is in its own Storybook; this story proves the Combobox keeps that card on a 390px phone.",
+  },
+  "components-combobox--sized-by-content": {
+    none: "AVE-113: a layout probe with no app screen of its own; it proves a content-sized Combobox keeps its width.",
+  },
   "components-combobox--invalid": { none: STATE_ONLY("an invalid combobox", "Combobox / Time zone, and the error text through Field / Invalid") },
   "components-combobox--disabled": { none: STATE_ONLY("a disabled combobox", "Combobox / Time zone") },
   "components-combobox--empty": { none: STATE_ONLY("an empty combobox list (the time zones always match)", "Combobox / Time zone") },
@@ -487,6 +493,9 @@ export const PAIRS: Record<string, PairEntry> = {
     ] },
   ],
   "components-dropdown-menu--keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
+  "components-dropdown-menu--wider-than-a-phone": {
+    none: "AVE-112: the app has no story of a fixed-width menu on a 320px phone; this story proves the menu stays on screen.",
+  },
   "components-dropdown-menu--open-by-click": { none: BEHAVIOUR("Dropdown menu / Open") },
   "components-dropdown-menu--action-from-keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
 
@@ -604,6 +613,9 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-hover-card--same-content-without-hover": {
     none: "Shows the hover card's content reachable without hovering (an accessibility rule Avenue adds); the app has no such story. The panel is compared through Hover card / Open.",
+  },
+  "components-popover--wider-than-a-phone": {
+    none: "AVE-112: Management's Bounced popover at 320px is in its own Storybook; this story proves a w-80 popover stays on a 320px phone.",
   },
   "components-popover--open": [
     { label: "popover panel", app: "primitives-displayoptions--default", appCrop: "[data-slot=popover-content]", avenueCrop: "[data-slot=popover-content]", frame: true, allow: PANEL },

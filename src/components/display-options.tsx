@@ -41,7 +41,8 @@ function DisplayOptions({ children, className }: { children: ReactNode; classNam
         align="end"
         aria-label="Display options"
         // 320px, or wider when Row height's equal columns need it (AVE-50: each holds the widest label and the check).
-        className={cn("w-min min-w-80 gap-0 text-meta", className)}
+        // Never wider than the screen's room, as every popover (AVE-112): a minimum would otherwise beat that maximum.
+        className={cn("w-min min-w-[min(--spacing(80),var(--available-width))] gap-0 text-meta", className)}
       >
         {children}
       </PopoverContent>

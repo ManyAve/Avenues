@@ -67,3 +67,42 @@ export const Keyboard: Story = {
     await expect(trigger).toHaveFocus();
   },
 };
+
+/** The popup's distance from each edge of the window, in pixels: negative when it runs off. */
+function edges(popup: Element) {
+  const r = popup.getBoundingClientRect();
+  const w = document.documentElement.clientWidth;
+  return { left: r.left, right: w - r.right, width: r.width };
+}
+
+/**
+ * A popover asked to be 320px wide (`w-80`) on a 320px phone, from a trigger at the right edge (AVE-112). It stays
+ * on screen with an 8px margin each side, and its text wraps instead of being cut off.
+ */
+export const WiderThanAPhone: Story = {
+  globals: { viewport: { value: "small-phone", isRotated: false } },
+  decorators: [(Story) => <div className="flex min-h-80 justify-end p-inset">{Story()}</div>],
+  render: () => (
+    <Popover defaultOpen>
+      <PopoverTrigger render={<Button variant="outline" />}>Bounced</PopoverTrigger>
+      <PopoverContent className="w-80" align="end">
+        <PopoverHeader>
+          <PopoverTitle>Delivery bounced</PopoverTitle>
+          <PopoverDescription>
+            Check this address before sending again: the mail server for juniper.example said the mailbox is full.
+          </PopoverDescription>
+        </PopoverHeader>
+      </PopoverContent>
+    </Popover>
+  ),
+  play: async () => {
+    const popup = await screen.findByRole("dialog", { name: "Delivery bounced" });
+    await waitFor(() => expect(popup).toBeVisible());
+    const { left, right, width } = edges(popup);
+    await expect(left).toBeGreaterThanOrEqual(8);
+    await expect(right).toBeGreaterThanOrEqual(8);
+    // 304px: the 320px it asked for, capped to the window less ui-sdk's 8px collision padding each side.
+    await expect(width).toBeLessThanOrEqual(304);
+    await expect(popup.scrollWidth).toBeLessThanOrEqual(popup.clientWidth);
+  },
+};

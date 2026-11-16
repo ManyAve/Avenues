@@ -79,6 +79,8 @@ const preview: Preview = {
     viewport: {
       options: {
         phone: { name: "Phone (390px)", styles: { width: "390px", height: "844px" }, type: "mobile" },
+        // The narrowest phone Avenue supports (AVE-112): a popup with a fixed width must still fit on it.
+        "small-phone": { name: "Small phone (320px)", styles: { width: "320px", height: "640px" }, type: "mobile" },
         // The desktop app's smallest window, and a wide one (AVE-9: composites show both).
         desktop: { name: "Desktop minimum (900px)", styles: { width: "900px", height: "700px" }, type: "desktop" },
         wide: { name: "Wide (1440px)", styles: { width: "1440px", height: "900px" }, type: "desktop" },
