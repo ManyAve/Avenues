@@ -206,3 +206,38 @@ export const ActionFromKeyboard: Story = {
     await expect(status).toHaveTextContent("Printed statement, Printed statement, Emailed owner, Printed statement");
   },
 };
+
+/**
+ * A menu asked to be 384px wide (`w-96`) on a 320px phone, from a trigger at the right edge (AVE-112): it stays on
+ * screen with an 8px margin each side, and a long item wraps instead of running off the edge.
+ */
+export const WiderThanAPhone: Story = {
+  globals: { viewport: { value: "small-phone", isRotated: false } },
+  decorators: [(Story) => <div className="flex min-h-96 justify-end p-inset">{Story()}</div>],
+  render: () => (
+    <DropdownMenu defaultOpen>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Member
+        <ChevronDownIcon aria-hidden data-icon="inline-end" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-96" align="end">
+        <DropdownMenuItem>
+          <MailIcon aria-hidden />
+          Resend the board invitation to the treasurer at their new address
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive">
+          <TrashIcon aria-hidden />
+          Remove from the board
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+  play: async () => {
+    const menu = await screen.findByRole("menu");
+    await waitFor(() => expect(menu).toBeVisible());
+    const r = menu.getBoundingClientRect();
+    await expect(r.left).toBeGreaterThanOrEqual(8);
+    await expect(document.documentElement.clientWidth - r.right).toBeGreaterThanOrEqual(8);
+    await expect(menu.scrollWidth).toBeLessThanOrEqual(menu.clientWidth);
+  },
+};

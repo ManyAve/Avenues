@@ -467,3 +467,60 @@ export const SheetSwipeToClose: Story = {
     await expect(field()).toHaveValue("12 Lantern Row · Ada Okafor");
   },
 };
+
+/**
+ * A join request's row on a 390px phone, as Management lays it out (AVE-113): a card that is a `grid` with an automatic
+ * column, holding a wrapping row of a label, a Combobox as wide as the row on a phone, and two buttons. The Combobox
+ * shrinks to the card instead of setting the column's minimum, so the page never scrolls sideways. Its input's
+ * default width (about 20 characters) used to set that minimum, and the card grew past the screen.
+ */
+export const InAPhoneCard: Story = {
+  globals: phone,
+  render: () => {
+    const [value, setValue] = useState("h2");
+    return (
+      <div className="grid w-full gap-2">
+        <div data-testid="card" className="grid gap-2 rounded-md border bg-background px-4 py-3 text-compact">
+          <p>Lives at 14 Lantern Row, Juniper Bend, a fictional street with a long name</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-meta text-muted-foreground">Household</span>
+            <Combobox
+              aria-label="Household"
+              icon={<HouseIcon />}
+              options={households}
+              value={value}
+              onValueChange={setValue}
+              className="w-64 max-sm:w-full"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const card = canvas.getByTestId("card");
+    const page = document.documentElement;
+    await expect(card.getBoundingClientRect().right).toBeLessThanOrEqual(page.clientWidth);
+    await expect(page.scrollWidth).toBeLessThanOrEqual(page.clientWidth);
+  },
+};
+
+/**
+ * Where nothing sets its width (a toolbar row that sizes to its content), the Combobox keeps the width its text field
+ * would have: only its minimum changed for AVE-113, not its preferred width.
+ */
+export const SizedByContent: Story = {
+  render: () => {
+    const [value, setValue] = useState("h1");
+    return (
+      <div className="flex w-max gap-2">
+        <Combobox aria-label="Household" options={households} value={value} onValueChange={setValue} />
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Household" });
+    // 234px with a mouse and 264px on a phone, as before AVE-113.
+    await expect(input.getBoundingClientRect().width).toBeGreaterThan(200);
+  },
+};

@@ -23,6 +23,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     new card. `nativeButton` is a Base UI prop that ui-sdk doesn't have: drop it, `render={<a href=… />}` alone makes
     a link.
 
+## v0.4.4 (2026-11-16)
+
+- **Popovers and menus stay on a phone screen** (AVE-112). `PopoverContent`, `HoverCardContent`,
+  `DropdownMenuContent` and its submenus are never wider than the room beside their trigger, less an 8px margin, so
+  one given a fixed width (`w-80`, `w-96`) wraps its text on a 320px phone instead of running off the right edge.
+  Tooltip keeps its 320px cap within that room, and Display options' 320px minimum gives way to it too. Wider
+  screens are unchanged. Management can drop the `max-w-[calc(100vw-1rem)]` it adds to its five popups.
+- **Combobox shrinks to a narrow column** (AVE-113). Its text field's default width no longer sets the minimum of a
+  column sized by its content, so a Combobox in a `grid` card on a 390px phone keeps the card on screen. Where a row
+  sizes to its content, the field keeps the width it had. Management can drop `grid-cols-[minmax(0,1fr)]` on its
+  join-request card.
+
 ## v0.4.3 (2026-11-16)
 
 - **`styles.css` builds in an app without shadcn installed** (AVE-107). It imported `shadcn/tailwind.css`, which only

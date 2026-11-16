@@ -1,6 +1,6 @@
 import * as PopoverPrimitive from "@ui-sdk/react/popover";
 import type { ComponentProps } from "react";
-import { popupMotion } from "#avenue/lib/popup";
+import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose } from "#avenue/lib/props";
 
@@ -36,6 +36,7 @@ function PopoverContent({
       sideOffset={sideOffset}
       className={cn(
         "flex w-72 flex-col gap-3 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
+        popupMaxWidth,
         popupMotion,
         className,
       )}

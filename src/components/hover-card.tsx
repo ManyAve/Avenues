@@ -1,6 +1,6 @@
 import * as HoverCardPrimitive from "@ui-sdk/react/hover-card";
 import type { ComponentProps } from "react";
-import { popupMotion } from "#avenue/lib/popup";
+import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose } from "#avenue/lib/props";
 
@@ -37,6 +37,7 @@ function HoverCardContent({
       sideOffset={sideOffset}
       className={cn(
         "w-64 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
+        popupMaxWidth,
         popupMotion,
         className,
       )}

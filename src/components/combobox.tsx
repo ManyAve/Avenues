@@ -203,7 +203,11 @@ export function Combobox<T extends ComboboxOption>({
             focusing.current = false;
           }}
           className={cn(
-            "h-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+            // w-full: a text field's default width (about 20 characters) is also its smallest, so in a column sized by
+            // its content (a grid's automatic column) it set that column's minimum and widened a card past a phone. A
+            // percentage width lets the browser shrink it to nothing there, while a row sized by its content still gets
+            // the default width (AVE-113). flex-1 sizes it inside the group either way, so nothing else moves.
+            "h-full w-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
             // In a sheet, ui-sdk moves this input into the sheet's header, where it is a 44px search field of its own.
             "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30",
           )}
