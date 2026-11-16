@@ -59,6 +59,8 @@ export interface SelectProps<V extends string = string> {
   name?: string | undefined;
   /** Only when there is no visible label (the year select beside "Account summary"). */
   "aria-label"?: string | undefined;
+  /** Ids of visible text that names it, where it has no label of its own (a column header plus its row, AVE-98). */
+  "aria-labelledby"?: string | undefined;
   "aria-describedby"?: string | undefined;
   invalid?: boolean | undefined;
   disabled?: boolean | undefined;
