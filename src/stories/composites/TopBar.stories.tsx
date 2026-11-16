@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { expect, userEvent, waitFor } from "storybook/test";
+import { useState, type ComponentProps } from "react";
+import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { NavTab } from "#avenue/components/nav-tab";
 import { TopBar } from "#avenue/components/top-bar";
 
@@ -135,5 +135,124 @@ export const UpdateKeepsThePage: Story = {
     await expect(canvas.getByRole("link", { name: /Households/ })).toHaveTextContent("25");
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     await expect(win.scrollY).toBe(scrolled);
+  },
+};
+
+/**
+ * The app opens its home view itself (AVE-110): a plain click or Enter on the home link runs `onHome` and the link
+ * isn't followed; a cmd or ctrl click is left to the browser, so home can still open in a new tab.
+ */
+export const HomeHandledByTheApp: StoryObj<{ onHome: () => void }> = {
+  globals: wide,
+  args: { onHome: fn() },
+  render: (args) => (
+    <TopBar homeHref="#home" onHome={args.onHome} org="LCHOA">
+      <NavTab href="#households" current>
+        Households
+      </NavTab>
+    </TopBar>
+  ),
+  play: async ({ args, canvas, canvasElement }) => {
+    const { onHome } = args;
+    const user = userEvent.setup();
+    const home = canvas.getByRole("link", { name: "manyave home" });
+    await expect(home).toHaveAttribute("href", "#home");
+    // Record whether the browser would follow the link, then stop it so the story stays put.
+    const followed: boolean[] = [];
+    const win = canvasElement.ownerDocument.defaultView!;
+    const record = (event: Event) => {
+      if (!(event.target instanceof Element) || !event.target.closest("[aria-label='manyave home']")) return;
+      followed.push(!event.defaultPrevented);
+      event.preventDefault();
+    };
+    win.addEventListener("click", record);
+    try {
+      await user.click(home);
+      await expect(onHome).toHaveBeenCalledTimes(1);
+      await expect(followed).toEqual([false]);
+      home.focus();
+      await user.keyboard("{Enter}");
+      await expect(onHome).toHaveBeenCalledTimes(2);
+      await expect(followed).toEqual([false, false]);
+      for (const key of ["Control", "Meta", "Shift"]) {
+        await user.keyboard(`{${key}>}`);
+        await user.click(home);
+        await user.keyboard(`{/${key}}`);
+      }
+      await expect(onHome).toHaveBeenCalledTimes(2);
+      await expect(followed).toEqual([false, false, true, true, true]);
+    } finally {
+      win.removeEventListener("click", record);
+    }
+  },
+};
+
+/** A stand-in for a router's link: it takes the props it's given and handles the click itself, as a router does. */
+function RouterLink({ to, onNavigate, children, ...props }: ComponentProps<"a"> & { to: string; onNavigate: (to: string) => void }) {
+  return (
+    <a
+      {...props}
+      href={to}
+      data-router-link=""
+      onClick={(event) => {
+        props.onClick?.(event);
+        if (event.defaultPrevented || event.metaKey || event.ctrlKey) return;
+        event.preventDefault();
+        onNavigate(to);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
+
+/** The app's router link as the home link (`homeRender`), as NavTab's `render`: it keeps the bar's name and look. */
+export const HomeAsARouterLink: StoryObj<{ onNavigate: (to: string) => void }> = {
+  globals: wide,
+  args: { onNavigate: fn() },
+  render: (args) => (
+    <TopBar homeRender={<RouterLink to="/" onNavigate={args.onNavigate} />} org="LCHOA">
+      <NavTab href="#households" current>
+        Households
+      </NavTab>
+    </TopBar>
+  ),
+  play: async ({ args, canvas }) => {
+    const home = canvas.getByRole("link", { name: "manyave home" });
+    await expect(home).toHaveAttribute("data-router-link");
+    await expect(home).toHaveAttribute("href", "/");
+    await expect(home).toHaveClass("hit-area");
+    home.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onNavigate).toHaveBeenCalledWith("/");
+  },
+};
+
+/**
+ * The desktop window drags by the bar (`windowDrag`, Electron's -webkit-app-region): the home link, the sections and
+ * the actions stay clickable, and the bar's text doesn't select as the window moves. A browser ignores it.
+ */
+export const WindowDragArea: Story = {
+  globals: wide,
+  render: () => (
+    <TopBar windowDrag org="LCHOA">
+      <NavTab href="#households" current>
+        Households
+      </NavTab>
+      <NavTab href="#dues">Dues</NavTab>
+    </TopBar>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const region = (el: Element) => getComputedStyle(el).getPropertyValue("-webkit-app-region");
+    const bar = canvasElement.querySelector("[data-slot=top-bar]")!;
+    await expect(bar).toHaveAttribute("data-window-drag");
+    await expect(region(bar)).toBe("drag");
+    await expect(getComputedStyle(bar).userSelect).toBe("none");
+    await expect(region(canvas.getByRole("link", { name: "manyave home" }))).toBe("no-drag");
+    await expect(region(canvas.getByRole("navigation", { name: "Neighborhood sections" }))).toBe("no-drag");
+    await expect(region(canvasElement.querySelector("[data-slot=top-bar-actions]")!)).toBe("no-drag");
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(canvas.getByRole("link", { name: "Households" })).toHaveFocus();
   },
 };

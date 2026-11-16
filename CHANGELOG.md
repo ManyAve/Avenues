@@ -4,6 +4,21 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.6.0 (2026-11-16)
+
+- **TopBar lets the app handle its home link** (AVE-110). New props, nothing existing changes:
+  - `onHome` runs on a plain click or Enter on the home link instead of following `homeHref`. A cmd, ctrl, shift or
+    alt click still follows the link, so home can open in a new tab or window.
+  - `homeRender` swaps the home link for the app's own, such as its router's link, the way NavTab's `render` does.
+    It keeps the bar's name, classes and look.
+  - `windowDrag` makes the bar the desktop window's drag area (`-webkit-app-region: drag`), with the home link, the
+    section links and the actions left clickable, and the bar's text unselectable while the window moves. A
+    browser ignores it.
+
+  Management can drop its wrapper that catches clicks on the bar and matches the home link by its label: pass
+  `onHome` (or `homeRender` with its router link) and, in the desktop window only, `windowDrag`. Its own
+  `[data-window-header]` rules for the window controls' inset can stay. Neighbors needs no change.
+
 ## v0.5.0 (2026-11-16)
 
 - **Every optional prop now takes `undefined`** (AVE-108). ui-sdk declares its optional props without
