@@ -24,3 +24,10 @@
   --ui-font-sans: var(--font-geist-sans);
   --ui-font-mono: var(--font-geist-mono);
 }
+
+/* A lifted subtree (AVE-115, tokens.css) sets its own page and muted colours; ui-sdk's copies follow them there.
+   On <html> the :root block above already reads the lifted values. */
+[data-surface="lifted"] {
+  --ui-background: var(--background);
+  --ui-muted: var(--muted);
+}

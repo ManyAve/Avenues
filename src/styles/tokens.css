@@ -296,3 +296,21 @@
   --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.4);
   --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.25), 0 2px 3px -1px rgb(0 0 0 / 0.3);
 }
+
+/* Lifted surfaces (AVE-115), opt in with `data-surface="lifted"` on <html>, or on any element that paints its own
+   bg-background. For an app whose cards carry no border: the page steps down to onyx-50 so a white card lifts off it,
+   and the quiet fills (muted, accent: a field's fill, a skeleton, a hover) step down far enough to be seen on a card.
+   In dark only muted moves, one step up, because the default muted is the card's own colour.
+   Floors (CIEDE2000, scripts/surface-contrast.test.ts): card on page 1.5, muted on page 2, muted, accent, secondary
+   and border on card 3, border on page 3. Without the attribute nothing changes. */
+:root[data-surface="lifted"]:not(.dark),
+:root:not(.dark) [data-surface="lifted"] {
+  --background: var(--color-onyx-50);
+  --muted: var(--color-onyx-100);
+  --accent: var(--color-onyx-100);
+}
+
+:root.dark[data-surface="lifted"],
+:root.dark [data-surface="lifted"] {
+  --muted: var(--color-onyx-800);
+}

@@ -108,13 +108,29 @@ export const TOUCH_MINIMUM = 44;
 export interface NativeTokens {
   light: Record<string, string>;
   dark: Record<string, string>;
+  /** The opt-in lifted surfaces (AVE-115, `data-surface="lifted"`): every role, with the lifted page and fills. */
+  lifted: { light: Record<string, string>; dark: Record<string, string> };
   text: Record<string, { size: number; lineHeight: number }>;
   radius: Record<string, number>;
   spacing: Record<string, number>;
   touchMinimum: number;
 }
 
-function merge(decls: Declaration[], scopes: string[]): Vars {
+/** The selectors of tokens.css's lifted surface blocks (AVE-115), as css-tokens reads them. */
+export const LIFTED_SCOPES = {
+  light: ':root[data-surface="lifted"]:not(.dark), :root:not(.dark) [data-surface="lifted"]',
+  dark: ':root.dark[data-surface="lifted"], :root.dark [data-surface="lifted"]',
+} as const;
+
+/** The cascade a browser walks for each theme, default and lifted, as lists of tokens.css scopes. */
+export const THEME_SCOPES = {
+  light: [":root", ":root:not(.dark)"],
+  dark: [":root", ".dark", ":root.dark"],
+  liftedLight: [":root", ":root:not(.dark)", LIFTED_SCOPES.light],
+  liftedDark: [":root", ".dark", ":root.dark", LIFTED_SCOPES.dark],
+} as const;
+
+export function merge(decls: Declaration[], scopes: string[]): Vars {
   const vars: Vars = new Map();
   for (const scope of scopes) {
     for (const d of decls) if (d.scope === scope) vars.set(d.name, d.value);
@@ -122,7 +138,7 @@ function merge(decls: Declaration[], scopes: string[]): Vars {
   return vars;
 }
 
-function substitute(value: string, vars: Vars, seen: Set<string> = new Set()): string {
+export function substitute(value: string, vars: Vars, seen: Set<string> = new Set()): string {
   return value.replace(/var\((--[\w-]+)(?:,\s*([^)]*))?\)/g, (_, name: string, fallback?: string) => {
     if (seen.has(name)) throw new Error(`Token ${name} refers to itself`);
     const next = vars.get(name) ?? fallback;
@@ -176,8 +192,10 @@ export function buildTokens(tokensCss: string, avenueCss: string): NativeTokens 
   const avenue = readDeclarations(avenueCss);
 
   const themes = {
-    light: merge(tokens, [":root", ":root:not(.dark)"]),
-    dark: merge(tokens, [":root", ".dark", ":root.dark"]),
+    light: merge(tokens, [...THEME_SCOPES.light]),
+    dark: merge(tokens, [...THEME_SCOPES.dark]),
+    liftedLight: merge(tokens, [...THEME_SCOPES.liftedLight]),
+    liftedDark: merge(tokens, [...THEME_SCOPES.liftedDark]),
   };
   const tints = readTints(avenue);
   const colors = (vars: Vars) => {
@@ -219,7 +237,11 @@ export function buildTokens(tokensCss: string, avenueCss: string): NativeTokens 
   const spacing: Record<string, number> = {};
   for (const s of SPACING) spacing[s] = length(`--spacing-${s}`);
 
-  return { light: colors(themes.light), dark: colors(themes.dark), text, radius, spacing, touchMinimum: TOUCH_MINIMUM };
+  return {
+    light: colors(themes.light),
+    dark: colors(themes.dark),
+    lifted: { light: colors(themes.liftedLight), dark: colors(themes.liftedDark) },
+    text, radius, spacing, touchMinimum: TOUCH_MINIMUM };
 }
 
 /** `card-foreground` → `cardForeground`, `chart-1` → `chart1`, `row-y` → `rowY`. */
@@ -252,6 +274,16 @@ ${colors(t.light)}
 
     public static let dark = Colors(
 ${colors(t.dark)}
+    )
+
+    /// The lifted surfaces (web: \`data-surface="lifted"\`): a tinted page under white cards, and fills that show
+    /// on a card. For an app whose cards carry no border.
+    public static let liftedLight = Colors(
+${colors(t.lifted.light)}
+    )
+
+    public static let liftedDark = Colors(
+${colors(t.lifted.dark)}
     )
 
     /// A type step: font size and line height, in points.
@@ -343,6 +375,15 @@ ${colors(t.light)}
 
     val Dark = AvenueColors(
 ${colors(t.dark)}
+    )
+
+    /** The lifted surfaces (web: \`data-surface="lifted"\`): a tinted page under white cards, and fills that show on a card. */
+    val LiftedLight = AvenueColors(
+${colors(t.lifted.light)}
+    )
+
+    val LiftedDark = AvenueColors(
+${colors(t.lifted.dark)}
     )
 
     object TypeScale {

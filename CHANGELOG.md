@@ -4,6 +4,22 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.7.0 (2026-11-16)
+
+- **Lifted surfaces, opt-in** (AVE-115). `data-surface="lifted"` on `<html>` gives a tinted page under white cards and
+  quiet fills that show on a card: light `background` onyx-50, light `muted` and `accent` onyx-100, dark `muted`
+  onyx-800 (one step above the card instead of equal to it). Without the attribute nothing changes. It works on any
+  element that paints its own `bg-background` too.
+  - Neighbors: set `data-surface="lifted"` on `<html>` and delete the surface overrides in `apps/web/src/styles.css`
+    (both the `:root:not(.dark)` and `:root.dark` blocks). Its `check-contrast.ts` reads only plain `:root` and
+    `.dark` blocks, so teach it the two lifted selectors too, or it measures the defaults. Lifted keeps Avenue's white card, border, input and
+    shadow, so cards get a touch brighter and lines a touch lighter than today's overrides; its contrast check
+    (`check-contrast.ts`) passes on it: card on page 2.89, muted on card 5.73 light and 4.20 dark.
+  - Management needs no change: its cards carry a border, so it stays on the default surfaces.
+  - Phone apps: `AvenueTokens.liftedLight` / `.liftedDark` (Swift), `AvenueTokens.LiftedLight` / `.LiftedDark`
+    (Kotlin) and `lifted` in `tokens.json`. AvenueUI's `AvenueTheme` doesn't pick them yet (follow-up card), so a
+    phone app that wants them passes them in itself.
+
 ## v0.6.1 (2026-11-16)
 
 - **Select takes `aria-labelledby`** (AVE-98), for a select named by visible text it doesn't own, such as a column

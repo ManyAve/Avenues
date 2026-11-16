@@ -45,8 +45,13 @@ const preview: Preview = {
       description: "Type scale",
       toolbar: { icon: "paragraph", items: ["web", "desktop"], dynamicTitle: true },
     },
+    // AVE-115: `data-surface="lifted"` on <html>, the opt-in surface set for apps whose cards carry no border.
+    surface: {
+      description: "Surfaces",
+      toolbar: { icon: "component", items: ["default", "lifted"], dynamicTitle: true },
+    },
   },
-  initialGlobals: { theme: "light", typeScale: "web" },
+  initialGlobals: { theme: "light", typeScale: "web", surface: "default" },
   beforeEach: ({ parameters, globals, title, name }) => {
     const problems = a11yGuardProblems(parameters, globals);
     if (problems.length > 0) throw new Error(`${title} / ${name} weakens the accessibility check:\n- ${problems.join("\n- ")}`);
@@ -66,6 +71,8 @@ const preview: Preview = {
   decorators: [
     (Story, { globals }) => {
       document.documentElement.classList.toggle("dark", globals.theme === "dark");
+      if (globals.surface === "lifted") document.documentElement.dataset.surface = "lifted";
+      else delete document.documentElement.dataset.surface;
       setDesktopScale(globals.typeScale === "desktop");
       return <Story />;
     },

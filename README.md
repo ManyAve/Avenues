@@ -50,8 +50,19 @@ without it, the story step stops with Playwright's "install" message, which is n
 
 The toolbar's theme switch flips the `.dark` class on `<html>`, the same switch the ManyAve app
 uses, so every story can be checked in light and dark. The type-scale switch loads `desktop.css`, the
-desktop app's 14/13px scale. `bun run test:stories` runs every story under each combination of the two
+desktop app's 14/13px scale. The surfaces switch sets `data-surface="lifted"` on `<html>` (below). `bun run test:stories` runs every story under each combination of the two
 switches, and the Accessibility panel shows axe's results for the open story.
+
+### Lifted surfaces
+
+Avenue's default light page, cards, popovers and sidebar are all white, and its dark `muted` fill is the card's own
+colour: right for an app whose cards carry a border, as Management's do. An app whose cards carry no border (Neighbors)
+opts into lifted surfaces with `data-surface="lifted"` on `<html>` (AVE-115): the light page steps to onyx-50 under
+white cards, light `muted` and `accent` step to onyx-100, and dark `muted` steps to onyx-800, one above the card.
+Nothing else changes. The attribute also works on an element that paints its own `bg-background`.
+`scripts/surface-contrast.test.ts` holds the floors it exists for (CIEDE2000: card on page 1.5, muted on page 2,
+muted, accent, secondary and border on a card 3), and fails if the defaults ever hold them too, since then lifted has
+no job left. Phone apps take the same set as `liftedLight` and `liftedDark` in the native tokens.
 
 ### Story tests and accessibility
 
@@ -261,10 +272,10 @@ the SwiftUI and Compose control to use.
 `bun run tokens:native` (`scripts/native-tokens.ts`) writes three files under `native/`, committed and shipped in the
 package:
 
-- `AvenueTokens.swift`: `AvenueTokens.light` and `.dark` (each role as `0xRRGGBB`), `TypeScale`, `Radius`, `Spacing`
+- `AvenueTokens.swift`: `AvenueTokens.light` and `.dark` (each role as `0xRRGGBB`), `.liftedLight` and `.liftedDark`, `TypeScale`, `Radius`, `Spacing`
   and `touchMinimum`, in points, plus `Color.avenue(\.primary)`, which follows light and dark mode. Foundation only
   outside an iOS build.
-- `AvenueTokens.kt`: package `com.manyave.avenue`; `AvenueTokens.Light` and `.Dark` (`AvenueColors`), `TypeScale` in
+- `AvenueTokens.kt`: package `com.manyave.avenue`; `AvenueTokens.Light` and `.Dark` (`AvenueColors`), `.LiftedLight` and `.LiftedDark`, `TypeScale` in
   sp, `Radius`, `Spacing` and `TouchMinimum` in dp.
 - `tokens.json`: the same values for anything else.
 
