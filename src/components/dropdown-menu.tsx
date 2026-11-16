@@ -64,9 +64,25 @@ function DropdownMenuLabel({
 const itemClass =
   "relative flex pointer-coarse:min-h-11 cursor-default items-center gap-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-inset:pl-7 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
 
+type SelectHandler = (event: Event) => unknown;
+
+/** Runs `onSelect`, then `onClick`, with the one event; a Promise from either keeps the item pending until both settle. */
+function runSelect(onSelect: SelectHandler | undefined, onClick: SelectHandler | undefined): SelectHandler | undefined {
+  if (!onClick) return onSelect;
+  return (event) => {
+    const results = [onSelect?.(event), onClick(event)].filter((result) => result instanceof Promise);
+    return results.length > 0 ? Promise.all(results) : undefined;
+  };
+}
+
 /**
  * A menu action. `variant="destructive"` for delete and similar. A disabled item can carry `reason`: one muted line
  * under the label, read with the item by screen readers, so nobody has to guess why it's unavailable.
+ *
+ * The action goes on `onSelect`, which ui-sdk runs for a pointer click, Enter, Space and an agent alike. `onClick` is
+ * the same action under the name shadcn and Base UI items use (AVE-111): ui-sdk's own `onClick` fires for a pointer
+ * click only, so an item wired to it did nothing from the keyboard. Here it is routed through `onSelect`, gets the
+ * DOM event that selected the item (a `MouseEvent`, a `KeyboardEvent`, or a plain `select` Event), and runs once.
  */
 function DropdownMenuItem({
   className,
@@ -74,15 +90,21 @@ function DropdownMenuItem({
   variant = "default",
   reason,
   children,
+  onSelect,
+  onClick,
   ...props
-}: ComponentProps<typeof MenuPrimitive.MenuItem> & {
+}: Omit<ComponentProps<typeof MenuPrimitive.MenuItem>, "onClick"> & {
   inset?: boolean | undefined;
   variant?: "default" | "destructive" | undefined;
   reason?: ReactNode | undefined;
+  /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
+  onClick?: SelectHandler | undefined;
 }) {
   const reasonId = useId();
+  const select = runSelect(onSelect, onClick);
   return (
     <MenuPrimitive.MenuItem
+      {...(select ? { onSelect: select } : {})}
       data-inset={inset}
       data-variant={variant}
       destructive={variant === "destructive"}

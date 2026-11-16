@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.4.0 (2026-11-16)
+
+- **Dropdown menu: an item's `onClick` now runs from Enter and Space as well as a click** (AVE-111). ui-sdk fires
+  its own `onClick` for a pointer only, so an item wired to it closed the menu from the keyboard and did nothing.
+  `DropdownMenuItem` routes `onClick` through ui-sdk's `onSelect`, once per choice, with the DOM event that chose
+  the item, so its type is now `(event: Event) => unknown`, not a React mouse handler. A handler that reads
+  `event.currentTarget` or a mouse-only field changes; one that ignores the event, or only calls `preventDefault`,
+  doesn't. `onSelect` stays the preferred name. An app that maps `onClick` to `onSelect` itself (Management's
+  `app/ui/avenue.ts`) can drop that wrapper.
+
 ## v0.3.0 (2026-11-16)
 
 - Dialog, Alert dialog and Sheet (AVE-109): the first click on the page after a dialog closes now lands, even while

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { ChevronDownIcon, MailIcon, PrinterIcon, TrashIcon } from "lucide-react";
-import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
   DropdownMenu,
@@ -130,5 +131,78 @@ export const OpenByClick: Story = {
     await expect(menu.querySelector("[data-highlighted]")).toBeNull();
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(menu.querySelector("[data-highlighted]")).not.toBeNull());
+  },
+};
+
+const printed = fn();
+
+function ActionMenu() {
+  const [log, setLog] = useState<string[]>([]);
+  const record = (what: string) => (event: Event) => {
+    printed(what, event.type);
+    setLog((entries) => [...entries, what]);
+  };
+  return (
+    <div className="flex flex-col items-center gap-group">
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="outline" />}>
+          Statement
+          <ChevronDownIcon aria-hidden data-icon="inline-end" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuItem onClick={record("Printed statement")}>
+            <PrinterIcon aria-hidden />
+            Print statement
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={record("Emailed owner")}>
+            <MailIcon aria-hidden />
+            Email owner
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <output className="block text-meta text-muted-foreground">
+        {log.length > 0 ? log.join(", ") : "No action yet"}
+      </output>
+    </div>
+  );
+}
+
+/**
+ * An item's action runs from a click, Enter and Space, whether it is wired to `onSelect` or to `onClick` (AVE-111):
+ * ui-sdk fires its own `onClick` for a pointer only, so Avenue routes `onClick` through `onSelect`, once per choice.
+ */
+export const ActionFromKeyboard: Story = {
+  render: () => <ActionMenu />,
+  beforeEach: () => {
+    printed.mockClear();
+  },
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Statement" });
+    const status = canvas.getByRole("status");
+    // Opens the menu with `key` (on the first item), moves down `steps` items, and chooses with the same key.
+    const choose = async (key: string, steps: number) => {
+      await userEvent.keyboard(key);
+      await screen.findByRole("menu");
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: /Print statement/ })).toHaveFocus());
+      for (let step = 0; step < steps; step++) await userEvent.keyboard("{ArrowDown}");
+      await userEvent.keyboard(key);
+      await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+      await expect(trigger).toHaveFocus();
+    };
+
+    await userEvent.tab();
+    await expect(trigger).toHaveFocus();
+    await choose("{Enter}", 0);
+    await expect(status).toHaveTextContent("Printed statement");
+    await choose(" ", 0);
+    await choose("{Enter}", 1);
+    await expect(status).toHaveTextContent("Printed statement, Printed statement, Emailed owner");
+
+    await userEvent.click(trigger);
+    await userEvent.click(await screen.findByRole("menuitem", { name: /Print statement/ }));
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+    // Once per choice: a pointer click runs onClick through onSelect only, never twice.
+    await expect(printed).toHaveBeenCalledTimes(4);
+    await expect(status).toHaveTextContent("Printed statement, Printed statement, Emailed owner, Printed statement");
   },
 };
