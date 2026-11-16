@@ -16,7 +16,7 @@ const phone = { viewport: { value: "phone", isRotated: false } };
 
 function Households() {
   return (
-    <div className="mx-auto max-w-grid px-page py-section">
+    <div className="mx-auto max-w-layout px-page py-section">
       <PageHeader
         eyebrow="Maple Glen HOA"
         title="Households"
@@ -56,7 +56,7 @@ export const DesktopMinimum: Story = {
   },
 };
 
-/** Wide: the page frame stops at max-w-grid (1280px) and centres. */
+/** Wide: the page frame stops at max-w-layout (1280px) and centres. */
 export const Wide: Story = {
   globals: wide,
   render: () => <Households />,

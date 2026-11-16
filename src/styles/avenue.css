@@ -131,10 +131,12 @@
   --spacing-control-lg: 2.5rem;
 
   /* Content widths (AVE-9), measured from Management: reading for a column of text, forms and messages (its
-     messages page, 768px); grid for tables, card grids and the household page (its main layout, 1280px). max-w-reading,
-     max-w-grid. */
+     messages page, 768px); layout for tables, card grids and the household page (its main layout, 1280px).
+     max-w-reading, max-w-layout. Tailwind also makes `inline-<name>` and `block-<name>` sizes from these names, so a
+     name must never finish a display class: `grid` turned `inline-grid` into an 80rem-wide box (AVE-114;
+     scripts/display-classes.test.ts fails on it). */
   --container-reading: 48rem;
-  --container-grid: 80rem;
+  --container-layout: 80rem;
 }
 
 /* The app's layout breakpoints (AVE-85), as Tailwind breakpoints so classes name them, never a pixel literal.
