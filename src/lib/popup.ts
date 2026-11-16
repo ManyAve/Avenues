@@ -6,6 +6,15 @@ export const popupMotion =
   "origin-(--transform-origin) transition-[opacity,scale,translate] duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 data-[side=bottom]:data-starting-style:-translate-y-2 data-[side=left]:data-starting-style:translate-x-2 data-[side=right]:data-starting-style:-translate-x-2 data-[side=top]:data-starting-style:translate-y-2 motion-reduce:transition-none";
 
 /**
+ * Shared by Popover, Hover card, Dropdown menu and its submenus (AVE-112): never wider than the room ui-sdk measures
+ * beside the trigger, less its collision padding, so a popup given a fixed width (`w-80`, `w-96`) stays on a 320px
+ * phone with a margin each side and wraps its text instead of running off the edge. Base UI's popups did this; on a
+ * wider screen the room is larger than any of them, so nothing moves there. Select and Combobox lists already cap
+ * themselves the same way (listPopup in picker.ts), and Tooltip within its 320px.
+ */
+export const popupMaxWidth = "max-w-(--available-width)";
+
+/**
  * Shared by Dialog, Sheet (AVE-32) and AlertDialog (AVE-45): the modal surface, its title and its description, so a form that is a centred
  * dialog on a wide screen and a sheet on a phone reads as the same thing. Sizing, corners and position stay with each
  * component.

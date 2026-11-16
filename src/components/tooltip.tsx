@@ -38,7 +38,7 @@ function TooltipContent({
       side={side}
       sideOffset={sideOffset}
       className={cn(
-        "inline-flex w-fit max-w-xs items-center gap-1 overflow-visible rounded-md bg-foreground px-3 py-1 text-xs text-background",
+        "inline-flex w-fit max-w-[min(var(--container-xs),var(--available-width))] items-center gap-1 overflow-visible rounded-md bg-foreground px-3 py-1 text-xs text-background",
         popupMotion,
         className,
       )}

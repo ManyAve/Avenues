@@ -1,7 +1,7 @@
 import * as MenuPrimitive from "@ui-sdk/react/menu";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import { useId, type ComponentProps, type ReactNode } from "react";
-import { popupMotion } from "#avenue/lib/popup";
+import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -37,7 +37,7 @@ function DropdownMenuContent({
       alignOffset={alignOffset}
       side={side}
       sideOffset={sideOffset}
-      className={cn(menuSurface, "w-(--anchor-width)", popupMotion, className)}
+      className={cn(menuSurface, "w-(--anchor-width)", popupMaxWidth, popupMotion, className)}
       {...props}
     />
   );
@@ -168,7 +168,7 @@ function DropdownMenuSubContent({
       alignOffset={alignOffset}
       side={side}
       sideOffset={sideOffset}
-      className={cn(menuSurface, "w-auto min-w-24 shadow-lg", popupMotion, className)}
+      className={cn(menuSurface, "w-auto min-w-24 shadow-lg", popupMaxWidth, popupMotion, className)}
       {...props}
     />
   );
