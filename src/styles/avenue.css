@@ -166,6 +166,23 @@
   }
 }
 
+/* Message list (AVE-132): the typing bubble's three dots rise and brighten in turn. */
+@theme {
+  --animate-typing-dot: typing-dot 1.2s ease-in-out infinite;
+  @keyframes typing-dot {
+    0%,
+    60%,
+    100% {
+      opacity: 0.4;
+      translate: 0 0;
+    }
+    30% {
+      opacity: 1;
+      translate: 0 -2px;
+    }
+  }
+}
+
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
 :root {
   --avenue-page-inset: 1rem;

@@ -96,6 +96,7 @@ export const messageList = definePrimitive({
       role: "log",
       // additions only: a relative time that ticks over, or a bubble that turns from sending to sent, isn't news.
       attrs: () => ({ "aria-relevant": "additions", tabindex: "0" }),
+      state: (state) => ({ atBottom: state.atBottom }),
       bind: (el, part) => part.api.connect(el),
     }),
     jump: slot({

@@ -535,10 +535,21 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-calendar--turn-the-month": { none: BEHAVIOUR("Calendar / Default") },
   "components-calendar--controlled": { none: BEHAVIOUR("Calendar / Default") },
   "components-calendar--agent": { none: BEHAVIOUR("Calendar / Default") },
-  // ---- Message list (AVE-132)
-  "components-message-list--default": {
-    none: "Its rows are stand-ins until Avenue's message bubbles (AVE-133) draw them, so a capture beside the app's Board chat / Thread differs in every bubble. The scroller's own box is the app's on the 4px grid (4px between rows, 12px sides where the app has 10px, AVE-2 §1), asserted in the Default story; pair it with chat-board-chat--thread once the stories draw the bubbles.",
-  },
+  // ---- Message list (AVE-132): the scroller's own box beside the board chat window's. The bubbles inside are compared
+  // in Message / Beside Management (AVE-133).
+  "components-message-list--default": [
+    {
+      label: "message list frame",
+      app: "chat-board-chat--thread",
+      appCrop: "div.overflow-y-auto.px-2\\.5",
+      avenueCrop: "[role=log]",
+      frame: true,
+      allow: [
+        { prop: "padding-left", app: "10px", avenue: "12px", because: "AVE-2 §1: the scroller's off-grid 10px side padding moves onto the grid at 12px, between blocks" },
+        { prop: "padding-right", app: "10px", avenue: "12px", because: "AVE-2 §1: the scroller's off-grid 10px side padding moves onto the grid at 12px, between blocks" },
+      ],
+    },
+  ],
   "components-message-list--arrival-while-scrolled-up": { none: BEHAVIOUR("Message list / Default") },
   "components-message-list--own-message-follows": { none: BEHAVIOUR("Message list / Default") },
   "components-message-list--earlier-messages": { none: BEHAVIOUR("Message list / Default") },

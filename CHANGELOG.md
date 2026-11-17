@@ -4,6 +4,24 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.20.0 (2026-11-17)
+
+- **Message list** (AVE-132), reworked after review:
+  - The "New message" / "N new messages" pill now floats over the bottom of the list, as Slack and iMessage draw it,
+    instead of taking its own row under the list. While the reader is scrolled up, the list's bottom edge fades out
+    under the pill, so a message is never cut off at a hard line. At the end there is no pill and no fade, so the
+    newest message is never covered. The pill is an outline button on the popover surface with a shadow.
+  - `typing` is now drawn as a typing bubble: three dots that rise in turn, on the same fill as others' bubbles,
+    with the words beside it ("Ana is typing"). It takes no room while nobody types. New `typingAvatar` puts the
+    typer's 28px avatar beside it, lined up with the runs' avatars. The dots stay still under reduced motion. Pass
+    the words without an ellipsis; the dots stand in for it.
+  - Management and Neighbors: nothing to change unless you pass `typing`; then drop the trailing "…" and pass
+    `typingAvatar`.
+- Stories: the message list draws Avenue's bubbles (AVE-133) and composer (AVE-134) in place of stand-ins, and its
+  Default story is now compared with Management's board chat window by `bun run parity` (the frame matches, with the
+  agreed 10px to 12px side padding).
+- `bun run parity`: a frame pair keeps the app's size even when its box fills a flex column.
+
 ## v0.19.0 (2026-11-17)
 
 - **Dock** (AVE-135), new in `@manyave/avenue/components/dock`: the messenger-style windows pinned to the bottom right

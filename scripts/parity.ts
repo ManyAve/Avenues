@@ -338,6 +338,8 @@ async function shoot(
         rootBox.style.setProperty("min-height", "0", "important");
         rootBox.style.setProperty("max-width", "none", "important");
         rootBox.style.setProperty("max-height", "none", "important");
+        // A box that fills a flex column (the message list's log, AVE-132) keeps the size given here, not its share.
+        rootBox.style.setProperty("flex", "none", "important");
       }
       for (const { index, prop, value } of styles) part(index)?.style.setProperty(prop, value, "important");
       for (const { index, markup } of icons) {
