@@ -51,6 +51,14 @@ const olderSets: readonly OlderSet[] = [
 
 const older = olderSets[0]!;
 
+// Tailwind's own small sizes. Avenue points them at meta and compact (avenue.css), because shadcn's parts (badges,
+// buttons, inputs, menus) size with them, so every text-xs and text-sm in an app grows with Avenue's scale (AVE-127).
+// The older values are Tailwind 4's defaults, which an app without Avenue gets.
+const tailwindSizes: readonly (OlderSize & { now: string })[] = [
+  { name: "text-xs", px: 12, lineHeight: 16, now: "meta" },
+  { name: "text-sm", px: 14, lineHeight: 20, now: "compact" },
+];
+
 // ---- Contrast, computed from the oklch values so the ratios on the page are the real ones ----
 
 const OKLCH = /oklch\(\s*([\d.]+)(%?)\s+([\d.]+)\s+([\d.]+)/;
@@ -93,13 +101,15 @@ const sizeClass: Record<string, string> = {
   compact: "text-compact",
   post: "text-post",
   title: "text-title",
+  "text-xs": "text-xs",
+  "text-sm": "text-sm",
 };
 
 const px = (value: string) => `${Math.round(Number.parseFloat(value))}px`;
 
 // ---- What changes size ----
 
-function SizeRow({ size }: { size: OlderSize }) {
+function SizeRow({ size, mapsTo }: { size: OlderSize; mapsTo?: string | undefined }) {
   // Measures a sample set in Avenue's own class, so the number is what the browser applies at the current scale.
   const [ref, now] = useComputed<HTMLSpanElement>((s) => `${px(s.fontSize)}|${px(s.lineHeight)}`);
   const [avenuePx = "", avenueLine = ""] = now.split("|");
@@ -108,6 +118,7 @@ function SizeRow({ size }: { size: OlderSize }) {
     <tr className="border-b">
       <th scope="row" className="py-row-y pr-group text-left font-normal">
         <Code className="text-foreground">{size.name}</Code>
+        {mapsTo ? <span className="block text-muted-foreground">now {mapsTo}</span> : null}
       </th>
       <td className="py-row-y pr-group tabular-nums">
         {size.px}px <span className="text-muted-foreground">/ {size.lineHeight}</span>
@@ -156,6 +167,14 @@ function Sizes() {
       <tbody>
         {older.sizes.map((size) => (
           <SizeRow key={size.name} size={size} />
+        ))}
+        <tr className="border-b">
+          <th scope="colgroup" colSpan={5} className="pt-inset pb-row-y text-left font-medium text-muted-foreground">
+            Tailwind's own sizes, which Avenue points at meta and compact
+          </th>
+        </tr>
+        {tailwindSizes.map((size) => (
+          <SizeRow key={size.name} size={size} mapsTo={size.now} />
         ))}
       </tbody>
     </table>
@@ -299,6 +318,93 @@ function FeedRow({ cut }: { cut?: boolean }) {
   );
 }
 
+// ---- Keeping hierarchy when text-sm and text-xs grow (fictional data) ----
+
+const member = { name: "J. Rivera", street: "12 Maple Court", when: "Joined 2 days ago" };
+
+/** A member row as an app writes it with Tailwind's sizes, before Avenue: the street was one step smaller. */
+function MemberOlder() {
+  return (
+    <div className="flex flex-col p-inset">
+      <span className="text-[16px] leading-6">{member.name}</span>
+      <span className="text-[14px] leading-5">{member.street}</span>
+      <span className="text-[12px] leading-4">{member.when}</span>
+    </div>
+  );
+}
+
+type MemberLook = "unchanged" | "fixed" | "shrunk";
+
+/** The same row on Avenue. `unchanged` keeps the old classes, `fixed` uses colour and weight, `shrunk` types sizes in. */
+function Member({ look }: { look: MemberLook }) {
+  return (
+    <div className="flex flex-col p-inset">
+      <span className={cn("text-base", look === "fixed" && "font-medium")}>{member.name}</span>
+      <span
+        className={cn(
+          look === "shrunk" ? "text-[13px] leading-5" : "text-sm",
+          look === "fixed" && "text-muted-foreground",
+        )}
+      >
+        {member.street}
+      </span>
+      <span
+        className={cn(
+          look === "shrunk" ? "text-[11px] leading-4" : "text-xs",
+          look === "fixed" && "text-muted-foreground",
+        )}
+      >
+        {member.when}
+      </span>
+    </div>
+  );
+}
+
+// ---- Fixed heights (fictional labels) ----
+
+const longestCount = "99+";
+const longestTab = "Lost and found";
+
+/** A count badge and a filter tab as an app sized them for 12px and 14px text: fixed height, fixed width. */
+function FixedOld() {
+  return (
+    <div className="flex items-center gap-controls">
+      <span
+        data-fit="badge-old"
+        className="inline-flex size-5 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-medium text-primary-foreground"
+      >
+        {longestCount}
+      </span>
+      <span
+        data-fit="tab-old"
+        className="inline-flex h-7 w-28 items-center justify-center overflow-hidden rounded-md border px-2 text-sm"
+      >
+        {longestTab}
+      </span>
+    </div>
+  );
+}
+
+/** The same two, sized for the text they hold: a minimum height and width, a line height that fits, no wrapping. */
+function FixedNew() {
+  return (
+    <div className="flex items-center gap-controls">
+      <span
+        data-fit="badge-new"
+        className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-2 text-xs leading-4 font-medium whitespace-nowrap text-primary-foreground"
+      >
+        {longestCount}
+      </span>
+      <span
+        data-fit="tab-new"
+        className="inline-flex min-h-7 items-center justify-center rounded-md border px-3 py-0.5 text-sm whitespace-nowrap"
+      >
+        {longestTab}
+      </span>
+    </div>
+  );
+}
+
 // ---- The page ----
 
 function Migrating() {
@@ -362,6 +468,64 @@ function Migrating() {
         </div>
       </Section>
 
+      <Section
+        title="Keep hierarchy when text-sm and text-xs grow"
+        note="On the web scale, text-sm is now the same 16px as text-base, and text-xs the same 14px as text-meta. On the desktop scale, text-xs is the same 13px as text-meta. Where secondary text was told apart only by being one step smaller, it now looks like the primary text."
+      >
+        <div className="flex flex-col gap-inset lg:flex-row">
+          <Frame label="Before: Tailwind's sizes, 16 / 14 / 12px">
+            <MemberOlder />
+          </Frame>
+          <Frame label={`After, classes unchanged (${scale} scale)`}>
+            <Member look="unchanged" />
+          </Frame>
+        </div>
+        <DoDont
+          good={
+            <Card>
+              <Member look="fixed" />
+            </Card>
+          }
+          bad={
+            <Card>
+              <Member look="shrunk" />
+            </Card>
+          }
+          doCaption="Tell the levels apart by colour and weight: the name in medium, the street and date in text-muted-foreground. The feed row above does the same with its byline."
+          dontCaption="Typing a smaller size back in, like text-[13px], to restore the old step. It brings back the text Avenue made readable, and it no longer follows the scale."
+        />
+        <Rules>
+          <Rule why="Colour and weight keep the order of a row without making anything harder to read.">
+            Where secondary text (a timestamp by a name, a hint under a label) relied on being
+            smaller, give it text-muted-foreground, or give the primary text a heavier weight.
+          </Rule>
+          <Rule why="A smaller size only on some screens means the same name has two sizes again.">
+            Don't bring back a smaller size, in px or with an arbitrary class.
+          </Rule>
+        </Rules>
+      </Section>
+
+      <Section
+        title="Check fixed heights with the longest label"
+        note="A 20px badge now holds a 14px line on a 20px line height, and a 28px chip or tab holds a 16px line on a 24px line height. Parts sized for the old text get tight."
+      >
+        <DoDont
+          good={<FixedNew />}
+          bad={<FixedOld />}
+          doCaption="Size the part for the text: a minimum height and width, a line height that fits the box, and no wrapping. The badge keeps its 20px height with a 16px line; the tab grows to fit."
+          dontCaption="A fixed height and width chosen for 12px and 14px text. On the web scale, 99+ is cut off at the sides, and the two-word tab wraps and is cut off."
+        />
+        <Rules>
+          <Rule why="Short sample labels fit; real ones are where the box breaks.">
+            Check every badge, chip and tab with its longest real label, like 99+ and a two-word tab
+            name, at 390px, in light and dark.
+          </Rule>
+          <Rule why="The text size is the reason for the switch; the box is what was sized wrong.">
+            Fix the height, the width or the line height. Never shrink the text.
+          </Rule>
+        </Rules>
+      </Section>
+
       <Section title="Check every phone row after the switch">
         <DoDont
           good={
@@ -398,19 +562,35 @@ const meta = {
 } satisfies Meta;
 
 export default meta;
+
+/** The fixed-height example proves itself: the "do" parts hold their text, the "don't" parts cut it off. */
+async function expectFits(root: HTMLElement, scale: "web" | "desktop") {
+  const part = (name: string) => root.querySelector<HTMLElement>(`[data-fit="${name}"]`)!;
+  const cut = (el: HTMLElement) => el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight;
+  for (const name of ["badge-new", "tab-new"]) await expect(cut(part(name)), name).toBe(false);
+  // On the desktop scale text-sm stays 14px, so only the web scale breaks the old tab.
+  if (scale === "web") for (const name of ["badge-old", "tab-old"]) await expect(cut(part(name)), name).toBe(true);
+}
 type Story = StoryObj<typeof meta>;
 
 export const Web: Story = {
   name: "Moving from older tokens (web)",
   render: () => <Migrating />,
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     // Each wrapping part starts with its own words; the dot ends the part before it (AVE-66).
     for (const part of canvas.getAllByText("2 hours ago")) await expect(part.textContent).toBe("2 hours ago");
-    for (const part of canvas.getAllByText(/^Lost and found/)) await expect(part.textContent).toBe("Lost and found ·");
+    for (const part of canvas.getAllByText(/^Lost and found/)) {
+      if (part.closest("[data-fit]")) continue;
+      await expect(part.textContent).toBe("Lost and found ·");
+    }
+    await expectFits(canvasElement, "web");
   },
 };
 export const Desktop: Story = {
   name: "Moving from older tokens (desktop)",
   render: () => <Migrating />,
   globals: { typeScale: "desktop" },
+  play: async ({ canvasElement }) => {
+    await expectFits(canvasElement, "desktop");
+  },
 };
