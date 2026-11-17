@@ -10,6 +10,7 @@ import {
 import { CheckIcon, CircleAlertIcon, SendIcon, XIcon } from "lucide-react";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
 import { buttonVariants } from "#avenue/components/button";
+import { devError } from "#avenue/lib/dev";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -103,9 +104,22 @@ function focusesAction(data: unknown) {
   return typeof data === "object" && data !== null && "focusAction" in data && data.focusAction === true;
 }
 
-const ToastContext = createContext<ShowToast>(() => {});
+/** The toast with no ToastProvider above it: it shows nothing, and in development says so (AVE-140). */
+const noProvider: ShowToast = () =>
+  devError(
+    "Avenue: a toast was shown with no <ToastProvider> above it, so nobody saw it. Wrap the app in one <ToastProvider>.",
+  );
 
-/** `const toast = useToast(); toast("Household added")`. Outside a ToastProvider it does nothing. */
+const ToastContext = createContext<ShowToast>(noProvider);
+
+/**
+ * `const toast = useToast(); toast("Household added")`.
+ *
+ * Outside a ToastProvider the toast shows nothing. In development the first one logs a `console.error` naming
+ * ToastProvider (once per page, and it throws in the story tests, which run ui-sdk strict); a production build stays
+ * silent, so a missing provider never breaks a screen (AVE-140). Calling `useToast()` alone never warns: only a toast
+ * that is lost does.
+ */
 function useToast() {
   return use(ToastContext);
 }

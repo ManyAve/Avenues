@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
 import { useState, type CSSProperties } from "react";
-import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
+import { expect, fn, screen, spyOn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
   Sheet,
@@ -13,6 +13,7 @@ import {
   SheetTitle,
 } from "#avenue/components/sheet";
 import { ToastProvider, useToast, type ToastOptions } from "#avenue/components/toast";
+import { DEVELOPMENT } from "#avenue/lib/dev";
 import { Rows } from "./story-kit";
 
 const toastEl = () => document.querySelector<HTMLElement>("[data-slot=toast]:not([data-ending-style])");
@@ -421,5 +422,36 @@ export const LiftedAboveBar: Story = {
     await waitFor(() =>
       expect(Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom)).toBe(8),
     );
+  },
+};
+
+/**
+ * A toast with no ToastProvider above it shows nothing. In development the first one logs a `console.error` naming
+ * ToastProvider, once per page; a production build (the published Storybook) stays silent (AVE-140). The story tests
+ * run ui-sdk strict, where it throws instead, so this story turns strict off while it presses.
+ */
+export const WithoutAProvider: Story = {
+  render: () => (
+    <Rows>
+      <Trigger label="Add household" text="Household added" />
+    </Rows>
+  ),
+  play: async ({ canvas }) => {
+    const strict = Reflect.get(globalThis, "__UI_SDK_STRICT__");
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    Reflect.set(globalThis, "__UI_SDK_STRICT__", false);
+    try {
+      const button = canvas.getByRole("button", { name: "Add household" });
+      await userEvent.click(button);
+      button.focus();
+      await userEvent.keyboard("{Enter}");
+      await wait(100);
+      await expect(toastEl()).toBeNull();
+      const named = error.mock.calls.filter((call) => String(call[0]).includes("<ToastProvider>"));
+      await expect(named).toHaveLength(DEVELOPMENT ? 1 : 0);
+    } finally {
+      Reflect.set(globalThis, "__UI_SDK_STRICT__", strict);
+      error.mockRestore();
+    }
   },
 };
