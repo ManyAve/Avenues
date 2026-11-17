@@ -84,8 +84,9 @@ export const DesktopMinimum: Story = {
     const frame = canvasElement.getBoundingClientRect();
     await expect(bar.left).toBeGreaterThanOrEqual(frame.left);
     await expect(bar.right).toBeLessThanOrEqual(frame.right);
-    // The reason hangs from Request dues and doesn't widen its slot: Announcement sits the bar's gap after the button,
-    // and the reason ends where the button does (AVE-91, as the page toolbar).
+    // The reason hangs from Request dues and doesn't widen its slot: Announcement sits the bar's gap after the button
+    // (AVE-91). It starts where the button does and runs under the actions, away from the count (AVE-96), and stays
+    // inside the bar.
     const toolbar = canvas.getByRole("toolbar", { name: "Selection actions" });
     const dues = canvas.getByRole("button", { name: /Request dues/ }).getBoundingClientRect();
     const next = canvas.getByRole("button", { name: /Announcement/ }).getBoundingClientRect();
@@ -93,7 +94,11 @@ export const DesktopMinimum: Story = {
     const reason = canvas.getByText(dueReason);
     const range = document.createRange();
     range.selectNodeContents(reason);
-    await expect(Math.abs(range.getBoundingClientRect().right - dues.right)).toBeLessThanOrEqual(1);
+    const line = range.getBoundingClientRect();
+    await expect(Math.abs(line.left - dues.left)).toBeLessThanOrEqual(1);
+    await expect(line.right).toBeLessThanOrEqual(bar.right);
+    const count = canvasElement.querySelector('[data-slot="selection-bar-count"]')!.getBoundingClientRect();
+    await expect(line.left).toBeGreaterThanOrEqual(count.right);
   },
 };
 

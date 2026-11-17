@@ -160,7 +160,7 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
     <span
       data-slot="toolbar-actions"
       // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason hangs from
-      // its button's end and never widens its slot (`reasons-hang`, shared with the selection bar).
+      // its button's end and never widens its slot (`reasons-hang`; the selection bar hangs from the start, AVE-96).
       className="flex items-start gap-controls reasons-hang"
     >
       {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
