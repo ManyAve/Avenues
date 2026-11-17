@@ -571,6 +571,10 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-skeleton--full-page": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
   "components-skeleton--phone": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
   "components-skeleton--reduced-motion": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
+  "components-status-dot--tones": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
+  "components-status-dot--over-an-icon": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
+  "components-status-dot--in-a-chip": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
+  "components-status-dot--phone": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
   "components-skeleton--controls-wait": { none: BEHAVIOUR("Skeleton / In a card and Button / Variants") },
 
   "components-empty-state--default": [

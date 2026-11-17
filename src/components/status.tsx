@@ -1,6 +1,8 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import type { ComponentProps, ReactNode } from "react";
 import { Badge } from "#avenue/components/badge";
 import { InfoTip } from "#avenue/components/tooltip";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -78,6 +80,66 @@ const fills: Record<StatusTone, string> = {
   neutral: "bg-slate-subtle text-slate-subtle-foreground",
 };
 
+/** A dot's colour: a Status tone, or `current` for the parent's text colour. */
+type StatusDotTone = StatusTone | "current";
+
+const dotSizes = {
+  sm: "size-1.5",
+  md: "size-2",
+} as const;
+
+type StatusDotSize = keyof typeof dotSizes;
+
+/**
+ * A small filled circle that marks state beside or over something else: needs attention, unread, live now (AVE-130).
+ * Avenue's own part: it has no behavior, so there is nothing to take from ui-sdk. Its colours are Status's, so a dot
+ * and a Status pill of the same tone always match; Status draws its own dot with it.
+ *
+ * Colour alone can't carry meaning (WCAG 1.4.1), so by default the dot is hidden from screen readers and the row, tab
+ * or nav item it sits in says what it means. When the dot is the only signal (an attention dot over a bottom-nav
+ * icon), pass `label` ("New messages"): the dot then holds that text, visually hidden, and is read. It is never
+ * focusable.
+ *
+ * `size` is `sm` (6px, Status's dot) or `md` (8px). `ring` draws a 2px halo in the page colour, for a dot placed over
+ * an icon or avatar. Position it yourself (`absolute -top-0.5 -right-0.5` inside a `relative` parent).
+ */
+function StatusDot({
+  tone,
+  size = "sm",
+  ring = false,
+  label,
+  className,
+  render,
+  ...props
+}: Omit<OwnPartProps<"span">, "children"> & {
+  tone: StatusDotTone;
+  size?: StatusDotSize | undefined;
+  ring?: boolean | undefined;
+  /** What the dot means, read by screen readers, for a dot that is the only signal. Without it the dot is hidden. */
+  label?: string | undefined;
+}) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "status-dot",
+        "data-tone": tone,
+        "aria-hidden": label ? undefined : true,
+        className: cn(
+          "inline-block shrink-0 rounded-full",
+          dotSizes[size],
+          tone === "current" ? "bg-current" : dots[tone],
+          ring && "ring-2 ring-background",
+          className,
+        ),
+        children: label ? <span className="sr-only">{label}</span> : undefined,
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
 /**
  * A status label: an outlined pill with a coloured dot, or with `filled` a tinted pill. The words carry the
  * meaning and the colour only repeats it, so never pass a status without a label.
@@ -113,7 +175,7 @@ function Status({
       )}
       {...props}
     >
-      {!filled && <span aria-hidden className={cn("size-1.5 rounded-full", dots[tone])} />}
+      {!filled && <StatusDot tone={tone} />}
       {children}
     </Badge>
   );
@@ -128,4 +190,4 @@ function Status({
   );
 }
 
-export { Count, Status, TitleWithCount, type StatusTone };
+export { Count, Status, StatusDot, TitleWithCount, type StatusDotSize, type StatusDotTone, type StatusTone };
