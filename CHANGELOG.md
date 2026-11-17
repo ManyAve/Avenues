@@ -4,6 +4,22 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.14.0 (2026-11-17)
+
+- **Status dot** (AVE-130), `StatusDot` in `@manyave/avenue/components/status`: the small filled circle that marks
+  needs attention, unread or now. Its tones are Status's (`success`, `warning`, `destructive`, `primary`, `info`,
+  `neutral`) plus `current`, which takes the text colour around it, so a dot always matches the Status pill of the
+  same tone. `size` is `sm` (6px, the default) or `md` (8px); `ring` adds a 2px page-coloured halo for a dot over an
+  icon or avatar. It is hidden from screen readers, because the row, chip or nav item around it says what it means;
+  when the dot is the only signal, pass `label` ("unread") and it is read as visually hidden text. Never focusable.
+  Status now draws its own dot with it, with no visible change.
+  - Management: take v0.14.0 to replace the hand-written dots on the announcement delivery chips and the activity
+    "now" line.
+  - Neighbors: when adopting, its StatusDot becomes this one; `muted` is `neutral`, and a dot that is the only
+    signal passes `label` instead of `aria-hidden={undefined}` and a child.
+  - Phone apps: nothing to take. Native Status (Android and AvenueUI) already draws the same 6px dot from the same
+    tones; no native standalone dot is added.
+
 ## v0.13.0 (2026-11-17)
 
 - **Progress bar** (AVE-129), new in `@manyave/avenue/components/progress`, on ui-sdk's Progress. Nothing existing
