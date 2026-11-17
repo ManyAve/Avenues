@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.22.2 (2026-11-17)
+
+- **The selection bar's disabled reason sits with its button, not the count** (AVE-96). A reason such as "Set this
+  year's assessment first." used to end at Request dues's right edge and run left, under "1 household selected", where
+  it read as the count's caption. It now starts at the button's left edge and runs right, under the actions. The page
+  toolbar's reasons are unchanged.
+  - Management and Neighbors: nothing to change; take the new tag.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.22.1 (2026-11-17)
 
 - **Toast** (AVE-140): a toast shown from `useToast()` with no `ToastProvider` above it used to vanish without a word.

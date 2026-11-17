@@ -29,8 +29,9 @@ export type SelectionAction = {
  * positioned container (`relative`), as the app's list is.
  *
  * The bar is a ui-sdk toolbar: one Tab stop, arrows between the actions. A disabled action stays reachable and shows
- * its reason under it (the app hid it in a title), hanging from the button's end so it never spreads the actions
- * apart (`reasons-hang`, as the page toolbar, AVE-91). The count is announced whenever it changes, from a status
+ * its reason under it (the app hid it in a title). The reason hangs from the button's start and runs toward the end,
+ * under the actions, so it never spreads them apart (AVE-91) and never sits under the count, where it would read as
+ * the count's caption (`reasons-hang-start`, AVE-96; the page toolbar hangs its reasons from the end). The count is announced whenever it changes, from a status
  * region that stays mounted while the bar comes and goes, so the first selection is announced too, and clearing says
  * so.
  *
@@ -75,7 +76,7 @@ function SelectionBar({
         <ToolbarPrimitive
           aria-label="Selection actions"
           className={cn(
-            "absolute bottom-12 start-1/2 z-10 flex -translate-x-1/2 items-start gap-controls reasons-hang rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
+            "absolute bottom-12 start-1/2 z-10 flex -translate-x-1/2 items-start gap-controls reasons-hang-start rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
             className,
           )}
           {...defined(props)}
