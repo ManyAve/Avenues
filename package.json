@@ -1,6 +1,6 @@
 {
   "name": "@manyave/avenue",
-  "version": "0.22.1",
+  "version": "0.22.2",
   "private": true,
   "description": "Avenue, ManyAve's design system: tokens, foundations, components and composites, shown in Storybook.",
   "type": "module",
@@ -23,6 +23,10 @@
     "avenue-check-patches": "./scripts/check-app-patches.ts"
   },
   "imports": {
+    "#avenue/lib/dev": {
+      "development": "./src/lib/dev.ts",
+      "default": "./src/lib/dev-stub.ts"
+    },
     "#avenue/lib/*": "./src/lib/*.ts",
     "#avenue/hooks/*": "./src/hooks/*.ts",
     "#avenue/components/*": "./src/components/*.tsx",

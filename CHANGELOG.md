@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.22.1 (2026-11-17)
+## v0.22.2 (2026-11-17)
 
 - **The selection bar's disabled reason sits with its button, not the count** (AVE-96). A reason such as "Set this
   year's assessment first." used to end at Request dues's right edge and run left, under "1 household selected", where
@@ -12,6 +12,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   toolbar's reasons are unchanged.
   - Management and Neighbors: nothing to change; take the new tag.
   - Phone apps: nothing to take; this is web only.
+
+## v0.22.1 (2026-11-17)
+
+- **Toast** (AVE-140): a toast shown from `useToast()` with no `ToastProvider` above it used to vanish without a word.
+  It still shows nothing, but in development the first one now logs a `console.error` naming `ToastProvider` (once
+  per page), and under ui-sdk strict mode (story tests) it throws, so a screen that forgot the provider fails its
+  tests. A production build stays silent and never breaks a screen. Calling `useToast()` alone never warns.
+  Management and Neighbors: nothing to change; if the error shows up, wrap the app in one `<ToastProvider>`.
 
 ## v0.22.0 (2026-11-17)
 

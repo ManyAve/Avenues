@@ -1089,6 +1089,9 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
     ]),
   ),
+  "components-toast--without-a-provider": {
+    none: "A developer check, not a look (AVE-140): no toast shows without a ToastProvider, so there is nothing to compare.",
+  },
 
   // ---- App controls ported in AVE-8 part 2: each app story has an Avenue story of the same name
   "components-chip--selected-beside-unselected": [
