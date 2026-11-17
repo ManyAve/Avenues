@@ -76,6 +76,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   sheet: { upstream: "drawer", note: "The Sheet stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
   "dropdown-menu": { upstream: "trigger-menu" },
   popover: { upstream: "popover" },
+  progress: {
+    upstream: "progress",
+    note: "AVE-129: ui-sdk's Progress, styled. The Progress stories check the name, value text, fill width, indeterminate state and that the bar is never focused; Progress / Changing value is its agent test.",
+  },
   tooltip: { upstream: "tooltip" },
   "hover-card": { upstream: "hover-card" },
   checkbox: { upstream: "checkbox" },
