@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
-import { EllipsisIcon, MessageCircleIcon, SendHorizontalIcon, SquarePenIcon } from "lucide-react";
+import { EllipsisIcon, MessageCircleIcon, SquarePenIcon } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -18,14 +18,25 @@ import {
 } from "#avenue/components/dock";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "#avenue/components/dropdown-menu";
 import { InitialsAvatar } from "#avenue/components/initials-avatar";
+import {
+  Message,
+  MessageBubble,
+  MessageMeta,
+  MessageQuote,
+  MessageRow,
+  MessageRun,
+  MessageRunAvatar,
+  MessageRunContent,
+  MessageRunSender,
+  MessageStatus,
+} from "#avenue/components/message";
 import { MessageList } from "#avenue/components/message-list";
-import { Textarea } from "#avenue/components/textarea";
-import { cn } from "#avenue/lib/utils";
-import { dmThread, groupThread, me, people, personById, type ChatMessage, type ChatThread } from "./chat-kit";
+import { Composer, ComposerField, ComposerSend } from "#avenue/components/composer";
+import { chatRuns, chatTime, dmThread, groupThread, me, messageById, people, personById, type ChatMessage, type ChatThread } from "./chat-kit";
 
 // AVE-135. The docked chat windows: a header that folds the window away, its own actions and Close, side by side at
-// the bottom right. Threads come from the shared chat fixture (chat-kit.ts); the rows and the composer are plain
-// stand-ins for Avenue's message bubbles (AVE-133) and Composer (AVE-134) until those land. All names are made up.
+// the bottom right. Threads come from the shared chat fixture (chat-kit.ts); each window draws Avenue's message
+// bubbles (AVE-133), message list (AVE-132) and Composer (AVE-134). All names are made up.
 
 const meta = {
   title: "Components/Dock",
@@ -41,42 +52,57 @@ function Page({ children }: { children: ReactNode }) {
   return <div className="h-[560px] bg-background p-inset text-compact text-muted-foreground">{children}</div>;
 }
 
-/** A stand-in bubble: the sides, fills and hidden sender prefix both apps' bubbles have. */
-function Row({ message }: { message: ChatMessage }) {
-  const mine = message.senderId === me.id;
+/** One message from the fixture in Avenue's bubbles (AVE-133), with its quote, state and time. */
+function OneMessage({ thread, message, last }: { thread: ChatThread; message: ChatMessage; last: boolean }) {
+  const quoted = messageById(thread, message.replyToId);
+  const delivery = message.delivery ?? "sent";
   return (
-    <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-      <p
-        className={cn(
-          "max-w-[82%] rounded-xl px-3 py-1 text-control break-words",
-          mine ? "bg-primary text-primary-foreground" : "bg-foreground/10",
-        )}
-      >
-        <span className="sr-only">{mine ? "You" : personById(message.senderId).name}: </span>
-        {message.deleted ? "Message deleted" : message.body}
-      </p>
-    </div>
+    <Message deleted={message.deleted} delivery={delivery} edited={message.editedAt !== undefined} time={chatTime(message.at, "full")}>
+      {quoted && (
+        <MessageQuote sender={quoted.senderId === me.id ? "you" : personById(quoted.senderId).name} deleted={quoted.deleted}>
+          {quoted.body}
+        </MessageQuote>
+      )}
+      <MessageRow>
+        <MessageBubble>{message.body}</MessageBubble>
+      </MessageRow>
+      {(delivery === "failed" || (delivery === "pending" && last)) && (
+        <MessageStatus>
+          {delivery === "failed" && (
+            <>
+              <Button variant="text" className="text-meta font-[600] text-current" aria-label="Retry sending">
+                Retry
+              </Button>
+              <Button
+                variant="text"
+                className="text-meta text-current"
+                aria-label="Delete unsent message"
+                data-agent-confirm="Deletes a message that wasn't sent"
+              >
+                Delete
+              </Button>
+            </>
+          )}
+        </MessageStatus>
+      )}
+      {last && delivery === "sent" && <MessageMeta>{chatTime(message.at)}</MessageMeta>}
+    </Message>
   );
 }
 
-/** A stand-in for Avenue's Composer (AVE-134) in Management's composer look: Send waits for words. */
-function ComposerStandIn({ label }: { label: string }) {
-  const [draft, setDraft] = useState("");
-  return (
-    <div className="flex items-end gap-2 border-t p-2 pointer-coarse:gap-controls">
-      <Textarea
-        aria-label={`Message ${label}`}
-        placeholder="Message"
-        rows={1}
-        value={draft}
-        onChange={(event) => setDraft(event.currentTarget.value)}
-        className="min-h-8 resize-none rounded-xl bg-muted/40 py-1 pointer-coarse:min-h-11"
-      />
-      <Button size="icon" aria-label="Send" disabled={draft.trim() === ""} onClick={() => setDraft("")}>
-        <SendHorizontalIcon aria-hidden />
-      </Button>
-    </div>
-  );
+/** The thread's runs: an avatar at the foot of theirs and, in a group, the sender's name over it. */
+function Runs({ thread }: { thread: ChatThread }) {
+  return chatRuns(thread.messages).map((run) => (
+    <MessageRun key={run.key} from={run.from} sender={run.sender.name}>
+      {run.from === "them" && <MessageRunAvatar name={run.sender.name} tintKey={run.sender.id} />}
+      <MessageRunContent>
+        {run.from === "them" && thread.kind === "group" && <MessageRunSender>{run.sender.name}</MessageRunSender>}
+        {run.messages.map((message, i) => (
+          <OneMessage key={message.id} thread={thread} message={message} last={i === run.messages.length - 1} />
+        ))}
+      </MessageRunContent>
+    </MessageRun>
+  ));
 }
 
 /** A chat window: the thread's list and a stand-in composer whose draft must survive a fold. */
@@ -103,7 +129,7 @@ function ChatWindow({
     <DockWindow label={label} defaultOpen={defaultOpen} open={open} onOpenChange={onOpenChange}>
       <DockWindowHeader>
         <DockWindowTrigger>
-          <InitialsAvatar decorative name={thread.kind === "dm" ? other.name : thread.title} tintKey={thread.id} />
+          <InitialsAvatar decorative name={thread.kind === "dm" ? other.name : thread.title} tintKey={thread.kind === "dm" ? other.id : thread.id} />
           <DockWindowTitle>{label}</DockWindowTitle>
           <DockWindowBadge count={unread} />
         </DockWindowTrigger>
@@ -122,11 +148,14 @@ function ChatWindow({
       </DockWindowHeader>
       <DockWindowBody>
         <MessageList aria-label={`Messages with ${label}`} count={thread.messages.length} newest={last?.id} newestMine={last?.senderId === me.id}>
-          {thread.messages.map((message) => (
-            <Row key={message.id} message={message} />
-          ))}
+          <Runs thread={thread} />
         </MessageList>
-        <ComposerStandIn label={label} />
+        <div className="border-t p-2">
+          <Composer onSend={() => {}}>
+            <ComposerField aria-label={`Message ${label}`} placeholder="Message" />
+            <ComposerSend />
+          </Composer>
+        </div>
       </DockWindowBody>
     </DockWindow>
   );
