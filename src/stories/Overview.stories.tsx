@@ -604,7 +604,7 @@ const owners: ComboboxOption[] = [
 ];
 
 function SendNotice() {
-  const [household, setHousehold] = useState("");
+  const [household, setHousehold] = useState<string | null>(null);
   return (
     <Card>
       <CardHeader>

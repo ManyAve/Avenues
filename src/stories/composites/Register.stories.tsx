@@ -637,7 +637,7 @@ export const ComboboxInCell: Story = {
   globals: desktop,
   render: () => {
     function Owners() {
-      const [owner, setOwner] = useState("p1");
+      const [owner, setOwner] = useState<string | null>("p1");
       return (
         <Register aria-label="Owners" rowCount={2} colCount={2} className="w-[520px]">
           <RegisterHeader>

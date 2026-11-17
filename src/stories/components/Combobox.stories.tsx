@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { Button } from "#avenue/components/button";
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
 import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
@@ -27,23 +28,23 @@ const zones: ComboboxOption[] = [
 
 function Picker({
   label,
-  initial = "",
+  initial = null,
   invalid,
   error,
   ...props
 }: Omit<React.ComponentProps<typeof Combobox>, "value" | "onValueChange"> & {
   label: string;
-  initial?: string;
+  initial?: string | null;
   error?: string;
 }) {
-  const [value, setValue] = useState(initial);
+  const [value, setValue] = useState<string | null>(initial);
   return (
     <Field {...(invalid ? { invalid: true } : {})} className="w-80">
       <FieldLabel>{label}</FieldLabel>
       <Combobox {...props} invalid={invalid} value={value} onValueChange={setValue} />
       {error && <FieldError>{error}</FieldError>}
       <output data-testid="value" className="text-meta text-muted-foreground">
-        Chosen: {value || "(none)"}
+        Chosen: {value ?? "(none)"}
       </output>
     </Field>
   );
@@ -118,6 +119,114 @@ export const WithNone: Story = {
     await userEvent.click(screen.getByRole("option", { name: /Quill Court · Cora/ }));
     await expect(canvas.getByTestId("value")).toHaveTextContent("h3");
     await waitForClosed("combobox");
+    // Choosing the none option again clears the choice to null, as Select and ui-sdk mean nothing chosen (AVE-137).
+    await userEvent.click(canvas.getByRole("button", { name: "Show options" }));
+    await userEvent.click(await screen.findByRole("option", { name: "Neighborhood" }));
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Chosen: (none)");
+    await expect(input).toHaveValue("Neighborhood");
+    await waitForClosed("combobox");
+  },
+};
+
+/**
+ * A plain form with no React state (AVE-137): each Combobox manages its own value from `defaultValue` and posts it
+ * under `name`, like Select. The none option posts "" (like a native select's empty option), Reset returns to the
+ * defaults, and `required` holds the submit until something is chosen.
+ */
+export const InAForm: Story = {
+  name: "In a form",
+  render: () => {
+    const [sent, setSent] = useState("Nothing sent yet");
+    return (
+      <form
+        className="grid w-80 gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const entries = [...new FormData(event.currentTarget)].map(([key, v]) => `${key}=${String(v)}`);
+          setSent(entries.join("&") || "(nothing)");
+        }}
+      >
+        <Field>
+          <FieldLabel>Household</FieldLabel>
+          <Combobox name="household" defaultValue="h2" options={households} presentation="popover" />
+        </Field>
+        <Field>
+          <FieldLabel>Applies to</FieldLabel>
+          <Combobox name="appliesTo" noneLabel="Neighborhood" options={households} presentation="popover" />
+        </Field>
+        <Field>
+          <FieldLabel>Time zone</FieldLabel>
+          <Combobox name="zone" required options={zones} placeholder="Search by time zone or city" presentation="popover" />
+        </Field>
+        <div className="flex gap-controls">
+          <Button type="submit">Save</Button>
+          <Button type="reset" variant="outline">
+            Reset
+          </Button>
+        </div>
+        <output data-testid="sent" className="text-meta text-muted-foreground">
+          {sent}
+        </output>
+      </form>
+    );
+  },
+  play: async ({ canvas, step }) => {
+    const household = canvas.getByRole("combobox", { name: "Household" });
+    const appliesTo = canvas.getByRole("combobox", { name: "Applies to" });
+    const zone = canvas.getByRole("combobox", { name: "Time zone" });
+    const form = household.closest("form")!;
+    const sent = canvas.getByTestId("sent");
+    const pick = async (input: HTMLElement, query: string) => {
+      await userEvent.click(input);
+      await userEvent.clear(input);
+      await userEvent.keyboard(query);
+      await screen.findByRole("listbox");
+      await userEvent.keyboard("{Enter}");
+      await waitForClosed("combobox");
+    };
+
+    await step("starts from defaultValue, and required holds the submit", async () => {
+      await expect(household).toHaveValue("14 Lantern Row · Bram Hollis");
+      await expect(appliesTo).toHaveValue("Neighborhood");
+      await expect(form.checkValidity()).toBe(false);
+    });
+
+    await step("choosing by keyboard changes what the form posts", async () => {
+      await pick(zone, "chicago");
+      await expect(zone).toHaveValue("Central Time (Chicago)");
+      await pick(household, "quill");
+      await expect(household).toHaveValue("3 Quill Court · Cora Mendez");
+      await expect(form.checkValidity()).toBe(true);
+      await userEvent.click(canvas.getByRole("button", { name: "Save" }));
+      await expect(sent).toHaveTextContent("household=h3&appliesTo=&zone=America/Chicago");
+    });
+
+    await step("Reset returns each field to its default", async () => {
+      await pick(appliesTo, "juniper");
+      await userEvent.click(canvas.getByRole("button", { name: "Reset" }));
+      await waitFor(() => expect(household).toHaveValue("14 Lantern Row · Bram Hollis"));
+      await expect(appliesTo).toHaveValue("Neighborhood");
+      await expect(zone).toHaveValue("");
+      await expect(form.checkValidity()).toBe(false);
+      await pick(zone, "denver");
+      await userEvent.click(canvas.getByRole("button", { name: "Save" }));
+      await expect(sent).toHaveTextContent("household=h2&appliesTo=&zone=America/Denver");
+    });
+  },
+};
+
+/** "" was "nothing chosen" before v0.21.0 and still reads as none for one release (AVE-137). */
+export const EmptyStringIsNone: Story = {
+  name: "Empty string still means none",
+  render: () => (
+    <div className="grid w-80 gap-4">
+      <Combobox aria-label="Applies to" value="" onValueChange={() => {}} noneLabel="Neighborhood" options={households} />
+      <Combobox aria-label="Household" value="" onValueChange={() => {}} placeholder="Search households" options={households} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("combobox", { name: "Applies to" })).toHaveValue("Neighborhood");
+    await expect(canvas.getByRole("combobox", { name: "Household" })).toHaveValue("");
   },
 };
 
@@ -477,7 +586,7 @@ export const SheetSwipeToClose: Story = {
 export const InAPhoneCard: Story = {
   globals: phone,
   render: () => {
-    const [value, setValue] = useState("h2");
+    const [value, setValue] = useState<string | null>("h2");
     return (
       <div className="grid w-full gap-2">
         <div data-testid="card" className="grid gap-2 rounded-md border bg-background px-4 py-3 text-compact">
@@ -511,7 +620,7 @@ export const InAPhoneCard: Story = {
  */
 export const SizedByContent: Story = {
   render: () => {
-    const [value, setValue] = useState("h1");
+    const [value, setValue] = useState<string | null>("h1");
     return (
       <div className="flex w-max gap-2">
         <Combobox aria-label="Household" options={households} value={value} onValueChange={setValue} />
