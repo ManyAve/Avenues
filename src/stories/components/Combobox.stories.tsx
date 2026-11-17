@@ -3,14 +3,24 @@ import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  type ComboboxItemData,
+  type ComboboxProps,
+  type ListData,
+} from "#avenue/components/combobox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
 import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
 // All households, owners and IDs are fictional.
 
-const households: ComboboxOption[] = [
+const households: ComboboxItemData[] = [
   { value: "h1", label: "12 Lantern Row · Ada Okafor", meta: "ID 1042" },
   { value: "h2", label: "14 Lantern Row · Bram Hollis", meta: "ID 1043", hint: "$120.00 owing" },
   { value: "h3", label: "3 Quill Court · Cora Mendez", meta: "ID 1101" },
@@ -18,7 +28,7 @@ const households: ComboboxOption[] = [
   { value: "h5", label: "88 Juniper Bend · Dev Raman", meta: "ID 1210" },
 ];
 
-const zones: ComboboxOption[] = [
+const zones: ComboboxItemData[] = [
   { value: "America/New_York", label: "Eastern Time (New York)" },
   { value: "America/Chicago", label: "Central Time (Chicago)" },
   { value: "America/Denver", label: "Mountain Time (Denver)" },
@@ -32,7 +42,7 @@ function Picker({
   invalid,
   error,
   ...props
-}: Omit<React.ComponentProps<typeof Combobox>, "value" | "onValueChange"> & {
+}: Omit<Extract<ComboboxProps, { children?: undefined }>, "value" | "onValueChange" | "children"> & {
   label: string;
   initial?: string | null;
   error?: string;
@@ -77,7 +87,7 @@ export const Households: Story = {
   render: () => (
     <Picker
       label="Household"
-      options={households}
+      items={households}
       icon={<HouseIcon />}
       placeholder="Search by address, owner or ID"
       triggerLabel="Show households"
@@ -91,7 +101,7 @@ export const TimeZone: Story = {
   render: () => (
     <Picker
       label="Time zone"
-      options={zones}
+      items={zones}
       initial="America/Chicago"
       icon={<GlobeIcon />}
       placeholder="Search by time zone or city"
@@ -103,7 +113,7 @@ export const TimeZone: Story = {
 export const WithNone: Story = {
   name: "With a none choice",
   render: () => (
-    <Picker label="Applies to" options={households} noneLabel="Neighborhood" icon={<HouseIcon />} />
+    <Picker label="Applies to" items={households} noneLabel="Neighborhood" icon={<HouseIcon />} />
   ),
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Applies to" });
@@ -148,15 +158,15 @@ export const InAForm: Story = {
       >
         <Field>
           <FieldLabel>Household</FieldLabel>
-          <Combobox name="household" defaultValue="h2" options={households} presentation="popover" />
+          <Combobox name="household" defaultValue="h2" items={households} presentation="popover" />
         </Field>
         <Field>
           <FieldLabel>Applies to</FieldLabel>
-          <Combobox name="appliesTo" noneLabel="Neighborhood" options={households} presentation="popover" />
+          <Combobox name="appliesTo" noneLabel="Neighborhood" items={households} presentation="popover" />
         </Field>
         <Field>
           <FieldLabel>Time zone</FieldLabel>
-          <Combobox name="zone" required options={zones} placeholder="Search by time zone or city" presentation="popover" />
+          <Combobox name="zone" required items={zones} placeholder="Search by time zone or city" presentation="popover" />
         </Field>
         <div className="flex gap-controls">
           <Button type="submit">Save</Button>
@@ -220,8 +230,8 @@ export const EmptyStringIsNone: Story = {
   name: "Empty string still means none",
   render: () => (
     <div className="grid w-80 gap-4">
-      <Combobox aria-label="Applies to" value="" onValueChange={() => {}} noneLabel="Neighborhood" options={households} />
-      <Combobox aria-label="Household" value="" onValueChange={() => {}} placeholder="Search households" options={households} />
+      <Combobox aria-label="Applies to" value="" onValueChange={() => {}} noneLabel="Neighborhood" items={households} />
+      <Combobox aria-label="Household" value="" onValueChange={() => {}} placeholder="Search households" items={households} />
     </div>
   ),
   play: async ({ canvas }) => {
@@ -232,14 +242,14 @@ export const EmptyStringIsNone: Story = {
 
 export const Small: Story = {
   name: "Size sm",
-  render: () => <Picker label="Household" options={households} size="sm" icon={<HouseIcon />} />,
+  render: () => <Picker label="Household" items={households} size="sm" icon={<HouseIcon />} />,
 };
 
 export const Invalid: Story = {
   render: () => (
     <Picker
       label="Household"
-      options={households}
+      items={households}
       icon={<HouseIcon />}
       invalid
       error="Choose the household this payment is for."
@@ -253,7 +263,7 @@ export const Invalid: Story = {
 };
 
 export const Disabled: Story = {
-  render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} disabled />,
+  render: () => <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} disabled />,
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Household" });
     await expect(input).toBeDisabled();
@@ -267,7 +277,7 @@ export const Empty: Story = {
   render: () => (
     <Picker
       label="Household"
-      options={[]}
+      items={[]}
       icon={<HouseIcon />}
       emptyMessage={() => "No households yet. Add one on the Households tab first."}
     />
@@ -287,7 +297,7 @@ export const Keyboard: Story = {
       // The popover's contract, on every screen: Tab leaves the field. A sheet is modal, so Tab stays in it; its
       // keyboard is the Sheet keyboard story (AVE-39).
       presentation="popover"
-      options={households}
+      items={households}
       initial="h1"
       icon={<HouseIcon />}
       triggerLabel="Show households"
@@ -366,7 +376,7 @@ export const Pattern: Story = {
   // names no open listbox", reproduced on a bare ui-sdk Combobox, AVE-39; still so in beta.7), so the touch project
   // checks the popover too. Re-check on every ui-sdk upgrade (AGENTS.md, AVE-75).
   render: () => (
-    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} presentation="popover" />
+    <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} presentation="popover" />
   ),
   play: async ({ canvas }) => {
     // The story runner runs checkPattern(…, "combobox") after this play function, from the tag.
@@ -385,7 +395,7 @@ export const SheetOnPhones: Story = {
   name: "Sheet on phones",
   globals: phone,
   render: () => (
-    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
+    <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
   ),
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
@@ -430,7 +440,7 @@ export const ClearOnPhones: Story = {
   name: "Clear on phones",
   globals: phone,
   render: () => (
-    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
+    <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} triggerLabel="Show households" />
   ),
   play: async ({ canvas }) => {
     if (!coarse()) {
@@ -468,7 +478,7 @@ export const SheetOpen: Story = {
   render: () => (
     <Picker
       label="Household"
-      options={households}
+      items={households}
       initial="h1"
       icon={<HouseIcon />}
       triggerLabel="Show households"
@@ -488,7 +498,7 @@ export const SheetOpen: Story = {
  * focusing the field selects its label so typing replaces it.
  */
 export const SelectedText: Story = {
-  render: () => <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} />,
+  render: () => <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} />,
   play: async () => {
     if (coarse()) return;
     await userEvent.tab();
@@ -513,7 +523,7 @@ export const SheetKeyboard: Story = {
   name: "Sheet keyboard",
   globals: phone,
   render: () => (
-    <Picker label="Household" options={households} initial="h1" icon={<HouseIcon />} presentation="sheet" />
+    <Picker label="Household" items={households} initial="h1" icon={<HouseIcon />} presentation="sheet" />
   ),
   play: async ({ canvas, step }) => {
     await step("typing opens the sheet with the search field in it, still focused", async () => {
@@ -558,7 +568,7 @@ export const SheetSwipeToClose: Story = {
   render: () => (
     <Picker
       label="Household"
-      options={households}
+      items={households}
       initial="h1"
       icon={<HouseIcon />}
       triggerLabel="Show households"
@@ -596,7 +606,7 @@ export const InAPhoneCard: Story = {
             <Combobox
               aria-label="Household"
               icon={<HouseIcon />}
-              options={households}
+              items={households}
               value={value}
               onValueChange={setValue}
               className="w-64 max-sm:w-full"
@@ -623,7 +633,7 @@ export const SizedByContent: Story = {
     const [value, setValue] = useState<string | null>("h1");
     return (
       <div className="flex w-max gap-2">
-        <Combobox aria-label="Household" options={households} value={value} onValueChange={setValue} />
+        <Combobox aria-label="Household" items={households} value={value} onValueChange={setValue} />
       </div>
     );
   },
@@ -631,5 +641,171 @@ export const SizedByContent: Story = {
     const input = canvas.getByRole("combobox", { name: "Household" });
     // 234px with a mouse and 264px on a phone, as before AVE-113.
     await expect(input.getBoundingClientRect().width).toBeGreaterThan(200);
+  },
+};
+
+// AVE-146: items in ui-sdk's shape (groups, separators, object values) and the parts, nested as ui-sdk's Composition
+// shows. These stories open the popover on every screen, as the Keyboard story does: Tab and the arrows are the
+// popover's contract, and the sheet is proven by the Sheet stories, which draw the same parts.
+
+const byStreet: ListData<string, ComboboxItemData> = [
+  {
+    type: "group",
+    label: "Lantern Row",
+    items: [
+      { value: "h1", label: "12 Lantern Row · Ada Okafor", meta: "ID 1042" },
+      { value: "h2", label: "14 Lantern Row · Bram Hollis", meta: "ID 1043" },
+    ],
+  },
+  { type: "separator" },
+  {
+    type: "group",
+    label: "Quill Court",
+    items: [
+      { value: "h3", label: "3 Quill Court · Cora Mendez", meta: "ID 1101" },
+      { value: "h4", label: "5 Quill Court", meta: "ID 1102" },
+    ],
+  },
+];
+
+/** A grouped list: the search hides a group once none of its households match, and the arrows cross groups. */
+export const Grouped: Story = {
+  render: () => (
+    <Picker label="Household" items={byStreet} icon={<HouseIcon />} triggerLabel="Show households" presentation="popover" />
+  ),
+  play: async ({ canvas, step }) => {
+    const input = canvas.getByRole("combobox", { name: "Household" });
+    await step("each group is named by its street", async () => {
+      await userEvent.click(input);
+      await userEvent.keyboard("{ArrowDown}");
+      const list = await screen.findByRole("listbox");
+      await expect(screen.getByRole("group", { name: "Lantern Row" })).toBeInTheDocument();
+      await expect(screen.getByRole("group", { name: "Quill Court" })).toBeInTheDocument();
+      await expect(list.querySelectorAll("[role=option]")).toHaveLength(4);
+    });
+    await step("a search hides the group it empties", async () => {
+      await userEvent.keyboard("quill");
+      await waitFor(() => expect(screen.queryByRole("group", { name: "Lantern Row" })).not.toBeInTheDocument());
+      await expect(screen.getAllByRole("option")).toHaveLength(2);
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await waitForClosed("combobox");
+      await expect(canvas.getByTestId("value")).toHaveTextContent("h4");
+      await expect(input).toHaveValue("5 Quill Court");
+    });
+  },
+};
+
+const signers = [
+  { id: "ada", name: "Ada Okafor", line: "Treasurer · 12 Lantern Row" },
+  { id: "bram", name: "Bram Hollis", line: "Secretary · 14 Lantern Row" },
+  { id: "cora", name: "Cora Mendez", line: "Member at large · 3 Quill Court" },
+];
+
+/**
+ * Built from parts (AVE-146): ComboboxInput draws the field (icon, search, phone's clear, chevron), and each
+ * ComboboxItem a name and a second line. `label` is what the field shows once chosen and what the search matches;
+ * `keywords` lets the role and the street match too.
+ */
+export const SecondLine: Story = {
+  name: "Second line",
+  render: function Render() {
+    const [value, setValue] = useState<string | null>(null);
+    return (
+      <Field className="w-80">
+        <FieldLabel>Signer</FieldLabel>
+        <Combobox value={value} onValueChange={setValue} presentation="popover">
+          <ComboboxInput placeholder="Search the board" triggerLabel="Show the board" />
+          <ComboboxContent>
+            <ComboboxEmpty>Nobody on the board matches.</ComboboxEmpty>
+            <ComboboxList>
+              {signers.map((s) => (
+                <ComboboxItem key={s.id} value={s.id} label={s.name} keywords={[s.line]}>
+                  <span className="block">{s.name}</span>
+                  <span className="block text-meta text-muted-foreground">{s.line}</span>
+                </ComboboxItem>
+              ))}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        <output data-testid="value" className="text-meta text-muted-foreground">
+          Chosen: {value ?? "(none)"}
+        </output>
+      </Field>
+    );
+  },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Signer" });
+    await userEvent.click(input);
+    await userEvent.keyboard("secretary");
+    const option = await screen.findByRole("option", { name: /Bram Hollis/ });
+    await expect(option).toHaveTextContent("Secretary · 14 Lantern Row");
+    await expect(screen.getAllByRole("option")).toHaveLength(1);
+    await userEvent.keyboard("{Enter}");
+    await waitForClosed("combobox");
+    await expect(input).toHaveValue("Bram Hollis");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("bram");
+  },
+};
+
+type Owner = { id: number; name: string; street: string };
+const owners: Owner[] = [
+  { id: 1042, name: "Ada Okafor", street: "12 Lantern Row" },
+  { id: 1043, name: "Bram Hollis", street: "14 Lantern Row" },
+  { id: 1101, name: "Cora Mendez", street: "3 Quill Court" },
+];
+
+/**
+ * Object values (AVE-146): the value is the owner, not an id string. `itemToValue` gives the id the form posts,
+ * `itemToLabel` the name, and `isItemEqualToValue` matches a copy of an owner (as a server would send back).
+ */
+export const ObjectValues: Story = {
+  name: "Object values",
+  render: function Render() {
+    const [value, setValue] = useState<Owner | null>({ id: 1043, name: "Bram Hollis", street: "14 Lantern Row" });
+    const [posted, setPosted] = useState("");
+    return (
+      <form
+        className="grid w-80 gap-group"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setPosted(String(new FormData(event.currentTarget).get("owner")));
+        }}
+      >
+        <Field>
+          <FieldLabel>Owner</FieldLabel>
+          <Combobox
+            name="owner"
+            items={owners.map((o) => ({ value: o, label: o.name, hint: o.street }))}
+            value={value}
+            onValueChange={setValue}
+            itemToValue={(o) => String(o.id)}
+            itemToLabel={(o) => o.name}
+            isItemEqualToValue={(a, b) => a.id === b.id}
+            triggerLabel="Show owners"
+            presentation="popover"
+          />
+        </Field>
+        <Button type="submit" variant="outline" className="justify-self-start">
+          Post the form
+        </Button>
+        <output data-testid="value" className="text-meta text-muted-foreground">
+          Chosen: {value ? `${value.name} (${value.id})` : "none"}; posted: {posted}
+        </output>
+      </form>
+    );
+  },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole("combobox", { name: "Owner" });
+    await expect(input).toHaveValue("Bram Hollis");
+    await userEvent.click(input);
+    if (coarse()) await userEvent.clear(input);
+    await userEvent.keyboard("cora");
+    await screen.findByRole("option", { name: /Cora Mendez/ });
+    await userEvent.keyboard("{Enter}");
+    await waitForClosed("combobox");
+    await expect(input).toHaveValue("Cora Mendez");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Cora Mendez (1101)");
+    await userEvent.click(canvas.getByRole("button", { name: "Post the form" }));
+    await expect(canvas.getByTestId("value")).toHaveTextContent("posted: 1101");
   },
 };

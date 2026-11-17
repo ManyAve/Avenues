@@ -158,6 +158,44 @@ change.
 | `RegisterGroupRow` | `selection` (`"all"`, `"some"`, `"none"`), `onSelectedChange` | `checked` (`true`, `"indeterminate"`, `false`), `onCheckedChange` |
 | `ModeToggle` | `choice`, `onThemeChange` | `value`, `onValueChange` (and `defaultValue`; `defaultDev` beside `dev`) |
 
+## Select and Combobox take items, and come in parts
+
+Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options` is
+the old name and still works until v0.29.0, typed `@deprecated`; the entries are the same, so renaming the prop is
+the whole change. `SelectOption` is now `ListItem`, `ComboboxOption` is `ComboboxItemData`, and a TableFilters
+field's `options` is `items`.
+
+`items` also takes plain strings, groups (`{ type: "group", label, items }`) and separators (`{ type: "separator" }`),
+and a value may be an object, with `itemToValue` (the id it posts), `itemToLabel` and `isItemEqualToValue`.
+
+When one tag isn't enough (an item with a second line, an icon, a layout of your own), build it from the parts, nested
+as ui-sdk's Composition shows. The styles are Avenue's:
+
+```tsx
+<Select items={people} value={signer} onValueChange={setSigner}>
+  <SelectTrigger><SelectValue /></SelectTrigger>
+  <SelectContent>
+    {people.map((p) => (
+      <SelectItem key={p.value} value={p.value} label={p.label}>
+        <span className="block">{p.label}</span>
+        <span className="block text-meta text-muted-foreground">{p.role}</span>
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+<Combobox value={owner} onValueChange={setOwner}>
+  <ComboboxInput icon={<HouseIcon />} triggerLabel="Show owners" />
+  <ComboboxContent>
+    <ComboboxEmpty>No owner matches.</ComboboxEmpty>
+    <ComboboxList>{/* ComboboxItem, ComboboxGroup, ComboboxGroupLabel, ComboboxSeparator */}</ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+On a phone, the one-tag Select opens the operating system's picker; built from parts it opens Avenue's sheet, since
+the OS picker can only be drawn from data. Keep the one tag where the OS picker matters.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

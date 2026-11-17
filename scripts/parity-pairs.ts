@@ -522,6 +522,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--pattern": { none: BEHAVIOUR("Combobox / Time zone") },
+  "components-combobox--grouped": { none: "AVE-146: households grouped by street, from ui-sdk-shaped items; the app's pickers have no groups. The field is compared through Combobox / Households." },
+  "components-combobox--second-line": { none: "AVE-146: a Combobox built from its parts, each item with a second line; the app has no such picker. The field is compared through Combobox / Households." },
+  "components-combobox--object-values": { none: BEHAVIOUR("Combobox / Households (AVE-146: object values posting their id)") },
 
   // ---- Dialog (AVE-6)
   "components-dialog--open": [
@@ -981,6 +984,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-select--sheet-keyboard": { none: BEHAVIOUR("Select / Sheet, open") },
   "components-select--sheet-swipe-to-close": { none: BEHAVIOUR("Select / Sheet, open") },
   "components-select--invalid-is-announced": { none: BEHAVIOUR("Select / Invalid") },
+  "components-select--grouped": { none: "AVE-146: a grouped list, from ui-sdk-shaped items, beside the OS picker's own groups; the app's selects have no groups. The trigger is compared through Select / Default." },
+  "components-select--second-line": { none: "AVE-146: a Select built from its parts, each item with a second line; the app has no such select. The trigger is compared through Select / Default." },
+  "components-select--object-values": { none: BEHAVIOUR("Select / Default (AVE-146: object values posting their id)") },
   ...Object.fromEntries(
     [
       ["in-card-header", "[data-slot=card-header]"],

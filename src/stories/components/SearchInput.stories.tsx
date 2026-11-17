@@ -61,7 +61,7 @@ export const ShortcutSkipsOpenList: Story = {
         native="never"
         aria-label="Street"
         placeholder="Choose a street"
-        options={[
+        items={[
           { value: "larkspur", label: "Larkspur Lane" },
           { value: "juniper", label: "Juniper Court" },
         ]}

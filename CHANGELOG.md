@@ -4,6 +4,29 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.28.0 (2026-11-18)
+
+- **Select and Combobox take `items` in ui-sdk's shape, and come in parts** (AVE-146).
+  - **Rename** (the old names still work until v0.29.0, marked `@deprecated`): Select's and Combobox's `options` →
+    `items`; a TableFilters field's `options` → `items`; the types `SelectOption` → `ListItem` and `ComboboxOption` →
+    `ComboboxItemData`. The entries are the same.
+  - **More in `items`:** plain strings, groups `{ type: "group", label, items }` and separators `{ type: "separator" }`,
+    as ui-sdk's `ListData`. A value may be an object, with `itemToValue` (the id it is known and posted by),
+    `itemToLabel` and `isItemEqualToValue`. Select's OS picker on phones shows the groups as its own.
+  - **Parts**, styled as the one-tag forms, nested as ui-sdk's Composition shows. Select: `SelectTrigger` (with its
+    chevron, and `size`), `SelectValue`, `SelectContent` (with the sheet's handle), `SelectItem` (with its check),
+    `SelectGroup`, `SelectGroupLabel`, `SelectSeparator`. Combobox: `ComboboxInput` (the whole field: icon, search,
+    the phone's clear button and the chevron), `ComboboxContent`, `ComboboxEmpty`, `ComboboxList`, `ComboboxItem`
+    (with its check, and `meta` for right-aligned text), `ComboboxGroup`, `ComboboxGroupLabel`, `ComboboxSeparator`.
+    `Select` and `Combobox` are the root when they have children, and the one-tag form when they don't, as ui-sdk's
+    own roots are.
+  - **Kept:** the one-tag Select opens the OS picker on a touch screen; built from parts it opens the sheet, because
+    the OS picker can only be drawn from data (AVE-39). The sheet, the 44px rows and targets, Combobox's "none"
+    option, its stand-in label behind the sheet and its form reset are unchanged.
+  - TableFilters still edits a choice filter with checkboxes, not a Combobox: changing that would move its pills'
+    look, and this release moves no pixels (visual diff in the pull request).
+  - Management and Neighbors: rename `options` to `items` when you take this release; nothing else needs to change.
+    `src/type-tests/picker-call-sites.tsx` keeps your current call sites compiling.
 ## v0.27.0 (2026-11-17)
 
 - **A returned Promise drives pending** (AVE-150), as ui-sdk's Button and a dialog Close part's `action` do. Apps no

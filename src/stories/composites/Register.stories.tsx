@@ -655,7 +655,7 @@ export const ComboboxInCell: Story = {
                 <Combobox
                   aria-label="Owner of 12 Birch Lane"
                   presentation="popover"
-                  options={owners}
+                  items={owners}
                   value={owner}
                   onValueChange={setOwner}
                 />

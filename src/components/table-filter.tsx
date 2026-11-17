@@ -27,13 +27,19 @@ export type TableFiltersChangeDetails = ChangeDetails<
   CheckboxCheckedChangeReason | InputValueChangeReason | SelectValueChangeReason | "item-press" | "remove-press"
 >;
 
-/** One column the table can filter on (Linear's attribute). A `choice` lists its `options`. */
+/** One column the table can filter on (Linear's attribute). A `choice` lists its `items`. */
 export type FilterField = {
   key: string;
   label: string;
   kind: FilterKind;
+  /** A `choice` field's values, in ui-sdk's item shape: `{ value, label }`. */
+  items?: readonly { value: string; label: string }[] | undefined;
+  /** @deprecated Use `items`, which takes the same `{ value, label }` entries. Kept until v0.29.0 (AVE-146). */
   options?: readonly { value: string; label: string }[] | undefined;
 };
+
+/** A choice field's values, under either name. */
+const choicesOf = (field: FilterField) => field.items ?? field.options ?? [];
 
 const emptyValue = (kind: FilterKind): string | string[] => (kind === "choice" ? [] : "");
 
@@ -45,7 +51,7 @@ function valueWords(field: FilterField, filter: TableFilter) {
   if (!opNeedsValue(filter.op)) return "";
   if (field.kind === "choice") {
     const chosen = Array.isArray(filter.value) ? filter.value : [filter.value];
-    const names = chosen.map((v) => field.options?.find((o) => o.value === v)?.label ?? v);
+    const names = chosen.map((v) => choicesOf(field).find((o) => o.value === v)?.label ?? v);
     return names.length > 2 ? `${names.length} selected` : names.join(", ");
   }
   const typed = typedValue(filter);
@@ -71,7 +77,7 @@ function ValueEditor({
     const chosen = Array.isArray(filter.value) ? filter.value : [filter.value];
     return (
       <fieldset aria-label={`${field.label} values`} className="flex min-w-0 flex-col gap-0.5">
-        {field.options?.map((option, i) => (
+        {choicesOf(field).map((option, i) => (
           // On a touch screen each option is 44px tall, so the checkboxes' 44px taps never overlap (AVE-22).
           <label
             key={option.value}
@@ -162,7 +168,7 @@ function FilterPill({
           <Select
             aria-label={`${field.label} operator`}
             value={filter.op}
-            options={filterOps[field.kind].map((op) => ({ value: op, label: opLabel(field.kind, op) }))}
+            items={filterOps[field.kind].map((op) => ({ value: op, label: opLabel(field.kind, op) }))}
             onValueChange={(op: FilterOp, details) =>
               onValueChange({ ...filter, op, value: opNeedsValue(op) ? filter.value : emptyValue(field.kind) }, details)
             }

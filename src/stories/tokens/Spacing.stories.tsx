@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { Select, type SelectOption } from "#avenue/components/select";
+import { Select, type ListItem } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "./token-docs";
 
 // AVE-2 sections 1 and 2: one 4px grid, named aliases, and four control heights. The heights are shown on Avenue's
 // Button, the one component that ships all four (Select ships sm and md only); the toolbar uses the real Select.
 
-const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
+const years: ListItem[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const scale = [
   ["0.5", "w-0.5", "Optical nudges inside a control only"],
@@ -110,7 +110,7 @@ function ControlHeights() {
             Owing
           </span>
           <span className="flex h-control-md items-center rounded-full border px-3 text-control">Paid</span>
-          <Select options={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
+          <Select items={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
           <span className="flex size-control-md items-center justify-center rounded-lg border border-input text-control">
             <span aria-hidden="true">⋯</span>
             <span className="sr-only">More</span>

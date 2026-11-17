@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronDown } from "lucide-react";
 import { expect, within } from "storybook/test";
-import { Select, type SelectOption } from "#avenue/components/select";
+import { Select, type ListItem } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section } from "../tokens/token-docs";
 import { DoDont, Rule, Rules, SeeTokens } from "./foundation-docs";
@@ -10,7 +10,7 @@ import { DoDont, Rule, Rules, SeeTokens } from "./foundation-docs";
 // go, and the year select in the Dues card. The scale itself is on Tokens/Radius.
 // The "do" Dues card uses Avenue's real Select (AVE-26); the "don't" card is the app's pill, drawn for comparison.
 
-const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
+const years: ListItem[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const uses = [
   ["xs", "4px", "Checkboxes, small marks, keyboard hints, progress tracks"],
@@ -43,7 +43,7 @@ function DuesCard({ before }: { before?: boolean }) {
               <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
             </span>
           ) : (
-            <Select options={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
+            <Select items={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
           )}
         </div>
       </div>

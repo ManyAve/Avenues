@@ -24,7 +24,7 @@ function HouseholdSections() {
     <div className="mx-auto grid max-w-layout gap-inset px-page py-section lg:grid-cols-2">
       <SectionCard
         title="Dues"
-        action={<Select size="sm" aria-label="Dues year" options={years} defaultValue="2026" />}
+        action={<Select size="sm" aria-label="Dues year" items={years} defaultValue="2026" />}
       >
         <div className="grid gap-1">
           <ListItem title="Annual assessment" meta="Due Jan 31, 2026" trailing={<Money cents={36000} />} />

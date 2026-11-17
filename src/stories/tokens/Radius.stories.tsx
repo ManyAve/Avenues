@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
-import { Select, type SelectOption } from "#avenue/components/select";
+import { Select, type ListItem } from "#avenue/components/select";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "./token-docs";
 
 // AVE-2 sections 3 to 6: five corner steps from --radius (10px), pills only for labels and tokens,
 // and rounded things inside rounded things.
 
-const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
+const years: ListItem[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
 const steps = [
   ["xs", "rounded-xs", "Checkboxes, small marks, keyboard hints, progress tracks"],
@@ -78,7 +78,7 @@ function NestedCorners() {
             <h3 className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</h3>
             <div className="flex items-center gap-group text-meta text-muted-foreground">
               <span>Account summary ·</span>
-              <Select options={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
+              <Select items={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />
             </div>
           </div>
           <div className="flex flex-col gap-2 p-inset text-compact">
