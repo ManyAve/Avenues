@@ -50,6 +50,7 @@ import type * as statusBar from "#avenue/components/status-bar";
 import type * as status from "#avenue/components/status";
 import type * as switchControl from "#avenue/components/switch";
 import type * as table from "#avenue/components/table";
+import type * as tableFilter from "#avenue/components/table-filter";
 import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
 import type * as toast from "#avenue/components/toast";
@@ -106,6 +107,7 @@ type Modules = {
   "status": typeof status;
   "switch": typeof switchControl;
   "table": typeof table;
+  "table-filter": typeof tableFilter;
   "tabs": typeof tabs;
   "textarea": typeof textarea;
   "toast": typeof toast;

@@ -5,6 +5,7 @@ import { createParts } from "@ui-sdk/react/primitive";
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
+import { Checkbox } from "#avenue/components/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
 import { tintFor } from "#avenue/lib/format";
 import { register } from "#avenue/lib/register";
@@ -58,7 +59,7 @@ function Register({
   return (
     <parts.Root
       data-density={density}
-      className={cn("w-full table-fixed border-separate border-spacing-0 text-compact", rowHeight[density], className)}
+      className={cn("group/register w-full table-fixed border-separate border-spacing-0 text-compact", rowHeight[density], className)}
       {...defined(props)}
     />
   );
@@ -191,9 +192,29 @@ function RegisterSelectCell({ className, ...props }: Omit<Loose<ComponentProps<t
   return <RegisterCell col={0} control className={cn("px-0 [&>*]:mx-auto", className)} {...props} />;
 }
 
+/** The bar's tinted fill: the gradient across the bar, or its start colour alone in the select cell. */
+const barFill =
+  "bg-[linear-gradient(100deg,color-mix(in_oklab,var(--group-color)_12%,var(--muted)),color-mix(in_oklab,var(--group-color)_4%,var(--muted))_55%,var(--muted))]";
+const barStart = "bg-[color-mix(in_oklab,var(--group-color)_12%,var(--muted))]";
+const barCell = "relative isolate h-12 border-y-4 border-background bg-clip-padding p-0 text-meta";
+
+/**
+ * Which of a street's rows are selected, for its bar's checkbox: none, some (half-checked) or all.
+ */
+export type GroupSelection = "none" | "some" | "all";
+
 /**
  * A street's bar: a tinted heading row, sticky under the column headers, whose button collapses the street.
  * List its `row` in the Register's `spanningRows`.
+ *
+ * With `selection` and `onSelectedChange` (AVE-123, Management's MANA-1168) the bar leads with a checkbox in the
+ * selection column that selects or clears only that street's rows, half-checked while some are. List the bar in
+ * `groupSelectRows` instead: the checkbox is its column 0 and the rest of the bar its column 1, so the arrows reach
+ * both. With a mouse the checkbox shows while the bar is hovered or focused, while any of the street's rows is
+ * selected, and while any row in the table is; on a touch screen, with no hover, it always shows (MANA-1174).
+ *
+ * A named departure from the app, which draws the checkbox inside the bar's padding: here it sits in the selection
+ * column, lined up with the rows' checkboxes below it, as Linear does.
  */
 function RegisterGroupRow({
   row,
@@ -204,6 +225,8 @@ function RegisterGroupRow({
   onOpenChange,
   icon: Icon = HouseIcon,
   trailing,
+  selection,
+  onSelectedChange,
 }: {
   row: number;
   colCount: number;
@@ -214,50 +237,76 @@ function RegisterGroupRow({
   icon?: LucideIcon | undefined;
   /** At the end of the bar, like the street's outstanding total. */
   trailing?: ReactNode | undefined;
+  selection?: GroupSelection | undefined;
+  /** Select (true) or clear (false) every row of this street. */
+  onSelectedChange?: ((checked: boolean) => void) | undefined;
 }) {
-  return (
-    <parts.Row id={`${row}`} row={row} className="sticky top-9 z-[5] pointer-coarse:top-11">
-      <parts.Cell
-        id={`${row}:0`}
-        row={row}
-        col={0}
-        control
-        colSpan={colCount}
-        className={cn(
-          "relative isolate h-12 border-y-4 border-background bg-clip-padding p-0 px-2 text-meta",
-          "rounded-xl",
-          ring,
-        )}
+  const selectable = selection !== undefined && onSelectedChange !== undefined;
+  const tint = { "data-tint": tintFor(name), style: { "--group-color": "var(--tint-solid)" } as CSSProperties };
+  const bar = (
+    <div {...tint} className="flex h-full items-center gap-2 rounded-xl px-2">
+      <div aria-hidden className={cn("absolute inset-0 -z-[1]", selectable ? "rounded-e-xl" : "rounded-xl", barFill)} />
+      <ButtonPrimitive
+        aria-expanded={open}
+        onClick={() => onOpenChange(!open)}
+        className="relative hit-area flex min-w-0 flex-1 items-center gap-2 py-1 text-start outline-none"
       >
-        <div
-          data-tint={tintFor(name)}
-          style={{ "--group-color": "var(--tint-solid)" } as CSSProperties}
-          className="flex h-full items-center gap-2 rounded-xl px-2"
+        {open ? (
+          <ChevronDownIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
+        ) : (
+          <ChevronRightIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
+        )}
+        <Icon className="size-3.5 text-(--group-color)" aria-hidden />
+        <span className="text-compact font-semibold">{name}</span>
+        {/* The spaces and the hidden word name it "Birch Lane, 3 households", not "Birch Lane3". */}{" "}
+        <span className="text-muted-foreground">
+          {count}
+          <span className="sr-only"> {count === 1 ? "household" : "households"}</span>
+        </span>
+      </ButtonPrimitive>
+      {trailing && <span className="ms-auto text-muted-foreground">{trailing}</span>}
+    </div>
+  );
+  if (!selectable) {
+    return (
+      <parts.Row id={`${row}`} row={row} className="sticky top-9 z-[5] pointer-coarse:top-11">
+        <parts.Cell
+          id={`${row}:0`}
+          row={row}
+          col={0}
+          control
+          colSpan={colCount}
+          className={cn(barCell, "px-2", "rounded-xl", ring)}
         >
-          <div
-            aria-hidden
-            className="absolute inset-0 -z-[1] rounded-xl bg-[linear-gradient(100deg,color-mix(in_oklab,var(--group-color)_12%,var(--muted)),color-mix(in_oklab,var(--group-color)_4%,var(--muted))_55%,var(--muted))]"
-          />
-          <ButtonPrimitive
-            aria-expanded={open}
-            onClick={() => onOpenChange(!open)}
-            className="relative hit-area flex min-w-0 flex-1 items-center gap-2 py-1 text-start outline-none"
-          >
-            {open ? (
-              <ChevronDownIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
-            ) : (
-              <ChevronRightIcon className="size-2.5 text-muted-foreground opacity-60" aria-hidden />
-            )}
-            <Icon className="size-3.5 text-(--group-color)" aria-hidden />
-            <span className="text-compact font-semibold">{name}</span>
-            {/* The spaces and the hidden word name it "Birch Lane, 3 households", not "Birch Lane3". */}{" "}
-            <span className="text-muted-foreground">
-              {count}
-              <span className="sr-only"> {count === 1 ? "household" : "households"}</span>
-            </span>
-          </ButtonPrimitive>
-          {trailing && <span className="ms-auto text-muted-foreground">{trailing}</span>}
-        </div>
+          {bar}
+        </parts.Cell>
+      </parts.Row>
+    );
+  }
+  return (
+    <parts.Row id={`${row}`} row={row} className="group/bar sticky top-9 z-[5] pointer-coarse:top-11">
+      <parts.Cell id={`${row}:0`} row={row} col={0} control className={cn(barCell, "rounded-s-xl", ring)} {...tint}>
+        <div aria-hidden className={cn("absolute inset-0 -z-[1] rounded-s-xl", barStart)} />
+        <Checkbox
+          aria-label={`Select all on ${name}`}
+          checked={selection === "all" ? true : selection === "some" ? "indeterminate" : false}
+          onCheckedChange={(checked) => onSelectedChange(checked === true)}
+          className={cn(
+            "mx-auto transition-opacity motion-reduce:transition-none",
+            selection === "none" &&
+              "opacity-0 group-hover/bar:opacity-100 group-has-[:focus-visible]/bar:opacity-100 group-has-[[data-selected]]/register:opacity-100 pointer-coarse:opacity-100",
+          )}
+        />
+      </parts.Cell>
+      <parts.Cell
+        id={`${row}:1`}
+        row={row}
+        col={1}
+        control
+        colSpan={colCount - 1}
+        className={cn(barCell, "pe-2", "rounded-e-xl", ring)}
+      >
+        {bar}
       </parts.Cell>
     </parts.Row>
   );

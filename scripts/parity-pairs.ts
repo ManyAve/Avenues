@@ -1055,6 +1055,28 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
   "composites-register--combobox-in-cell": { none: BEHAVIOUR("Register / Wide and Combobox / Households") },
 
+  "composites-register--group-select": { none: BEHAVIOUR("Register / Group select some") },
+  "composites-register--group-select-phone": { none: "AVE-123 / MANA-1174: the street checkbox on a touch screen, always shown; the app has no phone GroupRow story. Its look is compared through Register / Group select some." },
+  "composites-register--group-select-some": [
+    { label: "street checkbox", app: "primitives-grouprow--some-selected", appCrop: "#storybook-root [role=checkbox] >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child [role=checkbox] >> nth=0" },
+  ],
+
+  // ---- Composites: table filters (AVE-123)
+  "composites-table-filter--with-filters": [
+    { label: "filter pill", app: "shell-tablefilters--active", appCrop: "#storybook-root button[aria-label^='Filter:'] >> nth=0", avenueCrop: "button[aria-label^='Filter:'] >> nth=0", allow: [OUTLINE_DARK_FILL] },
+    { label: "remove filter", app: "shell-tablefilters--active", appCrop: "#storybook-root button[aria-label^='Remove filter:'] >> nth=0", avenueCrop: "button[aria-label^='Remove filter:'] >> nth=0", allow: [
+      OUTLINE_DARK_FILL,
+      { prop: "padding-left", app: "6px", avenue: "8px", because: "AVE-2 §1: the × button's off-grid 6px side padding becomes 8px" },
+      { prop: "padding-right", app: "6px", avenue: "8px", because: "AVE-2 §1: the × button's off-grid 6px side padding becomes 8px" },
+    ] },
+  ],
+  "composites-table-filter--add-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
+  "composites-table-filter--money-filter": { none: BEHAVIOUR("Table filter / With filters and Input / Default") },
+  "composites-table-filter--editor-open": { none: BEHAVIOUR("Table filter / With filters, Popover / Open and Checkbox / Default") },
+  "composites-table-filter--remove-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
+  "composites-table-filter--agent": { none: BEHAVIOUR("Table filter / With filters") },
+  "composites-table-filter--phone": { none: "The filter pills in the phone toolbar's strip, 44px tall on a touch screen; the app has no phone TableFilters story. The pill is compared through Table filter / With filters." },
+
   // ---- Composites part 4: the toolbars (AVE-9)
   "composites-toolbar--wide": [
     { label: "toolbar filters", app: "shell-toolbar--default", appCrop: "#storybook-root [role=toolbar] > div >> nth=0", avenueCrop: "[data-slot=toolbar-filters]", allow: [

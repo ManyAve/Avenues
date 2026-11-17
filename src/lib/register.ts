@@ -25,6 +25,11 @@ export type RegisterOptions = {
   colCount: number;
   /** Rows that hold one cell spanning every column, like a street's group bar or the add row. Only their column 0 exists. */
   spanningRows?: readonly number[] | undefined;
+  /**
+   * Street bars that carry a select checkbox (AVE-123): column 0 is the checkbox, in the selection column, and column
+   * 1 spans the rest. List them here instead of in `spanningRows`.
+   */
+  groupSelectRows?: readonly number[] | undefined;
 };
 
 type State = { active: GridCell | null };
@@ -41,7 +46,9 @@ const controlSelector = "a[href], button, input, select, textarea, [role=checkbo
 
 function exists(options: RegisterOptions, cell: GridCell) {
   if (cell.row < 0 || cell.col < 0 || cell.row >= options.rowCount || cell.col >= options.colCount) return false;
-  return cell.col === 0 || !(options.spanningRows ?? []).includes(cell.row);
+  if (cell.col === 0) return true;
+  if ((options.groupSelectRows ?? []).includes(cell.row)) return cell.col === 1;
+  return !(options.spanningRows ?? []).includes(cell.row);
 }
 
 /** The cell nearest to `cell` that still exists: same column below, then above, then column 0 of the same rows. */
@@ -75,7 +82,7 @@ type CellProps = { id?: string | undefined; row: number; col: number; control?: 
 
 export const register = definePrimitive({
   name: "register",
-  options: { rowCount: "number", colCount: "number", spanningRows: "value" },
+  options: { rowCount: "number", colCount: "number", spanningRows: "value", groupSelectRows: "value" },
   state: (_options: RegisterOptions): State => ({ active: null }),
   api: (context) => {
     const grid = createGridFocus(context, {
