@@ -55,6 +55,12 @@ export interface Pair {
   /** Leave focus where the story put it: for a tooltip, which focus holds open. */
   keepFocus?: boolean;
   allow?: Allowance[];
+  /**
+   * The app commit to compare with, for a part the app first drew after APP_BASELINE (scripts/parity-pairs.ts), so it
+   * has no look from before Avenue. Pin a commit where the app still draws the captured element itself, never one
+   * where it draws Avenue's (AVE-141), and say why.
+   */
+  at?: { commit: string; why: string };
 }
 
 /** An Avenue story with nothing in the app to compare with. The reason needs UI Designer sign-off on AVE-10. */
@@ -377,7 +383,7 @@ function covers(allowance: Allowance, d: Difference): boolean {
 }
 
 export function isAgreedFix(because: string): boolean {
-  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|50|58|70|72|78|84|89|99|117):/.test(because);
+  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|50|58|70|72|78|84|89|99|117|120|130):/.test(because);
 }
 
 export function isAppLocal(because: string): boolean {
@@ -413,9 +419,14 @@ export function verdict(all: Difference[], pixelsDiffer: boolean, sameText = fal
 }
 
 /** Problems in the pair map itself: stories with no entry, entries for stories that don't exist, bad reasons. */
-export function mapProblems(map: Record<string, PairEntry>, avenueStories: string[], appStories: string[]): string[] {
+export function mapProblems(
+  map: Record<string, PairEntry>,
+  avenueStories: string[],
+  appStories: string[] | ((pair: Pair) => string[]),
+): string[] {
   const problems: string[] = [];
-  const app = new Set(appStories);
+  const all = new Set(typeof appStories === "function" ? [] : appStories);
+  const appHas = (pair: Pair) => (typeof appStories === "function" ? appStories(pair).includes(pair.app) : all.has(pair.app));
   const avenue = new Set(avenueStories);
   for (const id of avenueStories) {
     if (!(id in map)) problems.push(`${id} has no pair and no recorded reason`);
@@ -425,7 +436,7 @@ export function mapProblems(map: Record<string, PairEntry>, avenueStories: strin
     if (Array.isArray(entry)) {
       if (entry.length === 0) problems.push(`${id} has an empty pair list`);
       for (const pair of entry) {
-        if (!app.has(pair.app)) problems.push(`${id} pairs with ${pair.app}, which isn't an app story`);
+        if (!appHas(pair)) problems.push(`${id} pairs with ${pair.app}, which isn't an app story${pair.at ? ` at ${pair.at.commit.slice(0, 8)}` : ""}`);
         for (const a of pair.allow ?? []) {
           if (!isAgreedFix(a.because) && !isKnownBug(a.because) && !isAppLocal(a.because)) {
             problems.push(`${id}: allowance for ${a.prop} must start "AVE-2 §<n>:", "AVE-8:", "AVE-13:", "AVE-29:", "AVE-<id>:" or "app: <file>:", not "${a.because}"`);

@@ -17,6 +17,34 @@
  */
 import type { Allowance, PairEntry } from "./parity-lib";
 
+/**
+ * The app commit every pair is compared with (AVE-141). From slice 1 on (Management #652, MANA-1119) the app loads
+ * Avenue's stylesheet and then draws Avenue's own parts, so its current stories compare Avenue with Avenue: 70 pairs
+ * failed at ed4d74d, most of them Avenue's mode toggle beside itself. This is the merge just before slice 1, where
+ * the app had Avenue installed but drew nothing with it (its UI matches 4f078a0, before the install), so it is the
+ * app's own look: the one Avenue was ported from, and the one every `app: <file>` reason below names. A part the app
+ * changed after it, and hasn't moved to Avenue, is compared there too; take its new look into Avenue as an AVE
+ * ticket, not by moving the baseline.
+ */
+export const APP_BASELINE = {
+  commit: "e2fcd3f174b97f8491f6458155120cc50798b7c9",
+  why: "Management main before slice 1 (#652): Avenue installed, nothing drawn with it",
+};
+
+/**
+ * Board chat (MANA-1148) was first drawn after the baseline, already on Avenue's buttons and menus, so it has no look
+ * from before Avenue. Avenue's dock and composer were ported from it at this commit (Management release 0.6.48), where
+ * the chat window, its header and its message field are still the app's own markup. Only those are paired here; its
+ * Send is Avenue's Button there, so pairing it would compare Avenue with itself.
+ */
+const APP_CHAT = {
+  commit: "ed4d74d973f01bdc95ff06bed362b024ac10e8ce",
+  why: "board chat, first drawn after the baseline: its window, header and message field are the app's own here",
+};
+/** Why a pair was retired (AVE-141): at the only commit with an app story for it, the app draws Avenue's part. */
+const AVENUE_IN_APP = (part: string, story: string) =>
+  `AVE-141: ${part} was first drawn in the app after the baseline, already with Avenue's part, so the app's ${story} story compares Avenue with itself. Its look is Avenue's own, held by visual:diff.`;
+
 // ---- Reasons shared by several pairs
 
 const GRID_10_TO_8 = "AVE-2 §1: the app's off-grid 10px side padding inside a control becomes 8px";
@@ -86,7 +114,13 @@ const SEARCH: Allowance[] = [
   { prop: "width", because: GRID_10_TO_8 },
   { prop: "border-*-radius", app: "3px", avenue: "4px", because: "AVE-2 §3: the shortcut hint's 3px literal becomes the xs corner, 4px" },
 ];
+// AVE-99: in dark the app's outline button takes the page colour, darker than the card it sits on.
+const OUTLINE_DARK_FILL: Allowance = {
+  prop: "background-color",
+  because: "AVE-99: in dark an outline button's fill is the card's surface, not the darker page colour",
+};
 const TOOLBAR: Allowance[] = [
+  OUTLINE_DARK_FILL,
   { prop: "height", app: "29px", avenue: "32px", because: MD_HEIGHT },
   { prop: "padding-left", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
   { prop: "padding-right", app: "7px", avenue: "8px", because: "AVE-2 §1: the off-grid 7px side padding becomes 8px" },
@@ -143,11 +177,13 @@ const BUTTON_MD: Allowance[] = [
   // The 4px of extra padding makes the same label 4px wider.
   { prop: "width", because: GRID_10_TO_12_MD },
 ];
-// AVE-99: in dark the app's outline button takes the page colour, darker than the card it sits on.
-const OUTLINE_DARK_FILL: Allowance = {
-  prop: "background-color",
-  because: "AVE-99: in dark an outline button's fill is the card's surface, not the darker page colour",
-};
+// The app's Callout (app/ui/components/dues.tsx at the baseline) is a <p> with its text in a <span>; Avenue's is a <div>
+// with a <div>, so a callout can hold a paragraph or a list (a <p> can't).
+const CALLOUT: Allowance[] = [
+  { prop: "padding-*", app: "10px", avenue: "8px", because: "AVE-2 §1: the callout's off-grid 10px top and bottom padding becomes 8px" },
+  { prop: "height", because: "AVE-2 §1: the 8px top and bottom padding makes the same one-line callout 4px shorter" },
+  { prop: "parts", because: "AVE-120: Callout's text sits in a div, not the app's span inside a p, so it can hold a paragraph or a list; the same text, colours and icon" },
+];
 const SIDE_10_TO_8: Allowance[] = [
   { prop: "padding-left", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
   { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
@@ -263,6 +299,7 @@ const STATUS_TOTAL: Allowance[] = [
 ];
 const SELECTION_BAR: Allowance[] = [
   ...SIDE_10_TO_8,
+  OUTLINE_DARK_FILL,
   { prop: "border-*-radius", app: "9px", avenue: "10px", because: "AVE-2 §3: the floating bar's 9px literal corner becomes lg, 10px" },
   { prop: "parts", app: "only here: span", avenue: "only here: selection-bar-count", because: "app: app/ui/components/SelectionBar.tsx: the count is the same text; Avenue names its part (selection-bar-count)" },
 ];
@@ -348,7 +385,13 @@ export const PAIRS: Record<string, PairEntry> = {
     { label: "status: owing", app: "primitives-status--owing", appCrop: "[data-slot=badge]", avenueCrop: "[data-slot=status] >> nth=1", allow: STATUS },
   ],
   "components-status--with-help": [
-    { label: "status with help", app: "primitives-status--owing", appCrop: "[data-slot=badge]", avenueCrop: "[data-slot=status] >> nth=0", allow: STATUS },
+    {
+      label: "status with help",
+      app: "primitives-status--owing",
+      appCrop: "[data-slot=badge]",
+      avenueCrop: "[data-slot=status] >> nth=0",
+      allow: [...STATUS, { prop: "parts", because: "AVE-130: Status draws its dot with Avenue's StatusDot, a named part (data-slot=status-dot), where the app's is a plain span; the same 6px dot" }],
+    },
   ],
   "components-status--counts": [
     {
@@ -564,6 +607,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-dock--default": [
     {
       label: "dock window frame",
+      at: APP_CHAT,
       app: "chat-board-chat--thread",
       appCrop: "section[aria-label='Ana Ruiz']",
       avenueCrop: "section[aria-label='Ana Ruiz']",
@@ -571,6 +615,7 @@ export const PAIRS: Record<string, PairEntry> = {
     },
     {
       label: "dock window header",
+      at: APP_CHAT,
       app: "chat-board-chat--thread",
       appCrop: "section[aria-label='Ana Ruiz'] > header",
       avenueCrop: "[data-slot=dock-window-header]",
@@ -580,6 +625,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-dock--folded": [
     {
       label: "folded dock window",
+      at: APP_CHAT,
       app: "chat-board-chat--folded",
       appCrop: "section[aria-label='Ana Ruiz']",
       avenueCrop: "section[aria-label='Ana Ruiz']",
@@ -639,6 +685,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-composer--typing": [
     {
       label: "composer field",
+      at: APP_CHAT,
       app: "chat-board-chat--thread",
       appCrop: "footer textarea",
       avenueCrop: "[data-slot=composer] textarea",
@@ -649,7 +696,7 @@ export const PAIRS: Record<string, PairEntry> = {
         { prop: "width", app: "272px", avenue: "270px", because: "AVE-2 §1: field and Send sit gap-controls (8px) apart where the app has 6px, so the field is 2px narrower" },
       ],
     },
-    { label: "composer send", app: "chat-board-chat--thread", appCrop: "footer button >> nth=-1", avenueCrop: "[data-slot=composer] [data-slot=button]" },
+    // Not paired: the composer's Send, which is Avenue's Button in the app's chat at APP_CHAT (AVE-141).
   ],
   ...Object.fromEntries(
     ["empty", "at-max-height", "sending", "sending-held", "replying", "cancel-reply-by-keyboard", "editing", "save-edit", "disabled", "phone"].map(
@@ -671,7 +718,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-skeleton--controls-wait": { none: BEHAVIOUR("Skeleton / In a card and Button / Variants") },
 
   "components-empty-state--default": [
-    { label: "empty state action", app: "primitives-emptystate--default", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", allow: SIDE_10_TO_8 },
+    { label: "empty state action", app: "primitives-emptystate--default", appCrop: "[data-slot=button]", avenueCrop: "[data-slot=button]", allow: [...SIDE_10_TO_8, OUTLINE_DARK_FILL] },
     {
       label: "empty state",
       app: "primitives-emptystate--no-action",
@@ -829,7 +876,7 @@ export const PAIRS: Record<string, PairEntry> = {
       app: "dues-dialogs--set-assessment",
       appCrop: "p.bg-info-subtle >> nth=0",
       avenueCrop: "[data-slot=callout]",
-      allow: [{ prop: "padding-*", app: "10px", avenue: "8px", because: "AVE-2 §1: the callout's off-grid 10px top and bottom padding becomes 8px" }],
+      allow: [...CALLOUT, { prop: "width", because: "app: app/ui/components/dues.tsx: the callout fills the Set assessment dialog's body, 408px; Avenue's story gives it 448px. Callout sets no width of its own" }],
     },
   ],
   "components-callout--warning": [
@@ -838,7 +885,7 @@ export const PAIRS: Record<string, PairEntry> = {
       app: "dues-late-notice--unreconciled-balance",
       appCrop: "p.bg-warning-subtle >> nth=0",
       avenueCrop: "[data-slot=callout]",
-      allow: [{ prop: "padding-*", app: "10px", avenue: "8px", because: "AVE-2 §1: the callout's off-grid 10px top and bottom padding becomes 8px" }],
+      allow: [...CALLOUT, { prop: "glyph", app: "lucide-info", avenue: "lucide-triangle-exclamation-point", because: "app: app/ui/components/dues-notice.tsx: the late notice's warning keeps Callout's default info icon; Avenue's Warning story passes TriangleAlert, as Callout's doc asks. Both Callouts default to the info icon" }],
     },
   ],
   "components-callout--tones": { none: "Both tones and a custom icon side by side, an Avenue overview; each tone is compared through its own story." },
@@ -1185,19 +1232,14 @@ export const PAIRS: Record<string, PairEntry> = {
 
   "composites-register--group-select": { none: BEHAVIOUR("Register / Group select some") },
   "composites-register--group-select-phone": { none: "AVE-123 / MANA-1174: the street checkbox on a touch screen, always shown; the app has no phone GroupRow story. Its look is compared through Register / Group select some." },
-  "composites-register--group-select-some": [
-    { label: "street checkbox", app: "primitives-grouprow--some-selected", appCrop: "#storybook-root [role=checkbox] >> nth=0", avenueCrop: "[role=checkbox][aria-label='Select all on Cedar Court']" },
-  ],
+  "composites-register--group-select-some": {
+    none: AVENUE_IN_APP("The street checkbox (MANA-1168)", "Group row / Some selected, whose checkbox is Avenue's Checkbox"),
+  },
 
   // ---- Composites: table filters (AVE-123)
-  "composites-table-filter--with-filters": [
-    { label: "filter pill", app: "shell-tablefilters--active", appCrop: "#storybook-root button[aria-label^='Filter:'] >> nth=0", avenueCrop: "button[aria-label^='Filter:'] >> nth=0", allow: [OUTLINE_DARK_FILL] },
-    { label: "remove filter", app: "shell-tablefilters--active", appCrop: "#storybook-root button[aria-label^='Remove filter:'] >> nth=0", avenueCrop: "button[aria-label^='Remove filter:'] >> nth=0", allow: [
-      OUTLINE_DARK_FILL,
-      { prop: "padding-left", app: "6px", avenue: "8px", because: "AVE-2 §1: the × button's off-grid 6px side padding becomes 8px" },
-      { prop: "padding-right", app: "6px", avenue: "8px", because: "AVE-2 §1: the × button's off-grid 6px side padding becomes 8px" },
-    ] },
-  ],
+  "composites-table-filter--with-filters": {
+    none: AVENUE_IN_APP("The table filters (MANA-1168)", "Table filters / Active, whose pills are Avenue's ToolbarButton"),
+  },
   "composites-table-filter--add-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--money-filter": { none: BEHAVIOUR("Table filter / With filters and Input / Default") },
   "composites-table-filter--editor-open": { none: BEHAVIOUR("Table filter / With filters, Popover / Open and Checkbox / Default") },

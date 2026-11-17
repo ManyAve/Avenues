@@ -165,6 +165,17 @@ describe("mapProblems", () => {
     );
     expect(problems).toHaveLength(3);
   });
+  test("a pair pinned to another app commit is looked up in that commit's stories (AVE-141)", () => {
+    const later = { commit: "later", why: "drawn after the baseline" };
+    const stories = (pair: { at?: { commit: string } | undefined }) => (pair.at?.commit === "later" ? ["chat-x--thread"] : app);
+    const map = {
+      "components-x--a": [{ app: "chat-x--thread", at: later }],
+      "components-x--b": [{ app: "chat-x--thread" }],
+    };
+    expect(mapProblems(map, ["components-x--a", "components-x--b"], stories)).toEqual([
+      "components-x--b pairs with chat-x--thread, which isn't an app story",
+    ]);
+  });
   test("the committed map's reasons are all in a recognised form", () => {
     const ids = Object.keys(PAIRS);
     const appIds = Object.values(PAIRS).flatMap((e) => (Array.isArray(e) ? e.map((p) => p.app) : []));
