@@ -24,10 +24,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     edit empties the field.
   - Pass `value` and `onValueChange` to the field to control it (an edit puts the message's text in), or leave it
     uncontrolled. `disabledReason` on `Composer` turns it off and says why under it.
-  - Changes from Management's look (AVE-2): the field's corner is rounded-xl (14px; Avenue has no 2xl corner), it is
-    32px at one line (was 34) to match Send, and field and Send sit `gap-controls` apart (was 6px). On a phone both
-    are 44px tall and the field's text is 16px, so iOS doesn't zoom.
-    In dark the banner is `bg-accent`, not `bg-muted`, which is the chat window's own colour there.
+  - Look: Management's chat footer, compared with `bun run parity`. The one difference is the field's corner: the
+    app asks for `rounded-2xl`, a step the shared theme retired (AVE-2), so its chat field draws square corners today;
+    Avenue's is `rounded-xl` (14px), the pill both apps meant at one line. The field is 32px at one line (was 34) to
+    match Send, and field and Send sit `gap-controls` apart (was 6px). On a phone the field and Send are both 44px
+    tall and the field's text is 16px, so iOS doesn't zoom. In dark the banner is `bg-accent`, not `bg-muted`, which is
+    the chat window's own colour there.
   - Management: replace the raw `<textarea>` and Send in `ChatWindow`'s footer (`app/ui/components/chat.tsx`) with
     these parts; `sendsOnKey` and the Escape handler go, and the reply/edit banner becomes `ComposerContext`.
   - Neighbors: when adopting, `ChatComposer` becomes `Composer` with `onSend` returning the send promise; the comment

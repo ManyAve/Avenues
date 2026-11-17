@@ -39,10 +39,10 @@ import { cn } from "#avenue/lib/utils";
  * - With a `ComposerContext` showing, Escape in the field cancels it; without one, Escape is left alone, so it still
  *   reaches the dock or dialog around the composer. Cancelling an edit also empties the field, as Management does.
  *
- * Changes from the app (AVE-2): the field's corner is rounded-xl (14px), because Avenue's theme retires the 2xl corner;
- * at one line (32px) it still reads as the pill both apps draw. The field is 32px at one line (was 34) so it matches
- * Send beside it; field and Send sit gap-controls apart (was 6px), the banner gap-controls above them (was 6px). On a
- * phone the field and Send are both 44px tall, and the field's text is 16px so iOS doesn't zoom on focus (AVE-29).
+ * Changes from the app (AVE-2): the field's corner is rounded-xl (14px). The app asks for rounded-2xl, a step the shared
+ * theme retired, so its field draws square corners; at one line (32px) 14px reads as the pill both apps meant. The
+ * field is 32px at one line, Send's height, and field and Send sit gap-controls apart. On a phone both are 44px tall,
+ * and the field's text is 16px so iOS doesn't zoom on focus (AVE-29).
  * The banner is `bg-accent` in dark (the app's `bg-muted`), because dark muted is the chat window's own colour and the
  * banner vanished into it, as the skeleton's did (AVE-128).
  */

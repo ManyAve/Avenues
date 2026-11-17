@@ -595,10 +595,10 @@ export const PAIRS: Record<string, PairEntry> = {
       appCrop: "footer textarea",
       avenueCrop: "[data-slot=composer] textarea",
       allow: [
-        { prop: "border-*-radius", app: "16px", avenue: "14px", because: "AVE-2 §3: Avenue retires the 2xl corner; the chat field takes rounded-xl, still a pill at one line" },
+        { prop: "border-*-radius", app: "0px", avenue: "14px", because: "AVE-2 §3: the app's chat field asks for rounded-2xl, a step the shared theme retired, so it draws square corners; Avenue's takes rounded-xl, the pill both apps meant at one line" },
         { prop: "height", app: "34px", avenue: "32px", because: "AVE-2 §2: the field is 32px at one line, the height of Send beside it (controls in a row share a size)" },
         { prop: "padding-*", app: "6px", avenue: "5px", because: "AVE-2 §2: the padding centres one 20px line in the 32px field" },
-        { prop: "width", because: "AVE-2 §1: field and Send sit gap-controls (8px) apart where the app has 6px, so the field is 2px narrower" },
+        { prop: "width", app: "272px", avenue: "270px", because: "AVE-2 §1: field and Send sit gap-controls (8px) apart where the app has 6px, so the field is 2px narrower" },
       ],
     },
     { label: "composer send", app: "chat-board-chat--thread", appCrop: "footer button >> nth=-1", avenueCrop: "[data-slot=composer] [data-slot=button]" },
