@@ -711,6 +711,16 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-empty-state--section": {
     none: "The app's SectionEmpty has no story of its own; it appears only inside page stories that show it with real lists around it.",
   },
+  "components-empty-state--link-action": {
+    none: NEW_IN_AVENUE("An empty state whose action is a link (AVE-139)", "Empty state / Default and Empty state / Secondary action, whose buttons draw the same classes"),
+  },
+  "components-empty-state--router-link-action": {
+    none: NEW_IN_AVENUE("An empty state whose action is the app's router link (AVE-139)", "Empty state / Default, whose button draws the same classes"),
+  },
+  "components-empty-state--disabled-link-action": { none: STATE_ONLY("the empty state's link action disabled", "Empty state / Default, and disabled opacity through Button / Playground") },
+  "components-empty-state--section-link": {
+    none: "The app's SectionEmpty has no story of its own, and its action is never a link there (AVE-139); the button look is the one in Empty state / Section.",
+  },
 
   // ---- Field, input and textarea (AVE-6, AVE-25)
   "components-field--label-and-description": [

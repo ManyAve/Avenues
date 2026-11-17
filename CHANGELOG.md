@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.22.0 (2026-11-17)
+
+- **Empty-state actions can be links** (AVE-139). An action that goes somewhere ("Add a household", "See all
+  documents") was a button with `onClick={() => navigate(...)}`: it couldn't open in a new tab, didn't show its
+  address, and read as a button to a screen reader. Now:
+  - EmptyState's `action` and `secondaryAction`, and SectionEmpty's `action`, also take `href` (a plain link with the
+    button's look) or `render` (the app's router link, such as `render={<Link to="/households/new" />}`, so navigation
+    stays client-side). `render` wins over `href`. A disabled link can't navigate and leaves the tab order.
+  - They also take `confirm`, drawn as `data-agent-confirm`, for an action an agent must not take alone.
+  - `{ label, onClick }` works as before and looks the same. SectionEmpty's `onClick` is now optional.
+  - Management and Neighbors: where an empty state's action navigates, swap `onClick={() => navigate(...)}` for
+    `render={<Link to="..." />}`. Nothing else to change.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.21.0 (2026-11-17)
 
 - **Combobox** works on its own in a plain form, the way Select does (AVE-137).
