@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
-import { EllipsisIcon, MessageCircleIcon, SquarePenIcon } from "lucide-react";
+import { EllipsisIcon, MessageCircleIcon, SendHorizontalIcon, SquarePenIcon } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -59,6 +59,26 @@ function Row({ message }: { message: ChatMessage }) {
   );
 }
 
+/** A stand-in for Avenue's Composer (AVE-134) in Management's composer look: Send waits for words. */
+function ComposerStandIn({ label }: { label: string }) {
+  const [draft, setDraft] = useState("");
+  return (
+    <div className="flex items-end gap-2 border-t p-2 pointer-coarse:gap-controls">
+      <Textarea
+        aria-label={`Message ${label}`}
+        placeholder="Message"
+        rows={1}
+        value={draft}
+        onChange={(event) => setDraft(event.currentTarget.value)}
+        className="min-h-8 resize-none rounded-xl bg-muted/40 py-1 pointer-coarse:min-h-11"
+      />
+      <Button size="icon" aria-label="Send" disabled={draft.trim() === ""} onClick={() => setDraft("")}>
+        <SendHorizontalIcon aria-hidden />
+      </Button>
+    </div>
+  );
+}
+
 /** A chat window: the thread's list and a stand-in composer whose draft must survive a fold. */
 function ChatWindow({
   thread,
@@ -106,9 +126,7 @@ function ChatWindow({
             <Row key={message.id} message={message} />
           ))}
         </MessageList>
-        <div className="border-t p-2">
-          <Textarea aria-label={`Message ${label}`} placeholder="Message" rows={1} className="min-h-8" />
-        </div>
+        <ComposerStandIn label={label} />
       </DockWindowBody>
     </DockWindow>
   );
