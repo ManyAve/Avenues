@@ -42,9 +42,28 @@ comments when ui-sdk is upgraded. Hand-rolled behavior is the last resort, built
   Combobox presenting as a sheet ("aria-controls names no open listbox", AVE-39). Remove the pin, run the `touch`
   project, and if it passes delete the pin and its comment (AVE-75).
 
-**Avenue keeps its own look.** Moving a component to ui-sdk must not change a pixel: it keeps the
-shadcn component structure, `data-slot` names, Avenue's tokens and Tailwind classes. ui-sdk supplies
-behavior, not appearance; prove it with `bun run visual:diff`.
+**Composition and names follow ui-sdk** (Zack, 2026-11-17: "For composition let's follow ui-sdk", including prop
+names). This replaces the shadcn component structure and the 2026-11-17 morning call that composites stay prop-driven.
+
+- **Structure.** A component is a root and named parts, nested as the ui-sdk component page's Composition shows. A
+  component with rules of its own (a form dialog, a confirm dialog, a file field, an empty state) is a root that holds
+  those rules, plus parts that read them; its one-tag form stays, as a wrapper built from those parts, the way
+  `rendering.md`'s "Wrap the Parts" wraps Rating's parts in one `Rating`.
+- **Names.** Use ui-sdk's: part names (`MenuItem`, `TabsTab`, `DrawerContent`); state pairs (`value` / `defaultValue` /
+  `onValueChange`, `open` / `onOpenChange`, `checked` / `onCheckedChange`); change callbacks that take the new value
+  first and pass ui-sdk's `details` on second; `items` for data; `disabled`, `invalid`, `required` and `destructive`
+  for state and intent; and a returned Promise, not a `pending` prop, for work in progress. Where ui-sdk has a name for
+  the thing, don't invent another.
+- **Renames keep the old name for one minor release.** When a part or prop takes ui-sdk's name, the shadcn or earlier
+  Avenue name stays exported as a deprecated alias (`/** @deprecated Use MenuItem. */`) until the next minor, and the
+  CHANGELOG entry says what to rename, so Management and Neighbors move at their own pace.
+- `scripts/own-part-render.test.ts`'s `COMPOSITES` list is what is still prop-driven; it shrinks as the composite cards
+  land (AVE-146 to AVE-149). Don't add to it.
+
+**Avenue keeps its own look.** ui-sdk supplies behavior, structure and names, not appearance: the classes, Avenue's
+tokens, `data-slot` names for Avenue's own parts (below), and the look props `variant` and `size`, which ui-sdk doesn't
+have, stay Avenue's. Moving a component to ui-sdk, or to its part structure, must not change a pixel; prove it with
+`bun run visual:diff`.
 
 **`data-slot` names.** On a ui-sdk part, ui-sdk's `data-slot` wins (`menu-item`, `dialog-backdrop`,
 `segmented-control-item`), because its behavior reads it; don't pass Avenue's own name to a ui-sdk part.
@@ -88,7 +107,8 @@ itself; `Toast/EmptyRegion` still guards it.
 3. **One shape.** A root and its parts, nested as the component page's Composition shows. Change a
    part's element with `render`, never an `as` prop. For a part of Avenue's own, use `renderElement`
    and `mergeProps` from `@ui-sdk/react/primitive` so it takes `render` like every other part (`scripts/own-part-render.test.ts`
-   fails on a part typed `ComponentProps<"tag">`, AVE-136; a prop-driven composite is listed there with its reason).
+   fails on a part typed `ComponentProps<"tag">`, AVE-136; the composites still listed there are leaving it, see
+   "Composition and names follow ui-sdk" above).
    **Props take `undefined`** (AVE-108): ui-sdk's optional props reject it under `exactOptionalPropertyTypes`, which
    Management turns on. Take a ui-sdk part's props as `Loose<ComponentProps<typeof Part>>` and spread them onto the
    part as `{...defined(props)}`; a part of Avenue's own takes `OwnPartProps<"div">`; a component that puts its
