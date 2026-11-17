@@ -95,6 +95,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     upstream: "collapsible",
     note: "AVE-121: the Collapsible section stories press each variant's trigger by keyboard and check aria-expanded, aria-controls and focus returning from a closed panel.",
   },
+  dock: {
+    upstream: "collapsible",
+    note: "AVE-135: each window is a ui-sdk Collapsible with a kept-mounted panel. The Dock stories fold and unfold by keyboard, check aria-expanded and aria-controls, that a typed draft survives a fold, that Tab skips a folded body and that Close returns focus to the launcher; Dock / Agent is its agent test.",
+  },
   calendar: {
     upstream: "calendar",
     note: "AVE-121: the testing kit has no calendar pattern; the Calendar stories test one Tab stop, the arrows, Page Down, Enter and the names.",

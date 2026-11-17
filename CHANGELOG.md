@@ -4,6 +4,30 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.19.0 (2026-11-17)
+
+- **Dock** (AVE-135), new in `@manyave/avenue/components/dock`: the messenger-style windows pinned to the bottom right
+  of a wide screen, each with a header that folds it away, its own actions and Close. Nothing existing changes.
+  - `<Dock>` holds the windows, newest first (it sits nearest the right edge). Each is
+    `<DockWindow label="Ana Ruiz">` with a `DockWindowHeader` (a `DockWindowTrigger` holding the leading avatar or icon,
+    `DockWindowTitle` and `DockWindowBadge count={3}`, then `DockWindowActions` and `DockWindowClose`) and a
+    `DockWindowBody`. `width="wide"` is the inbox's 416px.
+  - Folding is ui-sdk's Collapsible: the fold button reports `aria-expanded` and `aria-controls`, Enter and Space fold
+    it, and folding with focus inside puts focus back on it. Folded, the body stays mounted and hidden, so a
+    half-typed message survives and Tab skips it. Control it with `open` and `onOpenChange`, or `defaultOpen`
+    (open by default).
+  - A window is a named region, not a dialog: no focus trap, no backdrop, and Escape does nothing at window level.
+    Close is "Close <label>" and only calls its `onClick`; the app removes the window and moves focus back to what
+    opened it, such as its launcher.
+  - The unread pill is hidden from screen readers; the fold button reads "Ana Ruiz, 3 unread". "99+" past 99.
+  - On a phone (below 640px) a window spans the width and the windows stack, the newest at the bottom, where
+    Management squeezes them side by side. The header's buttons grow 16px apart on a touch screen so their tap areas
+    don't overlap. Whether to show a dock on a phone at all stays the app's call.
+  - Look: Management's frame, the same box and header (`bun run parity`: 12 of 12 the same).
+  - Management: `ChatDock` and `DockWindow` in `app/ui/components/chat.tsx` become these; `minimized` and `onToggle`
+    become `open` and `onOpenChange`, and the hand-written `hidden` body becomes `DockWindowBody`.
+  - Neighbors: the Card-based messages dock moves to this frame, which changes its fill and corners to Management's.
+  - Phone apps: nothing to take; native chat screens use the tokens only.
 ## v0.18.0 (2026-11-17)
 
 - **Every part Avenue draws itself takes `render`** (AVE-136), like every ui-sdk part, so an app can change its
