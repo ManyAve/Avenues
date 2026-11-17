@@ -1058,7 +1058,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--group-select": { none: BEHAVIOUR("Register / Group select some") },
   "composites-register--group-select-phone": { none: "AVE-123 / MANA-1174: the street checkbox on a touch screen, always shown; the app has no phone GroupRow story. Its look is compared through Register / Group select some." },
   "composites-register--group-select-some": [
-    { label: "street checkbox", app: "primitives-grouprow--some-selected", appCrop: "#storybook-root [role=checkbox] >> nth=0", avenueCrop: "[data-slot=register-body] tr:first-child [role=checkbox] >> nth=0" },
+    { label: "street checkbox", app: "primitives-grouprow--some-selected", appCrop: "#storybook-root [role=checkbox] >> nth=0", avenueCrop: "[role=checkbox][aria-label='Select all on Cedar Court']" },
   ],
 
   // ---- Composites: table filters (AVE-123)
