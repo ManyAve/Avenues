@@ -4,6 +4,24 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.21.0 (2026-11-17)
+
+- **Combobox** works on its own in a plain form, the way Select does (AVE-137).
+  - `value` and `onValueChange` are now optional. Leave them out and pass `defaultValue` (or nothing), and the field
+    manages its own choice. Controlled use works as before.
+  - `name` posts the chosen value with the form (ui-sdk's hidden input), `required` holds the submit until something
+    is chosen, and `form` joins a form elsewhere on the page. A form reset returns to `defaultValue`. The none option
+    (`noneLabel`) posts `name=`, like a native select's empty option; nothing chosen posts nothing.
+  - **"Nothing chosen" is now `null`**, as in Select and ui-sdk. `onValueChange` gets `null` when the none option is
+    picked or the phone's Clear is pressed, where it used to get `""`. `value=""` still means none for this release;
+    pass `null` instead before the next one.
+  - Upgrading: a handler typed `(value: string) => void` no longer fits `onValueChange`. In Management that is
+    `app/ui/components/household-picker.tsx` (`onValueChange={(id) => onChange(id ?? "")}`) and
+    `app/ui/components/time-zone-picker.tsx` (already skips an empty value: `(zone) => zone && onChange(zone)` keeps
+    working). State held as `useState("")` becomes `useState<string | null>(null)`.
+  - Neighbors: no Combobox in use yet. Phone apps: nothing to take.
+  - Look: unchanged (`bun run visual:diff`).
+
 ## v0.20.0 (2026-11-17)
 
 - **Message list** (AVE-132), reworked after review:

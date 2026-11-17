@@ -469,6 +469,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--disabled": { none: STATE_ONLY("a disabled combobox", "Combobox / Time zone") },
   "components-combobox--empty": { none: STATE_ONLY("an empty combobox list (the time zones always match)", "Combobox / Time zone") },
   "components-combobox--keyboard": { none: BEHAVIOUR("Combobox / Time zone") },
+  "components-combobox--in-a-form": { none: BEHAVIOUR("Combobox / Time zone (AVE-137: posting with a form and resetting it)") },
+  "components-combobox--empty-string-is-none": { none: BEHAVIOUR("Combobox / With a none choice (AVE-137: the old \"\" still means none)") },
   "components-combobox--sheet-on-phones": { none: SHEET("Combobox") },
   "components-combobox--clear-on-phones": { none: BEHAVIOUR("Combobox / Households (the clear button is new in Avenue, phones only, AVE-93)") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
