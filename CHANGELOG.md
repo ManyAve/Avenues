@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.9.0 (2026-11-16)
+## v0.11.0 (2026-11-17)
 
 - **Loading skeleton** (AVE-128), new in `@manyave/avenue/components/skeleton`. Nothing existing changes.
   - `Skeleton` is one placeholder shape, filled `bg-accent` with a slow pulse that stops under reduced motion.
@@ -18,6 +18,34 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   - Show it after about 300ms, at the real layout's size, for loads of a second or more where the layout is known.
   - Neighbors: replace `apps/web/src/design-system/ui/skeleton.tsx` (23 files). The fill stays `bg-accent`, and each screen's shapes go inside a `Loading` with a label.
   - Management: optional. The "Loading…" lines on screens whose layout is known can become a `Loading` of shapes.
+
+## v0.10.0 (2026-11-16)
+
+- **Collapsible section** (AVE-121), `@manyave/avenue/components/collapsible-section`: a full-width row that opens a
+  section of its own, on ui-sdk's Collapsible. `CollapsibleSection` (root, `variant`), `CollapsibleSectionHeader`
+  (the row's look, with room for a summary beside the trigger), `CollapsibleSectionTrigger` and
+  `CollapsibleSectionPanel`. Variants from the board's three hand-drawn rows: `bar` (the activity list's sticky day
+  header), `fold` (the time grid's quiet-hours fold, which may leave the panel out because its hours draw in the
+  grid) and `plain` (a message row whose card draws the chrome; the trigger's children can read `open`). The
+  Disclosure stays for a muted one-line summary.
+- **Calendar** (AVE-121), `@manyave/avenue/components/calendar`: a month to pick a day from, on ui-sdk's Calendar,
+  in the look of the board's small month under the Activity title. One Tab stop, arrows by day and week, Page Up and
+  Down by month, Enter picks; each day is named by its full date. `mark(date)` puts a dot under a day (a background
+  class or a tint). Days of the months either side are `muted-foreground`, not the board's 60% fade, which fails
+  4.5:1 contrast. On a phone days grow to 44px, so it needs 308px.
+- **Month grid** (AVE-121), `@manyave/avenue/components/month-grid`: the board's Activity month as a grid with one Tab
+  stop, on ui-sdk's grid focus (ui-sdk's Calendar pages a month at a time and can't hold an endless run of weeks).
+  The arrows move by day and week and run on across weeks, Home and End go to the week's ends, Control+Home and
+  Control+End to the first and last day, Page Up and Down by four weeks. `renderDay(date)` puts the app's content
+  under a day's number; a day given content passes focus to its first button, such as a popover trigger over its
+  items. Past the first or last week `onExtend("earlier" | "later")` asks for more weeks, and focus lands on the
+  day it was going to. It has no scroll of its own: keep the app's scroll region, title tracking and jumps.
+  - Management: take v0.10.0 to move the Activity day header and fold, the Messages row, the small month and the
+    month view (activity.tsx, activity-timegrid.tsx, messages.tsx, activity-month.tsx). The month view's day trigger
+    is named "Thu, Nov 12: 5 items · $1,800.00 received" while it shows "5 paid", which fails WCAG 2.5.3 (Label in
+    Name); name it from its chips with the date in hidden text, as the Month grid story does.
+  - Neighbors needs nothing: its own collapsible has no importers, and its calendars are FullCalendar's day grid,
+    which does more (events across days) than the Month grid; moving them is a separate call.
 
 ## v0.8.0 (2026-11-16)
 
