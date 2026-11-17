@@ -530,6 +530,18 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-calendar--turn-the-month": { none: BEHAVIOUR("Calendar / Default") },
   "components-calendar--controlled": { none: BEHAVIOUR("Calendar / Default") },
   "components-calendar--agent": { none: BEHAVIOUR("Calendar / Default") },
+  // ---- Message list (AVE-132)
+  "components-message-list--default": {
+    none: "Its rows are stand-ins until Avenue's message bubbles (AVE-133) draw them, so a capture beside the app's Board chat / Thread differs in every bubble. The scroller's own box is the app's on the 4px grid (4px between rows, 12px sides where the app has 10px, AVE-2 §1), asserted in the Default story; pair it with chat-board-chat--thread once the stories draw the bubbles.",
+  },
+  "components-message-list--arrival-while-scrolled-up": { none: BEHAVIOUR("Message list / Default") },
+  "components-message-list--own-message-follows": { none: BEHAVIOUR("Message list / Default") },
+  "components-message-list--earlier-messages": { none: BEHAVIOUR("Message list / Default") },
+  "components-message-list--loading": { none: STATE_ONLY("the list's loading line in Avenue's frame", "Message list / Default") },
+  "components-message-list--failed": { none: STATE_ONLY("the list's failed line in Avenue's frame", "Message list / Default") },
+  "components-message-list--empty": { none: STATE_ONLY("the list's empty line in Avenue's frame", "Message list / Default") },
+  "components-message-list--phone": { none: BEHAVIOUR("Message list / Default") },
+  "components-message-list--agent": { none: BEHAVIOUR("Message list / Default") },
   "components-month-grid--default": { none: NEW_IN_AVENUE("The month grid", "the board's Activity month (app/ui/components/activity-month.tsx), once the Activity screen moves") },
   "components-month-grid--keyboard": { none: BEHAVIOUR("Month grid / Default") },
   "components-month-grid--past-the-edges": { none: BEHAVIOUR("Month grid / Default") },

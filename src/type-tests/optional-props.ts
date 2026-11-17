@@ -32,6 +32,7 @@ import type * as iconTile from "#avenue/components/icon-tile";
 import type * as initialsAvatar from "#avenue/components/initials-avatar";
 import type * as inlineMessage from "#avenue/components/inline-message";
 import type * as input from "#avenue/components/input";
+import type * as messageList from "#avenue/components/message-list";
 import type * as modeToggle from "#avenue/components/mode-toggle";
 import type * as money from "#avenue/components/money";
 import type * as monthGrid from "#avenue/components/month-grid";
@@ -91,6 +92,7 @@ type Modules = {
   "initials-avatar": typeof initialsAvatar;
   "inline-message": typeof inlineMessage;
   "input": typeof input;
+  "message-list": typeof messageList;
   "mode-toggle": typeof modeToggle;
   "money": typeof money;
   "month-grid": typeof monthGrid;

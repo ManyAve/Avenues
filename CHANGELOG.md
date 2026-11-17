@@ -4,6 +4,31 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.15.0 (2026-11-17)
+
+- **Message list** (AVE-132), new in `@manyave/avenue/components/message-list`: a chat thread's scrolling messages,
+  newest at the bottom, on ui-sdk's `createStickToBottom`. Nothing existing changes.
+  - `<MessageList aria-label="Messages with Ana Ruiz" count={messages.length} newest={last.key} newestMine={last.mine}>`
+    with the app's rows inside, oldest first, and `<MessageListDay>Today</MessageListDay>` between days. Put it in a
+    box with a height; the log takes the room left and scrolls.
+  - It follows new messages while the reader is within 48px of the end, or when the newest is their own. Scrolled
+    up, it keeps their place and shows "New message" / "N new messages" under the log, in the flow (above the app's
+    composer, never over the last bubble). Pressing it scrolls down (instantly under reduced motion) and leaves focus
+    in the log.
+  - `hasEarlier`, `loadingEarlier` and `onLoadEarlier` draw "Earlier messages" at the top; history added after a press
+    lands above without moving the view. While loading it reads "Loading…" and keeps focus.
+  - `status="loading" | "failed" | "ready"`: the log mounts only at `ready`, so a screen reader doesn't hear the
+    history read out as new. `failed` shows the line and Try again (`onRetry`); `empty` is the app's words for a
+    thread with no messages; `typing` ("Ana is typing…", or "") is a polite status under the log, never logged.
+  - Accessibility: a WAI-ARIA `log` with `aria-relevant="additions"`, named by `aria-label` or `aria-labelledby`, and
+    one Tab stop so the keyboard can scroll it. Agents can call `jumpToLatest` and `loadEarlier`.
+  - Spacing is Management's chat window on the 4px grid: 4px between rows, 12px at the sides (the window's 10px).
+  - Management: the board chat window's scroller (`app/ui/components/chat.tsx`) becomes this. It gains the log role,
+    keyboard scrolling and the jump button, and loading earlier messages stops moving the view.
+  - Neighbors: the thread's `Timeline` becomes this; its "N new messages" button and follow rule are the same, and
+    the hand-written scroll code goes.
+  - Phone apps: nothing to take; native chat screens use the tokens only.
+
 ## v0.14.0 (2026-11-17)
 
 - **Status dot** (AVE-130), `StatusDot` in `@manyave/avenue/components/status`: the small filled circle that marks
