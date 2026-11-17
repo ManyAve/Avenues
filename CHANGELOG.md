@@ -4,6 +4,22 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.24.0 (2026-11-17)
+
+- **ui-sdk 0.1.0-beta.7** (AVE-142). `@ui-sdk/react` and `@ui-sdk/core` move from beta.2 to beta.7, so the next
+  cards (ui-sdk part names, `items`, change details) are built against ui-sdk's newest docs and types. Nothing on
+  screen moves (visual diff in the pull request); `src/styles/ui-sdk.css` is regenerated and stays scoped to
+  `data-ui-sdk-skin`.
+  - Patches: two of the three remain, re-made for beta.7 in one file,
+    `patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch`: the closing backdrop (AVE-109) and whole-pixel popups (AVE-21).
+    The toast patch (AVE-43) is gone: beta.7 leaves an empty toast region out of the agent snapshot itself.
+  - The Combobox story pin to `presentation="popover"` stays: beta.7's `checkPattern` still fails ui-sdk's own
+    Combobox presenting as a sheet (AVE-75).
+  - Management and Neighbors: set `@ui-sdk/react` and `@ui-sdk/core` to exactly `0.1.0-beta.7`, delete
+    `patches/@ui-sdk%2Fcore@0.1.0-beta.2.patch`, copy `patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch` from the tag, and
+    list it under `patchedDependencies` as `"@ui-sdk/core@0.1.0-beta.7"`. `avenue-check-patches` fails until you do.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.23.0 (2026-11-17)
 
 - **Every component passes your props through to its root** (AVE-138). Twelve components took a fixed list of props and
