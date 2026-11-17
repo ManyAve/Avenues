@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.25.0 (2026-11-17)
+
+- **Parts take ui-sdk's names** (AVE-144). Each part Avenue exports is now named for the ui-sdk part it wraps, so a
+  name in ui-sdk's docs is the name in Avenue: `Menu`/`MenuItem` (was `DropdownMenu`/`DropdownMenuItem`),
+  `Drawer`/`DrawerContent` (was `Sheet`/`SheetContent`), `TabsTab`/`TabsPanel` (was `TabsTrigger`/`TabsContent`),
+  `DialogBackdrop` (was `DialogOverlay`), `Radio` (was `RadioGroupItem`) and `ToastRegion` (was `Toaster`). Menu and
+  Drawer move to `components/menu` and `components/drawer`. ADOPTING.md, "Renamed parts", has the full old-to-new table.
+  - Nothing breaks yet: every old name is a deprecated alias of its new part, and `components/dropdown-menu` and
+    `components/sheet` re-export the new files. Both go in v0.26.0, so rename before you take it.
+  - Nothing on screen moves, and no `data-slot` changes (visual diff in the pull request).
+  - Storybook: "Dropdown menu" is now Components / Menu and "Sheet" is Components / Drawer.
+  - `bun run visual:diff` takes `--renamed old=new` story id prefixes, for a branch that renames a story title.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.24.0 (2026-11-17)
 
 - **ui-sdk 0.1.0-beta.7** (AVE-142). `@ui-sdk/react` and `@ui-sdk/core` move from beta.2 to beta.7, so the next

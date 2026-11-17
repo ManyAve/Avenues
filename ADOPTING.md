@@ -113,6 +113,37 @@ Start with step 1, then tell me in a few sentences which slice is next for this 
 anything blocks it.
 ```
 
+## Renamed parts
+
+Avenue's parts take the names of the ui-sdk parts they wrap (AVE-144, v0.25.0), so a name in ui-sdk's docs is the
+name in Avenue. The old names still work until the next minor release: each is a deprecated alias of the new part
+(your editor strikes it through), and the old import paths re-export the new files. Nothing on screen changes, and
+`data-slot` values stay as they were, so tests and styles that select them keep working. Rename at your own pace;
+the aliases and old paths go in v0.26.0.
+
+| Old name (until v0.26) | New name | Import from |
+| --- | --- | --- |
+| `DropdownMenu` | `Menu` | `@manyave/avenue/components/menu` (was `dropdown-menu`) |
+| `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuGroup` | `MenuTrigger`, `MenuContent`, `MenuGroup` | `components/menu` |
+| `DropdownMenuItem`, `DropdownMenuCheckboxItem` | `MenuItem`, `MenuCheckboxItem` | `components/menu` |
+| `DropdownMenuRadioGroup`, `DropdownMenuRadioItem` | `MenuRadioGroup`, `MenuRadioItem` | `components/menu` |
+| `DropdownMenuSub`, `DropdownMenuSubTrigger`, `DropdownMenuSubContent` | `MenuSub`, `MenuSubTrigger`, `MenuSubContent` | `components/menu` |
+| `DropdownMenuLabel` | `MenuGroupLabel` | `components/menu` |
+| `DropdownMenuSeparator`, `DropdownMenuShortcut` | `MenuSeparator`, `MenuShortcut` | `components/menu` |
+| `Sheet` | `Drawer` | `@manyave/avenue/components/drawer` (was `sheet`) |
+| `SheetTrigger`, `SheetClose`, `SheetContent` | `DrawerTrigger`, `DrawerClose`, `DrawerContent` | `components/drawer` |
+| `SheetTitle`, `SheetDescription` | `DrawerTitle`, `DrawerDescription` | `components/drawer` |
+| `SheetHeader`, `SheetBody`, `SheetFooter` | `DrawerHeader`, `DrawerBody`, `DrawerFooter` | `components/drawer` |
+| `SheetOverlay` | `DrawerBackdrop` | `components/drawer` |
+| `TabsTrigger` | `TabsTab` | `components/tabs` |
+| `TabsContent` | `TabsPanel` | `components/tabs` |
+| `DialogOverlay` | `DialogBackdrop` | `components/dialog` |
+| `RadioGroupItem` | `Radio` | `components/radio-group` |
+| `Toaster` | `ToastRegion` | `components/toast` |
+
+Props don't change in this release. In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
+Components / Drawer, so links to the old pages need the new address.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

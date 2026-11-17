@@ -77,8 +77,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
   dialog: { upstream: "dialog" },
   "alert-dialog": { upstream: "alert-dialog" },
-  sheet: { upstream: "drawer", note: "The Sheet stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
-  "dropdown-menu": { upstream: "trigger-menu" },
+  drawer: { upstream: "drawer", note: "The Drawer stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
+  sheet: { none: "AVE-144: the old path of Drawer, kept for one minor release; it only re-exports drawer.tsx, proven by the Drawer stories." },
+  menu: { upstream: "trigger-menu" },
+  "dropdown-menu": { none: "AVE-144: the old path of Menu, kept for one minor release; it only re-exports menu.tsx, proven by the Menu stories." },
   popover: { upstream: "popover" },
   progress: {
     upstream: "progress",
@@ -198,7 +200,7 @@ export function requiredTag(proof: Proof): string | undefined {
   return undefined;
 }
 
-/** `Select.stories.tsx` -> `select`, `DropdownMenu.stories.tsx` -> `dropdown-menu`. */
+/** `Select.stories.tsx` -> `select`, `ToggleGroup.stories.tsx` -> `toggle-group`. */
 export function componentForStoryFile(importPath: string): string | undefined {
   const match = /([A-Za-z0-9]+)\.stories\.[jt]sx?$/.exec(importPath);
   if (!match) return undefined;

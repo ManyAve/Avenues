@@ -16,7 +16,7 @@ import {
   DockWindowTrigger,
   type DockWindowWidth,
 } from "#avenue/components/dock";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "#avenue/components/dropdown-menu";
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "#avenue/components/menu";
 import { InitialsAvatar } from "#avenue/components/initials-avatar";
 import {
   Message,
@@ -134,15 +134,15 @@ function ChatWindow({
           <DockWindowBadge count={unread} />
         </DockWindowTrigger>
         <DockWindowActions>
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Options for ${label}`} />}>
+          <Menu>
+            <MenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Options for ${label}`} />}>
               <EllipsisIcon aria-hidden />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuItem>Mute {label}</DropdownMenuItem>
-              <DropdownMenuItem>Open in Messages</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </MenuTrigger>
+            <MenuContent className="w-48">
+              <MenuItem>Mute {label}</MenuItem>
+              <MenuItem>Open in Messages</MenuItem>
+            </MenuContent>
+          </Menu>
         </DockWindowActions>
         <DockWindowClose onClick={onClose} />
       </DockWindowHeader>

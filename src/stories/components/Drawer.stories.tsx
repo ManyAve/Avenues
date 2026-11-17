@@ -5,22 +5,22 @@ import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
 import {
-  Sheet,
-  SheetBody,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "#avenue/components/sheet";
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "#avenue/components/drawer";
 import { Textarea } from "#avenue/components/textarea";
 
 const meta = {
-  title: "Components/Sheet",
-  component: Sheet,
-} satisfies Meta<typeof Sheet>;
+  title: "Components/Drawer",
+  component: Drawer,
+} satisfies Meta<typeof Drawer>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -37,14 +37,14 @@ function ListingFilters({
   title?: string;
 }) {
   return (
-    <Sheet side={side ?? "bottom"} defaultOpen={defaultOpen}>
-      <SheetTrigger render={<Button variant="outline" />}>Filters</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>Show listings from Maple Hollow only.</SheetDescription>
-        </SheetHeader>
-        <SheetBody>
+    <Drawer side={side ?? "bottom"} defaultOpen={defaultOpen}>
+      <DrawerTrigger render={<Button variant="outline" />}>Filters</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>{title}</DrawerTitle>
+          <DrawerDescription>Show listings from Maple Hollow only.</DrawerDescription>
+        </DrawerHeader>
+        <DrawerBody>
           <FieldSet>
             <FieldLegend variant="label">Category</FieldLegend>
             <FieldGroup className="gap-3">
@@ -56,13 +56,13 @@ function ListingFilters({
               ))}
             </FieldGroup>
           </FieldSet>
-        </SheetBody>
-        <SheetFooter>
-          <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
-          <SheetClose render={<Button />}>Show 12 listings</SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DrawerBody>
+        <DrawerFooter>
+          <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+          <DrawerClose render={<Button />}>Show 12 listings</DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -194,7 +194,7 @@ function NewPost() {
     if (confirming) keep.current?.focus();
   }, [confirming]);
   return (
-    <Sheet
+    <Drawer
       open={open}
       onOpenChange={(next, details) => {
         if (!next && text.trim() !== "" && details.returnValue !== "discard" && details.returnValue !== "post") {
@@ -209,12 +209,12 @@ function NewPost() {
         }
       }}
     >
-      <SheetTrigger render={<Button />}>New post</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>New post</SheetTitle>
-          <SheetDescription>Neighbors in Maple Hollow see it on the wall.</SheetDescription>
-        </SheetHeader>
+      <DrawerTrigger render={<Button />}>New post</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>New post</DrawerTitle>
+          <DrawerDescription>Neighbors in Maple Hollow see it on the wall.</DrawerDescription>
+        </DrawerHeader>
         <Field>
           <FieldLabel>Post</FieldLabel>
           <Textarea value={text} onValueChange={(value) => setText(value)} rows={4} />
@@ -225,28 +225,28 @@ function NewPost() {
           </p>
         )}
         {confirming ? (
-          <SheetFooter>
+          <DrawerFooter>
             <Button ref={keep} variant="outline" aria-describedby="discard-question" onClick={() => setConfirming(false)}>
               Keep editing
             </Button>
-            <SheetClose
+            <DrawerClose
               value="discard"
               render={<Button variant="destructive" />}
               data-agent-confirm="Discards the unsent post"
             >
               Discard
-            </SheetClose>
-          </SheetFooter>
+            </DrawerClose>
+          </DrawerFooter>
         ) : (
-          <SheetFooter>
-            <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
-            <SheetClose value="post" render={<Button />} disabled={text.trim() === ""}>
+          <DrawerFooter>
+            <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+            <DrawerClose value="post" render={<Button />} disabled={text.trim() === ""}>
               Post
-            </SheetClose>
-          </SheetFooter>
+            </DrawerClose>
+          </DrawerFooter>
         )}
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

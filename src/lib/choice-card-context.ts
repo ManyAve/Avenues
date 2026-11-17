@@ -6,7 +6,7 @@ import { createContext, useContext } from "react";
  */
 export const ChoiceCardContext = createContext<string | undefined>(undefined);
 
-/** The id of the enclosing choice card's title, for its RadioGroupItem or Checkbox to be labelled by. */
+/** The id of the enclosing choice card's title, for its Radio or Checkbox to be labelled by. */
 export function useChoiceCardTitleId() {
   return useContext(ChoiceCardContext);
 }

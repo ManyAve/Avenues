@@ -4,7 +4,7 @@ import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Chip } from "#avenue/components/chip";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "#avenue/components/dropdown-menu";
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "#avenue/components/menu";
 import {
   PhoneToolbar,
   Toolbar,
@@ -68,15 +68,15 @@ function HouseholdsToolbar() {
         <Filters />
         <ToolbarControls>
           <ToolbarSearch placeholder="Search households or people…" aria-label="Search households or people" kbd="/" />
-          <DropdownMenu>
-            <ToolbarItem aria-label="Group by" render={<DropdownMenuTrigger render={<ToolbarButton />} />}>
+          <Menu>
+            <ToolbarItem aria-label="Group by" render={<MenuTrigger render={<ToolbarButton />} />}>
               <Layers aria-hidden />
             </ToolbarItem>
-            <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem>Street</DropdownMenuItem>
-              <DropdownMenuItem>No grouping</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <MenuContent align="end" className="w-44">
+              <MenuItem>Street</MenuItem>
+              <MenuItem>No grouping</MenuItem>
+            </MenuContent>
+          </Menu>
           <ToolbarItem aria-label="Display options" render={<ToolbarButton />}>
             <SlidersHorizontal aria-hidden />
           </ToolbarItem>
@@ -384,16 +384,16 @@ export const Phone: Story = {
         ))}
         newMenu={
           <>
-            <DropdownMenuItem onSelect={newHousehold}>Household</DropdownMenuItem>
-            <DropdownMenuItem>Announcement</DropdownMenuItem>
+            <MenuItem onSelect={newHousehold}>Household</MenuItem>
+            <MenuItem>Announcement</MenuItem>
           </>
         }
         moreMenu={
           <>
-            <DropdownMenuItem>Group by street</DropdownMenuItem>
-            <DropdownMenuItem disabled reason={importReason}>
+            <MenuItem>Group by street</MenuItem>
+            <MenuItem disabled reason={importReason}>
               Import households
-            </DropdownMenuItem>
+            </MenuItem>
           </>
         }
       />

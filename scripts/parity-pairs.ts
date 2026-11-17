@@ -266,7 +266,7 @@ const STATE_ONLY = (state: string, look: string) =>
 
 /** AVE-39: the app opens no list as a sheet (its pickers are popovers or the OS picker), so there is nothing to pair. */
 const SHEET = (component: string) =>
-  `${component}'s list presenting as a bottom sheet on a phone (AVE-39) is new in Avenue; the app has no sheet presentation. Its surface, corners and handle are Sheet's, and its rows are the popover's, compared through ${component} / Default.`;
+  `${component}'s list presenting as a bottom sheet on a phone (AVE-39) is new in Avenue; the app has no sheet presentation. Its surface, corners and handle are Drawer's, and its rows are the popover's, compared through ${component} / Default.`;
 /** AVE-38: the unchecked outline is a deliberate departure from the app, for 3:1 contrast (WCAG 1.4.11). */
 const OUTLINE = (control: string) =>
   `A contrast proof (AVE-38): the unchecked ${control}'s outline departs from the app on purpose to reach 3:1, and the play function measures it. The app has no story of this measurement; the control's resting look is compared through its States story.`;
@@ -644,20 +644,20 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-month-grid--press-moves-the-stop": { none: BEHAVIOUR("Month grid / Default") },
   "components-month-grid--agent": { none: BEHAVIOUR("Month grid / Default") },
 
-  // ---- Dropdown menu (AVE-6)
-  "components-dropdown-menu--open": [
+  // ---- Menu (AVE-6, was Dropdown menu)
+  "components-menu--open": [
     { label: "menu panel", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-content]", avenueCrop: "[data-slot=menu-content]", frame: true },
     { label: "menu item", app: "primitives-menus--new-menu-story", appCrop: "[data-slot=dropdown-menu-item] >> nth=1", avenueCrop: "[data-slot=menu-item] >> nth=1", allow: [
       ...MENU_ITEM,
       { prop: "glyph", app: "lucide-flag", avenue: "lucide-printer", because: "app: app/ui/components/menus.tsx: the app's New menu item is New complaint, with a Flag; Avenue's menu story shows Print statement, with a Printer" },
     ] },
   ],
-  "components-dropdown-menu--keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
-  "components-dropdown-menu--wider-than-a-phone": {
+  "components-menu--keyboard": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--wider-than-a-phone": {
     none: "AVE-112: the app has no story of a fixed-width menu on a 320px phone; this story proves the menu stays on screen.",
   },
-  "components-dropdown-menu--open-by-click": { none: BEHAVIOUR("Dropdown menu / Open") },
-  "components-dropdown-menu--action-from-keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
+  "components-menu--open-by-click": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--action-from-keyboard": { none: BEHAVIOUR("Menu / Open") },
 
   // ---- Empty state (AVE-8)
   // ---- Progress (AVE-129). No app story draws the activity card with a bar, so Progress / Beside Management
@@ -1002,11 +1002,11 @@ export const PAIRS: Record<string, PairEntry> = {
   },
   "components-select--agent": { none: BEHAVIOUR("Select / Default") },
 
-  // ---- Sheet (AVE-32)
+  // ---- Drawer (AVE-32, was Sheet)
   ...Object.fromEntries(
     ["closed", "bottom-on-desktop", "bottom-on-phone", "side-on-desktop", "side-on-phone", "long-title", "unsaved-changes", "keyboard"].map((story) => [
-      `components-sheet--${story}`,
-      { none: NEW_IN_AVENUE("The Sheet for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
+      `components-drawer--${story}`,
+      { none: NEW_IN_AVENUE("The Drawer for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
     ]),
   ),
 
@@ -1267,11 +1267,11 @@ export const PAIRS: Record<string, PairEntry> = {
     ] },
     { label: "phone toolbar search", app: "primitives-phone--toolbar", appCrop: "#storybook-root input >> xpath=..", avenueCrop: "#storybook-root [role=toolbar] [data-slot=search-input]", allow: [...SEARCH, ...TOOLBAR_SEARCH] },
   ],
-  "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--desktop-minimum": { none: BEHAVIOUR("Toolbar / Wide and Menu / Open") },
   "composites-toolbar--keyboard-flow": { none: BEHAVIOUR("Toolbar / Wide") },
   "composites-toolbar--fold-keeps-focus": { none: BEHAVIOUR("Toolbar / Wide and Toolbar / Desktop minimum") },
   "composites-toolbar--sends-ask-first": { none: "An agent-confirm check on a send action (AVE-85); the app has no send toolbar story. Its look is compared through Toolbar / Wide." },
-  "composites-toolbar--sends-ask-first-folded": { none: BEHAVIOUR("Toolbar / Wide and Dropdown menu / Open") },
+  "composites-toolbar--sends-ask-first-folded": { none: BEHAVIOUR("Toolbar / Wide and Menu / Open") },
   "composites-toolbar--wide-is-a-token": { none: "A token check (AVE-85): the fold reads --breakpoint-wide. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },

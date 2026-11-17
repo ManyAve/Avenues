@@ -215,7 +215,7 @@
   }
 }
 
-/* Bottom sheet (AVE-32, AVE-39): one look for every sheet that rises from the bottom edge, Sheet with side="bottom" and
+/* Bottom sheet (AVE-32, AVE-39): one look for every sheet that rises from the bottom edge, Drawer with side="bottom" and
    Select and Combobox while they present as a sheet. Centred at a 512px measure, at most 85% of the screen tall, the
    top corners rounded at xl (14px), the bottom padded clear of the home indicator. The ::after fills the gap a drag
    past the edge would open (the sheet must be positioned). Always apply it under a variant

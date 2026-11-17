@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useId } from "react";
 import { expect, userEvent } from "storybook/test";
 import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
-import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
+import { RadioGroup, Radio } from "#avenue/components/radio-group";
 import { Card, CardContent } from "#avenue/components/card";
 import { BOUNDARY_MIN_CONTRAST, BoundaryReadout, measureBoundaryContrast } from "./contrast-kit";
 import { Row, Rows } from "./story-kit";
@@ -20,18 +20,18 @@ export const States: Story = {
     <Rows>
       <Row label="unchecked">
         <RadioGroup aria-label="Unchecked" className="w-fit">
-          <RadioGroupItem value="a" aria-label="Unchecked option" />
+          <Radio value="a" aria-label="Unchecked option" />
         </RadioGroup>
       </Row>
       <Row label="checked">
         <RadioGroup aria-label="Checked" defaultValue="a" className="w-fit">
-          <RadioGroupItem value="a" aria-label="Checked option" />
+          <Radio value="a" aria-label="Checked option" />
         </RadioGroup>
       </Row>
       <Row label="disabled">
         <RadioGroup aria-label="Disabled" defaultValue="b" disabled className="flex w-fit gap-4">
-          <RadioGroupItem value="a" aria-label="Disabled option" />
-          <RadioGroupItem value="b" aria-label="Disabled checked option" />
+          <Radio value="a" aria-label="Disabled option" />
+          <Radio value="b" aria-label="Disabled checked option" />
         </RadioGroup>
       </Row>
     </Rows>
@@ -66,7 +66,7 @@ export const Keyboard: Story = {
           <RadioGroup aria-labelledby={`${id}-legend`} defaultValue="week" name="reminder">
             {reminders.map((r) => (
               <Field key={r.value} orientation="horizontal">
-                <RadioGroupItem value={r.value} />
+                <Radio value={r.value} />
                 <div className="flex flex-col gap-1">
                   <FieldLabel>{r.label}</FieldLabel>
                   <FieldDescription>{r.description}</FieldDescription>
@@ -114,14 +114,14 @@ export const UncheckedOutline: Story = {
       <Rows>
         <Row label="page">
           <RadioGroup aria-label="Page" defaultValue="b" className="w-fit">
-            <RadioGroupItem value="a" aria-label="Unchosen on the page" />
+            <Radio value="a" aria-label="Unchosen on the page" />
           </RadioGroup>
         </Row>
         <Card size="sm" className="max-w-xs">
           <CardContent>
             <Row label="card">
               <RadioGroup aria-label="Card" defaultValue="b" className="w-fit">
-                <RadioGroupItem value="a" aria-label="Unchosen on a card" />
+                <Radio value="a" aria-label="Unchosen on a card" />
               </RadioGroup>
             </Row>
           </CardContent>

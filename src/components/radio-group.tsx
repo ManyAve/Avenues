@@ -1,4 +1,4 @@
-import { Radio, RadioGroup as RadioGroupPrimitive, RadioIndicator } from "@ui-sdk/react/radio";
+import { Radio as RadioPrimitive, RadioGroup as RadioGroupPrimitive, RadioIndicator } from "@ui-sdk/react/radio";
 import type { ComponentProps } from "react";
 import { useChoiceCardTitleId } from "#avenue/lib/choice-card-context";
 import { cn } from "#avenue/lib/utils";
@@ -18,11 +18,11 @@ function RadioGroup({ className, ...props }: Loose<ComponentProps<typeof RadioGr
   return <RadioGroupPrimitive className={cn("grid w-full gap-3", className)} {...defined(props)} />;
 }
 
-function RadioGroupItem({ className, ...props }: Loose<ComponentProps<typeof Radio>>) {
+function Radio({ className, ...props }: Loose<ComponentProps<typeof RadioPrimitive>>) {
   // In a ChoiceCard, named by the card's title alone.
   const titleId = useChoiceCardTitleId();
   return (
-    <Radio
+    <RadioPrimitive
       aria-labelledby={titleId}
       className={cn(
         "peer group/radio relative flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-colors outline-none group-has-disabled/field:opacity-50 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-muted-foreground hit-area [--hit-area-x:--spacing(3)] [--hit-area-y:--spacing(2)] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-disabled:cursor-not-allowed data-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground group-has-[:focus-visible]/field-label:data-checked:border-primary dark:data-checked:bg-primary",
@@ -33,8 +33,12 @@ function RadioGroupItem({ className, ...props }: Loose<ComponentProps<typeof Rad
       <RadioIndicator className="flex size-4 items-center justify-center">
         <span aria-hidden className="size-2 rounded-full bg-primary-foreground" />
       </RadioIndicator>
-    </Radio>
+    </RadioPrimitive>
   );
 }
 
-export { RadioGroup, RadioGroupItem };
+/** @deprecated Use Radio. */
+const RadioGroupItem = Radio;
+
+export { Radio, RadioGroup };
+export { RadioGroupItem };

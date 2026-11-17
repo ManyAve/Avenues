@@ -93,7 +93,7 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
   `Dialog/ClickRightAfterClose` fails if the patch stops applying.
 - `@ui-sdk/core` 0.1.0-beta.7 (since beta.1), positioning (AVE-21): popups were placed at fractional pixels (a menu at
   593.688px), so their text rendered softer than the page's on 1x screens; Base UI rounded. The patch rounds a
-  popup's `left` and `top` to whole device pixels. `Dropdown menu/Open` fails if the patch stops applying.
+  popup's `left` and `top` to whole device pixels. `Menu/Open` fails if the patch stops applying.
 
 Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
 itself; `Toast/EmptyRegion` still guards it.
@@ -162,4 +162,5 @@ in a clone without it) and from the working tree, captures every story in light 
 web and desktop type scales, and compares them pixel by pixel. It fails on any changed, missing or broken story and writes the
 captures and diffs to `.visual-diff/report/`. Use it for any change that could move pixels you
 didn't mean to move: a stylesheet, a dependency, a token. It needs Playwright's Chromium, or
-`AVENUE_CHROMIUM` pointing at one.
+`AVENUE_CHROMIUM` pointing at one. A branch that renames a story title passes `--renamed old=new` (story id
+prefixes), so the renamed stories are compared, not reported missing.

@@ -97,7 +97,7 @@ const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [
  * The layer a modal lays over the page: its backdrop, and the full-screen viewport around a sheet (the drawer's, and a
  * Select's or Combobox's presenting as a sheet, AVE-39). It covers
  * the controls behind the modal, so a point on it is not a miss for them, even before ui-sdk has made the page behind
- * inert (the Sheet's Bottom on desktop story flaked on that timing, AVE-67). For a control inside a dialog it is a
+ * inert (the Drawer's Bottom on desktop story flaked on that timing, AVE-67). For a control inside a dialog it is a
  * miss: the control's 44px area runs past the dialog's edge, where a tap closes the dialog (AVE-65).
  */
 const MODAL_LAYER =
@@ -191,7 +191,7 @@ export const FINE_MINIMUMS: readonly { selector: string; extend: readonly [numbe
   {
     selector: "[data-slot=dialog-close], [data-slot=drawer-close]",
     extend: [8, 8],
-    why: "the 24px close button (Dialog, Sheet) keeps a 40px reach",
+    why: "the 24px close button (Dialog, Drawer) keeps a 40px reach",
   },
   { selector: "[data-slot=toast-action]", extend: [8, 8], why: "the toast's text action keeps its 8px reach" },
   { selector: "[data-slot=tooltip-trigger][aria-label]", extend: [8, 8], why: "the 16px help button keeps a 32px reach" },

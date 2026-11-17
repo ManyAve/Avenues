@@ -3,7 +3,7 @@
 import { ListFilterIcon, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { Checkbox } from "#avenue/components/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuTrigger } from "#avenue/components/dropdown-menu";
+import { Menu, MenuContent, MenuItem, MenuGroupLabel, MenuGroup, MenuTrigger } from "#avenue/components/menu";
 import { Input } from "#avenue/components/input";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "#avenue/components/popover";
 import { Select } from "#avenue/components/select";
@@ -211,25 +211,25 @@ export function TableFilters({
   };
   return (
     <span ref={own} data-slot="table-filters" className={cn("contents", className)}>
-      <DropdownMenu onOpenChangeComplete={opened}>
+      <Menu onOpenChangeComplete={opened}>
         <ToolbarItem
           aria-label={filters.length ? "Add filter" : "Filter"}
-          render={<DropdownMenuTrigger render={<ToolbarButton data-table-filter-add="" className="pointer-coarse:h-11 pointer-coarse:min-w-11" />} />}
+          render={<MenuTrigger render={<ToolbarButton data-table-filter-add="" className="pointer-coarse:h-11 pointer-coarse:min-w-11" />} />}
         >
           <ListFilterIcon aria-hidden />
           {filters.length ? null : "Filter"}
         </ToolbarItem>
-        <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+        <MenuContent align="start" className="w-56">
+          <MenuGroup>
+            <MenuGroupLabel>Filter by</MenuGroupLabel>
             {fields.map((field) => (
-              <DropdownMenuItem key={field.key} onSelect={() => add(field)}>
+              <MenuItem key={field.key} onSelect={() => add(field)}>
                 {field.label}
-              </DropdownMenuItem>
+              </MenuItem>
             ))}
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </MenuGroup>
+        </MenuContent>
+      </Menu>
       {filters.map((filter, i) => {
         const field = fields.find((f) => f.key === filter.field);
         if (!field) return null;

@@ -43,8 +43,8 @@ export const listPopup = cn(
 
 /**
  * The same list presenting as a sheet (AVE-39): `presentation="auto"` turns it into one on a small touch screen, as
- * ui-sdk decides each time it opens. It takes Sheet's bottom-sheet look (`sheet-bottom` in avenue.css: the 512px
- * measure, 14px top corners, home-indicator padding) and its handle, and dims the page as Dialog and Sheet do. The
+ * ui-sdk decides each time it opens. It takes Drawer's bottom-sheet look (`sheet-bottom` in avenue.css: the 512px
+ * measure, 14px top corners, home-indicator padding) and its handle, and dims the page as Dialog and Drawer do. The
  * sheet slides itself, so the popover's scale and fade are off. The list inside scrolls; the handle stays put. 8px at
  * the sides puts each row's check on the page's 16px line.
  */
