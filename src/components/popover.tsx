@@ -1,8 +1,9 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as PopoverPrimitive from "@ui-sdk/react/popover";
 import type { ComponentProps } from "react";
 import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose } from "#avenue/lib/props";
+import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/popover.tsx (e01cc90). lg corner (10px) as in the app. Padding moves
@@ -45,8 +46,18 @@ function PopoverContent({
   );
 }
 
-function PopoverHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="popover-header" className={cn("flex flex-col gap-1 text-sm", className)} {...props} />;
+function PopoverHeader({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "popover-header",
+        className: cn("flex flex-col gap-1 text-sm", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 function PopoverTitle({ className, ...props }: Loose<ComponentProps<typeof PopoverPrimitive.PopoverTitle>>) {

@@ -105,3 +105,34 @@ export const Small: Story = {
     </Card>
   ),
 };
+
+/**
+ * Every part takes `render` (AVE-136). Here the card is an `article` and its title an `h3`, so a screen reader
+ * user can move between cards by heading. It looks exactly like Default: the classes and `data-slot` stay.
+ */
+export const AsHeading: Story = {
+  render: () => (
+    <Card render={<article />}>
+      <CardHeader>
+        {/* oxlint-disable-next-line jsx-a11y/heading-has-content -- a render element: CardTitle passes its children in. */}
+        <CardTitle render={<h3 />}>Annual meeting</CardTitle>
+        <CardDescription>Thursday, April 9, 7 pm, at the clubhouse.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Agenda: the 2026 budget, the pool resurfacing bid and two open board seats.</p>
+      </CardContent>
+    </Card>
+  ),
+  play: async ({ canvas }) => {
+    const heading = canvas.getByRole("heading", { level: 3, name: "Annual meeting" });
+    await expect(heading.tagName).toBe("H3");
+    await expect(heading).toHaveAttribute("data-slot", "card-title");
+    await expect(canvas.getByRole("article")).toHaveAttribute("data-slot", "card");
+    // Same type as the div title in Default: the heading's own browser styles don't show through.
+    const title = getComputedStyle(heading);
+    const desktop = document.getElementById("avenue-desktop-scale") !== null;
+    await expect([title.fontSize, title.lineHeight, title.fontWeight]).toEqual(
+      desktop ? ["14px", "20px", "500"] : ["16px", "24px", "500"],
+    );
+  },
+};

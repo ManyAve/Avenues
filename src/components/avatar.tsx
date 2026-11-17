@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as AvatarPrimitive from "@ui-sdk/react/avatar"
-import { defined, type Loose } from "#avenue/lib/props";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive"
+import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -58,55 +59,64 @@ function AvatarFallback({
   )
 }
 
-function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
-  return (
-    <span
-      data-slot="avatar-badge"
-      className={cn(
-        "absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground bg-blend-color ring-2 ring-background select-none",
-        "group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden",
-        "group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2",
-        "group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2",
-        className
-      )}
-      {...props}
-    />
-  )
+function AvatarBadge({ className, render, ...props }: OwnPartProps<"span">) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "avatar-badge",
+        className: cn(
+          "absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground bg-blend-color ring-2 ring-background select-none",
+          "group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden",
+          "group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2",
+          "group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
-function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="avatar-group"
-      className={cn(
-        // AVE-99: the initials stay readable. Each avatar covers at most a quarter of the one before (4px at default,
-        // 8px at lg; sm avatars only meet, as 14px web initials fill a 24px circle). The 2px ring is the card's colour,
-        // since groups sit on cards. A covered avatar centres its initials in the part that shows (end padding), and
-        // default initials use the meta size, as sm already does.
-        "group/avatar-group flex -space-x-1 has-data-[size=sm]:space-x-0 has-data-[size=lg]:-space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-card",
-        "[&>[data-slot=avatar][data-size=default]>[data-slot=avatar-fallback]]:text-xs",
-        "[&>[data-slot=avatar]:not(:last-child)>[data-slot=avatar-fallback]]:pe-1 [&>[data-slot=avatar][data-size=lg]:not(:last-child)>[data-slot=avatar-fallback]]:pe-2 [&>[data-slot=avatar][data-size=sm]:not(:last-child)>[data-slot=avatar-fallback]]:pe-0.5",
-        className
-      )}
-      {...props}
-    />
-  )
+function AvatarGroup({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "avatar-group",
+        className: cn(
+          // AVE-99: the initials stay readable. Each avatar covers at most a quarter of the one before (4px at default,
+          // 8px at lg; sm avatars only meet, as 14px web initials fill a 24px circle). The 2px ring is the card's colour,
+          // since groups sit on cards. A covered avatar centres its initials in the part that shows (end padding), and
+          // default initials use the meta size, as sm already does.
+          "group/avatar-group flex -space-x-1 has-data-[size=sm]:space-x-0 has-data-[size=lg]:-space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-card",
+          "[&>[data-slot=avatar][data-size=default]>[data-slot=avatar-fallback]]:text-xs",
+          "[&>[data-slot=avatar]:not(:last-child)>[data-slot=avatar-fallback]]:pe-1 [&>[data-slot=avatar][data-size=lg]:not(:last-child)>[data-slot=avatar-fallback]]:pe-2 [&>[data-slot=avatar][data-size=sm]:not(:last-child)>[data-slot=avatar-fallback]]:pe-0.5",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
-function AvatarGroupCount({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="avatar-group-count"
-      className={cn(
-        "relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-card group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3",
-        className
-      )}
-      {...props}
-    />
-  )
+function AvatarGroupCount({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "avatar-group-count",
+        className: cn(
+          "relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-card group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 export {

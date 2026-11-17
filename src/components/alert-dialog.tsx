@@ -1,8 +1,9 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as AlertDialogPrimitive from "@ui-sdk/react/alert-dialog";
 import type { ComponentProps } from "react";
 import { modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * A question that must be answered before anything else happens ("Discard changes?", "Remove household?").
@@ -44,21 +45,35 @@ function AlertDialogContent({
   );
 }
 
-function AlertDialogHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="alert-dialog-header" className={cn("flex flex-col gap-2", className)} {...props} />;
+function AlertDialogHeader({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "alert-dialog-header",
+        className: cn("flex flex-col gap-2", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /** The answers, on the same muted strip as Dialog's footer. Safe answer first. */
-function AlertDialogFooter({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="alert-dialog-footer"
-      className={cn(
-        "-mx-inset -mb-inset flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
-        className,
-      )}
-      {...props}
-    />
+function AlertDialogFooter({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "alert-dialog-footer",
+        className: cn(
+          "-mx-inset -mb-inset flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import {
   Toolbar as ToolbarPrimitive,
   ToolbarButton as ToolbarItemPrimitive,
@@ -17,7 +18,7 @@ import {
 } from "#avenue/components/dropdown-menu";
 import { SearchInput } from "#avenue/components/search-input";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose } from "#avenue/lib/props";
+import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * ManyAve's page toolbar (the app's app/ui/components/Toolbar.tsx and the phone's MobileToolbar in mobile.tsx, at
@@ -44,13 +45,33 @@ function Toolbar({ className, ...props }: Loose<ComponentProps<typeof ToolbarPri
 }
 
 /** The left side: the page's filter chips. They wrap onto more lines on a narrow window. */
-function ToolbarFilters({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="toolbar-filters" className={cn("flex flex-wrap items-center gap-controls", className)} {...props} />;
+function ToolbarFilters({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "toolbar-filters",
+        className: cn("flex flex-wrap items-center gap-controls", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /** The right side: search, view controls and the page's actions. */
-function ToolbarControls({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="toolbar-controls" className={cn("ms-auto flex items-start gap-controls", className)} {...props} />;
+function ToolbarControls({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "toolbar-controls",
+        className: cn("ms-auto flex items-start gap-controls", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /** A control in the toolbar's focus order. Pass the Avenue control to draw as `render`. */

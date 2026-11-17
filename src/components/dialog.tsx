@@ -1,10 +1,11 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as DialogPrimitive from "@ui-sdk/react/dialog";
 import { XIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Button } from "#avenue/components/button";
 import { modalCloseButton, modalDescription, modalSurface, modalTitle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/dialog.tsx (e01cc90). xl corner (14px) and 16px inset as in the app.
@@ -94,8 +95,18 @@ function DialogContent({
 }
 
 /** Title and description. Leaves room on the right for the close button. */
-function DialogHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="dialog-header" className={cn("flex flex-col gap-2 pe-8", className)} {...props} />;
+function DialogHeader({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "dialog-header",
+        className: cn("flex flex-col gap-2 pe-8", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /** Actions, on a muted strip. Put Cancel first: it is then the safe default focus and sits on the left. */
@@ -103,20 +114,28 @@ function DialogFooter({
   className,
   showCloseButton = false,
   children,
+  render,
   ...props
-}: ComponentProps<"div"> & { showCloseButton?: boolean | undefined }) {
-  return (
-    <div
-      data-slot="dialog-footer"
-      className={cn(
-        "-mx-inset -mb-inset flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
-        className,
-      )}
-      {...props}
-    >
-      {showCloseButton && <DialogPrimitive.DialogClose render={<Button variant="outline" />}>Close</DialogPrimitive.DialogClose>}
-      {children}
-    </div>
+}: OwnPartProps<"div"> & { showCloseButton?: boolean | undefined }) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "dialog-footer",
+        className: cn(
+          "-mx-inset -mb-inset flex flex-col-reverse gap-controls rounded-b-xl border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+          className,
+        ),
+        children: (
+          <>
+            {showCloseButton && <DialogPrimitive.DialogClose render={<Button variant="outline" />}>Close</DialogPrimitive.DialogClose>}
+            {children}
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

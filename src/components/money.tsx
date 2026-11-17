@@ -1,5 +1,6 @@
-import type { ComponentProps } from "react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { formatMoney } from "#avenue/lib/format";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -14,18 +15,19 @@ function Money({
   cents,
   signed = false,
   className,
+  render,
   ...props
-}: ComponentProps<"span"> & { cents: number | null | undefined; signed?: boolean | undefined }) {
+}: OwnPartProps<"span"> & { cents: number | null | undefined; signed?: boolean | undefined }) {
   const blank = cents === null || cents === undefined;
-  return (
-    <span
-      data-slot="money"
-      data-private=""
-      data-sign={blank ? undefined : cents < 0 ? "negative" : cents > 0 ? "positive" : "zero"}
-      className={cn("shrink-0 font-mono whitespace-nowrap tabular-nums", blank && "text-muted-foreground", className)}
-      {...props}
-    >
-      {blank ? (
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "money",
+        "data-private": "",
+        "data-sign": blank ? undefined : cents < 0 ? "negative" : cents > 0 ? "positive" : "zero",
+        className: cn("shrink-0 font-mono whitespace-nowrap tabular-nums", blank && "text-muted-foreground", className),
+        children: blank ? (
         <>
           <span aria-hidden>—</span>
           <span className="sr-only">No amount</span>
@@ -37,8 +39,11 @@ function Money({
         </>
       ) : (
         formatMoney(cents, { signed })
-      )}
-    </span>
+      ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

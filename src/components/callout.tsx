@@ -1,10 +1,11 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { InfoIcon, type LucideIcon } from "lucide-react";
-import type { ComponentProps } from "react";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export type CalloutTone = "info" | "warning";
 
-export interface CalloutProps extends ComponentProps<"div"> {
+export interface CalloutProps extends OwnPartProps<"div"> {
   /** info (the default) for a note that helps; warning for one that changes what happens if they go on. */
   tone?: CalloutTone | undefined;
   /** The leading icon. Info by default; pass TriangleAlert with a warning, or Clock for something still processing. */
@@ -19,20 +20,27 @@ export interface CalloutProps extends ComponentProps<"div"> {
  *
  * AVE-2 spacing: the app's off-grid 10px top and bottom padding becomes 8px.
  */
-export function Callout({ tone = "info", icon: Icon = InfoIcon, className, children, ...props }: CalloutProps) {
-  return (
-    <div
-      data-slot="callout"
-      data-tone={tone}
-      className={cn(
-        "flex gap-2 rounded-md px-3 py-2 text-meta",
-        tone === "info" ? "bg-info-subtle text-info-subtle-foreground" : "bg-warning-subtle text-warning-subtle-foreground",
-        className,
-      )}
-      {...props}
-    >
-      <Icon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-      <div className="min-w-0">{children}</div>
-    </div>
+export function Callout({ tone = "info", icon: Icon = InfoIcon, className, children, render, ...props }: CalloutProps) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "callout",
+        "data-tone": tone,
+        className: cn(
+          "flex gap-2 rounded-md px-3 py-2 text-meta",
+          tone === "info" ? "bg-info-subtle text-info-subtle-foreground" : "bg-warning-subtle text-warning-subtle-foreground",
+          className,
+        ),
+        children: (
+          <>
+            <Icon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            <div className="min-w-0">{children}</div>
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }

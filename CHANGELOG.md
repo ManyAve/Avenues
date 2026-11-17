@@ -4,6 +4,28 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.18.0 (2026-11-17)
+
+- **Every part Avenue draws itself takes `render`** (AVE-136), like every ui-sdk part, so an app can change its
+  element without fighting the classes. Nothing looks different, and leaving `render` out renders what it did before.
+  - Card: `<Card render={<article />}>` and `<CardTitle render={<h3 />}>` (pick the level that fits the page), so screen
+    reader users can move between cards by heading. Also CardHeader, CardDescription, CardAction, CardContent and
+    CardFooter.
+  - Table: every part. On `Table` it changes the `table`; the container around it stays a `div`.
+  - Dialog, AlertDialog, Sheet and Popover headers and footers, and SheetBody (a footer can be a `form` or `footer`).
+  - FieldContent, FieldTitle, FieldSeparator; AvatarBadge, AvatarGroup, AvatarGroupCount; DropdownMenuShortcut;
+    RegisterHeader, RegisterBody, RegisterSelectColumn; ToolbarFilters, ToolbarControls; Count; Callout; FileName,
+    FileThumbnail; Money; IconTile; ChipRow; AskAdmin.
+  - Their props are now `OwnPartProps<tag>` (the element's props plus `render`), so existing code type-checks as is.
+  - A linter's heading-has-content rule can't see that the part passes its children into `render={<h3 />}`; it may
+    need a disable comment on that line.
+  - ChipRow and the others also combine a `ref` you pass with their own, instead of replacing it.
+  - The prop-driven composites (PageHeader, TopBar, StatusBar, EmptyState, SectionEmpty, DetailList, ListItem) keep
+    their element: their markup is the point.
+  - Management and Neighbors: nothing to change. Where a screen wraps a heading inside CardTitle, it can drop the
+    wrapper for `render`. Neighbors' `asChild` on these parts becomes `render` when it adopts them.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.17.0 (2026-11-17)
 
 - **Chat composer** (AVE-134), new in `@manyave/avenue/components/composer`: the reply box under a chat. Nothing

@@ -1,3 +1,4 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import {
   FileInput,
   FileInputTrigger,
@@ -9,6 +10,7 @@ import { useId, useLayoutEffect, useRef, useState, type ComponentProps, type Rea
 import { Button, buttonVariants } from "#avenue/components/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
 import { InlineMessage } from "#avenue/components/inline-message";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -271,15 +273,19 @@ function FileField({
 }
 
 /** The image's thumbnail: 40px, md corner, border, muted fill, contained. Decorative; the field's label names it. */
-function FileThumbnail({ src, className, ...props }: ComponentProps<"img">) {
-  return (
-    <img
-      src={src}
-      alt=""
-      data-slot="file-thumbnail"
-      className={cn("size-10 shrink-0 rounded-md border bg-muted object-contain", className)}
-      {...props}
-    />
+function FileThumbnail({ src, className, render, ...props }: OwnPartProps<"img">) {
+  return renderElement(
+    "img",
+    mergeProps(
+      {
+        src,
+        alt: "",
+        "data-slot": "file-thumbnail",
+        className: cn("size-10 shrink-0 rounded-md border bg-muted object-contain", className),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
@@ -289,7 +295,7 @@ function FileThumbnail({ src, className, ...props }: ComponentProps<"img">) {
  * CSS ellipsis leaves the unused part of the last character's width as a visible gap before the tail (AVE-48).
  * Screen readers read the whole name; the cut copy is hidden from them.
  */
-function FileName({ name, className, ...props }: ComponentProps<"span"> & { name: string }) {
+function FileName({ name, className, render, ...props }: OwnPartProps<"span"> & { name: string }) {
   const dot = name.lastIndexOf(".");
   const tailLength = Math.min(name.length - (dot > 0 ? dot : name.length) + 6, name.length);
   const head = name.slice(0, name.length - tailLength);
@@ -337,17 +343,29 @@ function FileName({ name, className, ...props }: ComponentProps<"span"> & { name
       observer.disconnect();
     };
   }, [head, tail]);
-  return (
-    <span data-slot="file-name" title={name} className={cn("flex min-w-0 whitespace-nowrap", className)} {...props}>
-      <span className="sr-only">{name}</span>
-      <span aria-hidden className="flex min-w-0">
-        {/* truncate stays as the fallback before the first measure. */}
-        <span ref={headRef} className="truncate">
-          {fit === null ? head : `${head.slice(0, fit)}…`}
-        </span>
-        <span className="shrink-0">{tail}</span>
-      </span>
-    </span>
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "file-name",
+        title: name,
+        className: cn("flex min-w-0 whitespace-nowrap", className),
+        children: (
+          <>
+            <span className="sr-only">{name}</span>
+            <span aria-hidden className="flex min-w-0">
+              {/* truncate stays as the fallback before the first measure. */}
+              <span ref={headRef} className="truncate">
+                {fit === null ? head : `${head.slice(0, fit)}…`}
+              </span>
+              <span className="shrink-0">{tail}</span>
+            </span>
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
