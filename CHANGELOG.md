@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.12.1 (2026-11-17)
+
+- **Foundations › Moving from older tokens** (AVE-127): the page now says that Tailwind's own `text-xs` and `text-sm`
+  grow too, because Avenue points them at `meta` and `compact` (12px to 14px and 14px to 16px on the web scale; 13px
+  and 14px on the desktop scale). It adds how to keep hierarchy when `text-sm` matches `text-base` and `text-xs`
+  matches `text-meta` (muted colour or a heavier weight, never a smaller size typed back in), and how to check badges,
+  chips and tabs with fixed heights against their longest label. Story only: no token, class or component changes.
+  - Neighbors: read it before the type-scale switch (NEI-204); it is the biggest part of that change.
+
 ## v0.12.0 (2026-11-17)
 
 - **Table filters** (AVE-123), `@manyave/avenue/components/table-filter`: Linear-style filters for a table, from
