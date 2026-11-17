@@ -96,13 +96,18 @@ function Households({
   density = "normal",
   initialSort = { field: "property", direction: "asc" },
   onlyDue = false,
+  groupSelect = false,
+  initialSelected = ["b14"],
 }: {
   density?: Density;
   initialSort?: SortValue;
   onlyDue?: boolean;
+  /** Street bars carry a checkbox that selects only that street's rows (AVE-123). */
+  groupSelect?: boolean;
+  initialSelected?: string[];
 }) {
   const [rows, setRows] = useState(households);
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set(["b14"]));
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set(initialSelected));
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
   const [sort, setSort] = useState<SortValue>(initialSort);
   const [due, setDue] = useState(onlyDue);
@@ -113,7 +118,21 @@ function Households({
   const { groups, count } = layout(streets, visible, closed, sort);
   const addRow = count;
   const rowCount = count + 1;
-  const spanning = [...groups.map((g) => g.bar), addRow];
+  const spanning = groupSelect ? [addRow] : [...groups.map((g) => g.bar), addRow];
+  const groupRows = groupSelect ? groups.map((g) => g.bar) : undefined;
+  const streetSelection = (members: Household[]) => {
+    const on = members.filter((h) => selected.has(h.id)).length;
+    return on === 0 ? "none" : on === members.length ? "all" : "some";
+  };
+  const selectStreet = (members: Household[], on: boolean) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      for (const h of members) {
+        if (on) n.add(h.id);
+        else n.delete(h.id);
+      }
+      return n;
+    });
 
   const all = visible.length > 0 && visible.every((h) => selected.has(h.id));
   const some = visible.some((h) => selected.has(h.id));
@@ -136,7 +155,7 @@ function Households({
         </Button>
       </div>
       <div data-register-pane className="max-h-[520px] scroll-pt-21 overflow-auto pointer-coarse:scroll-pt-23">
-        <Register aria-label="Households" rowCount={rowCount} colCount={COLS} spanningRows={spanning} density={density}>
+        <Register aria-label="Households" rowCount={rowCount} colCount={COLS} spanningRows={spanning} groupSelectRows={groupRows} density={density}>
           <colgroup>
             <RegisterSelectColumn />
             <col className="w-[205px]" />
@@ -187,6 +206,9 @@ function Households({
                       <Money cents={g.members.reduce((t, h) => t + h.balance, 0)} className="font-sans" /> outstanding
                     </>
                   }
+                  {...(groupSelect
+                    ? { selection: streetSelection(g.members), onSelectedChange: (on: boolean) => selectStreet(g.members, on) }
+                    : {})}
                 />
                 {g.shown.map(({ h, row }) => (
                   <RegisterRow key={h.id} row={row} selected={selected.has(h.id)}>
@@ -703,5 +725,94 @@ export const NormalAndComfortable: Story = {
     const [normal, comfortable] = canvas.getAllByRole("gridcell", { name: "Ada Okafor" });
     await expect(Math.round(normal!.getBoundingClientRect().height)).toBe(48);
     await expect(Math.round(comfortable!.getBoundingClientRect().height)).toBe(52);
+  },
+};
+
+const opacity = (el: Element) => getComputedStyle(el).opacity;
+
+/**
+ * Street select (AVE-123): each street's bar leads with a checkbox in the selection column that selects or clears
+ * only that street's rows, half-checked while some are. Nothing selected here, so with a mouse the checkboxes wait
+ * for hover or focus; the arrows reach each one, and Space selects the street.
+ */
+export const GroupSelect: Story = {
+  globals: desktop,
+  render: () => frame(<Households groupSelect initialSelected={[]} />),
+  play: async ({ canvas }) => {
+    const birch = canvas.getByRole("checkbox", { name: "Select all on Birch Lane" });
+    const cedar = canvas.getByRole("checkbox", { name: "Select all on Cedar Court" });
+    await expect(stops()).toBe(1);
+    // Hidden at rest with a mouse (storybook's userEvent can't drive CSS :hover, so hover is left to the eye);
+    // focus shows it below.
+    if (!matchMedia("(pointer: coarse)").matches) await expect(opacity(birch)).toBe("0");
+    // Down from select-all reaches the bar's checkbox, Right its collapse button, Left back.
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    await userEvent.tab();
+    await expect(canvas.getByRole("checkbox", { name: "Select all households" })).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(birch).toHaveFocus();
+    await expect(opacity(birch)).toBe("1");
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(canvas.getByRole("button", { name: /^Birch Lane/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(canvas.getByRole("button", { name: /^Birch Lane/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(birch).toHaveFocus();
+    // Space selects Birch Lane's three rows and no others.
+    await userEvent.keyboard(" ");
+    await expect(birch).toBeChecked();
+    for (const a of ["12", "14", "17"]) await expect(canvas.getByRole("checkbox", { name: `Select ${a} Birch Lane` })).toBeChecked();
+    for (const a of ["3", "5", "8"]) await expect(canvas.getByRole("checkbox", { name: `Select ${a} Cedar Court` })).not.toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Select all households" })).toHaveAttribute("aria-checked", "mixed");
+    // While any row is selected, every street's checkbox shows.
+    await expect(opacity(cedar)).toBe("1");
+    // Down from the bar's checkbox goes to its first row; clearing one row half-checks the street.
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(canvas.getByRole("checkbox", { name: "Select 12 Birch Lane" })).toHaveFocus();
+    await userEvent.keyboard(" ");
+    await expect(birch).toHaveAttribute("aria-checked", "mixed");
+    // A half-checked street's box selects the rest; pressed again, it clears the street.
+    await userEvent.keyboard("{ArrowUp}");
+    await userEvent.keyboard(" ");
+    await expect(birch).toBeChecked();
+    await userEvent.keyboard(" ");
+    await expect(birch).not.toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Select 14 Birch Lane" })).not.toBeChecked();
+    // A column cell above a bar moves down past it to the next street's first row in that column.
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{ArrowRight}{ArrowRight}");
+    await expect(canvas.getByRole("gridcell", { name: "Mei Lindqvist" })).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(canvas.getByRole("gridcell", { name: "Rafael Duarte" })).toHaveFocus();
+    await expect(stops()).toBe(1);
+  },
+};
+
+/** Street select with some of one street chosen: its box half-checked, and every street's box showing. */
+export const GroupSelectSome: Story = {
+  globals: desktop,
+  render: () => frame(<Households groupSelect initialSelected={["c5"]} />),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("checkbox", { name: "Select all on Cedar Court" })).toHaveAttribute("aria-checked", "mixed");
+    await expect(opacity(canvas.getByRole("checkbox", { name: "Select all on Birch Lane" }))).toBe("1");
+  },
+};
+
+/** Street select on a phone (MANA-1174): no hover, so each street's checkbox always shows, at a 44px tap. */
+export const GroupSelectPhone: Story = {
+  globals: { viewport: { value: "phone", isRotated: false } },
+  render: () => (
+    <div className="overflow-x-auto px-page py-section">
+      <div className="w-[700px]">
+        <Households groupSelect initialSelected={[]} density="compact" />
+      </div>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const birch = canvas.getByRole("checkbox", { name: "Select all on Birch Lane" });
+    if (matchMedia("(pointer: coarse)").matches) await expect(opacity(birch)).toBe("1");
+    await userEvent.click(birch);
+    await expect(birch).toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Select 17 Birch Lane" })).toBeChecked();
   },
 };

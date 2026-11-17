@@ -4,6 +4,28 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.12.0 (2026-11-17)
+
+- **Table filters** (AVE-123), `@manyave/avenue/components/table-filter`: Linear-style filters for a table, from
+  Management's Households and Dues toolbars (MANA-1168). `TableFilters` takes the table's `fields` (text, number,
+  money or choice), the `filters` and `onChange`; a Filter button lists the attributes, and each filter shows as a
+  pill ("Dues status is any of Owing, Partial") that opens to change its operator and value, with × to remove it.
+  Filters are ANDed. Put it in `ToolbarFilters` or a `PhoneToolbar`'s `filters`, so the pills join the toolbar's
+  arrow keys. The rules come with it at `@manyave/avenue/table-filters` (`applyFilters`, `matchesFilter`,
+  `isComplete`, `filterOps`, `opLabel`, `dollarsToCents`), the same rules as the app's shared/lib/tableFilters.ts.
+  Changes from the app: the attribute list is a ui-sdk menu (arrows, type-ahead, an agent's `press`), choosing one
+  opens the new pill with focus on its value, Escape returns focus to the pill, removing one moves focus to the
+  Filter button, and on a touch screen the pills and × are 44px tall.
+- **Register street select** (AVE-123): `RegisterGroupRow` takes `selection` ("none" | "some" | "all") and
+  `onSelectedChange`, and leads with a checkbox that selects or clears only that street's rows, half-checked while
+  some are. List those bars in the Register's new `groupSelectRows` instead of `spanningRows`: the checkbox is the
+  bar's column 0 and the rest its column 1, so the arrows reach both. With a mouse it shows on hover or focus, while
+  any of the street's rows is selected and while any row in the table is; on a touch screen it always shows
+  (MANA-1174). A named departure from the app: the checkbox sits in the selection column, lined up with the rows'
+  checkboxes, and is named "Select all on Birch Lane", because an agent reading "Select Birch Lane" would also match
+  "Select 12 Birch Lane". A bar without `selection` is unchanged.
+  - Management: take v0.12.0 to move app/ui/components/table-filter.tsx and GroupHeading's checkbox onto Avenue, and
+    to read shared/lib/tableFilters.ts's rules from `@manyave/avenue/table-filters`.
 ## v0.11.0 (2026-11-17)
 
 - **Loading skeleton** (AVE-128), new in `@manyave/avenue/components/skeleton`. Nothing existing changes.
