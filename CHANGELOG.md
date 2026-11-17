@@ -4,6 +4,33 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.16.0 (2026-11-17)
+
+- **Chat messages** (AVE-133), new in `@manyave/avenue/components/message`: one sender's run of messages and each
+  message in it, in Management's board chat look. Nothing existing changes.
+  - Parts: `MessageRun` (`from="me" | "them"`, `sender`) holds `MessageRunAvatar` (28px, theirs only) and
+    `MessageRunContent` (the column, at most 82% of the row), which holds `MessageRunSender` (the name over a group
+    run) and one `Message` per message. A `Message` (`deleted`, `delivery="sent" | "pending" | "failed"`, `edited`,
+    `time`) holds `MessageQuote` (`sender`, `deleted`), `MessageRow` (`MessageBubble` and `MessageActions` side by
+    side), anything the app adds under it, `MessageStatus` and `MessageMeta`.
+  - Who spoke is text, not only side and colour: every bubble starts with hidden "You:" or "Ana Ruiz:", and the drawn
+    name is hidden so it is read once. The full `time` ("Thursday, November 12, 4:28 PM") is hidden text at the
+    bubble's end, since a description on a paragraph isn't read in browse mode and a `title` can't be reached by
+    touch. A quote reads "Replying to <sender>:".
+  - States carry text: a deleted message draws "Message deleted" and never its body; `MessageStatus` says "Sending…"
+    (polite) or "Not sent" (an alert) beside the app's Retry and Delete (give Delete `data-agent-confirm`).
+  - `MessageActions` is a slot for the app's own controls (react, reply, options): it fades in on hover and focus
+    and always shows on a touch screen, where a message with actions gains 4px above and below so 44px targets
+    don't overlap. Reactions, the options menu, run grouping and day labels stay in the apps.
+  - Management: replace `MessageRun` and `Bubble` in `app/ui/components/chat.tsx` with these parts. Same look but
+    for AVE-2's grid (corner 14px, not 16; 8px top and bottom padding, not 6, so a one-line bubble is 36px) and three
+    contrast fixes: a sending bubble is greyed (`saturate`) instead of 60% opacity, which took its text to
+    2.9:1; "edited" is no longer faded (3.4:1); and the reply quote's fill is `bg-accent`, which shows on the dark
+    window (`bg-muted` is the window's own colour there). Name each action by its message ("Reply to Ana Ruiz").
+  - Neighbors: replace `MessageBubble` in `features/community/messages/conversation-thread.tsx`. The fill becomes
+    `foreground/10` and the corner `rounded-xl` (14px) with no tuck, for parity; the hidden sender prefix it already has
+    is now built in.
+
 ## v0.15.0 (2026-11-17)
 
 - **Message list** (AVE-132), new in `@manyave/avenue/components/message-list`: a chat thread's scrolling messages,

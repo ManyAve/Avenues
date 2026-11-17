@@ -221,6 +221,8 @@ const STREET_BAR_PARTS: Allowance = {
 
 const BEHAVIOUR = (look: string) =>
   `Behaviour story: a play function presses keys or checks focus, so its end state isn't a resting look the app has a story for. Its look is compared through ${look}.`;
+const MESSAGE_LOOK =
+  "Management draws its bubbles inside ChatWindow (Chat/Board chat), with live data and a dock around them. Compared in Message / Beside Management, which renders Management's MessageRun and Bubble classes beside Avenue's and asserts the same fill, colour, corner, padding, type and size. The reply quote's fill is bg-accent, not Management's bg-muted, which is the popover's own colour in dark (as found on AVE-128).";
 const NEW_IN_AVENUE = (what: string, look: string) =>
   `${what} is new in Avenue; the app has no component or story of its kind. Its parts are compared through ${look}.`;
 const STATE_ONLY = (state: string, look: string) =>
@@ -575,6 +577,16 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-progress--phone": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
   "components-progress--beside-management": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
   "components-progress--changing-value": { none: BEHAVIOUR("Progress / With value") },
+
+  // ---- Message (AVE-133)
+  "components-message--direct-message": { none: MESSAGE_LOOK },
+  "components-message--group-thread": { none: MESSAGE_LOOK },
+  "components-message--long-unbroken-text": { none: MESSAGE_LOOK },
+  "components-message--right-to-left": { none: MESSAGE_LOOK },
+  "components-message--actions": { none: MESSAGE_LOOK },
+  "components-message--phone": { none: MESSAGE_LOOK },
+  "components-message--agent": { none: MESSAGE_LOOK },
+  "components-message--beside-management": { none: MESSAGE_LOOK },
 
   // ---- Skeleton (AVE-128)
   "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
