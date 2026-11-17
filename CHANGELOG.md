@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.11.0 (2026-11-16)
+## v0.12.0 (2026-11-17)
 
 - **Table filters** (AVE-123), `@manyave/avenue/components/table-filter`: Linear-style filters for a table, from
   Management's Households and Dues toolbars (MANA-1168). `TableFilters` takes the table's `fields` (text, number,
@@ -24,8 +24,22 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   (MANA-1174). A named departure from the app: the checkbox sits in the selection column, lined up with the rows'
   checkboxes, and is named "Select all on Birch Lane", because an agent reading "Select Birch Lane" would also match
   "Select 12 Birch Lane". A bar without `selection` is unchanged.
-  - Management: take v0.11.0 to move app/ui/components/table-filter.tsx and GroupHeading's checkbox onto Avenue, and
+  - Management: take v0.12.0 to move app/ui/components/table-filter.tsx and GroupHeading's checkbox onto Avenue, and
     to read shared/lib/tableFilters.ts's rules from `@manyave/avenue/table-filters`.
+## v0.11.0 (2026-11-17)
+
+- **Loading skeleton** (AVE-128), new in `@manyave/avenue/components/skeleton`. Nothing existing changes.
+  - `Skeleton` is one placeholder shape, filled `bg-accent` with a slow pulse that stops under reduced motion.
+    `shape="text"` is one line as tall as the text it stands for (give it the text class, such as `text-meta`, and
+    a width), `"circle"` an avatar (`size-8`), `"block"` (the default) anything else (`h-*`). `SkeletonText lines={3}`
+    is a paragraph whose last line is shorter.
+  - `Loading label="households"` wraps the shapes: it marks the region `aria-busy` and gives screen readers one polite
+    "Loading households", instead of nothing or one bar at a time. Every shape is hidden from them, and the region is
+    `inert`, so nothing inside it takes focus or a click. Replace the
+    whole `Loading` with the content when it arrives.
+  - Show it after about 300ms, at the real layout's size, for loads of a second or more where the layout is known.
+  - Neighbors: replace `apps/web/src/design-system/ui/skeleton.tsx` (23 files). The fill stays `bg-accent`, and each screen's shapes go inside a `Loading` with a label.
+  - Management: optional. The "Loading…" lines on screens whose layout is known can become a `Loading` of shapes.
 
 ## v0.10.0 (2026-11-16)
 
