@@ -152,6 +152,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     none: "AVE-121: ui-sdk's kit has no grid pattern to check; the Month grid stories press every key the grid handles, run across weeks and past the last week, and open a day's popover from the grid; Month grid / Agent is its agent test.",
   },
 
+  "message-list": {
+    none: "AVE-132: ui-sdk's kit has no log pattern, and the list changes no keys: the log is one Tab stop the browser scrolls, its buttons are ui-sdk Buttons. The Message list stories press Jump, Earlier messages and Try again by keyboard, check the log's role, name and aria-relevant, that focus stays in the log after a jump, and that the view holds while scrolled up and when history loads above; Message list / Agent is its agent test.",
+  },
+
   // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
