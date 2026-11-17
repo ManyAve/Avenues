@@ -143,7 +143,13 @@ function useWide(beforeChange: () => void) {
  * button. When the window crosses 1100px while focus is on a folding action, focus moves to More as they fold and
  * to the first action as they unfold, instead of falling to the page (AVE-87).
  */
-function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[]; primary: ToolbarAction }) {
+function ToolbarActions({
+  actions,
+  primary,
+  className,
+  render,
+  ...props
+}: Omit<OwnPartProps<"span">, "children"> & { actions: readonly ToolbarAction[]; primary: ToolbarAction }) {
   const folding = useRef<HTMLSpanElement>(null);
   const hadFocus = useRef(false);
   const beforeChange = useCallback(() => {
@@ -156,63 +162,68 @@ function ToolbarActions({ actions, primary }: { actions: readonly ToolbarAction[
     // Folded, the one button here is More; unfolded, the first is the first action.
     folding.current?.querySelector<HTMLElement>(wide ? "button" : '[aria-label="More actions"]')?.focus();
   }, [wide]);
-  return (
-    <span
-      data-slot="toolbar-actions"
+  return renderElement(
+    "span",
+    mergeProps(defined(props), {
+      "data-slot": "toolbar-actions",
       // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason hangs from
       // its button's end and never widens its slot (`reasons-hang`; the selection bar hangs from the start, AVE-96).
-      className="flex items-start gap-controls reasons-hang"
-    >
-      {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
-      <span ref={folding} className="contents">
-      {wide ? (
-        actions.map((action) => (
-          <ToolbarItem
-            key={action.id}
-            disabled={!!action.disabledReason}
-            onClick={action.disabledReason ? undefined : action.onSelect}
-            render={
-              <Button variant="outline" disabledReason={action.disabledReason} data-agent-confirm={action.confirm} />
-            }
-          >
-            {action.icon}
-            {action.label}
-          </ToolbarItem>
-        ))
-      ) : actions.length > 0 ? (
-        <DropdownMenu>
-          <ToolbarItem
-            aria-label="More actions"
-            render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" />} />}
-          >
-            <Ellipsis />
-          </ToolbarItem>
-          <DropdownMenuContent align="end" className="w-60">
-            {actions.map((action) => (
-              <DropdownMenuItem
+      className: cn("flex items-start gap-controls reasons-hang", className),
+      children: (
+        <>
+          {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
+          <span ref={folding} className="contents">
+          {wide ? (
+            actions.map((action) => (
+              <ToolbarItem
                 key={action.id}
                 disabled={!!action.disabledReason}
-                reason={action.disabledReason}
-                data-agent-confirm={action.confirm}
-                {...(action.onSelect ? { onSelect: action.onSelect } : {})}
+                onClick={action.disabledReason ? undefined : action.onSelect}
+                render={
+                  <Button variant="outline" disabledReason={action.disabledReason} data-agent-confirm={action.confirm} />
+                }
               >
                 {action.icon}
                 {action.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : null}
-      </span>
-      <ToolbarItem
-        disabled={!!primary.disabledReason}
-        onClick={primary.disabledReason ? undefined : primary.onSelect}
-        render={<Button disabledReason={primary.disabledReason} data-agent-confirm={primary.confirm} />}
-      >
-        {primary.icon}
-        {primary.label}
-      </ToolbarItem>
-    </span>
+              </ToolbarItem>
+            ))
+          ) : actions.length > 0 ? (
+            <DropdownMenu>
+              <ToolbarItem
+                aria-label="More actions"
+                render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" />} />}
+              >
+                <Ellipsis />
+              </ToolbarItem>
+              <DropdownMenuContent align="end" className="w-60">
+                {actions.map((action) => (
+                  <DropdownMenuItem
+                    key={action.id}
+                    disabled={!!action.disabledReason}
+                    reason={action.disabledReason}
+                    data-agent-confirm={action.confirm}
+                    {...(action.onSelect ? { onSelect: action.onSelect } : {})}
+                  >
+                    {action.icon}
+                    {action.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+          </span>
+          <ToolbarItem
+            disabled={!!primary.disabledReason}
+            onClick={primary.disabledReason ? undefined : primary.onSelect}
+            render={<Button disabledReason={primary.disabledReason} data-agent-confirm={primary.confirm} />}
+          >
+            {primary.icon}
+            {primary.label}
+          </ToolbarItem>
+        </>
+      ),
+    }),
+    render,
   );
 }
 

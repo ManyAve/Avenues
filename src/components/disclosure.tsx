@@ -1,10 +1,15 @@
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@ui-sdk/react/collapsible";
 import { ChevronRightIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { defined } from "#avenue/lib/props";
+import type { ComponentProps, ReactNode } from "react";
+import { defined, type Loose } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
-export interface DisclosureProps {
+/**
+ * Any other prop of ui-sdk's Collapsible root (a ref, an id, aria-* or data-*) lands on the root (AVE-138). The root's
+ * data-slot is ui-sdk's, `collapsible`: an Avenue name passed to it never reached the page, so it is gone.
+ */
+export interface DisclosureProps
+  extends Omit<Loose<ComponentProps<typeof Collapsible>>, "children" | "defaultOpen" | "open" | "onOpenChange" | "disabled" | "className"> {
   /** The always-visible line that opens and closes it ("Advanced", "Show the follow-up question"). */
   summary: ReactNode;
   children: ReactNode;
@@ -36,12 +41,13 @@ export function Disclosure({
   disabled,
   className,
   panelClassName,
+  ...props
 }: DisclosureProps) {
   return (
     <Collapsible
+      {...defined(props)}
       {...defined({ defaultOpen, open, disabled })}
       {...(onOpenChange ? { onOpenChange: (next: boolean) => onOpenChange(next) } : {})}
-      data-slot="disclosure"
       className={cn("text-meta text-muted-foreground", className)}
     >
       <CollapsibleTrigger

@@ -38,6 +38,9 @@ function Count({ value, className, render, ...props }: OwnPartProps<"span"> & { 
  * A heading's title and its count (PageHeader, SectionCard). The visible Count is hidden from screen readers and the
  * heading's name reads "Complaints, 2 open" instead of "Complaints 2", which in a headings list sounds like a title
  * with a typo (AVE-69). `countLabel` is the word after the number ("open"); without it the name is "Complaints, 2".
+ *
+ * It draws no element of its own, only the title and the count inside the heading that holds them, so it takes no
+ * ref, id or data-* props: give those to that heading (AVE-138). A wrapper would add a box inside the heading's row.
  */
 function TitleWithCount({
   title,
