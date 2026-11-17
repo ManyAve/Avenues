@@ -547,6 +547,38 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-message-list--empty": { none: STATE_ONLY("the list's empty line in Avenue's frame", "Message list / Default") },
   "components-message-list--phone": { none: BEHAVIOUR("Message list / Default") },
   "components-message-list--agent": { none: BEHAVIOUR("Message list / Default") },
+  // ---- Dock (AVE-135)
+  "components-dock--default": [
+    {
+      label: "dock window frame",
+      app: "chat-board-chat--thread",
+      appCrop: "section[aria-label='Ana Ruiz']",
+      avenueCrop: "section[aria-label='Ana Ruiz']",
+      frame: true,
+    },
+    {
+      label: "dock window header",
+      app: "chat-board-chat--thread",
+      appCrop: "section[aria-label='Ana Ruiz'] > header",
+      avenueCrop: "[data-slot=dock-window-header]",
+      frame: true,
+    },
+  ],
+  "components-dock--folded": [
+    {
+      label: "folded dock window",
+      app: "chat-board-chat--folded",
+      appCrop: "section[aria-label='Ana Ruiz']",
+      avenueCrop: "section[aria-label='Ana Ruiz']",
+      frame: true,
+    },
+  ],
+  "components-dock--side-by-side": { none: BEHAVIOUR("Dock / Default") },
+  "components-dock--wide": { none: STATE_ONLY("the inbox's 416px window", "Dock / Default") },
+  "components-dock--long-title": { none: BEHAVIOUR("Dock / Default") },
+  "components-dock--phone": { none: BEHAVIOUR("Dock / Default") },
+  "components-dock--keyboard": { none: BEHAVIOUR("Dock / Default") },
+  "components-dock--agent": { none: BEHAVIOUR("Dock / Default") },
   "components-month-grid--default": { none: NEW_IN_AVENUE("The month grid", "the board's Activity month (app/ui/components/activity-month.tsx), once the Activity screen moves") },
   "components-month-grid--keyboard": { none: BEHAVIOUR("Month grid / Default") },
   "components-month-grid--past-the-edges": { none: BEHAVIOUR("Month grid / Default") },

@@ -23,6 +23,7 @@ import type * as detailList from "#avenue/components/detail-list";
 import type * as dialog from "#avenue/components/dialog";
 import type * as disclosure from "#avenue/components/disclosure";
 import type * as displayOptions from "#avenue/components/display-options";
+import type * as dock from "#avenue/components/dock";
 import type * as dropdownMenu from "#avenue/components/dropdown-menu";
 import type * as emptyState from "#avenue/components/empty-state";
 import type * as field from "#avenue/components/field";
@@ -85,6 +86,7 @@ type Modules = {
   "dialog": typeof dialog;
   "disclosure": typeof disclosure;
   "display-options": typeof displayOptions;
+  "dock": typeof dock;
   "dropdown-menu": typeof dropdownMenu;
   "empty-state": typeof emptyState;
   "field": typeof field;
