@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useId, useLayoutEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -26,7 +26,13 @@ export type PendingConfirmRecovery =
   | { safeToRetry: true; message: string }
   | { safeToRetry: false; message: string; checkLabel: string; onCheck: () => void };
 
-export interface PendingConfirmDialogProps {
+/**
+ * Any other prop of the dialog's content (a ref, an id, aria-* or data-*) lands on the dialog itself. It is described by
+ * `description`, so it takes no aria-describedby; its focus and
+ * Tab handling while pending stay Avenue's, and an onKeyDown of the app's runs before them and can't release Tab (AVE-138).
+ */
+export interface PendingConfirmDialogProps
+  extends Omit<ComponentProps<typeof AlertDialogContent>, "children" | "title" | "initialFocus" | "aria-describedby"> {
   open: boolean;
   /** Called with false when the person cancels or closes. Never called while pending. */
   onOpenChange: (open: boolean) => void;
@@ -84,6 +90,8 @@ export function PendingConfirmDialog({
   recovery,
   onConfirm,
   cancelLabel = "Cancel",
+  onKeyDown,
+  ...props
 }: PendingConfirmDialogProps) {
   const status = useRef<HTMLOutputElement>(null);
   const recover = useRef<HTMLButtonElement>(null);
@@ -107,13 +115,16 @@ export function PendingConfirmDialog({
       }}
     >
       <AlertDialogContent
-        {...(pending ? { initialFocus: () => status.current } : unknown ? { initialFocus: () => recover.current } : {})}
+        {...props}
         onKeyDown={(event) => {
+          // The app's handler first; Tab stays held while pending whatever it does.
+          onKeyDown?.(event);
           if (pending && event.key === "Tab") {
             event.preventDefault();
             status.current?.focus();
           }
         }}
+        {...(pending ? { initialFocus: () => status.current } : unknown ? { initialFocus: () => recover.current } : {})}
       >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

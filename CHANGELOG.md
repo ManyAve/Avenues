@@ -4,6 +4,29 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.23.0 (2026-11-17)
+
+- **Every component passes your props through to its root** (AVE-138). Twelve components took a fixed list of props and
+  dropped the rest, so an app couldn't give them a ref (to focus or measure them), a `data-testid`, an
+  `aria-describedby` or an id of its own. Now each passes the props it doesn't use itself to its root element, as
+  ui-sdk parts do, and takes `ref` as a plain prop (React 19, no `forwardRef`):
+  - InlineMessage, Disclosure, FileField, ModeToggle, InfoTip and ToolbarActions: to the element on the page.
+    InlineMessage, ModeToggle and ToolbarActions also take `render`, like every part Avenue draws itself.
+  - DisplayOptions: to its popover, where its `className` already went. DisplayOptionsSection (also `render`) and
+    DisplayOptionsDensity: to the section and the row-height group.
+  - PendingConfirmDialog: to the dialog itself. An `onKeyDown` of the app's runs first, and Tab stays held while the
+    step is pending.
+  - RegisterGroupRow and RegisterAddRow: to their row. The grid owns a row's `id`, as on RegisterRow.
+  - The component's own role, state and `data-slot` win over the app's, so an app can't switch off what makes it work.
+    InfoTip and PendingConfirmDialog take no `aria-describedby`: the tip and the description already describe them.
+  - TitleWithCount is unchanged: it draws no element of its own, only the title and count inside a heading, so give
+    the heading the ref or id.
+  - Disclosure, FileField and InfoTip no longer pass an Avenue `data-slot` to their ui-sdk root. It never reached the
+    page (ui-sdk's own, `collapsible`, `field` and `tooltip-trigger`, always won), so nothing on screen changes.
+  - Management and Neighbors: nothing to change. A test can now tag these with `data-testid`, and a field can point
+    `aria-describedby` at an InlineMessage by its own id.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.22.2 (2026-11-17)
 
 - **The selection bar's disabled reason sits with its button, not the count** (AVE-96). A reason such as "Set this

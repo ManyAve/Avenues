@@ -219,6 +219,12 @@ const barStart = "bg-[color-mix(in_oklab,var(--group-color)_12%,var(--muted))]";
 const barCell = "relative isolate h-12 border-y-4 border-background bg-clip-padding p-0 text-meta";
 
 /**
+ * The rest of a spanning row's props (a ref, aria-* or data-*), which land on its tr (AVE-138). The grid owns the
+ * row's `id` and `row`, as on RegisterRow, so they aren't among them.
+ */
+type RowRest = Omit<Loose<ComponentProps<typeof parts.Row>>, "id" | "row" | "children">;
+
+/**
  * Which of a street's rows are selected, for its bar's checkbox: none, some (half-checked) or all.
  */
 export type GroupSelection = "none" | "some" | "all";
@@ -247,7 +253,9 @@ function RegisterGroupRow({
   trailing,
   selection,
   onSelectedChange,
-}: {
+  className,
+  ...props
+}: RowRest & {
   row: number;
   colCount: number;
   name: string;
@@ -289,7 +297,7 @@ function RegisterGroupRow({
   );
   if (!selectable) {
     return (
-      <parts.Row id={`${row}`} row={row} className="sticky top-9 z-[5] pointer-coarse:top-11">
+      <parts.Row {...defined(props)} id={`${row}`} row={row} className={cn("sticky top-9 z-[5] pointer-coarse:top-11", className)}>
         <parts.Cell
           id={`${row}:0`}
           row={row}
@@ -304,7 +312,12 @@ function RegisterGroupRow({
     );
   }
   return (
-    <parts.Row id={`${row}`} row={row} className="group/bar sticky top-9 z-[5] pointer-coarse:top-11">
+    <parts.Row
+      {...defined(props)}
+      id={`${row}`}
+      row={row}
+      className={cn("group/bar sticky top-9 z-[5] pointer-coarse:top-11", className)}
+    >
       <parts.Cell id={`${row}:0`} row={row} col={0} control className={cn(barCell, "rounded-s-xl", ring)} {...tint}>
         <div aria-hidden className={cn("absolute inset-0 -z-[1] rounded-s-xl", barStart)} />
         <Checkbox
@@ -338,14 +351,15 @@ function RegisterAddRow({
   colCount,
   children,
   onAdd,
-}: {
+  ...props
+}: RowRest & {
   row: number;
   colCount: number;
   children: ReactNode;
   onAdd: () => void;
 }) {
   return (
-    <parts.Row id={`${row}`} row={row}>
+    <parts.Row {...defined(props)} id={`${row}`} row={row}>
       <parts.Cell id={`${row}:0`} row={row} col={0} control colSpan={colCount} className={cn("h-10 px-3", ring)}>
         <ButtonPrimitive
           onClick={onAdd}

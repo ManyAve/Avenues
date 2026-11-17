@@ -1,6 +1,9 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { Code, Monitor, Moon, Sun } from "lucide-react";
 import { Toggle } from "#avenue/components/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
+import { cn } from "#avenue/lib/utils";
 
 export type ThemeChoice = "system" | "light" | "dark";
 
@@ -31,7 +34,10 @@ function ModeToggle({
   choice,
   onDevChange,
   onThemeChange,
-}: {
+  className,
+  render,
+  ...props
+}: Omit<OwnPartProps<"span">, "children"> & {
   dev?: boolean | undefined;
   theme?: "light" | "dark" | undefined;
   choice?: ThemeChoice | undefined;
@@ -39,40 +45,48 @@ function ModeToggle({
   onThemeChange?: ((theme: ThemeChoice) => void) | undefined;
 }) {
   const selected = choice ?? theme ?? "light";
-  return (
-    <span data-slot="mode-toggle" className="flex items-center gap-group">
-      {dev !== undefined && (
-        <Toggle
-          variant="outline"
-          size="sm"
-          pressed={dev}
-          onPressedChange={(pressed: boolean) => onDevChange?.(pressed)}
-          aria-label="Dev mode"
-          className="shrink-0 gap-1 px-2 text-control"
-        >
-          <Code aria-hidden /> Dev
-        </Toggle>
-      )}
-      <ToggleGroup
-        variant="outline"
-        size="sm"
-        spacing={0}
-        value={selected}
-        onValueChange={(value: string | null) => {
-          const next = themeItems.find((item) => item.value === value);
-          if (next) onThemeChange?.(next.value);
-        }}
-        aria-label="Theme"
-        className="text-meta"
-      >
-        {themeItems.map(({ value, label, icon: Icon, name }) => (
-          <ToggleGroupItem key={value} value={value} aria-label={name} title={label} className="gap-1 px-2 text-control">
-            <Icon aria-hidden />
-            {value === selected && <span className="max-sm:sr-only">{label}</span>}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </span>
+  return renderElement(
+    "span",
+    mergeProps(defined(props), {
+      "data-slot": "mode-toggle",
+      className: cn("flex items-center gap-group", className),
+      children: (
+        <>
+          {dev !== undefined && (
+            <Toggle
+              variant="outline"
+              size="sm"
+              pressed={dev}
+              onPressedChange={(pressed: boolean) => onDevChange?.(pressed)}
+              aria-label="Dev mode"
+              className="shrink-0 gap-1 px-2 text-control"
+            >
+              <Code aria-hidden /> Dev
+            </Toggle>
+          )}
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            spacing={0}
+            value={selected}
+            onValueChange={(value: string | null) => {
+              const next = themeItems.find((item) => item.value === value);
+              if (next) onThemeChange?.(next.value);
+            }}
+            aria-label="Theme"
+            className="text-meta"
+          >
+            {themeItems.map(({ value, label, icon: Icon, name }) => (
+              <ToggleGroupItem key={value} value={value} aria-label={name} title={label} className="gap-1 px-2 text-control">
+                <Icon aria-hidden />
+                {value === selected && <span className="max-sm:sr-only">{label}</span>}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </>
+      ),
+    }),
+    render,
   );
 }
 

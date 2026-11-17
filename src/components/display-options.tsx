@@ -1,6 +1,7 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
@@ -9,6 +10,7 @@ import type { Density } from "#avenue/components/register";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
 import { ToolbarItem } from "#avenue/components/toolbar";
 import { ToolbarButton } from "#avenue/components/toolbar-button";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -25,7 +27,11 @@ import { cn } from "#avenue/lib/utils";
  * and below (was 6px), and the trigger is Avenue's ToolbarButton. Its label shows from 1280px, as in the app. On a phone,
  * option rows and actions are 44px tall, so neighbouring tap areas don't overlap (AVE-22).
  */
-function DisplayOptions({ children, className }: { children: ReactNode; className?: string | undefined }) {
+function DisplayOptions({
+  children,
+  className,
+  ...props
+}: NodeChildren<Omit<Loose<ComponentProps<typeof PopoverContent>>, "align">>) {
   return (
     <Popover>
       <ToolbarItem
@@ -38,6 +44,9 @@ function DisplayOptions({ children, className }: { children: ReactNode; classNam
         </span>
       </ToolbarItem>
       <PopoverContent
+        // Other props (a ref, an id, data-*) go to the popover, like className: it is what the parts below fill
+        // (AVE-138). The trigger is the toolbar's, named by its label.
+        {...props}
         align="end"
         aria-label="Display options"
         // 320px, or wider when Row height's equal columns need it (AVE-50: each holds the widest label and the check).
@@ -50,12 +59,26 @@ function DisplayOptions({ children, className }: { children: ReactNode; classNam
   );
 }
 
-function DisplayOptionsSection({ title, children, className }: { title: string; children: ReactNode; className?: string | undefined }) {
-  return (
-    <section data-slot="display-options-section" className={cn("not-first:mt-3", className)}>
-      <h3 className="mb-1 text-meta font-normal text-muted-foreground">{title}</h3>
-      {children}
-    </section>
+function DisplayOptionsSection({
+  title,
+  children,
+  className,
+  render,
+  ...props
+}: Omit<OwnPartProps<"section">, "title"> & { title: string }) {
+  return renderElement(
+    "section",
+    mergeProps(defined(props), {
+      "data-slot": "display-options-section",
+      className: cn("not-first:mt-3", className),
+      children: (
+        <>
+          <h3 className="mb-1 text-meta font-normal text-muted-foreground">{title}</h3>
+          {children}
+        </>
+      ),
+    }),
+    render,
   );
 }
 
@@ -89,12 +112,20 @@ const densities: [Density, string][] = [
 function DisplayOptionsDensity({
   value,
   onValueChange,
-}: {
+  className,
+  ...props
+}: Omit<
+  // The single-choice group's props: Row height is one choice of three.
+  Extract<ComponentProps<typeof ToggleGroup>, { multiple?: false | undefined }>,
+  "value" | "defaultValue" | "onValueChange" | "multiple" | "controller" | "variant" | "size" | "spacing" | "orientation" | "children"
+> & {
   value: Density;
   onValueChange?: ((density: Density) => void) | undefined;
 }) {
   return (
     <ToggleGroup
+      // Other props (a ref, an id, data-*) land on the group; its value, look and name stay Avenue's (AVE-138).
+      {...props}
       value={value}
       onValueChange={(next) => {
         const density = densities.find(([key]) => key === next)?.[0];
@@ -105,7 +136,7 @@ function DisplayOptionsDensity({
       variant="choice"
       size="sm"
       aria-label="Row height"
-      className="w-full"
+      className={cn("w-full", className)}
     >
       {densities.map(([key, label]) => (
         <ToggleGroupItem key={key} value={key} className="text-control">

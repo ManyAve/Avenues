@@ -64,17 +64,20 @@ function InfoTip({
   icon = <CircleHelpIcon aria-hidden />,
   side = "top",
   className,
-}: {
+  ...props
+}: Omit<Loose<ComponentProps<typeof TooltipPrimitive.TooltipTrigger>>, "children" | "aria-label" | "aria-describedby"> & {
   label: string;
   children: ReactNode;
   icon?: ReactNode;
   side?: Loose<ComponentProps<typeof TooltipPrimitive.TooltipContent>>["side"];
-  className?: string | undefined;
 }) {
   return (
     <Tooltip toggleable type="description">
       <TooltipTrigger
-        data-slot="info-tip"
+        // Other props (a ref, an id, data-*) land on the help button, the one element on the page (AVE-138). Its name is
+        // `label` and its description is the tip, so neither aria-label nor aria-describedby is taken. Its data-slot is
+        // ui-sdk's, `tooltip-trigger`; the Avenue name it was given never reached the page.
+        {...props}
         aria-label={label}
         className={cn(
           "relative inline-flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground outline-none hit-area [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-open:text-foreground [&_svg]:size-3.5",

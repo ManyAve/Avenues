@@ -42,7 +42,12 @@ export interface FileFieldFile {
   url?: string | null | undefined;
 }
 
-export interface FileFieldProps {
+/**
+ * Any other prop of the Field (a ref, an id, aria-* or data-*) lands on the field's root; its status and invalid state
+ * stay Avenue's (AVE-138). The root's data-slot is ui-sdk's, `field`: an Avenue name passed to it never reached the page.
+ */
+export interface FileFieldProps
+  extends Omit<ComponentProps<typeof Field>, "children" | "invalid" | "onReject" | "className" | "orientation"> {
   label: ReactNode;
   kind?: FileFieldKind | undefined;
   /** The buttons' object: "photo", "logo", "file". Defaults to "photo" for an image and "file" for a document. */
@@ -97,6 +102,7 @@ function FileField({
   onRetry,
   controller,
   className,
+  ...props
 }: FileFieldProps) {
   const reasonId = useId();
   const uploading = status === "uploading";
@@ -171,7 +177,7 @@ function FileField({
   };
 
   return (
-    <Field data-slot="file-field" data-status={status} invalid={status === "failed"} className={cn("gap-2", className)}>
+    <Field {...props} data-status={status} invalid={status === "failed"} className={cn("gap-2", className)}>
       <FieldLabel>{label}</FieldLabel>
       <FileInput
         // Controlled empty: the app owns the file, and an empty input lets the same file be chosen again after a failure.

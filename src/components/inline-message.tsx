@@ -1,5 +1,7 @@
 import { CircleAlertIcon, InfoIcon, LoaderCircleIcon, TriangleAlertIcon } from "lucide-react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import type { ReactNode } from "react";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export type InlineMessageTone = "error" | "warning" | "info" | "pending";
@@ -11,7 +13,11 @@ const tones = {
   pending: { role: "status", Icon: LoaderCircleIcon, text: "text-muted-foreground", spin: true },
 } as const;
 
-export interface InlineMessageProps {
+/**
+ * Any other prop of a div (a ref, an id for a field's aria-describedby, a data-testid) lands on the region; its role,
+ * aria-atomic, data-slot and data-tone stay Avenue's, so the announcement can't be switched off by accident (AVE-138).
+ */
+export interface InlineMessageProps extends Omit<OwnPartProps<"div">, "role" | "children"> {
   /**
    * error is announced at once (role="alert"): something failed and needs attention. warning, info and pending are
    * announced politely (role="status") when the reader is free.
@@ -24,8 +30,6 @@ export interface InlineMessageProps {
   children?: ReactNode;
   /** Hides the leading icon, for a message under a field where the field's own invalid ring already signals it. */
   hideIcon?: boolean | undefined;
-  id?: string | undefined;
-  className?: string | undefined;
 }
 
 /**
@@ -41,20 +45,19 @@ export interface InlineMessageProps {
  * same utility FieldError uses, so a form's own error and a field's error can't drift apart (AVE-89, after AVE-72 and
  * AVE-53). The icon stays, unlike the app's, so colour never carries the state alone (WCAG 1.4.1, as AVE-48).
  */
-export function InlineMessage({ tone = "error", children, hideIcon, id, className }: InlineMessageProps) {
+export function InlineMessage({ tone = "error", children, hideIcon, className, render, ...props }: InlineMessageProps) {
   const { role, Icon, text, spin } = tones[tone];
   const empty = children === null || children === undefined || children === false || children === "";
-  return (
-    <div
-      id={id}
-      role={role}
-      aria-atomic="true"
-      data-slot="inline-message"
-      data-tone={tone}
-      data-empty={empty || undefined}
-      className={cn("flex items-start gap-1 text-field data-empty:sr-only", text, className)}
-    >
-      {!empty && (
+  return renderElement(
+    "div",
+    mergeProps(defined(props), {
+      role,
+      "aria-atomic": "true",
+      "data-slot": "inline-message",
+      "data-tone": tone,
+      "data-empty": empty || undefined,
+      className: cn("flex items-start gap-1 text-field data-empty:sr-only", text, className),
+      children: empty ? null : (
         <>
           {!hideIcon && (
             // One line tall, so the icon sits on the first line at either type scale.
@@ -64,7 +67,8 @@ export function InlineMessage({ tone = "error", children, hideIcon, id, classNam
           )}
           <span className="min-w-0">{children}</span>
         </>
-      )}
-    </div>
+      ),
+    }),
+    render,
   );
 }
