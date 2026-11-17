@@ -1328,6 +1328,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-form-dialog--discard-guard-keep-editing": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--escape-when-clean": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--keyboard-flow": { none: BEHAVIOUR("Form dialog / Open") },
+  "composites-form-dialog--promise-resolves": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Pending") },
+  "composites-form-dialog--promise-rejects": { none: BEHAVIOUR("Form dialog / Open and Form dialog / With error") },
+  "composites-form-dialog--promise-slow": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Slow save") },
   "composites-form-dialog--slow-save": { none: BEHAVIOUR("Form dialog / Open; the app's slow line needs 8 seconds of a real save, so it has no resting story") },
   "composites-form-dialog--slow-save-not-held": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--locked": { none: "Form dialog / Open with the close button left out while locked; compared there." },
@@ -1340,5 +1343,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "composites-pending-confirm-dialog--pending": { none: "Pending confirm dialog / Ready while the action runs; compared there." },
   "composites-pending-confirm-dialog--unknown-check-first": { none: "Pending confirm dialog / Ready with a couldn't-confirm note; compared there." },
+  "composites-pending-confirm-dialog--promise-resolves": { none: BEHAVIOUR("Pending confirm dialog / Ready and Pending") },
+  "composites-pending-confirm-dialog--promise-rejects": { none: BEHAVIOUR("Pending confirm dialog / Ready and Keyboard flow") },
   "composites-pending-confirm-dialog--keyboard-flow": { none: BEHAVIOUR("Pending confirm dialog / Ready") },
 };

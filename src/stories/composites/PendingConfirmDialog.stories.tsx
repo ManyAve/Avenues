@@ -27,9 +27,9 @@ function MarkAsMailed({
   onConfirm = () => {},
 }: {
   defaultOpen?: boolean;
-  phase: PendingConfirmPhase;
+  phase?: PendingConfirmPhase;
   recovery?: PendingConfirmRecovery;
-  onConfirm?: () => void;
+  onConfirm?: () => void | PromiseLike<unknown>;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -161,5 +161,70 @@ export const Pending: Story = {
     await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
     await expect(screen.getByRole("button", { name: "Confirming…" })).toBeInTheDocument();
     await expect(screen.getByRole("button", { name: "Confirming…" })).not.toHaveAccessibleDescription();
+  },
+};
+
+/** A send in flight that the play settles, like the server's reply. */
+let reply: { resolve: () => void; reject: (reason: unknown) => void } | undefined;
+const send = () =>
+  new Promise<void>((resolve, reject) => {
+    reply = { resolve, reject };
+  });
+
+/**
+ * AVE-150: `onConfirm` returns a Promise and the app passes no `phase`. While it runs the dialog is pending exactly as
+ * with phase="pending" (focus on the status line, Esc and Cancel held); once it resolves the dialog closes, so it never
+ * returns to asking about a step that is done, and focus goes back to the opener.
+ */
+export const PromiseResolves: Story = {
+  render: () => <MarkAsMailed defaultOpen={false} onConfirm={send} />,
+  play: async ({ canvas }) => {
+    const opener = canvas.getByRole("button", { name: "Mark as mailed…" });
+    await userEvent.click(opener);
+    const dialog = await screen.findByRole("alertdialog", { name: "Mark as mailed" });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus());
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    const status = await screen.findByRole("status");
+    await waitFor(() => expect(status).toHaveFocus());
+    await expect(status).toHaveTextContent("Recording mailing confirmation. Please wait.");
+    await expect(screen.getByRole("button", { name: "Confirming…" })).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(opener).toHaveFocus());
+  },
+};
+
+/**
+ * A rejected Promise means the outcome is unknown, not that it failed: "couldn't confirm" shows with focus on Try
+ * again, which runs the step again. Closing forgets it, so the dialog opens on the question next time.
+ */
+export const PromiseRejects: Story = {
+  render: () => <MarkAsMailed defaultOpen={false} onConfirm={send} />,
+  play: async ({ canvas }) => {
+    const opener = canvas.getByRole("button", { name: "Mark as mailed…" });
+    await userEvent.click(opener);
+    const dialog = await screen.findByRole("alertdialog", { name: "Mark as mailed" });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus());
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await screen.findByRole("button", { name: "Confirming…" });
+    reply?.reject(new Error("timeout"));
+    await expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't confirm that the announcement went out.");
+    const tryAgain = screen.getByRole("button", { name: "Try again" });
+    await waitFor(() => expect(tryAgain).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    await screen.findByRole("button", { name: "Confirming…" });
+    reply?.reject(new Error("timeout"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Try again" })).toHaveFocus());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await userEvent.click(opener);
+    await screen.findByRole("alertdialog", { name: "Mark as mailed" });
+    await expect(screen.getByRole("button", { name: "Mark as mailed" })).toBeInTheDocument();
+    await expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   },
 };
