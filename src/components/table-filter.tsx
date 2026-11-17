@@ -100,16 +100,19 @@ function FilterPill({
   onOpenChange,
   onChange,
   onRemove,
+  repeat,
 }: {
   field: FilterField;
   filter: TableFilter;
+  /** The second or later pill reading the same words, numbered in its name so an agent can tell them apart. */
+  repeat?: number | undefined;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChange: (next: TableFilter) => void;
   onRemove: () => void;
 }) {
   const complete = isComplete(field.kind, filter);
-  const summary = filterSummary(field, filter);
+  const summary = filterSummary(field, filter) + (repeat ? ` (${repeat})` : "");
   const pill = useRef<HTMLSpanElement>(null);
   return (
     <span ref={pill} data-slot="table-filter" className="inline-flex items-center">
@@ -227,14 +230,20 @@ export function TableFilters({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      {filters.map((filter) => {
+      {filters.map((filter, i) => {
         const field = fields.find((f) => f.key === filter.field);
         if (!field) return null;
+        const words = filterSummary(field, filter);
+        const before = filters.slice(0, i).filter((f) => {
+          const other = fields.find((x) => x.key === f.field);
+          return other !== undefined && filterSummary(other, f) === words;
+        }).length;
         return (
           <FilterPill
             key={filter.id}
             field={field}
             filter={filter}
+            repeat={before > 0 ? before + 1 : undefined}
             open={editing === filter.id}
             onOpenChange={(open) => setEditing(open ? filter.id : undefined)}
             onChange={(updated) => onChange(filters.map((f) => (f.id === filter.id ? updated : f)))}

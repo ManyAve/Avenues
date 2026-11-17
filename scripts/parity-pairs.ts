@@ -1082,6 +1082,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-table-filter--add-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--money-filter": { none: BEHAVIOUR("Table filter / With filters and Input / Default") },
   "composites-table-filter--editor-open": { none: BEHAVIOUR("Table filter / With filters, Popover / Open and Checkbox / Default") },
+  "composites-table-filter--same-words-twice": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--remove-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--agent": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--phone": { none: "The filter pills in the phone toolbar's strip, 44px tall on a touch screen; the app has no phone TableFilters story. The pill is compared through Table filter / With filters." },

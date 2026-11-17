@@ -60,6 +60,7 @@ describe("table filters", () => {
         { id: "1", field: "cents", op: "gt", value: "10" },
         { id: "2", field: "name", op: "contains", value: "o" },
         { id: "3", field: "gone", op: "is", value: "x" },
+        { id: "4", field: "constructor", op: "is", value: "x" },
       ],
       fields,
     );
