@@ -5,9 +5,9 @@ import { readdirSync, readFileSync } from "node:fs";
 // renders through `renderElement`, so an app can make a CardTitle an h3 or a Card an article without fighting the
 // classes. A part typed with a bare `ComponentProps<"tag">` has no `render`, so this fails on one, naming it.
 //
-// The exceptions are the opinionated composites: their markup is the point (a heading, a list, a button laid out a
-// set way), and their slots are props, so swapping their root element is not offered (the 2026-11-17 composition
-// audit: "composites stay prop-driven"). Add one here only with its reason.
+// The exceptions are the composites that are still prop-driven: their slots are props, so swapping their root element
+// is not offered yet. Composition now follows ui-sdk (AGENTS.md, "Composition and names follow ui-sdk", AVE-143), so
+// each becomes a root and parts and leaves this list as its card lands (AVE-146 to AVE-149). Don't add to it.
 const COMPOSITES: Record<string, string> = {
   "detail-list.tsx DetailList": "a description list built from `items`; its dl, dt and dd are the point",
   "detail-list.tsx ListItem": "a row laid out from title, meta, note and trailing props",
