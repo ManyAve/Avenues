@@ -161,7 +161,8 @@ export function applyFilters<R>(
   fields: Readonly<Record<string, FilterAccessor<R>>>,
 ): R[] {
   const active = filters.flatMap((f) => {
-    const field = fields[f.field];
+    // Own keys only, so a field named like an Object method ("constructor") is unknown, not a function.
+    const field = Object.hasOwn(fields, f.field) ? fields[f.field] : undefined;
     return field && isComplete(field.kind, f) ? [{ f, field }] : [];
   });
   if (active.length === 0) return [...rows];

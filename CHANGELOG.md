@@ -4,6 +4,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.12.2 (2026-11-17)
+
+- **Table filters** (AVE-123 follow-up, from CodeRabbit's review of #125): two pills that read the same words are
+  told apart in their names ("Filter: Neighbor contains (2)"), so an agent or a screen reader can pick one.
+  `applyFilters` ignores a filter whose field is named like an Object method ("constructor") instead of throwing.
+
 ## v0.12.1 (2026-11-17)
 
 - **Foundations › Moving from older tokens** (AVE-127): the page now says that Tailwind's own `text-xs` and `text-sm`

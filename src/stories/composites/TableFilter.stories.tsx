@@ -200,6 +200,24 @@ export const WithFilters: Story = {
   },
 };
 
+/** Two filters reading the same words: the second is numbered in its name, so an agent can tell the two apart. */
+export const SameWordsTwice: Story = {
+  globals: desktop,
+  render: () => (
+    <Households
+      initial={[
+        { id: "f1", field: "neighbor", op: "contains", value: "" },
+        { id: "f2", field: "neighbor", op: "contains", value: "" },
+      ]}
+    />
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: "Filter: Neighbor contains" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Filter: Neighbor contains (2)" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Remove filter: Neighbor contains (2)" })).toBeVisible();
+  },
+};
+
 /** A pill open to edit: its operator and its values. */
 export const EditorOpen: Story = {
   globals: desktop,
