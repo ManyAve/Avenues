@@ -28,6 +28,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     become `open` and `onOpenChange`, and the hand-written `hidden` body becomes `DockWindowBody`.
   - Neighbors: the Card-based messages dock moves to this frame, which changes its fill and corners to Management's.
   - Phone apps: nothing to take; native chat screens use the tokens only.
+
 ## v0.18.0 (2026-11-17)
 
 - **Every part Avenue draws itself takes `render`** (AVE-136), like every ui-sdk part, so an app can change its
