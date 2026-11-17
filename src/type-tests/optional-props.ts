@@ -39,6 +39,7 @@ import type * as navTab from "#avenue/components/nav-tab";
 import type * as pageHeader from "#avenue/components/page-header";
 import type * as pendingConfirmDialog from "#avenue/components/pending-confirm-dialog";
 import type * as popover from "#avenue/components/popover";
+import type * as progress from "#avenue/components/progress";
 import type * as radioGroup from "#avenue/components/radio-group";
 import type * as register from "#avenue/components/register";
 import type * as searchInput from "#avenue/components/search-input";
@@ -97,6 +98,7 @@ type Modules = {
   "page-header": typeof pageHeader;
   "pending-confirm-dialog": typeof pendingConfirmDialog;
   "popover": typeof popover;
+  "progress": typeof progress;
   "radio-group": typeof radioGroup;
   "register": typeof register;
   "search-input": typeof searchInput;
@@ -172,4 +174,5 @@ export const plainChildren: ReactNode[] = [
   null as unknown as Children<typeof toggleGroup.ToggleGroup>,
   null as unknown as Children<typeof status.Status>,
   null as unknown as Children<typeof skeleton.Loading>,
+  null as unknown as Children<typeof progress.Progress>,
 ];

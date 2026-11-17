@@ -552,6 +552,18 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-dropdown-menu--action-from-keyboard": { none: BEHAVIOUR("Dropdown menu / Open") },
 
   // ---- Empty state (AVE-8)
+  // ---- Progress (AVE-129). No app story draws the activity card with a bar, so Progress / Beside Management
+  // compares the two in one story.
+  "components-progress--with-value": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--hidden-label": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--indeterminate": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--empty-and-done": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--in-a-card": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--along-a-photo": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--phone": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--beside-management": { none: NEW_IN_AVENUE("The progress bar (AVE-129)", "Progress / Beside Management, which renders Management's activity-card bar markup beside it") },
+  "components-progress--changing-value": { none: BEHAVIOUR("Progress / With value") },
+
   // ---- Skeleton (AVE-128)
   "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
   "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },

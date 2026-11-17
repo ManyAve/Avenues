@@ -4,6 +4,25 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.13.0 (2026-11-17)
+
+- **Progress bar** (AVE-129), new in `@manyave/avenue/components/progress`, on ui-sdk's Progress. Nothing existing
+  changes.
+  - `<Progress value={40}><ProgressLabel>Uploading the budget</ProgressLabel><ProgressValue /></Progress>`: the label
+    at the start of the line, the percent at the end, a 6px pill under both with a `bg-primary` fill. Name every bar:
+    a `ProgressLabel` (add `className="sr-only"` to hide the words) or `aria-label` on `Progress`. `value={null}` (or
+    no value) is indeterminate: a highlight sweeps the track and screen readers hear no percent. `min`, `max`,
+    `format` and `getValueLabel` ("3 of 12 households, 25%") come from ui-sdk.
+  - `size="xs"` is a 4px bar with square ends, to lay along an edge (`className="absolute inset-x-0 bottom-0"` on a
+    photo while it uploads).
+  - The track is `bg-accent`, not `bg-muted`: on dark cards muted is the card's own colour, so the empty part of the
+    bar vanished. Motion (the fill easing, the sweep) stops under reduced motion.
+  - No live region: inside FileField, FileField's own upload announcements stay the only ones.
+  - Management: replace the hand-written `role="progressbar"` on the activity card (`app/ui/components/activity.tsx`)
+    with `<Progress value={card.progress * 100} aria-label=…>`. Same size and fill; the track becomes visible in dark.
+  - Neighbors: replace `apps/web/src/design-system/ui/progress.tsx` (the composer's photo upload bar) with
+    `size="xs"`; its `bg-primary/20` track becomes `bg-accent`.
+
 ## v0.12.2 (2026-11-17)
 
 - **Table filters** (AVE-123 follow-up, from CodeRabbit's review of #125): two pills that read the same words are

@@ -153,6 +153,19 @@
   --breakpoint-phone: 43.75rem;
 }
 
+/* Progress (AVE-129): an indeterminate bar's highlight sweeps from off the left edge to off the right. */
+@theme {
+  --animate-progress-sweep: progress-sweep 1.6s ease-in-out infinite;
+  @keyframes progress-sweep {
+    from {
+      translate: -100% 0;
+    }
+    to {
+      translate: 250% 0;
+    }
+  }
+}
+
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
 :root {
   --avenue-page-inset: 1rem;
