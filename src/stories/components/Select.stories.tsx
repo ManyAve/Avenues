@@ -190,6 +190,44 @@ export const NativeOnPhones: Story = {
   },
 };
 
+/**
+ * AVE-145: the OS picker reports a choice as ui-sdk does, with details Avenue builds (reason "item-press", the select's
+ * change event, how it was chosen), and `details.cancel()` puts the old value back. Here cash is refused, as an app
+ * might refuse a method it doesn't take.
+ */
+export const NativeRefusesAChange: Story = {
+  name: "Native list refuses a change",
+  render: function Render() {
+    const [heard, setHeard] = useState("");
+    return (
+      <div className="grid w-72 gap-group">
+        <Labelled label="Payment method">
+          <Select
+            options={methods}
+            defaultValue="check"
+            native="always"
+            onValueChange={(value, details) => {
+              setHeard(`${value}, ${details.reason}, ${details.event?.type ?? "no event"}`);
+              if (value === "cash") details.cancel();
+            }}
+          />
+        </Labelled>
+        <output data-testid="heard" className="text-meta text-muted-foreground">
+          {heard}
+        </output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const select = canvas.getByRole("combobox", { name: "Payment method" });
+    await userEvent.selectOptions(select, "cash");
+    await expect(canvas.getByTestId("heard")).toHaveTextContent("cash, item-press, change");
+    await expect(select).toHaveValue("check");
+    await userEvent.selectOptions(select, "bank");
+    await expect(select).toHaveValue("bank");
+  },
+};
+
 /** The keyboard and labelling contract: open, arrows, type-ahead, Escape keeps the old value. */
 export const Keyboard: Story = {
   render: function Render() {

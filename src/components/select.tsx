@@ -7,9 +7,11 @@ import {
   SelectList,
   SelectTrigger,
   SelectValue,
+  type SelectValueChangeReason,
 } from "@ui-sdk/react/select";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useState, useSyncExternalStore, type ChangeEvent } from "react";
+import { report, type ChangeDetails } from "#avenue/lib/change";
 import {
   fieldControl,
   listItem,
@@ -29,6 +31,9 @@ export interface SelectOption<V extends string = string> {
 }
 
 type Native = "auto" | "always" | "never";
+
+/** What `onValueChange` gets after the value: ui-sdk Select's own details (reason, event, source, `cancel()`). */
+export type SelectValueChangeDetails = ChangeDetails<SelectValueChangeReason>;
 
 const coarse = "(pointer: coarse)";
 function subscribe(onChange: () => void) {
@@ -51,7 +56,11 @@ export interface SelectProps<V extends string = string> {
   /** The chosen value, or null for none (shows `placeholder`). */
   value?: V | null | undefined;
   defaultValue?: V | null | undefined;
-  onValueChange?: ((value: V) => void) | undefined;
+  /**
+   * Gets the new value and ui-sdk's details. On the OS picker Avenue builds them itself, with reason "item-press", the
+   * select's change event and how it was chosen; `details.cancel()` puts the old value back there too (AVE-145).
+   */
+  onValueChange?: ((value: V, details: SelectValueChangeDetails) => void) | undefined;
   /** Shown while nothing is chosen. */
   placeholder?: string | undefined;
   /** The control's id. Inside a Field, leave it out: the Field labels the control itself. */
@@ -107,6 +116,15 @@ export function Select<V extends string = string>({
   // The native overlay below shows the chosen label itself, so it tracks an uncontrolled value.
   const [uncontrolled, setUncontrolled] = useState<V | null>(defaultValue ?? null);
   const current = value !== undefined ? value : uncontrolled;
+  // The OS picker's change, reported as ui-sdk reports a choice. A canceled one puts the old value back in the select,
+  // which the browser has already changed.
+  const pick = (event: ChangeEvent<HTMLInputElement>) => {
+    const select = event.currentTarget;
+    const found = options.find((o) => o.value === select.value);
+    if (!found) return;
+    if (report(onValueChange, found.value, { reason: "item-press", event: event.nativeEvent })) setUncontrolled(found.value);
+    else select.value = current ?? "";
+  };
 
   if (useNative && size === "sm" && coarsePointer) {
     // AVE-22 (UI Designer): on a phone an sm select (a card or dialog header) keeps its drawn 28px, and its tap area
@@ -125,12 +143,7 @@ export function Select<V extends string = string>({
           required={required}
           {...(value !== undefined ? { value: value ?? "" } : {})}
           {...(defaultValue !== undefined ? { defaultValue: defaultValue ?? "" } : {})}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const found = options.find((o) => o.value === event.currentTarget.value);
-            if (!found) return;
-            setUncontrolled(found.value);
-            onValueChange?.(found.value);
-          }}
+          onChange={pick}
           aria-invalid={invalid || undefined}
           {...aria}
           className="peer absolute inset-x-0 top-1/2 z-10 h-11 w-full -translate-y-1/2 cursor-pointer appearance-none text-base opacity-0 disabled:cursor-not-allowed"
@@ -179,10 +192,7 @@ export function Select<V extends string = string>({
           required={required}
           {...(value !== undefined ? { value: value ?? "" } : {})}
           {...(defaultValue !== undefined ? { defaultValue: defaultValue ?? "" } : {})}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const found = options.find((o) => o.value === event.currentTarget.value);
-            if (found) onValueChange?.(found.value);
-          }}
+          onChange={pick}
           aria-invalid={invalid || undefined}
           {...aria}
           data-placeholder={placeholderShown || undefined}
@@ -218,8 +228,8 @@ export function Select<V extends string = string>({
       )}
       {...(value !== undefined ? { value } : {})}
       {...(defaultValue !== undefined ? { defaultValue } : {})}
-      onValueChange={(next: V | V[] | null) => {
-        if (typeof next === "string") onValueChange?.(next);
+      onValueChange={(next: V | V[] | null, details: SelectValueChangeDetails) => {
+        if (typeof next === "string") onValueChange?.(next, details);
       }}
       presentation={presentation}
       {...defined({ placeholder, name, disabled, required })}

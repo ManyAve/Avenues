@@ -1,3 +1,5 @@
+import type { AlertDialogOpenChangeReason } from "@ui-sdk/react/alert-dialog";
+import type { DialogOpenChangeReason } from "@ui-sdk/react/dialog";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useState, type ReactElement, type ReactNode } from "react";
 import {
@@ -23,14 +25,21 @@ import {
 } from "#avenue/components/dialog";
 import { FieldGroup, FieldSet } from "#avenue/components/field";
 import { InlineMessage } from "#avenue/components/inline-message";
+import type { ChangeDetails } from "#avenue/lib/change";
 import { cn } from "#avenue/lib/utils";
+
+/** What `onOpenChange` gets after the state: ui-sdk Dialog's details, or the Discard confirmation's. */
+export type FormDialogOpenChangeDetails = ChangeDetails<DialogOpenChangeReason | AlertDialogOpenChangeReason>;
 
 interface FormDialogBaseProps {
   /** Controlled open state. Leave it out (and pass `trigger`) to let the dialog manage itself. */
   open?: boolean | undefined;
   defaultOpen?: boolean | undefined;
-  /** Called with false only once the dialog may really close: never while held, and after "Discard" when dirty. */
-  onOpenChange?: ((open: boolean) => void) | undefined;
+  /**
+   * Called with false only once the dialog may really close: never while held, and after "Discard" when dirty. Gets
+   * ui-sdk's details second (after Discard, those of the Discard press); `details.cancel()` keeps it open (AVE-145).
+   */
+  onOpenChange?: ((open: boolean, details: FormDialogOpenChangeDetails) => void) | undefined;
   /** The button that opens it. Focus returns to it on close. */
   trigger?: ReactElement<Record<string, unknown>> | undefined;
   icon: LucideIcon;
@@ -158,9 +167,10 @@ export function FormDialog(props: FormDialogProps) {
   const open = openProp ?? ownOpen;
   const held = locked || (pending && holdWhilePending);
   const submitOff = pending || !!askAdmin || (!props.closeOnly && !!props.submitDisabled);
-  const setOpen = (next: boolean) => {
-    if (openProp === undefined) setOwnOpen(next);
-    onOpenChange?.(next);
+  // The app hears it first, as ui-sdk's callbacks do, and can cancel it.
+  const setOpen = (next: boolean, details: FormDialogOpenChangeDetails) => {
+    onOpenChange?.(next, details);
+    if (!details.canceled && openProp === undefined) setOwnOpen(next);
   };
   return (
     <Dialog
@@ -173,7 +183,7 @@ export function FormDialog(props: FormDialogProps) {
           setAsking(true);
           return;
         }
-        setOpen(next);
+        setOpen(next, details);
       }}
     >
       {trigger && <DialogTrigger render={trigger} />}
@@ -249,8 +259,9 @@ export function FormDialog(props: FormDialogProps) {
           open={asking}
           onOpenChange={(next, details) => {
             if (next) return;
-            setAsking(false);
-            if (details.returnValue === "discard") setOpen(false);
+            // An app that cancels the close after Discard keeps the question open too.
+            if (details.returnValue === "discard") setOpen(false, details);
+            if (!details.canceled) setAsking(false);
           }}
         >
           <AlertDialogContent>

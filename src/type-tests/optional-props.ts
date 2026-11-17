@@ -69,7 +69,7 @@ import type * as toolbar from "#avenue/components/toolbar";
 import type * as tooltip from "#avenue/components/tooltip";
 import type * as topBar from "#avenue/components/top-bar";
 
-type Modules = {
+export type Modules = {
   "alert-dialog": typeof alertDialog;
   "ask-admin": typeof askAdmin;
   "avatar": typeof avatar;

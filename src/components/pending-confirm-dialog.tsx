@@ -1,3 +1,4 @@
+import type { AlertDialogOpenChangeReason } from "@ui-sdk/react/alert-dialog";
 import { useId, useLayoutEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import {
   AlertDialog,
@@ -10,6 +11,7 @@ import {
 } from "#avenue/components/alert-dialog";
 import { TriangleAlertIcon } from "lucide-react";
 import { Button } from "#avenue/components/button";
+import type { ChangeDetails } from "#avenue/lib/change";
 import { cn } from "#avenue/lib/utils";
 
 /** ready: asking. pending: the step is running. unknown: the reply was lost, so nobody knows whether it happened. */
@@ -34,8 +36,14 @@ export type PendingConfirmRecovery =
 export interface PendingConfirmDialogProps
   extends Omit<ComponentProps<typeof AlertDialogContent>, "children" | "title" | "initialFocus" | "aria-describedby"> {
   open: boolean;
-  /** Called with false when the person cancels or closes. Never called while pending. */
-  onOpenChange: (open: boolean) => void;
+  /**
+   * Called with false when the person cancels or closes, with ui-sdk's details. Never called while pending.
+   *
+   * Controlled only, on purpose (AVE-145): the caller closes it when the step succeeds and drives `phase`, so an
+   * uncontrolled form would leave it no way to do either. AVE-147's dialog parts bring a trigger, and with it
+   * `defaultOpen`.
+   */
+  onOpenChange: (open: boolean, details: ChangeDetails<AlertDialogOpenChangeReason>) => void;
   title: string;
   description: ReactNode;
   /** What is about to happen: the letter and address, the payment and household. */
@@ -111,7 +119,7 @@ export function PendingConfirmDialog({
           details.cancel();
           return;
         }
-        onOpenChange(next);
+        onOpenChange(next, details);
       }}
     >
       <AlertDialogContent

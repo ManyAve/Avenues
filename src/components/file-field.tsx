@@ -4,6 +4,7 @@ import {
   FileInputTrigger,
   type FileInputController,
   type FileRejection,
+  type FileInputValueChangeDetails,
 } from "@ui-sdk/react/file-input";
 import { CircleAlertIcon, FileUpIcon, ImageUpIcon, RotateCwIcon } from "lucide-react";
 import { useId, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
@@ -69,8 +70,8 @@ export interface FileFieldProps
   maxSize?: number | undefined;
   /** On phones, open the camera instead of the files. */
   capture?: ComponentProps<typeof FileInput>["capture"];
-  /** A file was chosen and passed the checks. */
-  onFileChange: (file: File) => void;
+  /** A file was chosen and passed the checks. Gets it and ui-sdk FileInput's details (how it was chosen). */
+  onFileChange: (file: File, details: FileInputValueChangeDetails) => void;
   /** A chosen file failed `accept`, `maxSize` or `validate`; show why with `status="failed"` and `error`. */
   onReject?: ((rejected: FileRejection[]) => void) | undefined;
   /** Shows Remove when the field holds a file. */
@@ -184,7 +185,7 @@ function FileField({
         value={[]}
         onValueChange={(_value, details) => {
           const [added] = details.added;
-          if (added) onFileChange(added);
+          if (added) onFileChange(added, details);
         }}
         onReject={(rejected) => onReject?.(rejected)}
         {...(accept === undefined ? {} : { accept })}

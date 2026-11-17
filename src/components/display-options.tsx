@@ -1,6 +1,8 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
+import type { SegmentedControlValueChangeReason } from "@ui-sdk/react/segmented-control";
+import type { ChangeDetails } from "#avenue/lib/change";
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
@@ -120,16 +122,17 @@ function DisplayOptionsDensity({
   "value" | "defaultValue" | "onValueChange" | "multiple" | "controller" | "variant" | "size" | "spacing" | "orientation" | "children"
 > & {
   value: Density;
-  onValueChange?: ((density: Density) => void) | undefined;
+  /** Gets the new height and ui-sdk SegmentedControl's details, passed on unchanged (AVE-145). */
+  onValueChange?: ((density: Density, details: ChangeDetails<SegmentedControlValueChangeReason>) => void) | undefined;
 }) {
   return (
     <ToggleGroup
       // Other props (a ref, an id, data-*) land on the group; its value, look and name stay Avenue's (AVE-138).
       {...props}
       value={value}
-      onValueChange={(next) => {
+      onValueChange={(next, details) => {
         const density = densities.find(([key]) => key === next)?.[0];
-        if (density) onValueChange?.(density);
+        if (density) onValueChange?.(density, details);
       }}
       // The shared chosen segment (AVE-50, AVE-91): equal columns, and the chosen height carries a check. The app
       // hand-writes the chosen colours on outline items and draws no check.
