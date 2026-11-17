@@ -117,7 +117,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
   "initials-avatar": { upstream: "avatar", note: "ManyAve's tinted initials on Avatar." },
   status: { upstream: "tooltip", note: "The help is an InfoTip; the Status stories test focus, tap and Esc." },
-  "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, tested in its story." },
+  "empty-state": { upstream: "button", note: "EmptyState and SectionEmpty; the external link stays a link, and href or render actions are links (AVE-139), tested in their stories." },
   chip: {
     upstream: "toggle",
     note: "The Chip stories test the check, keyboard pressing and the scrolling row's focus reveal.",

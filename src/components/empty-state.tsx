@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
 import { Button, buttonVariants } from "#avenue/components/button";
 import { IconTile } from "#avenue/components/icon-tile";
 import { cn } from "#avenue/lib/utils";
@@ -11,7 +11,34 @@ import { cn } from "#avenue/lib/utils";
  * gap becomes 8; SectionEmpty's 10px row gap becomes 12 (between blocks).
  */
 
-type EmptyAction = { label: string; onClick?: (() => void) | undefined; disabled?: boolean | undefined };
+/**
+ * What an empty state's action does (AVE-139). A button by default (`onClick`). An action that goes somewhere is a
+ * link: `href` draws a plain `a`, `render` takes the app's own router link (`render={<Link to="/households/new" />}`)
+ * so navigation stays client-side. Either way it keeps the button's look, and ui-sdk's Button keeps the link a link:
+ * its role, its address, opening in a new tab. `render` wins over `href`; give the router link its own address.
+ */
+type EmptyAction = {
+  label: string;
+  onClick?: (() => void) | undefined;
+  /** A page inside the app, drawn as a link styled as the button. */
+  href?: string | undefined;
+  /** The element to draw instead of a button, such as the app's router `Link`. */
+  render?: ReactElement | undefined;
+  disabled?: boolean | undefined;
+  /** What the action does, for an action an agent must not take alone. Rendered as `data-agent-confirm`. */
+  confirm?: string | undefined;
+};
+
+/** The Button props one action gives: its element, its click, and the agent's confirm. */
+function actionProps(action: Omit<EmptyAction, "label">) {
+  // oxlint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label -- the Button that renders it gives it the label.
+  const render = action.render ?? (action.href ? <a href={action.href} /> : undefined);
+  return {
+    ...(render ? { render } : {}),
+    ...(action.onClick ? { onClick: action.onClick } : {}),
+    ...(action.confirm ? { "data-agent-confirm": action.confirm } : {}),
+  };
+}
 
 /**
  * A centered icon, title, one-line explanation, an action, and optional extra content (such as a second
@@ -66,7 +93,7 @@ function EmptyState({
           size="sm"
           className="mt-4"
           disabled={action.disabled ?? false}
-          {...(action.onClick ? { onClick: action.onClick } : {})}
+          {...actionProps(action)}
         >
           {action.label}
         </Button>
@@ -77,7 +104,7 @@ function EmptyState({
           size="sm"
           // 16px on a phone, so the two buttons' 44px tap areas meet but don't overlap (AVE-22).
           className="mt-2 pointer-coarse:mt-4"
-          {...(secondaryAction.onClick ? { onClick: secondaryAction.onClick } : {})}
+          {...actionProps(secondaryAction)}
         >
           {secondaryAction.label}
         </Button>
@@ -117,7 +144,8 @@ function SectionEmpty({
   icon: LucideIcon;
   title: string;
   line: ReactNode;
-  action?: { label: string; icon?: LucideIcon | undefined; onClick: () => void } | undefined;
+  /** The next step: a button (`onClick`) or, for one that goes somewhere, a link (`href` or `render`; see EmptyAction). */
+  action?: (Omit<EmptyAction, "disabled"> & { icon?: LucideIcon | undefined }) | undefined;
 }) {
   return (
     <div
@@ -131,7 +159,7 @@ function SectionEmpty({
         <p className="text-meta text-muted-foreground">{line}</p>
       </div>
       {action && (
-        <Button variant="outline" size="sm" className="shrink-0 max-phone:ml-13" onClick={action.onClick}>
+        <Button variant="outline" size="sm" className="shrink-0 max-phone:ml-13" {...actionProps(action)}>
           {action.icon && <action.icon aria-hidden />} {action.label}
         </Button>
       )}

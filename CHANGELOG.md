@@ -4,13 +4,45 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.20.1 (2026-11-17)
+## v0.22.1 (2026-11-17)
 
 - **Toast** (AVE-140): a toast shown from `useToast()` with no `ToastProvider` above it used to vanish without a word.
   It still shows nothing, but in development the first one now logs a `console.error` naming `ToastProvider` (once
   per page), and under ui-sdk strict mode (story tests) it throws, so a screen that forgot the provider fails its
   tests. A production build stays silent and never breaks a screen. Calling `useToast()` alone never warns.
   Management and Neighbors: nothing to change; if the error shows up, wrap the app in one `<ToastProvider>`.
+
+## v0.22.0 (2026-11-17)
+
+- **Empty-state actions can be links** (AVE-139). An action that goes somewhere ("Add a household", "See all
+  documents") was a button with `onClick={() => navigate(...)}`: it couldn't open in a new tab, didn't show its
+  address, and read as a button to a screen reader. Now:
+  - EmptyState's `action` and `secondaryAction`, and SectionEmpty's `action`, also take `href` (a plain link with the
+    button's look) or `render` (the app's router link, such as `render={<Link to="/households/new" />}`, so navigation
+    stays client-side). `render` wins over `href`. A disabled link can't navigate and leaves the tab order.
+  - They also take `confirm`, drawn as `data-agent-confirm`, for an action an agent must not take alone.
+  - `{ label, onClick }` works as before and looks the same. SectionEmpty's `onClick` is now optional.
+  - Management and Neighbors: where an empty state's action navigates, swap `onClick={() => navigate(...)}` for
+    `render={<Link to="..." />}`. Nothing else to change.
+  - Phone apps: nothing to take; this is web only.
+
+## v0.21.0 (2026-11-17)
+
+- **Combobox** works on its own in a plain form, the way Select does (AVE-137).
+  - `value` and `onValueChange` are now optional. Leave them out and pass `defaultValue` (or nothing), and the field
+    manages its own choice. Controlled use works as before.
+  - `name` posts the chosen value with the form (ui-sdk's hidden input), `required` holds the submit until something
+    is chosen, and `form` joins a form elsewhere on the page. A form reset returns to `defaultValue`. The none option
+    (`noneLabel`) posts `name=`, like a native select's empty option; nothing chosen posts nothing.
+  - **"Nothing chosen" is now `null`**, as in Select and ui-sdk. `onValueChange` gets `null` when the none option is
+    picked or the phone's Clear is pressed, where it used to get `""`. `value=""` still means none for this release;
+    pass `null` instead before the next one.
+  - Upgrading: a handler typed `(value: string) => void` no longer fits `onValueChange`. In Management that is
+    `app/ui/components/household-picker.tsx` (`onValueChange={(id) => onChange(id ?? "")}`) and
+    `app/ui/components/time-zone-picker.tsx` (already skips an empty value: `(zone) => zone && onChange(zone)` keeps
+    working). State held as `useState("")` becomes `useState<string | null>(null)`.
+  - Neighbors: no Combobox in use yet. Phone apps: nothing to take.
+  - Look: unchanged (`bun run visual:diff`).
 
 ## v0.20.0 (2026-11-17)
 

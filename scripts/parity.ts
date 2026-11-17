@@ -2,7 +2,10 @@
  * Proves Avenue looks like the ManyAve app (AVE-10): `bun run parity`.
  *
  * Builds the app's own Storybook from a ManyAve Management checkout (default ../manyave-management, or
- * `--app <path>`) in a temporary copy, never in the checkout, and Avenue's Storybook from this tree. For
+ * `--app <path>`) at APP_BASELINE (scripts/parity-pairs.ts), the app's last commit before it adopted Avenue, in a
+ * temporary copy, never in the checkout, and Avenue's Storybook from this tree. Since the app now draws Avenue's
+ * parts, its current stories would compare Avenue with itself (AVE-141); the baseline is the look Avenue was
+ * ported from and every allowance below was written against. For
  * every pair in scripts/parity-pairs.ts it opens the app story and the Avenue story in light and dark at the
  * web and desktop type scales, waits until Storybook reports the story rendered, captures the paired element
  * in each, and compares them two ways:
@@ -17,7 +20,8 @@
  * (both captures, a diff image and the differences for each pair and combination) goes to
  * .parity/report/index.html, which is not committed.
  *
- *   bun run parity                          # app at ../manyave-management
+ *   bun run parity                          # app at ../manyave-management, at APP_BASELINE
+ *   bun run parity --app-ref origin/main    # another app commit, to look at drift (not the proof)
  *   bun run parity --app ~/code/manyave-management
  *   bun run parity --reuse                  # skip both builds, reuse .parity/build-*
  *   bun run parity --only components-button # only stories whose id starts with this
@@ -53,7 +57,7 @@ import {
   type Reconciliation,
   type Verdict,
 } from "./parity-lib";
-import { PAIRS } from "./parity-pairs";
+import { APP_BASELINE, PAIRS } from "./parity-pairs";
 import { storyViewport } from "./visual-diff";
 
 const root = resolve(import.meta.dir, "..");
@@ -141,17 +145,21 @@ const config: StorybookConfig = {
 export default config;
 `;
 
-/** Builds the app's Storybook from a copy of `appDir`'s committed files. Returns the commit it built. */
-async function buildApp(appDir: string, dest: string): Promise<{ commit: string; dirty: boolean; stubbed: boolean }> {
-  const commit = git(["rev-parse", "--short", "HEAD"], appDir);
-  const dirty = git(["status", "--porcelain"], appDir).length > 0;
+/** Builds the app's Storybook from `appDir`'s committed files at `ref`. Returns the commit it built. */
+async function buildApp(appDir: string, ref: string, dest: string): Promise<{ commit: string; stubbed: boolean }> {
+  let commit: string;
+  try {
+    commit = git(["rev-parse", "--short", `${ref}^{commit}`], appDir);
+  } catch {
+    throw new Error(`${appDir} has no commit ${ref}; run \`git fetch origin main\` there.`);
+  }
   const tree = join(tmpdir(), `avenue-parity-app-${process.pid}`);
   await rm(tree, { recursive: true, force: true });
   await mkdir(tree, { recursive: true });
-  // Committed files only, at the checkout's HEAD: no local state, no .env, no real data from the working tree.
-  const archive = Bun.spawn(["git", "archive", "--format=tar", "HEAD"], { cwd: appDir, stdout: "pipe" });
+  // Committed files only, at `ref`: no local state, no .env, no real data from the working tree.
+  const archive = Bun.spawn(["git", "archive", "--format=tar", commit], { cwd: appDir, stdout: "pipe" });
   const untar = Bun.spawn(["tar", "-x", "-C", tree], { stdin: archive.stdout });
-  if ((await untar.exited) !== 0 || (await archive.exited) !== 0) throw new Error(`couldn't copy ${appDir} at HEAD`);
+  if ((await untar.exited) !== 0 || (await archive.exited) !== 0) throw new Error(`couldn't copy ${appDir} at ${commit}`);
   try {
     let stubbed = false;
     console.log(`Installing the app's dependencies in ${tree} ...`);
@@ -168,7 +176,7 @@ async function buildApp(appDir: string, dest: string): Promise<{ commit: string;
     await writeFile(join(configDir, "preview.tsx"), `export { default } from "../.storybook/preview";\n`);
     await cp(join(import.meta.dir, "parity", "point-stub.ts"), join(configDir, "point-stub.ts"));
     await must(["bunx", "storybook", "build", "--quiet", "-c", ".storybook-parity", "-o", dest], tree);
-    return { commit, dirty, stubbed };
+    return { commit, stubbed };
   } finally {
     await rm(tree, { recursive: true, force: true });
   }
@@ -559,10 +567,15 @@ async function main() {
   const reuse = args.includes("--reuse");
   const only = flag(args, "--only");
   const appDir = resolve(flag(args, "--app") ?? join(root, "..", "manyave-management"));
-  const appBuild = join(out, "build-app");
+  // Each pair's app commit: APP_BASELINE, its look before it adopted Avenue, or the commit the pair names in `at`
+  // (AVE-141). `--app-ref` builds every pair from one other commit to look at drift; only the pinned commits are the proof.
+  const appRef = flag(args, "--app-ref");
+  const refOf = (pair: Pair) => appRef ?? pair.at?.commit ?? APP_BASELINE.commit;
+  const refs = [...new Set(Object.values(PAIRS).flatMap((e) => (Array.isArray(e) ? e.map(refOf) : [])))].sort();
   const avenueBuild = join(out, "build-avenue");
   const reportDir = join(out, "report");
   const metaFile = join(out, "app-build.json");
+  type AppMeta = { ref: string; commit: string; stubbed: boolean; desktopCss: string };
 
   if (!reuse) {
     if (!(await Bun.file(join(appDir, "package.json")).exists())) {
@@ -570,28 +583,50 @@ async function main() {
     }
     await rm(out, { recursive: true, force: true });
     await mkdir(out, { recursive: true });
-    console.log(`Building the app's Storybook from ${appDir} ...`);
-    const built = await buildApp(appDir, appBuild);
-    await Bun.write(metaFile, JSON.stringify({ ...built, desktopCss: await Bun.file(join(appDir, "src", "desktop.css")).text() }));
+    const metas: AppMeta[] = [];
+    for (const ref of refs) {
+      console.log(`Building the app's Storybook from ${appDir} at ${ref.slice(0, 8)} ...`);
+      const built = await buildApp(appDir, ref, join(out, `build-app-${ref.slice(0, 12)}`));
+      metas.push({ ref, ...built, desktopCss: git(["show", `${built.commit}:src/desktop.css`], appDir) });
+    }
+    await Bun.write(metaFile, JSON.stringify(metas));
     console.log("Building Avenue's Storybook ...");
     await must(["bunx", "storybook", "build", "--quiet", "-o", avenueBuild], root);
   }
-  const appMeta = (await Bun.file(metaFile).json()) as { commit: string; dirty: boolean; stubbed: boolean; desktopCss: string };
+  const metas = (await Bun.file(metaFile).json()) as AppMeta[];
   await rm(reportDir, { recursive: true, force: true });
   await mkdir(reportDir, { recursive: true });
 
-  const appIds = storyIds(await Bun.file(join(appBuild, "index.json")).json());
+  // One served Storybook per app commit, with its story ids and its desktop type scale: the app's Storybook has no
+  // switch for it, so its four values from the app's desktop.css are applied to the app's stories here; Avenue's
+  // stories use Avenue's own switch, which must give the same values (checked on every desktop capture).
+  const apps = new Map(
+    await Promise.all(
+      metas.map(async (m) => {
+        const dir = join(out, `build-app-${m.ref.slice(0, 12)}`);
+        const vars = rootVariables(m.desktopCss);
+        return [
+          m.ref,
+          {
+            meta: m,
+            ids: storyIds(await Bun.file(join(dir, "index.json")).json()),
+            server: serve(dir),
+            desktopVars: vars,
+            desktopCss: `:root{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(";")}}`,
+            scale: new Map<string, string>(),
+          },
+        ] as const;
+      }),
+    ),
+  );
+  const appFor = (pair: Pair) => {
+    const app = apps.get(refOf(pair));
+    if (!app) throw new Error(`No app build for ${refOf(pair)}; run without --reuse.`);
+    return app;
+  };
   const avenueIds = storyIds(await Bun.file(join(avenueBuild, "index.json")).json());
-  const problems = mapProblems(PAIRS, storiesToPair(avenueIds), appIds);
+  const problems = mapProblems(PAIRS, storiesToPair(avenueIds), (pair) => appFor(pair).ids);
 
-  // The desktop type scale: the app's Storybook has no switch for it, so its four values from the app's
-  // desktop.css are applied to the app's stories here; Avenue's stories use Avenue's own switch, which must
-  // give the same values (checked on every desktop capture).
-  const desktopVars = rootVariables(appMeta.desktopCss);
-  const desktopCss = `:root{${Object.entries(desktopVars).map(([k, v]) => `${k}:${v}`).join(";")}}`;
-
-  const appScale = new Map<string, string>();
-  const appServer = serve(appBuild);
   const avenueServer = serve(avenueBuild);
   const executablePath = process.env.AVENUE_CHROMIUM;
   const browser = await chromium.launch({ args: CHROMIUM_ARGS, ...(executablePath ? { executablePath } : {}) });
@@ -609,7 +644,7 @@ async function main() {
       }
       if (!avenueIds.includes(story)) continue;
       for (const [i, pair] of entry.entries()) {
-        if (!appIds.includes(pair.app)) continue;
+        if (!appFor(pair).ids.includes(pair.app)) continue;
         for (const combo of COMBOS) {
           results.push(await compare(page, story, i, pair, combo));
           n++;
@@ -620,7 +655,7 @@ async function main() {
   } finally {
     await context.close();
     await browser.close();
-    await appServer.stop(true);
+    for (const app of apps.values()) await app.server.stop(true);
     await avenueServer.stop(true);
   }
 
@@ -628,6 +663,7 @@ async function main() {
     const label = pair.label ?? pair.app;
     const base: Omit<Result, "verdict" | "differences"> = { avenueStory: story, label, app: pair.app, combo: comboName(combo) };
     const desktop = combo.typeScale === "desktop";
+    const { server: appServer, desktopVars, desktopCss, scale: appScale } = appFor(pair);
     try {
       await open(tab, storyUrl(`http://localhost:${appServer.port}`, pair.app, `theme:${combo.theme}`), desktop ? desktopCss : "");
       if (desktop && appScale.size === 0) for (const [k, v] of await tab.evaluate(resolvedSizes, Object.keys(desktopVars))) appScale.set(k, v);
@@ -734,8 +770,12 @@ async function main() {
   }
 
   const meta = {
-    "App commit": `${appMeta.commit}${appMeta.dirty ? " (checkout had uncommitted changes; built from HEAD)" : ""}`,
-    "Point packages": appMeta.stubbed ? "stubbed (no registry access)" : "installed",
+    "App commit": appRef
+      ? `${metas[0]?.commit} for every pair (--app-ref: a look at drift, not the proof)`
+      : metas
+          .map((m) => `${m.commit} (${m.ref === APP_BASELINE.commit ? `baseline: ${APP_BASELINE.why}` : (Object.values(PAIRS).flatMap((e) => (Array.isArray(e) ? e : [])).find((p) => p.at?.commit === m.ref)?.at?.why ?? "")})`)
+          .join("; "),
+    "Point packages": metas.some((m) => m.stubbed) ? "stubbed (no registry access)" : "installed",
     "Avenue commit": git(["rev-parse", "--short", "HEAD"], root),
     "Pixel threshold": `${PIXEL_THRESHOLD} per pixel, 0 pixels allowed; judged only where both show the same text, no style differs and the pair isn't a frame (up to ${SUBPIXEL_MAX} edge pixels forgiven for a different sub-pixel offset). Every other comparison is counted as styles only.`,
   };
@@ -752,7 +792,7 @@ async function main() {
   const stylesOnly = results.filter((r) => r.stylesOnly !== undefined).length;
   const stylesOnlySame = results.filter((r) => r.stylesOnly !== undefined && r.verdict === "same").length;
   console.log(
-    `\n${results.length} comparisons against app ${appMeta.commit}: ${count("same")} same, ${count("agreed-fix")} agreed fixes, ${count("known-bug")} known bugs, ${count("app-local")} drawn by the app's screen, ${count("unexplained")} unexplained, ${count("error")} errors; ${unpaired.length} unpaired stories, ${problems.length} map problems.\n${results.length - stylesOnly} judged on pixels and styles, ${stylesOnly} on styles only (${stylesOnlySame} of those "same").`,
+    `\n${results.length} comparisons against app ${metas.map((m) => m.commit).join(" + ")}: ${count("same")} same, ${count("agreed-fix")} agreed fixes, ${count("known-bug")} known bugs, ${count("app-local")} drawn by the app's screen, ${count("unexplained")} unexplained, ${count("error")} errors; ${unpaired.length} unpaired stories, ${problems.length} map problems.\n${results.length - stylesOnly} judged on pixels and styles, ${stylesOnly} on styles only (${stylesOnlySame} of those "same").`,
   );
   console.log(`Report: ${join(reportDir, "index.html")}`);
   process.exit(bad.length > 0 || problems.length > 0 ? 1 : 0);

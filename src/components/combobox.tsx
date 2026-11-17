@@ -10,7 +10,7 @@ import {
   ComboboxTrigger,
 } from "@ui-sdk/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   fieldControl,
   listItem,
@@ -35,8 +35,12 @@ export interface ComboboxOption {
   meta?: string | undefined;
 }
 
-// ui-sdk treats an empty value as nothing chosen, so the "none" option carries its own value inside the component.
+// ui-sdk treats an empty value as nothing chosen, so the "none" option carries its own value inside the component. A
+// form gets "" for it instead, like a native select's empty option (see the hidden input below).
 const NONE = "\u0000none";
+
+/** "" is the old "nothing chosen" (before v0.21.0); it still reads as null for one release (AVE-137). */
+const chosen = (value: string | null | undefined) => (value ? value : null);
 
 const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
@@ -52,10 +56,22 @@ function matchWords(option: ComboboxOption, query: string): boolean {
 export interface ComboboxProps<T extends ComboboxOption> {
   size?: PickerSize | undefined;
   options: readonly T[];
-  /** The chosen option's value, or "" for none. */
-  value: string;
-  onValueChange: (value: string) => void;
-  /** Adds a first option that clears the choice (Documents' "Neighborhood"). Without it, "" shows `placeholder`. */
+  /**
+   * The chosen option's value, or null for none. Pass it with `onValueChange` to control the field, or leave it out
+   * and use `defaultValue`. "" still means none for one release (deprecated in v0.21.0, AVE-137).
+   */
+  value?: string | null | undefined;
+  /** The value chosen at first, when `value` is left out. A form reset returns to it. */
+  defaultValue?: string | null | undefined;
+  /** Gets the new value, or null when the choice is cleared (the "none" option, or the phone's Clear). */
+  onValueChange?: ((value: string | null) => void) | undefined;
+  /** The name the chosen value posts under in a form. "None" posts "", and nothing chosen posts nothing. */
+  name?: string | undefined;
+  /** The id of a form to post with, when the field isn't inside it. */
+  form?: string | undefined;
+  /** Blocks the form's submit until something is chosen, with the browser's own message. */
+  required?: boolean | undefined;
+  /** Adds a first option that clears the choice (Documents' "Neighborhood"). Without it, null shows `placeholder`. */
   noneLabel?: string | undefined;
   placeholder?: string | undefined;
   /** What the list says when nothing matches. Gets the trimmed query. */
@@ -99,7 +115,11 @@ export interface ComboboxProps<T extends ComboboxOption> {
 export function Combobox<T extends ComboboxOption>({
   options,
   value,
+  defaultValue,
   onValueChange,
+  name,
+  form,
+  required,
   noneLabel,
   placeholder,
   emptyMessage = (query) => (query ? `Nothing matches “${query}”.` : "Nothing to choose from yet."),
@@ -120,7 +140,16 @@ export function Combobox<T extends ComboboxOption>({
     () => (noneLabel ? [{ value: NONE, label: noneLabel }, ...options] : [...options]),
     [noneLabel, options],
   );
-  const selected = value ? (byValue.has(value) ? value : null) : noneLabel ? NONE : null;
+  // Uncontrolled, the field still tracks its value, for the stand-in label below.
+  const [own, setOwn] = useState(() => chosen(defaultValue));
+  const current = value !== undefined ? chosen(value) : own;
+  // ui-sdk is always handed the value, with Avenue's "none" option in place of null where there is one.
+  const toRoot = (v: string | null) => (v ? (byValue.has(v) ? v : null) : noneLabel ? NONE : null);
+  const selected = toRoot(current);
+  const change = (next: string | null) => {
+    setOwn(next);
+    onValueChange?.(next);
+  };
   const chosenLabel = selected === NONE ? noneLabel : selected ? byValue.get(selected)?.label : undefined;
   const [query, setQuery] = useState("");
   // The popup matches the whole field (icon, input and chevron), not just the input.
@@ -130,23 +159,44 @@ export function Combobox<T extends ComboboxOption>({
   // The clear button's name follows the field's own label, which a Field gives the input after it mounts.
   const inputRef = useRef<HTMLInputElement>(null);
   const [fieldName, setFieldName] = useState<string | undefined>();
+  // ui-sdk is always handed the value (it refuses `value` and `defaultValue` together), so a form reset is answered
+  // here: the field goes back to `defaultValue`, and a controlled field hears it through onValueChange.
+  const reset = useEffectEvent(() => {
+    // A controlled field with no default of its own keeps its value: the app decides what a reset means there.
+    if (value !== undefined && defaultValue === undefined) return;
+    const target = chosen(defaultValue);
+    if (target !== current) change(target);
+  });
+  useEffect(() => {
+    const input = inputRef.current;
+    const owner = form ? input?.ownerDocument.getElementById(form) : input?.closest("form");
+    if (!(owner instanceof HTMLFormElement)) return;
+    const onReset = () => reset();
+    owner.addEventListener("reset", onReset);
+    return () => owner.removeEventListener("reset", onReset);
+  }, [form]);
   useLayoutEffect(() => {
     const element = inputRef.current;
-    const name = element?.getAttribute("aria-label") ?? element?.labels?.[0]?.textContent ?? undefined;
-    setFieldName(name?.trim().toLowerCase() || undefined);
+    const label = element?.getAttribute("aria-label") ?? element?.labels?.[0]?.textContent ?? undefined;
+    setFieldName(label?.trim().toLowerCase() || undefined);
   }, []);
 
   return (
     <ComboboxRoot<string>
       value={selected}
       onValueChange={(next: string | string[] | null, details: { reason: string; cancel: () => void }) => {
-        if (typeof next === "string") onValueChange(next === NONE ? "" : next);
+        if (typeof next === "string") change(next === NONE ? null : next);
         // The phone's Clear clears the choice as well as the search (AVE-93); Escape while the list is open asks for
         // it back. Clearing the text by typing is still typing, not a choice, so that request is refused.
-        else if (details.reason === "clear-press") onValueChange("");
+        else if (details.reason === "clear-press") change(null);
         else details.cancel();
       }}
-      onQueryChange={(next: string) => setQuery(next)}
+      onQueryChange={(next: string, details: { reason: string; cancel: () => void }) => {
+        // ui-sdk empties the text on a form reset, as it would return to its own empty default; the reset listener
+        // above has put the field's default value back, and with it its label, so the text stays.
+        if (details.reason === "reset") details.cancel();
+        else setQuery(next);
+      }}
       filter={(item: { value: string; label: string }, text: string) => {
         if (item.value === NONE) return text.trim() === "";
         const option = byValue.get(item.value);
@@ -154,8 +204,13 @@ export function Combobox<T extends ComboboxOption>({
       }}
       autoHighlight
       presentation={presentation}
-      {...defined({ disabled })}
+      // While the none option is chosen, ui-sdk would post its private value, so it gets no name and the hidden input
+      // below posts "" in its place.
+      {...defined({ disabled, name: selected === NONE ? undefined : name, form, required })}
     >
+      {name && selected === NONE && (
+        <input type="hidden" name={name} value="" disabled={disabled} {...defined({ form })} />
+      )}
       <div
         ref={setAnchor}
         data-slot="combobox"
