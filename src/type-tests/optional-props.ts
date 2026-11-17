@@ -34,6 +34,7 @@ import type * as inlineMessage from "#avenue/components/inline-message";
 import type * as input from "#avenue/components/input";
 import type * as messageList from "#avenue/components/message-list";
 import type * as modeToggle from "#avenue/components/mode-toggle";
+import type * as message from "#avenue/components/message";
 import type * as money from "#avenue/components/money";
 import type * as monthGrid from "#avenue/components/month-grid";
 import type * as navTab from "#avenue/components/nav-tab";
@@ -94,6 +95,7 @@ type Modules = {
   "input": typeof input;
   "message-list": typeof messageList;
   "mode-toggle": typeof modeToggle;
+  "message": typeof message;
   "money": typeof money;
   "month-grid": typeof monthGrid;
   "nav-tab": typeof navTab;
@@ -177,4 +179,7 @@ export const plainChildren: ReactNode[] = [
   null as unknown as Children<typeof status.Status>,
   null as unknown as Children<typeof skeleton.Loading>,
   null as unknown as Children<typeof progress.Progress>,
+  null as unknown as Children<typeof message.MessageBubble>,
+  null as unknown as Children<typeof message.MessageQuote>,
+  null as unknown as Children<typeof message.MessageStatus>,
 ];

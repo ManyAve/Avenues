@@ -176,7 +176,7 @@ export function chatRuns(messages: ChatMessage[], gapMinutes = 10): ChatRun[] {
   return runs;
 }
 
-/** `count` older messages before a thread's first, alternating senders: a page the list loads above (AVE-132). */
+/** `count` older messages before a thread's first, oldest first, alternating senders: a page the list loads above (AVE-132). */
 export function earlierMessages(thread: ChatThread, count: number, page = 1): ChatMessage[] {
   const first = Date.parse(thread.messages[0]?.at ?? chatNow);
   const others = thread.members.filter((person) => person.id !== me.id);
@@ -189,7 +189,7 @@ export function earlierMessages(thread: ChatThread, count: number, page = 1): Ch
       at: new Date(first - n * 7 * 60_000).toISOString(),
       body: `Earlier message ${n} about the spring cleanup.`,
     };
-  }).reverse();
+  });
 }
 
 /** The reader's time for a message ("4:28 PM") and the full form for its description ("Thursday, November 12, 4:28 PM"). */

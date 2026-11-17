@@ -162,6 +162,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   skeleton: {
     none: "Decorative shapes (aria-hidden) and a busy region with one polite status; no control and nothing to focus. The Skeleton stories check the status, the hidden shapes and that Tab passes by (AVE-128).",
   },
+  message: {
+    none: "AVE-133: plain markup (groups, paragraphs, hidden text); its only controls are the app's, in the actions and status slots. The Message stories read each bubble's text, and Message / Agent is its agent test.",
+  },
   "icon-tile": { none: "A decorative tile; only its Automatic mark is read, tested in the Icon tile stories." },
   "page-header": { none: "Layout: the page's h1, a description and its actions." },
   "section-card": { none: "Layout: a Card with a level-2 heading and one action." },
