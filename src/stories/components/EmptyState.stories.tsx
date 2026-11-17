@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentProps } from "react";
 import { FileTextIcon, HomeIcon, InboxIcon, PlusIcon, UsersIcon } from "lucide-react";
 import { expect, fn, userEvent } from "storybook/test";
 import { Card } from "#avenue/components/card";
@@ -39,6 +40,87 @@ export const SecondaryAction: Story = {
     description: "We couldn't find an association for jordan@example.com.",
     action: { label: "Try again", onClick: fn() },
     secondaryAction: { label: "Use a different email", onClick: fn() },
+  },
+};
+
+/**
+ * An app router's link, standing in for TanStack Router's or Next.js's `Link`: it takes `to`, draws an `a` with
+ * that address, and navigates on the client instead of loading the page.
+ */
+const navigate = fn();
+function RouterLink({ to, onClick, ...props }: ComponentProps<"a"> & { to: string }) {
+  return (
+    // oxlint-disable-next-line jsx-a11y/anchor-has-content -- the label comes from the Button that renders this.
+    <a
+      {...props}
+      href={to}
+      onClick={(event) => {
+        onClick?.(event);
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        navigate(to);
+      }}
+    />
+  );
+}
+
+/**
+ * An action that goes somewhere is a link, not a button pretending to be one (AVE-139): `href` draws an `a` with the
+ * button's look, so it shows its address and opens in a new tab. The quieter second way out can be a link too.
+ */
+export const LinkAction: Story = {
+  tags: ["agent"],
+  args: {
+    icon: HomeIcon,
+    title: "No households yet",
+    description: "Add the homes in the association to send dues and notices.",
+    action: { label: "Add a household", href: "#add-household" },
+    secondaryAction: { label: "Import from a spreadsheet", href: "#import-households" },
+  },
+  play: async ({ canvas }) => {
+    const action = canvas.getByRole("link", { name: "Add a household" });
+    await expect(action.tagName).toBe("A");
+    await expect(action).toHaveAttribute("href", "#add-household");
+    await expect(canvas.queryByRole("button", { name: "Add a household" })).toBeNull();
+    const secondary = canvas.getByRole("link", { name: "Import from a spreadsheet" });
+    await expect(secondary).toHaveAttribute("href", "#import-households");
+    await userEvent.tab();
+    await expect(action).toHaveFocus();
+    await userEvent.tab();
+    await expect(secondary).toHaveFocus();
+  },
+};
+
+/** `render` takes the app's own router link, so the action is a link and navigation stays client-side. */
+export const RouterLinkAction: Story = {
+  tags: ["agent"],
+  args: {
+    icon: FileTextIcon,
+    title: "No documents shared",
+    description: "Documents the board shares with neighbors show up here.",
+    action: { label: "Share a document", render: <RouterLink to="/documents/new" /> },
+  },
+  play: async ({ canvas }) => {
+    navigate.mockClear();
+    const action = canvas.getByRole("link", { name: "Share a document" });
+    await expect(action).toHaveAttribute("href", "/documents/new");
+    await expect(action).toHaveAttribute("data-slot", "button");
+    await userEvent.tab();
+    await expect(action).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(navigate).toHaveBeenCalledOnce();
+    await expect(navigate).toHaveBeenCalledWith("/documents/new");
+  },
+};
+
+/** A disabled link can't navigate and leaves the tab order (ui-sdk's Button). */
+export const DisabledLinkAction: Story = {
+  args: { action: { label: "Log a complaint", href: "#log-complaint", disabled: true } },
+  play: async ({ canvas }) => {
+    const action = canvas.getByText("Log a complaint");
+    await expect(action.closest("a")).toHaveAttribute("aria-disabled", "true");
+    await userEvent.tab();
+    await expect(action.closest("a")).not.toHaveFocus();
   },
 };
 
@@ -102,4 +184,44 @@ export const Section: Story = {
       </div>
     </Rows>
   ),
+};
+
+/** SectionEmpty's next step can be a link too: `href`, or the app's router link with `render` (AVE-139). */
+export const SectionLink: Story = {
+  render: () => (
+    <Rows>
+      <div className="flex max-w-xl flex-col gap-section">
+        <Card className="p-inset">
+          <SectionEmpty
+            icon={UsersIcon}
+            title="No other residents"
+            line="Residents join when they accept an invite."
+            action={{ label: "Invite a resident", icon: PlusIcon, render: <RouterLink to="/residents/invite" /> }}
+          />
+        </Card>
+        <Card className="p-inset">
+          <SectionEmpty
+            icon={FileTextIcon}
+            title="No documents"
+            line="Documents shared with this household show here."
+            action={{ label: "See all documents", href: "#documents" }}
+          />
+        </Card>
+      </div>
+    </Rows>
+  ),
+  play: async ({ canvas }) => {
+    navigate.mockClear();
+    const invite = canvas.getByRole("link", { name: "Invite a resident" });
+    const documents = canvas.getByRole("link", { name: "See all documents" });
+    await expect(invite).toHaveAttribute("href", "/residents/invite");
+    await expect(documents).toHaveAttribute("href", "#documents");
+    await userEvent.tab();
+    await expect(invite).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(navigate).toHaveBeenCalledOnce();
+    await expect(navigate).toHaveBeenCalledWith("/residents/invite");
+    await userEvent.tab();
+    await expect(documents).toHaveFocus();
+  },
 };
