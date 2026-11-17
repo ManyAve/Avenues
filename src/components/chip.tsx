@@ -1,8 +1,9 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { Check } from "lucide-react";
-import { useEffect, useRef, useState, type ComponentProps, type FocusEvent, type ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type FocusEvent, type ReactNode } from "react";
 import { Count } from "#avenue/components/status";
 import { Toggle } from "#avenue/components/toggle";
-import { type NodeChildren } from "#avenue/lib/props";
+import { type NodeChildren, defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -58,13 +59,14 @@ function ChipRow({
   overflow = "wrap",
   className,
   onFocus,
+  render,
   ...props
-}: ComponentProps<"div"> & { overflow?: "wrap" | "scroll" | undefined }) {
+}: OwnPartProps<"div"> & { overflow?: "wrap" | "scroll" | undefined }) {
   // The end fade hides once the row is scrolled to its end, where nothing is left to hint at (AVE-86).
-  const row = useRef<HTMLDivElement>(null);
+  // The row's element, held in state so the measuring below follows it when `render` swaps the element.
+  const [el, setRow] = useState<HTMLDivElement | null>(null);
   const [atEnd, setAtEnd] = useState(false);
   useEffect(() => {
-    const el = row.current;
     if (overflow !== "scroll" || !el) return;
     const measure = () => setAtEnd(Math.ceil(el.scrollLeft + el.clientWidth) >= el.scrollWidth - 1);
     measure();
@@ -75,31 +77,35 @@ function ChipRow({
       el.removeEventListener("scroll", measure);
       observer.disconnect();
     };
-  }, [overflow]);
+  }, [overflow, el]);
   const reveal = (event: FocusEvent<HTMLDivElement>) => {
     onFocus?.(event);
     if (overflow === "scroll" && event.target !== event.currentTarget) {
       event.target.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
   };
-  return (
-    <div
-      data-slot="chip-row"
-      ref={row}
-      data-overflow={overflow}
-      data-scroll-end={(overflow === "scroll" && atEnd) || undefined}
-      onFocus={reveal}
-      className={cn(
-        "flex gap-controls",
-        overflow === "wrap"
-          ? "flex-wrap"
-          : // A scroller clips its children's overflow, so on a phone it pads 8px above and below (and takes it
-            // back with a negative margin) to keep each chip's 44px tap area inside it (AVE-22).
-            "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-phone:scroll-pe-8 max-phone:pe-8 max-phone:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] data-scroll-end:[mask-image:none]",
-        className,
-      )}
-      {...props}
-    />
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "chip-row",
+        ref: setRow,
+        "data-overflow": overflow,
+        "data-scroll-end": (overflow === "scroll" && atEnd) || undefined,
+        onFocus: reveal,
+        className: cn(
+          "flex gap-controls",
+          overflow === "wrap"
+            ? "flex-wrap"
+            : // A scroller clips its children's overflow, so on a phone it pads 8px above and below (and takes it
+              // back with a negative margin) to keep each chip's 44px tap area inside it (AVE-22).
+              "snap-x snap-proximity scroll-px-page overflow-x-auto pointer-coarse:-my-2 pointer-coarse:py-2 [scrollbar-width:none] max-phone:scroll-pe-8 max-phone:pe-8 max-phone:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] data-scroll-end:[mask-image:none]",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

@@ -1,9 +1,10 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as MenuPrimitive from "@ui-sdk/react/menu";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/dropdown-menu.tsx (e01cc90). The menu keeps the lg corner (10px) and
@@ -230,15 +231,19 @@ function DropdownMenuSeparator({ className, ...props }: Loose<ComponentProps<typ
   );
 }
 
-function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">) {
-  return (
-    <span
-      className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground group-data-highlighted/dropdown-menu-item:text-accent-foreground",
-        className,
-      )}
-      {...props}
-    />
+function DropdownMenuShortcut({ className, render, ...props }: OwnPartProps<"span">) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        className: cn(
+          "ml-auto text-xs tracking-widest text-muted-foreground group-data-highlighted/dropdown-menu-item:text-accent-foreground",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

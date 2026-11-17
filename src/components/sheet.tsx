@@ -1,10 +1,11 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as DrawerPrimitive from "@ui-sdk/react/drawer";
 import { XIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Button } from "#avenue/components/button";
 import { modalCloseButton, modalDescription, modalSurface, modalTitle, sheetHandle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * A modal sheet from an edge of the screen (AVE-32): a form or filters on a phone, or a side panel on a wide screen.
@@ -99,39 +100,57 @@ function SheetContent({
 }
 
 /** Title and description. Leaves room on the right for the close button. */
-function SheetHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="sheet-header" className={cn("flex shrink-0 flex-col gap-2 pe-8", className)} {...props} />;
+function SheetHeader({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-header",
+        className: cn("flex shrink-0 flex-col gap-2 pe-8", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /**
  * The part that scrolls when the content is taller than the sheet. A downward drag scrolls it first, and moves the
  * sheet once it is at the top. It reaches the sheet's edges, so focus rings aren't clipped.
  */
-function SheetBody({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sheet-body"
-      className={cn("-mx-inset -my-1 min-h-0 flex-1 overflow-y-auto px-inset py-1", className)}
-      {...props}
-    />
+function SheetBody({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-body",
+        className: cn("-mx-inset -my-1 min-h-0 flex-1 overflow-y-auto px-inset py-1", className),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
 /** Actions, on Dialog's muted strip, at the bottom of the sheet. Put Cancel first, as in Dialog. */
-function SheetFooter({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sheet-footer"
-      className={cn(
-        "-mx-inset -mb-inset mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
-        "group-data-[side=bottom]/sheet:-mb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))]",
-        // A toast rises above a bottom sheet's footer by anchoring to it (AVE-40).
-        "group-data-[side=bottom]/sheet:[anchor-name:--avenue-sheet-footer]",
-        "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
-        className,
-      )}
-      {...props}
-    />
+function SheetFooter({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-footer",
+        className: cn(
+          "-mx-inset -mb-inset mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+          "group-data-[side=bottom]/sheet:-mb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))]",
+          // A toast rises above a bottom sheet's footer by anchoring to it (AVE-40).
+          "group-data-[side=bottom]/sheet:[anchor-name:--avenue-sheet-footer]",
+          "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

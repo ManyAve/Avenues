@@ -1,4 +1,5 @@
-import type { ComponentProps } from "react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -13,18 +14,23 @@ import { cn } from "#avenue/lib/utils";
 function AskAdmin({
   footer = false,
   className,
+  render,
   ...props
-}: ComponentProps<"p"> & { footer?: boolean | undefined }) {
-  return (
-    <p
-      data-slot="ask-admin"
-      className={cn(
-        "text-meta text-muted-foreground",
-        footer && "order-last sm:order-first sm:basis-full sm:text-end",
-        className,
-      )}
-      {...props}
-    />
+}: OwnPartProps<"p"> & { footer?: boolean | undefined }) {
+  return renderElement(
+    "p",
+    mergeProps(
+      {
+        "data-slot": "ask-admin",
+        className: cn(
+          "text-meta text-muted-foreground",
+          footer && "order-last sm:order-first sm:basis-full sm:text-end",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

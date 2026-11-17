@@ -19,15 +19,18 @@ import { cn } from "#avenue/lib/utils";
  */
 
 /** Small muted count next to a label, e.g. "Households 24". */
-function Count({ value, className, ...props }: ComponentProps<"span"> & { value: ReactNode }) {
-  return (
-    <span
-      data-slot="count"
-      className={cn("rounded-xs bg-muted px-1 text-meta text-muted-foreground tabular-nums", className)}
-      {...props}
-    >
-      {value}
-    </span>
+function Count({ value, className, render, ...props }: OwnPartProps<"span"> & { value: ReactNode }) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "count",
+        className: cn("rounded-xs bg-muted px-1 text-meta text-muted-foreground tabular-nums", className),
+        children: value,
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

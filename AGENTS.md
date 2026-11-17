@@ -87,7 +87,8 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
    where `definePrimitive` and the other core behaviors live.
 3. **One shape.** A root and its parts, nested as the component page's Composition shows. Change a
    part's element with `render`, never an `as` prop. For a part of Avenue's own, use `renderElement`
-   and `mergeProps` from `@ui-sdk/react/primitive` so it takes `render` like every other part.
+   and `mergeProps` from `@ui-sdk/react/primitive` so it takes `render` like every other part (`scripts/own-part-render.test.ts`
+   fails on a part typed `ComponentProps<"tag">`, AVE-136; a prop-driven composite is listed there with its reason).
    **Props take `undefined`** (AVE-108): ui-sdk's optional props reject it under `exactOptionalPropertyTypes`, which
    Management turns on. Take a ui-sdk part's props as `Loose<ComponentProps<typeof Part>>` and spread them onto the
    part as `{...defined(props)}`; a part of Avenue's own takes `OwnPartProps<"div">`; a component that puts its

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
-import { createParts } from "@ui-sdk/react/primitive";
+import { createParts, mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { Button } from "#avenue/components/button";
@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popo
 import { tintFor } from "#avenue/lib/format";
 import { register } from "#avenue/lib/register";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose } from "#avenue/lib/props";
+import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * The Register (AVE-9): the board's table of households, payments or requests. A grid with one Tab stop, arrow keys
@@ -65,12 +65,32 @@ function Register({
   );
 }
 
-function RegisterHeader({ className, ...props }: ComponentProps<"thead">) {
-  return <thead data-slot="register-header" className={className} {...props} />;
+function RegisterHeader({ className, render, ...props }: OwnPartProps<"thead">) {
+  return renderElement(
+    "thead",
+    mergeProps(
+      {
+        "data-slot": "register-header",
+        className: cn(className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
-function RegisterBody({ className, ...props }: ComponentProps<"tbody">) {
-  return <tbody data-slot="register-body" className={className} {...props} />;
+function RegisterBody({ className, render, ...props }: OwnPartProps<"tbody">) {
+  return renderElement(
+    "tbody",
+    mergeProps(
+      {
+        "data-slot": "register-body",
+        className: cn(className),
+      },
+      defined(props),
+    ),
+    render,
+  );
 }
 
 /** A row of the Register. `selected` tints it; `row` is its index, the header being 0. */
@@ -183,8 +203,8 @@ function RegisterCell({ className, ...props }: Loose<ComponentProps<typeof parts
  * The selection column's width, for the Register's colgroup: 32px, or 44px on a touch screen so the checkbox's 44px
  * tap stays inside its column (AVE-22).
  */
-function RegisterSelectColumn({ className, ...props }: ComponentProps<"col">) {
-  return <col className={cn("w-8 pointer-coarse:w-11", className)} {...props} />;
+function RegisterSelectColumn({ className, render, ...props }: OwnPartProps<"col">) {
+  return renderElement("col", mergeProps({ className: cn("w-8 pointer-coarse:w-11", className) }, defined(props)), render);
 }
 
 /** The selection cell that leads each row. Its checkbox sits centred in the selection column. */

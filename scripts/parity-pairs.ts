@@ -408,6 +408,9 @@ export const PAIRS: Record<string, PairEntry> = {
       { prop: "parts", because: "AVE-2 §6: Avenue's header action is the 28px year control; the app's story shows text there" },
     ] },
   ],
+  "components-card--as-heading": {
+    none: "AVE-136: the app's CardTitle is a div and can't take render; this story proves Card as an article and CardTitle as an h3 look exactly like Card / Default, which is the pair.",
+  },
   "components-card--small": {
     none: "The app's Card has the same sm size (12px spacing, ported unchanged), but no app screen or story uses it. The frame is compared through Card / Header with action and the title through Card / Default.",
   },

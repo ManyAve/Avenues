@@ -1,8 +1,9 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as FieldPrimitive from "@ui-sdk/react/field";
 import { cva, type VariantProps } from "class-variance-authority";
-import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
+import { createContext, useContext, type ComponentProps } from "react";
 import { cn } from "#avenue/lib/utils";
-import { defined, type Loose } from "#avenue/lib/props";
+import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/field.tsx (e01cc90), with the app's Label folded in.
@@ -106,13 +107,17 @@ function Field({
   );
 }
 
-function FieldContent({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="field-content"
-      className={cn("group/field-content flex flex-1 flex-col gap-1 leading-snug", className)}
-      {...props}
-    />
+function FieldContent({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "field-content",
+        className: cn("group/field-content flex flex-1 flex-col gap-1 leading-snug", className),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
@@ -130,16 +135,17 @@ function FieldLabel({ className, ...props }: Loose<ComponentProps<typeof FieldPr
   );
 }
 
-function FieldTitle({ className, ...props }: ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="field-title"
-      className={cn(
-        "flex w-fit items-center gap-2 text-field font-medium group-data-disabled/field:opacity-50",
-        className,
-      )}
-      {...props}
-    />
+function FieldTitle({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "field-title",
+        className: cn("flex w-fit items-center gap-2 text-field font-medium group-data-disabled/field:opacity-50", className),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
@@ -159,24 +165,31 @@ function FieldDescription({ className, ...props }: Loose<ComponentProps<typeof F
   );
 }
 
-function FieldSeparator({ children, className, ...props }: ComponentProps<"div"> & { children?: ReactNode }) {
-  return (
-    <div
-      data-slot="field-separator"
-      data-content={!!children}
-      className={cn("relative -my-2 h-5 text-field", className)}
-      {...props}
-    >
-      <div aria-hidden className="absolute inset-x-0 top-1/2 h-px bg-border" />
-      {children && (
-        <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
-          data-slot="field-separator-content"
-        >
-          {children}
-        </span>
-      )}
-    </div>
+function FieldSeparator({ children, className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "field-separator",
+        "data-content": !!children,
+        className: cn("relative -my-2 h-5 text-field", className),
+        children: (
+          <>
+            <div aria-hidden className="absolute inset-x-0 top-1/2 h-px bg-border" />
+            {children && (
+              <span
+                className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+                data-slot="field-separator-content"
+              >
+                {children}
+              </span>
+            )}
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 

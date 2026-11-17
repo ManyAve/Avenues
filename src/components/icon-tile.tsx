@@ -1,6 +1,7 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { ClockIcon, type LucideIcon } from "lucide-react";
-import type { ComponentProps } from "react";
 import type { Tint } from "#avenue/lib/format";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -32,8 +33,9 @@ export function IconTile({
   tint,
   automatic = false,
   className,
+  render,
   ...props
-}: Omit<ComponentProps<"span">, "children"> & {
+}: Omit<OwnPartProps<"span">, "children"> & {
   icon: LucideIcon;
   /** row: 36px, for a list or feed row. section: 40px, for an empty section. */
   size?: "row" | "section" | undefined;
@@ -43,18 +45,20 @@ export function IconTile({
   /** A step ManyAve took by itself: a small clock mark at the corner, read as "Automatic". */
   automatic?: boolean | undefined;
 }) {
-  return (
-    <span
-      data-slot="icon-tile"
-      data-size={size}
-      data-tint={tone === "tint" ? (tint ?? "teal") : undefined}
-      className={cn(
-        "relative grid shrink-0 place-items-center rounded-lg data-[size=row]:size-9 data-[size=section]:size-10",
-        tones[tone],
-        className,
-      )}
-      {...props}
-    >
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "icon-tile",
+        "data-size": size,
+        "data-tint": tone === "tint" ? (tint ?? "teal") : undefined,
+        className: cn(
+          "relative grid shrink-0 place-items-center rounded-lg data-[size=row]:size-9 data-[size=section]:size-10",
+          tones[tone],
+          className,
+        ),
+        children: (
+          <>
       <Icon aria-hidden className={size === "row" ? "size-4.5" : "size-5"} />
       {automatic && (
         <span
@@ -64,6 +68,11 @@ export function IconTile({
           <span className="sr-only">Automatic</span>
         </span>
       )}
-    </span>
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
