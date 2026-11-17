@@ -39,7 +39,7 @@ import { cn } from "#avenue/lib/utils";
  * - With a `ComposerContext` showing, Escape in the field cancels it; without one, Escape is left alone, so it still
  *   reaches the dock or dialog around the composer. Cancelling an edit also empties the field, as Management does.
  *
- * Changes from the app (AVE-2): the field's corner is rounded-xl (14px). The app asks for rounded-2xl, a step the shared
+ * Changes from the app (AVE-2): the field's corner is rounded-xl (14px). The app asks for the 2xl corner, a step the shared
  * theme retired, so its field draws square corners; at one line (32px) 14px reads as the pill both apps meant. The
  * field is 32px at one line, Send's height, and field and Send sit gap-controls apart. On a phone both are 44px tall,
  * and the field's text is 16px so iOS doesn't zoom on focus (AVE-29).
