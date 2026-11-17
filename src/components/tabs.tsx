@@ -1,4 +1,9 @@
-import { Tabs as TabsPrimitive, TabsList as TabsListPrimitive, TabsPanel, TabsTab } from "@ui-sdk/react/tabs";
+import {
+  Tabs as TabsPrimitive,
+  TabsList as TabsListPrimitive,
+  TabsPanel as TabsPanelPrimitive,
+  TabsTab as TabsTabPrimitive,
+} from "@ui-sdk/react/tabs";
 import type { ComponentProps } from "react";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose } from "#avenue/lib/props";
@@ -19,8 +24,8 @@ import { defined, type Loose } from "#avenue/lib/props";
  * 1px below it. On a phone the list is 48px tall and labels 24px apart (gap-controls), so every tap area is 44px. A
  * panel shows a focus ring when it takes focus; the app's had none.
  *
- * Horizontal only. Exports keep shadcn's names; the parts keep ui-sdk's data-slot names (tabs, tabs-list, tabs-tab,
- * tabs-panel).
+ * Horizontal only. The parts take ui-sdk's names (Tabs, TabsList, TabsTab, TabsPanel) and its data-slot names (tabs,
+ * tabs-list, tabs-tab, tabs-panel); TabsTrigger and TabsContent stay as deprecated aliases (AVE-144).
  */
 function Tabs({ className, ...props }: Loose<Omit<ComponentProps<typeof TabsPrimitive>, "orientation">>) {
   return <TabsPrimitive className={cn("flex flex-col gap-2", className)} {...defined(props)} />;
@@ -40,9 +45,9 @@ function TabsList({ className, ...props }: Loose<ComponentProps<typeof TabsListP
   );
 }
 
-function TabsTrigger({ className, ...props }: Loose<ComponentProps<typeof TabsTab>>) {
+function TabsTab({ className, ...props }: Loose<ComponentProps<typeof TabsTabPrimitive>>) {
   return (
-    <TabsTab
+    <TabsTabPrimitive
       className={cn(
         "relative hit-area my-2 inline-flex shrink-0 items-center px-1 gap-1 rounded-md text-control font-medium whitespace-nowrap text-foreground/60 outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none dark:text-muted-foreground dark:hover:text-foreground",
         "aria-selected:text-foreground dark:aria-selected:text-foreground",
@@ -57,13 +62,19 @@ function TabsTrigger({ className, ...props }: Loose<ComponentProps<typeof TabsTa
   );
 }
 
-function TabsContent({ className, ...props }: Loose<ComponentProps<typeof TabsPanel>>) {
+function TabsPanel({ className, ...props }: Loose<ComponentProps<typeof TabsPanelPrimitive>>) {
   return (
-    <TabsPanel
+    <TabsPanelPrimitive
       className={cn("flex-1 rounded-md text-control outline-none focus-visible:ring-3 focus-visible:ring-ring/50", className)}
       {...defined(props)}
     />
   );
 }
 
-export { Tabs, TabsContent, TabsList, TabsTrigger };
+/** @deprecated Use TabsTab. */
+const TabsTrigger = TabsTab;
+/** @deprecated Use TabsPanel. */
+const TabsContent = TabsPanel;
+
+export { Tabs, TabsList, TabsPanel, TabsTab };
+export { TabsContent, TabsTrigger };

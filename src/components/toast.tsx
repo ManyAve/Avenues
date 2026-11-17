@@ -3,9 +3,9 @@ import {
   Toast as ToastPart,
   ToastAction,
   ToastClose,
-  ToastRegion,
+  ToastRegion as ToastRegionPrimitive,
   ToastTitle,
-  type Toaster,
+  type Toaster as ToasterStore,
 } from "@ui-sdk/react/toast";
 import { CheckIcon, CircleAlertIcon, SendIcon, XIcon } from "lucide-react";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
@@ -61,7 +61,7 @@ const SUCCESS_MS = 4200;
 /** A success with an action: long enough to reach the action by F6, a switch or voice (AVE-41). */
 const ACTION_MS = 10_000;
 
-function showWith(toaster: Toaster<ReactNode>): ShowToast {
+function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
   const showingError = () => toaster.toasts().some((item) => item.type === "error");
   // The latest success that arrived while an error showed; it shows once the error is gone.
   let waiting: (() => void) | undefined;
@@ -125,7 +125,7 @@ function useToast() {
 }
 
 /** The region where toasts show, for a `toaster` you created yourself. Place it once. */
-function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
+function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
   return (
     // ui-sdk centres a region with translate: -50% outside any layer, so only an important utility undoes it.
     // 24px above the bottom edge plus the home-indicator safe area, or 8px above --avenue-toast-bottom where a page sets
@@ -134,7 +134,7 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
     // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it.
     // The name is the landmark's while a toast shows. Empty, the region is no landmark and, with Avenue's ui-sdk patch,
     // not in the agent snapshot either (AVE-43, Toast/EmptyRegion).
-    <ToastRegion
+    <ToastRegionPrimitive
       toaster={toaster}
       aria-label="Notifications"
       side="bottom"
@@ -175,7 +175,7 @@ function Toaster({ toaster }: { toaster: Toaster<ReactNode> }) {
           )}
         </ToastPart>
       )}
-    </ToastRegion>
+    </ToastRegionPrimitive>
   );
 }
 
@@ -187,9 +187,12 @@ function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={show}>
       {children}
-      <Toaster toaster={toaster} />
+      <ToastRegion toaster={toaster} />
     </ToastContext>
   );
 }
 
-export { ToastProvider, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions };
+/** @deprecated Use ToastRegion. */
+const Toaster = ToastRegion;
+
+export { ToastProvider, ToastRegion, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions };

@@ -1,0 +1,213 @@
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import * as DrawerPrimitive from "@ui-sdk/react/drawer";
+import { XIcon } from "lucide-react";
+import type { ComponentProps } from "react";
+import { Button } from "#avenue/components/button";
+import { modalCloseButton, modalDescription, modalSurface, modalTitle, sheetHandle } from "#avenue/lib/popup";
+import { cn } from "#avenue/lib/utils";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
+
+/**
+ * A modal sheet from an edge of the screen (AVE-32): a form or filters on a phone, or a side panel on a wide screen.
+ * ui-sdk's drawer supplies the behavior: the page behind is inert, focus moves in on open and returns to the trigger on
+ * close, Esc and a press on the backdrop close it, and a bottom sheet can be dragged down to close. Dragging is an
+ * extra: the visible Close button and Esc always work.
+ *
+ * `side` goes on the root (`bottom` by default; `left`, `right`, `top`, or the logical `start` and `end`). The surface,
+ * title and description are Dialog's, so the same form looks the same as a dialog or a sheet.
+ *
+ * Unsaved changes: cancel the close in `onOpenChange` while the form is dirty and ask "Discard changes?" in the sheet
+ * (the Unsaved changes story). That covers the Close button too, which `dismissible={false}` alone does not.
+ *
+ * For a list of options on a phone, don't build a sheet: Select and Combobox present as this same bottom sheet on a phone
+ * by themselves (`presentation`, AVE-39).
+ */
+function Drawer({ side = "bottom", ...props }: Loose<ComponentProps<typeof DrawerPrimitive.Drawer>>) {
+  return <DrawerPrimitive.Drawer side={side} {...defined(props)} />;
+}
+
+function DrawerTrigger(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerTrigger>>) {
+  return <DrawerPrimitive.DrawerTrigger {...defined(props)} />;
+}
+
+function DrawerClose(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerClose>>) {
+  return <DrawerPrimitive.DrawerClose {...defined(props)} />;
+}
+
+/** Dialog's dim. The drawer drives its opacity, so it has no transition of its own. */
+function DrawerBackdrop({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerBackdrop>>) {
+  return (
+    <DrawerPrimitive.DrawerBackdrop
+      className={cn("fixed inset-0 isolate z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs", className)}
+      {...defined(props)}
+    />
+  );
+}
+
+/**
+ * The sheet. A bottom sheet rounds only its top corners (xl, 14px) and shows a drag handle; a side sheet is full height
+ * and rounds only its inner edge. The drawer owns `translate`, so nothing here animates it; with reduced motion the
+ * drawer fades instead of sliding.
+ */
+function DrawerContent({
+  className,
+  children,
+  showCloseButton = true,
+  ...props
+}: NodeChildren<Loose<ComponentProps<typeof DrawerPrimitive.DrawerContent>>> & { showCloseButton?: boolean | undefined }) {
+  return (
+    <>
+      <DrawerBackdrop />
+      <DrawerPrimitive.DrawerContent
+        className={cn(
+          modalSurface,
+          "group/sheet relative flex flex-col gap-4",
+          // The ::after covers the gap a drag past the edge would open.
+          "after:absolute after:bg-popover",
+          // The bottom sheet's look is shared with Select and Combobox presenting as a sheet (avenue.css, AVE-39).
+          "data-[side=bottom]:sheet-bottom",
+          "data-[side=top]:mx-auto data-[side=top]:max-h-[85dvh] data-[side=top]:w-full data-[side=top]:max-w-lg data-[side=top]:rounded-b-xl data-[side=top]:after:inset-x-0 data-[side=top]:after:bottom-full data-[side=top]:after:h-24",
+          "data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:rounded-r-xl data-[side=left]:after:inset-y-0 data-[side=left]:after:right-full data-[side=left]:after:w-24 sm:data-[side=left]:max-w-sm",
+          "data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:rounded-l-xl data-[side=right]:after:inset-y-0 data-[side=right]:after:left-full data-[side=right]:after:w-24 sm:data-[side=right]:max-w-sm",
+          className,
+        )}
+        {...defined(props)}
+      >
+        {/* Decorative: the drawer drags from anywhere on the sheet, and the Close button and Esc always close it. */}
+        <div
+          data-slot="sheet-handle"
+          aria-hidden
+          className={cn(sheetHandle, "hidden group-data-[side=bottom]/sheet:block")}
+        />
+        {children}
+        {showCloseButton && (
+          <DrawerPrimitive.DrawerClose
+            render={
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className={cn(modalCloseButton, "group-data-[side=bottom]/sheet:top-7")}
+              />
+            }
+          >
+            <XIcon aria-hidden />
+            <span className="sr-only">Close</span>
+          </DrawerPrimitive.DrawerClose>
+        )}
+      </DrawerPrimitive.DrawerContent>
+    </>
+  );
+}
+
+/** Title and description. Leaves room on the right for the close button. */
+function DrawerHeader({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-header",
+        className: cn("flex shrink-0 flex-col gap-2 pe-8", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/**
+ * The part that scrolls when the content is taller than the sheet. A downward drag scrolls it first, and moves the
+ * sheet once it is at the top. It reaches the sheet's edges, so focus rings aren't clipped.
+ */
+function DrawerBody({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-body",
+        className: cn("-mx-inset -my-1 min-h-0 flex-1 overflow-y-auto px-inset py-1", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/** Actions, on Dialog's muted strip, at the bottom of the sheet. Put Cancel first, as in Dialog. */
+function DrawerFooter({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "sheet-footer",
+        className: cn(
+          "-mx-inset -mb-inset mt-auto flex shrink-0 flex-col-reverse gap-controls border-t bg-muted/50 p-inset sm:flex-row sm:justify-end",
+          "group-data-[side=bottom]/sheet:-mb-[max(var(--spacing-inset),env(safe-area-inset-bottom))] group-data-[side=bottom]/sheet:pb-[max(var(--spacing-inset),env(safe-area-inset-bottom))]",
+          // A toast rises above a bottom sheet's footer by anchoring to it (AVE-40).
+          "group-data-[side=bottom]/sheet:[anchor-name:--avenue-sheet-footer]",
+          "group-data-[side=left]/sheet:rounded-br-xl group-data-[side=right]/sheet:rounded-bl-xl group-data-[side=top]/sheet:rounded-b-xl",
+          className,
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/** Named by this title. It wraps; it never truncates. */
+function DrawerTitle({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerTitle>>) {
+  return <DrawerPrimitive.DrawerTitle className={cn(modalTitle, "text-pretty", className)} {...defined(props)} />;
+}
+
+function DrawerDescription({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerDescription>>) {
+  return <DrawerPrimitive.DrawerDescription className={cn(modalDescription, className)} {...defined(props)} />;
+}
+
+export {
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerBackdrop,
+  DrawerTitle,
+  DrawerTrigger,
+};
+
+// Deprecated aliases (AVE-144): shadcn's names for these parts, kept so apps can rename at their own pace. They go in the next minor release.
+
+/** @deprecated Use Drawer. */
+const Sheet = Drawer;
+/** @deprecated Use DrawerTrigger. */
+const SheetTrigger = DrawerTrigger;
+/** @deprecated Use DrawerClose. */
+const SheetClose = DrawerClose;
+/** @deprecated Use DrawerContent. */
+const SheetContent = DrawerContent;
+/** @deprecated Use DrawerTitle. */
+const SheetTitle = DrawerTitle;
+/** @deprecated Use DrawerDescription. */
+const SheetDescription = DrawerDescription;
+/** @deprecated Use DrawerHeader. */
+const SheetHeader = DrawerHeader;
+/** @deprecated Use DrawerBody. */
+const SheetBody = DrawerBody;
+/** @deprecated Use DrawerFooter. */
+const SheetFooter = DrawerFooter;
+/** @deprecated Use DrawerBackdrop. */
+const SheetOverlay = DrawerBackdrop;
+
+export {
+  Sheet,
+  SheetBody,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetOverlay,
+  SheetTitle,
+  SheetTrigger,
+};

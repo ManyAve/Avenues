@@ -11,6 +11,9 @@
  *   bun run visual:diff [base-ref]        # default: main
  *   bun run visual:diff main --reuse      # skip both builds, reuse .visual-diff/build-*
  *   bun run visual:diff main --allow-new  # stories added on this branch are listed, not failures
+ *   bun run visual:diff main --renamed components-sheet=components-drawer
+ *                                         # a story file renamed on this branch: each base story under the old id
+ *                                         # prefix is compared with the head story under the new one (repeatable)
  *
  * A ref that doesn't exist locally falls back to origin/<ref>, so `main` works in a fresh clone that
  * only has origin/main. Needs Chromium for Playwright (see the README), or AVENUE_CHROMIUM pointing at one.
@@ -88,6 +91,29 @@ export function storyIds(index: { entries: Record<string, IndexEntry> }): string
     .filter((e) => e.type === "story")
     .map((e) => e.id)
     .sort();
+}
+
+/**
+ * Parses `--renamed old=new` arguments (story id prefixes, as Storybook writes them: `components-sheet`). A title
+ * renamed on the branch changes every story id under it, so without this the base stories read as missing.
+ */
+export function parseRenames(args: string[]): Map<string, string> {
+  const renames = new Map<string, string>();
+  args.forEach((arg, i) => {
+    if (arg !== "--renamed") return;
+    const value = args[i + 1] ?? "";
+    const [from, to, ...rest] = value.split("=");
+    if (!from || !to || rest.length > 0) throw new Error(`--renamed takes old=new story id prefixes, not "${value}"`);
+    renames.set(from, to);
+  });
+  return renames;
+}
+
+/** A base story id under the name it has on the branch: `components-sheet--open` -> `components-drawer--open`. */
+export function renamedId(id: string, renames: Map<string, string>): string {
+  const [prefix, ...rest] = id.split("--");
+  const to = renames.get(prefix!);
+  return to === undefined || rest.length === 0 ? id : [to, ...rest].join("--");
 }
 
 /** Compares two PNGs. Different sizes count as every pixel of the larger one changed. */
@@ -253,7 +279,8 @@ async function main() {
   const args = process.argv.slice(2);
   const reuse = args.includes("--reuse");
   const allowNew = args.includes("--allow-new");
-  const asked = args.find((a) => !a.startsWith("--")) ?? "main";
+  const renames = parseRenames(args);
+  const asked = args.find((a, i) => !a.startsWith("--") && args[i - 1] !== "--renamed") ?? "main";
   const ref = reuse ? asked : resolveRef(asked, isCommit, isStrictlyBehind);
   if (ref === undefined) throw new Error(`${asked} is not a commit here, and neither is origin/${asked}; fetch it first`);
   if (ref !== asked) {
@@ -284,6 +311,12 @@ async function main() {
   let headShots: Map<string, Buffer | Error>;
   try {
     baseShots = await captureAll(browser, baseDir, "base", baseIds);
+    if (renames.size > 0) {
+      baseShots = new Map([...baseShots].map(([key, shot]) => {
+        const [story, combo] = key.split("@") as [string, string];
+        return [`${renamedId(story, renames)}@${combo}`, shot];
+      }));
+    }
     headShots = await captureAll(browser, headDir, "head", headIds);
   } finally {
     await browser.close();

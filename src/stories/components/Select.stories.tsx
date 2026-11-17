@@ -510,7 +510,7 @@ function PhoneForm({ presentation }: { presentation?: "sheet" | undefined }) {
 
 /**
  * Avenue's list on a 390px phone (AVE-39): by default (`presentation="auto"`) it opens as a bottom sheet on a small
- * touch screen and as the popover with a mouse, decided each time it opens. The sheet is Sheet's: 14px top corners,
+ * touch screen and as the popover with a mouse, decided each time it opens. The sheet is Drawer's: 14px top corners,
  * the handle, home-indicator padding and 44px rows. Choosing a row closes it and puts focus back on the field.
  */
 export const SheetOnPhones: Story = {

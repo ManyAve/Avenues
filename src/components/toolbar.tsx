@@ -11,11 +11,11 @@ import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type Compon
 import { Button } from "#avenue/components/button";
 import { ChipRow } from "#avenue/components/chip";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "#avenue/components/dropdown-menu";
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+} from "#avenue/components/menu";
 import { SearchInput } from "#avenue/components/search-input";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
@@ -28,7 +28,7 @@ import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
  * Every control inside joins the toolbar's focus order. Chips (ui-sdk toggles) join on their own; anything else goes
  * through `ToolbarItem`, which takes the control to draw as `render`:
  * `<ToolbarItem render={<ToolbarButton aria-label="Display options" />}>`, or for a menu,
- * `<ToolbarItem render={<DropdownMenuTrigger render={<ToolbarButton />} />}>`.
+ * `<ToolbarItem render={<MenuTrigger render={<ToolbarButton />} />}>`.
  *
  * Changes from the app (AVE-2): the bar is 56px tall (was 54): 12px above and below 32px controls. Its sides take the
  * page inset and its gaps between controls take gap-controls (8px, 16px on a phone; the app's 4 and 6px). Controls
@@ -188,16 +188,16 @@ function ToolbarActions({
               </ToolbarItem>
             ))
           ) : actions.length > 0 ? (
-            <DropdownMenu>
+            <Menu>
               <ToolbarItem
                 aria-label="More actions"
-                render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" />} />}
+                render={<MenuTrigger render={<Button variant="outline" size="icon" />} />}
               >
                 <Ellipsis />
               </ToolbarItem>
-              <DropdownMenuContent align="end" className="w-60">
+              <MenuContent align="end" className="w-60">
                 {actions.map((action) => (
-                  <DropdownMenuItem
+                  <MenuItem
                     key={action.id}
                     disabled={!!action.disabledReason}
                     reason={action.disabledReason}
@@ -206,10 +206,10 @@ function ToolbarActions({
                   >
                     {action.icon}
                     {action.label}
-                  </DropdownMenuItem>
+                  </MenuItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </MenuContent>
+            </Menu>
           ) : null}
           </span>
           <ToolbarItem
@@ -230,7 +230,7 @@ function ToolbarActions({
 /**
  * The phone toolbar (the app's MobileToolbar): search with New and More beside it, then the filter chips as one
  * scrolling strip. A view with nothing to create or nothing more passes neither, and shows no dead button.
- * `newMenu` and `moreMenu` are DropdownMenuItems. On a touch screen the search field is 44px tall, so New and More
+ * `newMenu` and `moreMenu` are MenuItems. On a touch screen the search field is 44px tall, so New and More
  * grow to 44px with it, keeping the lg corner: controls that share a row share a height (AVE-2 §2, AVE-94). With a
  * mouse all three stay 32px.
  */
@@ -252,27 +252,27 @@ function PhoneToolbar({
       <div data-slot="toolbar-controls" className="flex items-center gap-controls">
         <SearchInput filled placeholder="Search…" className="min-w-0 flex-1" render={<ToolbarInput />} {...searchProps} />
         {newMenu ? (
-          <DropdownMenu>
-            <ToolbarItem render={<DropdownMenuTrigger render={<Button variant="outline" className="pointer-coarse:h-11" />} />}>
+          <Menu>
+            <ToolbarItem render={<MenuTrigger render={<Button variant="outline" className="pointer-coarse:h-11" />} />}>
               New <ChevronDown />
             </ToolbarItem>
-            <DropdownMenuContent align="end" className="w-52">
+            <MenuContent align="end" className="w-52">
               {newMenu}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </MenuContent>
+          </Menu>
         ) : null}
         {moreMenu ? (
-          <DropdownMenu>
+          <Menu>
             <ToolbarItem
               aria-label="More"
-              render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" className="pointer-coarse:size-11" />} />}
+              render={<MenuTrigger render={<Button variant="outline" size="icon" className="pointer-coarse:size-11" />} />}
             >
               <Ellipsis />
             </ToolbarItem>
-            <DropdownMenuContent align="end" className="w-60">
+            <MenuContent align="end" className="w-60">
               {moreMenu}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </MenuContent>
+          </Menu>
         ) : null}
       </div>
       {filters ? (

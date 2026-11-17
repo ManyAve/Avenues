@@ -19,12 +19,12 @@ test("each kind needs its tag: pattern, upstream (agent) or none", () => {
   const index = {
     entries: {
       a: story("a", "./src/stories/components/Combobox.stories.tsx", ["test", "pattern:combobox"]),
-      b: story("b", "./src/stories/components/DropdownMenu.stories.tsx", ["agent"]),
+      b: story("b", "./src/stories/components/Menu.stories.tsx", ["agent"]),
       c: story("c", "./src/stories/components/Select.stories.tsx", ["test"]),
     },
   };
-  expect(patternProblems(["combobox", "dropdown-menu", "select", "card"], index)).toEqual([
-    'dropdown-menu  needs a story tagged "agent" in its stories file',
+  expect(patternProblems(["combobox", "menu", "select", "card"], index)).toEqual([
+    'menu  needs a story tagged "agent" in its stories file',
     'select  needs a story tagged "agent" in its stories file',
   ]);
 });

@@ -47,7 +47,7 @@ function DialogClose(props: Loose<ComponentProps<typeof DialogPrimitive.DialogCl
   return <DialogPrimitive.DialogClose data-slot="dialog-close" {...defined(props)} />;
 }
 
-function DialogOverlay({ className, ...props }: Loose<ComponentProps<typeof DialogPrimitive.DialogBackdrop>>) {
+function DialogBackdrop({ className, ...props }: Loose<ComponentProps<typeof DialogPrimitive.DialogBackdrop>>) {
   return (
     <DialogPrimitive.DialogBackdrop
       className={cn(
@@ -67,7 +67,7 @@ function DialogContent({
 }: NodeChildren<Loose<ComponentProps<typeof DialogPrimitive.DialogContent>>> & { showCloseButton?: boolean | undefined }) {
   return (
     <>
-      <DialogOverlay />
+      <DialogBackdrop />
       <DialogPrimitive.DialogContent
         data-slot="dialog-content"
         className={cn(
@@ -167,7 +167,12 @@ export {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
+  DialogBackdrop,
   DialogTitle,
   DialogTrigger,
 };
+
+/** @deprecated Use DialogBackdrop. */
+const DialogOverlay = DialogBackdrop;
+
+export { DialogOverlay };

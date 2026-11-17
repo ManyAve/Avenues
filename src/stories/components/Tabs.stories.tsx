@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { useState } from "react";
 import { Count } from "#avenue/components/status";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "#avenue/components/tabs";
+import { Tabs, TabsPanel, TabsList, TabsTab } from "#avenue/components/tabs";
 import { Textarea } from "#avenue/components/textarea";
 
 const meta = {
@@ -21,19 +21,19 @@ export const Default: Story = {
   render: () => (
     <Tabs defaultValue="recipients" className="w-full max-w-xl">
       <TabsList aria-label="Announcement">
-        <TabsTrigger value="recipients">
+        <TabsTab value="recipients">
           Recipients <Count value={128} />
-        </TabsTrigger>
-        <TabsTrigger value="letters">
+        </TabsTab>
+        <TabsTab value="letters">
           No email <Count value={6} />
-        </TabsTrigger>
-        <TabsTrigger value="message">Message</TabsTrigger>
+        </TabsTab>
+        <TabsTab value="message">Message</TabsTab>
       </TabsList>
-      <TabsContent value="recipients">128 households on Maple Court and Birch Lane will get this announcement.</TabsContent>
-      <TabsContent value="letters">6 households have no email address and get a printed letter instead.</TabsContent>
-      <TabsContent value="message">
+      <TabsPanel value="recipients">128 households on Maple Court and Birch Lane will get this announcement.</TabsPanel>
+      <TabsPanel value="letters">6 households have no email address and get a printed letter instead.</TabsPanel>
+      <TabsPanel value="message">
         <Textarea aria-label="Message" defaultValue="The pool opens Saturday at 10 AM." />
-      </TabsContent>
+      </TabsPanel>
     </Tabs>
   ),
   play: async ({ canvas }) => {
@@ -85,15 +85,15 @@ export const WithADisabledTab: Story = {
   render: () => (
     <Tabs defaultValue="draft" className="w-full max-w-xl">
       <TabsList aria-label="Newsletter">
-        <TabsTrigger value="draft">Draft</TabsTrigger>
-        <TabsTrigger value="preview">Preview</TabsTrigger>
-        <TabsTrigger value="sent" disabled>
+        <TabsTab value="draft">Draft</TabsTab>
+        <TabsTab value="preview">Preview</TabsTab>
+        <TabsTab value="sent" disabled>
           Sent
-        </TabsTrigger>
+        </TabsTab>
       </TabsList>
-      <TabsContent value="draft">The spring newsletter, last edited Tuesday.</TabsContent>
-      <TabsContent value="preview">How the newsletter looks in an inbox.</TabsContent>
-      <TabsContent value="sent">Delivery results, once it is sent.</TabsContent>
+      <TabsPanel value="draft">The spring newsletter, last edited Tuesday.</TabsPanel>
+      <TabsPanel value="preview">How the newsletter looks in an inbox.</TabsPanel>
+      <TabsPanel value="sent">Delivery results, once it is sent.</TabsPanel>
     </Tabs>
   ),
   play: async ({ canvas }) => {
@@ -124,15 +124,15 @@ export const ManyTabsOnAPhone: Story = {
     <Tabs defaultValue="overview" className="w-full">
       <TabsList aria-label="Association">
         {sections.map((section) => (
-          <TabsTrigger key={section} value={section.toLowerCase()}>
+          <TabsTab key={section} value={section.toLowerCase()}>
             {section}
-          </TabsTrigger>
+          </TabsTab>
         ))}
       </TabsList>
       {sections.map((section) => (
-        <TabsContent key={section} value={section.toLowerCase()}>
+        <TabsPanel key={section} value={section.toLowerCase()}>
           {section} for Sunnydale HOA.
-        </TabsContent>
+        </TabsPanel>
       ))}
     </Tabs>
   ),
@@ -162,11 +162,11 @@ export const Controlled: Story = {
         </p>
         <Tabs value={tab} onValueChange={(next) => setTab(next)}>
           <TabsList aria-label="Composer">
-            <TabsTrigger value="recipients">Recipients</TabsTrigger>
-            <TabsTrigger value="message">Message</TabsTrigger>
+            <TabsTab value="recipients">Recipients</TabsTab>
+            <TabsTab value="message">Message</TabsTab>
           </TabsList>
-          <TabsContent value="recipients">Everyone in Sunnydale HOA.</TabsContent>
-          <TabsContent value="message">The pool opens Saturday at 10 AM.</TabsContent>
+          <TabsPanel value="recipients">Everyone in Sunnydale HOA.</TabsPanel>
+          <TabsPanel value="message">The pool opens Saturday at 10 AM.</TabsPanel>
         </Tabs>
       </div>
     );

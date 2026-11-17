@@ -35,12 +35,12 @@ import {
 } from "#avenue/components/dialog";
 import { Disclosure } from "#avenue/components/disclosure";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "#avenue/components/dropdown-menu";
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "#avenue/components/menu";
 import { EmptyState, SectionEmpty } from "#avenue/components/empty-state";
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
 import { IconTile } from "#avenue/components/icon-tile";
@@ -48,7 +48,7 @@ import { InitialsAvatar } from "#avenue/components/initials-avatar";
 import { InlineMessage } from "#avenue/components/inline-message";
 import { Input } from "#avenue/components/input";
 import { Money } from "#avenue/components/money";
-import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
+import { RadioGroup, Radio } from "#avenue/components/radio-group";
 import { SearchInput } from "#avenue/components/search-input";
 import { SectionCard } from "#avenue/components/section-card";
 import { Select } from "#avenue/components/select";
@@ -338,17 +338,17 @@ function Payments() {
       title="Recent payments"
       count={4}
       action={
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Payment actions" />}>
+        <Menu>
+          <MenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Payment actions" />}>
             <MoreHorizontalIcon aria-hidden />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>Export to CSV</DropdownMenuItem>
-            <DropdownMenuItem>Print deposit slip</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Open the ledger</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </MenuTrigger>
+          <MenuContent align="end" className="w-48">
+            <MenuItem>Export to CSV</MenuItem>
+            <MenuItem>Print deposit slip</MenuItem>
+            <MenuSeparator />
+            <MenuItem>Open the ledger</MenuItem>
+          </MenuContent>
+        </Menu>
       }
     >
       <Table>
@@ -539,7 +539,7 @@ function Notifications() {
                 { value: "never", label: "Don't remind me" },
               ].map((r) => (
                 <Field key={r.value} orientation="horizontal">
-                  <RadioGroupItem value={r.value} />
+                  <Radio value={r.value} />
                   <FieldLabel>{r.label}</FieldLabel>
                 </Field>
               ))}

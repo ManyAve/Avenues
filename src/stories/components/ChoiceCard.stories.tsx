@@ -5,10 +5,10 @@ import { expect, userEvent } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
 import { ChoiceCard, ChoiceCardContent, ChoiceCardDescription, ChoiceCardTitle } from "#avenue/components/choice-card";
 import { FieldGroup, FieldLegend, FieldSet } from "#avenue/components/field";
-import { RadioGroup, RadioGroupItem } from "#avenue/components/radio-group";
+import { Radio as RadioItem, RadioGroup } from "#avenue/components/radio-group";
 
 /**
- * A choice card (AVE-33; its own parts since AVE-37): ChoiceCard holds a RadioGroupItem or Checkbox, an icon, a
+ * A choice card (AVE-33; its own parts since AVE-37): ChoiceCard holds a Radio or Checkbox, an icon, a
  * title and one line, and names the control by the title alone, so a screen writes no ids. The whole card is the label, so a tap anywhere on it
  * chooses. It is a control, so its corner is `lg` (10px, never the card's 14), with 16px padding and 12px between
  * cards. Chosen: a primary border and the primary-subtle fill, and the radio or checkbox is always drawn, so the
@@ -85,7 +85,7 @@ function RadioCards({ name }: { name: string }) {
       <RadioGroup aria-labelledby={`${id}-legend`} defaultValue="own" name={name}>
         {homes.map((choice) => (
           <ChoiceCard key={choice.value} disabled={!!choice.disabled}>
-            <RadioGroupItem value={choice.value} />
+            <RadioItem value={choice.value} />
             <CardBody choice={choice} />
           </ChoiceCard>
         ))}

@@ -6,7 +6,7 @@ import { cn } from "#avenue/lib/utils";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 
 /**
- * A choice card (AVE-33, made API in AVE-37): a whole card that is the label of one RadioGroupItem or Checkbox, with
+ * A choice card (AVE-33, made API in AVE-37): a whole card that is the label of one Radio or Checkbox, with
  * a title and one line. A tap anywhere on the card chooses. It is a control, so its corner is `lg` (10px, never the
  * card's 14), with 16px padding; put cards in a RadioGroup (one Tab stop, the arrows move and choose) or a
  * FieldGroup (each its own Tab stop). Chosen: the shared `chosen` border and fill (AVE-50), with the radio or
@@ -15,7 +15,7 @@ import { defined, type OwnPartProps } from "#avenue/lib/props";
  *
  * ```tsx
  * <ChoiceCard disabled={!canRent}>
- *   <RadioGroupItem value="rent" />
+ *   <Radio value="rent" />
  *   <ChoiceCardContent>
  *     <ChoiceCardTitle><KeyRoundIcon aria-hidden />I rent</ChoiceCardTitle>
  *     <ChoiceCardDescription>You see the wall, events and listings.</ChoiceCardDescription>

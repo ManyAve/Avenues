@@ -4,14 +4,14 @@ import { useState, type CSSProperties } from "react";
 import { expect, fn, screen, spyOn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
-  Sheet,
-  SheetBody,
-  SheetClose,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "#avenue/components/sheet";
+  Drawer,
+  DrawerBody,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "#avenue/components/drawer";
 import { ToastProvider, useToast, type ToastOptions } from "#avenue/components/toast";
 import { DEVELOPMENT } from "#avenue/lib/dev";
 import { Rows } from "./story-kit";
@@ -289,24 +289,24 @@ export const PhoneActionAndClose: Story = {
 function SheetWithToast() {
   const toast = useToast();
   return (
-    <Sheet defaultOpen side="bottom">
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Reminder</SheetTitle>
-        </SheetHeader>
-        <SheetBody>
+    <Drawer defaultOpen side="bottom">
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Reminder</DrawerTitle>
+        </DrawerHeader>
+        <DrawerBody>
           <p>Remind 14 Larkspur Lane that dues are due on Dec 1.</p>
-        </SheetBody>
-        <SheetFooter>
-          <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+        </DrawerBody>
+        <DrawerFooter>
+          <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
           <Button onClick={() => toast(longError, { variant: "error" })}>Send reminder</Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
-/** With a bottom Sheet open, the toast sits 8px above the sheet's footer, so it never covers its actions (AVE-40). */
+/** With a bottom Drawer open, the toast sits 8px above the sheet's footer, so it never covers its actions (AVE-40). */
 export const PhoneAboveSheetFooter: Story = {
   globals: phone,
   render: () => (

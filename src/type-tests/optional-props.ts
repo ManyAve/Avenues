@@ -24,6 +24,7 @@ import type * as dialog from "#avenue/components/dialog";
 import type * as disclosure from "#avenue/components/disclosure";
 import type * as displayOptions from "#avenue/components/display-options";
 import type * as dock from "#avenue/components/dock";
+import type * as drawer from "#avenue/components/drawer";
 import type * as dropdownMenu from "#avenue/components/dropdown-menu";
 import type * as emptyState from "#avenue/components/empty-state";
 import type * as field from "#avenue/components/field";
@@ -34,6 +35,7 @@ import type * as iconTile from "#avenue/components/icon-tile";
 import type * as initialsAvatar from "#avenue/components/initials-avatar";
 import type * as inlineMessage from "#avenue/components/inline-message";
 import type * as input from "#avenue/components/input";
+import type * as menu from "#avenue/components/menu";
 import type * as messageList from "#avenue/components/message-list";
 import type * as modeToggle from "#avenue/components/mode-toggle";
 import type * as message from "#avenue/components/message";
@@ -87,6 +89,7 @@ type Modules = {
   "disclosure": typeof disclosure;
   "display-options": typeof displayOptions;
   "dock": typeof dock;
+  "drawer": typeof drawer;
   "dropdown-menu": typeof dropdownMenu;
   "empty-state": typeof emptyState;
   "field": typeof field;
@@ -97,6 +100,7 @@ type Modules = {
   "initials-avatar": typeof initialsAvatar;
   "inline-message": typeof inlineMessage;
   "input": typeof input;
+  "menu": typeof menu;
   "message-list": typeof messageList;
   "mode-toggle": typeof modeToggle;
   "message": typeof message;
@@ -176,9 +180,9 @@ export const plainChildren: ReactNode[] = [
   null as unknown as Children<typeof chip.Chip>,
   null as unknown as Children<typeof dialog.DialogContent>,
   null as unknown as Children<typeof alertDialog.AlertDialogContent>,
-  null as unknown as Children<typeof sheet.SheetContent>,
+  null as unknown as Children<typeof drawer.DrawerContent>,
   null as unknown as Children<typeof tooltip.TooltipContent>,
-  null as unknown as Children<typeof dropdownMenu.DropdownMenuItem>,
+  null as unknown as Children<typeof menu.MenuItem>,
   null as unknown as Children<typeof toggleGroup.ToggleGroup>,
   null as unknown as Children<typeof status.Status>,
   null as unknown as Children<typeof skeleton.Loading>,

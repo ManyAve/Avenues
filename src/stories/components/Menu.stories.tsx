@@ -4,86 +4,86 @@ import { ChevronDownIcon, MailIcon, PrinterIcon, TrashIcon } from "lucide-react"
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "#avenue/components/dropdown-menu";
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuGroup,
+  MenuItem,
+  MenuGroupLabel,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuShortcut,
+  MenuSub,
+  MenuSubContent,
+  MenuSubTrigger,
+  MenuTrigger,
+} from "#avenue/components/menu";
 
 const meta = {
-  title: "Components/Dropdown menu",
-  component: DropdownMenu,
+  title: "Components/Menu",
+  component: Menu,
   decorators: [(Story) => <div className="flex min-h-96 justify-center p-inset">{Story()}</div>],
-} satisfies Meta<typeof DropdownMenu>;
+} satisfies Meta<typeof Menu>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Menu({ defaultOpen }: { defaultOpen?: boolean }) {
+function HouseholdMenu({ defaultOpen }: { defaultOpen?: boolean }) {
   return (
-    <DropdownMenu defaultOpen={defaultOpen ?? false}>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
+    <Menu defaultOpen={defaultOpen ?? false}>
+      <MenuTrigger render={<Button variant="outline" />}>
         Actions
         <ChevronDownIcon aria-hidden data-icon="inline-end" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Household</DropdownMenuLabel>
-          <DropdownMenuItem>
+      </MenuTrigger>
+      <MenuContent className="w-64">
+        <MenuGroup>
+          <MenuGroupLabel>Household</MenuGroupLabel>
+          <MenuItem>
             <MailIcon aria-hidden />
             Email owner
-            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
+            <MenuShortcut>⌘E</MenuShortcut>
+          </MenuItem>
+          <MenuItem>
             <PrinterIcon aria-hidden />
             Print statement
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled reason="Only a board admin can send a live notice.">
+          </MenuItem>
+          <MenuItem disabled reason="Only a board admin can send a live notice.">
             Send live notice
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Move to street</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem>Larkspur Lane</DropdownMenuItem>
-              <DropdownMenuItem>Juniper Court</DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Show</DropdownMenuLabel>
-          <DropdownMenuCheckboxItem value="archived" defaultChecked>Archived households</DropdownMenuCheckboxItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Group by</DropdownMenuLabel>
-          <DropdownMenuRadioGroup defaultValue="street">
-            <DropdownMenuRadioItem value="street">Street</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="status">Dues status</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
+          </MenuItem>
+          <MenuSub>
+            <MenuSubTrigger>Move to street</MenuSubTrigger>
+            <MenuSubContent>
+              <MenuItem>Larkspur Lane</MenuItem>
+              <MenuItem>Juniper Court</MenuItem>
+            </MenuSubContent>
+          </MenuSub>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuGroup>
+          <MenuGroupLabel>Show</MenuGroupLabel>
+          <MenuCheckboxItem value="archived" defaultChecked>Archived households</MenuCheckboxItem>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuGroup>
+          <MenuGroupLabel>Group by</MenuGroupLabel>
+          <MenuRadioGroup defaultValue="street">
+            <MenuRadioItem value="street">Street</MenuRadioItem>
+            <MenuRadioItem value="status">Dues status</MenuRadioItem>
+          </MenuRadioGroup>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuItem variant="destructive">
           <TrashIcon aria-hidden />
           Remove household
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   );
 }
 
 /** Open: labels, icons, a shortcut, a disabled item with its reason, a submenu, checkbox and radio items, destructive. */
 export const Open: Story = {
-  render: () => <Menu defaultOpen />,
+  render: () => <HouseholdMenu defaultOpen />,
   play: async () => {
     // The popup fades in from opacity 0 (data-starting-style), so wait for it rather than check once.
     await waitFor(async () => expect(await screen.findByRole("menu")).toBeVisible());
@@ -103,7 +103,7 @@ export const Open: Story = {
 /** Enter opens with the first item highlighted; arrows move; typing jumps; Esc closes and returns focus. */
 export const Keyboard: Story = {
   tags: ["agent"],
-  render: () => <Menu />,
+  render: () => <HouseholdMenu />,
   play: async ({ canvas }) => {
     const trigger = canvas.getByRole("button", { name: "Actions" });
     await userEvent.tab();
@@ -123,7 +123,7 @@ export const Keyboard: Story = {
 
 /** A click opens the menu with focus inside it, and no item looks chosen until the pointer or a key highlights one. */
 export const OpenByClick: Story = {
-  render: () => <Menu />,
+  render: () => <HouseholdMenu />,
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Actions" }));
     const menu = await screen.findByRole("menu");
@@ -144,22 +144,22 @@ function ActionMenu() {
   };
   return (
     <div className="flex flex-col items-center gap-group">
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="outline" />}>
+      <Menu>
+        <MenuTrigger render={<Button variant="outline" />}>
           Statement
           <ChevronDownIcon aria-hidden data-icon="inline-end" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuItem onClick={record("Printed statement")}>
+        </MenuTrigger>
+        <MenuContent className="w-56">
+          <MenuItem onClick={record("Printed statement")}>
             <PrinterIcon aria-hidden />
             Print statement
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={record("Emailed owner")}>
+          </MenuItem>
+          <MenuItem onSelect={record("Emailed owner")}>
             <MailIcon aria-hidden />
             Email owner
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </MenuItem>
+        </MenuContent>
+      </Menu>
       <output className="block text-meta text-muted-foreground">
         {log.length > 0 ? log.join(", ") : "No action yet"}
       </output>
@@ -215,22 +215,22 @@ export const WiderThanAPhone: Story = {
   globals: { viewport: { value: "small-phone", isRotated: false } },
   decorators: [(Story) => <div className="flex min-h-96 justify-end p-inset">{Story()}</div>],
   render: () => (
-    <DropdownMenu defaultOpen>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
+    <Menu defaultOpen>
+      <MenuTrigger render={<Button variant="outline" />}>
         Member
         <ChevronDownIcon aria-hidden data-icon="inline-end" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-96" align="end">
-        <DropdownMenuItem>
+      </MenuTrigger>
+      <MenuContent className="w-96" align="end">
+        <MenuItem>
           <MailIcon aria-hidden />
           Resend the board invitation to the treasurer at their new address
-        </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive">
+        </MenuItem>
+        <MenuItem variant="destructive">
           <TrashIcon aria-hidden />
           Remove from the board
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   ),
   play: async () => {
     const menu = await screen.findByRole("menu");
