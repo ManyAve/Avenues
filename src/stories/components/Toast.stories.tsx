@@ -204,7 +204,8 @@ export const ErrorShown: Story = {
 /**
  * A page with the toast region and no toast showing (AVE-43). The region has nothing to name or pause, so the agent
  * snapshot leaves it out and the agent test passes on the screens where it sits empty near the root. ui-sdk
- * 0.1 (beta.1 and beta.2) lists it as an unnamed `toast`; Avenue patches that (patches/, see AGENTS.md) until ui-sdk fixes it.
+ * 0.1 beta.1 and beta.2 listed it as an unnamed `toast` and Avenue patched that; beta.7 leaves it out itself, so the
+ * patch is gone and this story now guards ui-sdk's own fix.
  */
 export const EmptyRegion: Story = {
   tags: ["agent"],

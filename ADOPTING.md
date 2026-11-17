@@ -42,8 +42,10 @@ the steps below in order and stop where a step says to.
      Never add ui-sdk at another version.
    - Carry Avenue's ui-sdk patches in this app's own `patchedDependencies`. Bun doesn't apply a
      dependency's patches, so without them the fixes silently don't apply here. README "Versions"
-     says how, and CHANGELOG.md lists the patches each tag needs. Add `avenue-check-patches` to this
-     app's check so a missing or stale copy fails it (README, "Checks for apps").
+     says how, and CHANGELOG.md lists the patches each tag needs. The tag's own `patches/` folder is
+     the list: copy every file in it, and remove any copy it no longer has (a ui-sdk upgrade renames
+     the file after the new version). Add `avenue-check-patches` to this app's check so a missing or
+     stale copy fails it (README, "Checks for apps").
    - If this app's Storybook or dev server runs on Vite, leave `@manyave/avenue` out of Vite's
      dependency pre-bundling (`optimizeDeps.exclude`) and pre-bundle every `@ui-sdk/react` entry
      and `@ui-sdk/core` instead (`optimizeDeps.include`). Otherwise Vite can load ui-sdk twice,

@@ -68,16 +68,16 @@ package's dev dependencies. It loads Avenue's copy, `src/styles/shadcn.css`, ins
 for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies
 and is still needed. To change one, `bun patch <package>`, edit `node_modules`, then `bun patch --commit`.
 
-- `@ui-sdk/core` 0.1.0-beta.2 (since beta.1), toast (AVE-43): an empty toast region was listed in the agent snapshot as an
-  unnamed `toast`, failing the agent test on nearly every screen. The patch leaves the region out of the snapshot
-  while no toast shows, using the primitive's `agent.shown`. `Toast/EmptyRegion` fails if the patch stops applying.
-- `@ui-sdk/core` 0.1.0-beta.2, closing backdrop (AVE-109): a press on a dialog's backdrop while it fades out was
+- `@ui-sdk/core` 0.1.0-beta.7 (since beta.2), closing backdrop (AVE-109): a press on a dialog's backdrop while it fades out was
   consumed, so the first click on the page after Cancel, Escape or a submit did nothing. The patch consumes it only
   when an outside press closed the dialog in the last second (the second half of a double click).
   `Dialog/ClickRightAfterClose` fails if the patch stops applying.
-- `@ui-sdk/core` 0.1.0-beta.2 (since beta.1), positioning (AVE-21): popups were placed at fractional pixels (a menu at
+- `@ui-sdk/core` 0.1.0-beta.7 (since beta.1), positioning (AVE-21): popups were placed at fractional pixels (a menu at
   593.688px), so their text rendered softer than the page's on 1x screens; Base UI rounded. The patch rounds a
   popup's `left` and `top` to whole device pixels. `Dropdown menu/Open` fails if the patch stops applying.
+
+Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
+itself; `Toast/EmptyRegion` still guards it.
 
 ### How to build with ui-sdk
 
