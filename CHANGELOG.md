@@ -4,6 +4,40 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.26.0 (2026-11-17)
+
+- **State and change callbacks take ui-sdk's names, and every callback gets ui-sdk's change details** (AVE-145). ui-sdk
+  calls each callback as `on<Key>Change(value, details)`, where `details` holds the reason, the DOM event, the source
+  (`"keyboard"`, `"mouse"`, `"touch"`, `"agent"`…) and `cancel()`. `source: "agent"` is how an app tells an agent's
+  change from a person's. Several Avenue callbacks dropped `details` or had names of their own; now none do.
+  - **Rename** (the old names still work until v0.27.0, marked `@deprecated`):
+    - TableFilters: `filters` → `value`, `onChange` → `onValueChange`. It also takes `defaultValue` and holds the
+      filters itself.
+    - SortMenu: `onChange` → `onValueChange`. `value` may now be left out, with `defaultValue` instead.
+    - RegisterGroupRow: `selection` → `checked` (`"all"` is `true`, `"some"` is `"indeterminate"`, `"none"` is
+      `false`) and `onSelectedChange` → `onCheckedChange`.
+    - ModeToggle: `choice` → `value`, `onThemeChange` → `onValueChange`. It also takes `defaultValue`, and `defaultDev`
+      beside `dev` / `onDevChange` (Dev is a second piece of state on the same root, so it keeps ui-sdk's `<key>` /
+      `default<Key>` / `on<Key>Change` form).
+  - **Details passed on unchanged** from ui-sdk: Select, Combobox, Disclosure, FormDialog's and PendingConfirmDialog's
+    `onOpenChange`, DisplayOptionsDensity, FileField's `onFileChange`, and every change inside TableFilters' pills.
+    The types come from ui-sdk: `ChangeDetails` and each component's reason union, re-exported as
+    `SelectValueChangeDetails`, `ComboboxValueChangeDetails`, `ThemeChangeDetails`, `DevChangeDetails`,
+    `SortChangeDetails`, `TableFiltersChangeDetails` and `FormDialogOpenChangeDetails`.
+  - **Changes Avenue makes itself report like ui-sdk's**, through ui-sdk's own `dispatch`: the OS picker of Select
+    (reason `"item-press"`, the select's `change` event), SortMenu (`"item-press"`, Clear `"clear-press"`),
+    RegisterGroupRow's collapse (`"trigger-press"`), adding (`"item-press"`) and removing (`"remove-press"`) a
+    filter, and a Combobox's form reset (`"reset"`).
+  - **`details.cancel()` works** wherever Avenue holds the state: an uncontrolled Select's OS picker puts the old value
+    back, and Combobox, ModeToggle, SortMenu, TableFilters and FormDialog keep their old state. As in ui-sdk, a
+    controlled component ignores it, since the next value comes from you.
+  - Still controlled only, on purpose: PendingConfirmDialog's and RegisterGroupRow's `open`. The app closes the dialog
+    when its step succeeds and hides the street's rows itself, so neither can work uncontrolled.
+  - `src/type-tests/change-details.ts` fails the typecheck, naming the prop, if an exported `on<Key>Change` callback
+    loses ui-sdk's details.
+  - Management and Neighbors: rename the props above when you take this release; nothing else needs to change, since a
+    callback that ignores its second argument still works. Nothing on screen moves (visual diff in the pull request).
+
 ## v0.25.0 (2026-11-17)
 
 - **Parts take ui-sdk's names** (AVE-144). Each part Avenue exports is now named for the ui-sdk part it wraps, so a

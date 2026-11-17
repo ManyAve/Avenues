@@ -31,7 +31,7 @@ function Bar({ totals = true, theme = "light" }: { totals?: boolean; theme?: unk
             : undefined
         }
       >
-        <ModeToggle dev={false} choice={choice} onThemeChange={setChoice} />
+        <ModeToggle dev={false} value={choice} onValueChange={setChoice} />
       </StatusBar>
     </div>
   );

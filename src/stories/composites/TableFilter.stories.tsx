@@ -102,7 +102,7 @@ function Households({ initial = [] }: { initial?: TableFilter[] }) {
           <Chip count={3} pressed={owing} onPressedChange={setOwing}>
             Balance owing
           </Chip>
-          <TableFilters fields={fields} filters={filters} onChange={setFilters} />
+          <TableFilters fields={fields} value={filters} onValueChange={setFilters} />
         </ToolbarFilters>
         <ToolbarControls>
           <ToolbarSearch placeholder="Search households or people…" aria-label="Search households or people" />
@@ -297,7 +297,7 @@ export const Phone: Story = {
           filters={
             <>
               <Chip count={3}>Balance owing</Chip>
-              <TableFilters fields={fields} filters={filters} onChange={setFilters} />
+              <TableFilters fields={fields} value={filters} onValueChange={setFilters} />
             </>
           }
         />

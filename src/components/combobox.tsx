@@ -8,9 +8,11 @@ import {
   ComboboxItemIndicator,
   ComboboxList,
   ComboboxTrigger,
+  type ComboboxValueChangeReason,
 } from "@ui-sdk/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
 import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { report, type ChangeDetails } from "#avenue/lib/change";
 import {
   fieldControl,
   listItem,
@@ -53,6 +55,9 @@ function matchWords(option: ComboboxOption, query: string): boolean {
     .every((w) => text.includes(w));
 }
 
+/** What `onValueChange` gets after the value: ui-sdk Combobox's own details (reason, event, source, `cancel()`). */
+export type ComboboxValueChangeDetails = ChangeDetails<ComboboxValueChangeReason>;
+
 export interface ComboboxProps<T extends ComboboxOption> {
   size?: PickerSize | undefined;
   options: readonly T[];
@@ -63,8 +68,11 @@ export interface ComboboxProps<T extends ComboboxOption> {
   value?: string | null | undefined;
   /** The value chosen at first, when `value` is left out. A form reset returns to it. */
   defaultValue?: string | null | undefined;
-  /** Gets the new value, or null when the choice is cleared (the "none" option, or the phone's Clear). */
-  onValueChange?: ((value: string | null) => void) | undefined;
+  /**
+   * Gets the new value, or null when the choice is cleared (the "none" option, or the phone's Clear), and ui-sdk's
+   * details. `details.cancel()` keeps the old choice. A form reset reports reason "reset" (AVE-145).
+   */
+  onValueChange?: ((value: string | null, details: ComboboxValueChangeDetails) => void) | undefined;
   /** The name the chosen value posts under in a form. "None" posts "", and nothing chosen posts nothing. */
   name?: string | undefined;
   /** The id of a form to post with, when the field isn't inside it. */
@@ -146,9 +154,11 @@ export function Combobox<T extends ComboboxOption>({
   // ui-sdk is always handed the value, with Avenue's "none" option in place of null where there is one.
   const toRoot = (v: string | null) => (v ? (byValue.has(v) ? v : null) : noneLabel ? NONE : null);
   const selected = toRoot(current);
-  const change = (next: string | null) => {
-    setOwn(next);
-    onValueChange?.(next);
+  // The app hears it first, as ui-sdk's callbacks do; a canceled change leaves the field's own value alone. ui-sdk is
+  // always handed the value, so it can't drop a canceled change itself.
+  const change = (next: string | null, details: ComboboxValueChangeDetails) => {
+    onValueChange?.(next, details);
+    if (!details.canceled) setOwn(next);
   };
   const chosenLabel = selected === NONE ? noneLabel : selected ? byValue.get(selected)?.label : undefined;
   const [query, setQuery] = useState("");
@@ -165,7 +175,7 @@ export function Combobox<T extends ComboboxOption>({
     // A controlled field with no default of its own keeps its value: the app decides what a reset means there.
     if (value !== undefined && defaultValue === undefined) return;
     const target = chosen(defaultValue);
-    if (target !== current) change(target);
+    if (target !== current && report(onValueChange, target, { reason: "reset" })) setOwn(target);
   });
   useEffect(() => {
     const input = inputRef.current;
@@ -184,11 +194,11 @@ export function Combobox<T extends ComboboxOption>({
   return (
     <ComboboxRoot<string>
       value={selected}
-      onValueChange={(next: string | string[] | null, details: { reason: string; cancel: () => void }) => {
-        if (typeof next === "string") change(next === NONE ? null : next);
+      onValueChange={(next: string | string[] | null, details: ComboboxValueChangeDetails) => {
+        if (typeof next === "string") change(next === NONE ? null : next, details);
         // The phone's Clear clears the choice as well as the search (AVE-93); Escape while the list is open asks for
         // it back. Clearing the text by typing is still typing, not a choice, so that request is refused.
-        else if (details.reason === "clear-press") change(null);
+        else if (details.reason === "clear-press") change(null, details);
         else details.cancel();
       }}
       onQueryChange={(next: string, details: { reason: string; cancel: () => void }) => {

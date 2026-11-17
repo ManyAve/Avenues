@@ -1,11 +1,20 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import type { SegmentedControlValueChangeReason } from "@ui-sdk/react/segmented-control";
+import type { TogglePressedChangeReason } from "@ui-sdk/react/toggle";
 import { Code, Monitor, Moon, Sun } from "lucide-react";
+import { useState } from "react";
 import { Toggle } from "#avenue/components/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
+import type { ChangeDetails } from "#avenue/lib/change";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export type ThemeChoice = "system" | "light" | "dark";
+
+/** What `onValueChange` gets after the theme: ui-sdk SegmentedControl's details (reason, event, source, `cancel()`). */
+export type ThemeChangeDetails = ChangeDetails<SegmentedControlValueChangeReason>;
+/** What `onDevChange` gets after the new state: ui-sdk Toggle's details. */
+export type DevChangeDetails = ChangeDetails<TogglePressedChangeReason>;
 
 const themeItems = [
   { value: "system", label: "System", icon: Monitor, name: "System theme" },
@@ -15,9 +24,15 @@ const themeItems = [
 
 /**
  * The developer and theme controls at the far left of ManyAve's status bar (the app's
- * app/ui/components/StatusBar.tsx at manyave-management 7b476f2). Leaving `dev` undefined leaves out the Dev item.
- * `choice` is the stored setting (System follows the computer); without it, the theme on screen is shown as Light or
- * Dark. The chosen theme names itself and the others stay icons, so the bar keeps its width.
+ * app/ui/components/StatusBar.tsx at manyave-management 7b476f2). Leaving `dev` and `defaultDev` out leaves out the
+ * Dev item. `value` is the stored theme setting (System follows the computer); without it or `defaultValue`, the theme
+ * on screen is shown as Light or Dark. The chosen theme names itself and the others stay icons, so the bar keeps its
+ * width.
+ *
+ * State follows ui-sdk's names (AVE-145): the theme is `value` / `defaultValue` / `onValueChange`, and Dev, a second
+ * piece of state on the same root, is `dev` / `defaultDev` / `onDevChange`, ui-sdk's `<key>` / `default<Key>` /
+ * `on<Key>Change` pattern. Each callback gets ui-sdk's details second; `details.cancel()` keeps the old state when
+ * the toggle holds it itself. `choice` and `onThemeChange` are the old names, kept until v0.27.0.
  *
  * Behavior from ui-sdk: Dev is a single Toggle (pressed or not; a group of one would be announced as a group), and
  * the theme, through Avenue's ToggleGroup, is a single choice (ui-sdk's SegmentedControl, a radio group: one Tab stop, the arrow keys choose).
@@ -30,21 +45,37 @@ const themeItems = [
  */
 function ModeToggle({
   dev,
-  theme,
-  choice,
+  defaultDev,
   onDevChange,
+  theme,
+  value,
+  defaultValue,
+  onValueChange,
+  choice,
   onThemeChange,
   className,
   render,
   ...props
-}: Omit<OwnPartProps<"span">, "children"> & {
+}: Omit<OwnPartProps<"span">, "children" | "defaultValue"> & {
+  /** Whether Dev is on. Leave it and `defaultDev` out to leave out the Dev item. */
   dev?: boolean | undefined;
+  defaultDev?: boolean | undefined;
+  onDevChange?: ((dev: boolean, details: DevChangeDetails) => void) | undefined;
+  /** The theme on screen, shown when there is no stored setting. */
   theme?: "light" | "dark" | undefined;
+  /** The stored theme setting. */
+  value?: ThemeChoice | undefined;
+  defaultValue?: ThemeChoice | undefined;
+  onValueChange?: ((value: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
+  /** @deprecated Use `value`. Kept until v0.27.0 (AVE-145). */
   choice?: ThemeChoice | undefined;
-  onDevChange?: ((on: boolean) => void) | undefined;
-  onThemeChange?: ((theme: ThemeChoice) => void) | undefined;
+  /** @deprecated Use `onValueChange`. Kept until v0.27.0 (AVE-145). */
+  onThemeChange?: ((theme: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
 }) {
-  const selected = choice ?? theme ?? "light";
+  const [ownTheme, setOwnTheme] = useState(defaultValue);
+  const [ownDev, setOwnDev] = useState(defaultDev);
+  const selected = value ?? choice ?? ownTheme ?? theme ?? "light";
+  const devOn = dev ?? ownDev;
   return renderElement(
     "span",
     mergeProps(defined(props), {
@@ -52,12 +83,15 @@ function ModeToggle({
       className: cn("flex items-center gap-group", className),
       children: (
         <>
-          {dev !== undefined && (
+          {devOn !== undefined && (
             <Toggle
               variant="outline"
               size="sm"
-              pressed={dev}
-              onPressedChange={(pressed: boolean) => onDevChange?.(pressed)}
+              pressed={devOn}
+              onPressedChange={(pressed: boolean, details: DevChangeDetails) => {
+                onDevChange?.(pressed, details);
+                if (!details.canceled) setOwnDev(pressed);
+              }}
               aria-label="Dev mode"
               className="shrink-0 gap-1 px-2 text-control"
             >
@@ -69,17 +103,20 @@ function ModeToggle({
             size="sm"
             spacing={0}
             value={selected}
-            onValueChange={(value: string | null) => {
-              const next = themeItems.find((item) => item.value === value);
-              if (next) onThemeChange?.(next.value);
+            onValueChange={(next: string | null, details: ThemeChangeDetails) => {
+              const item = themeItems.find((i) => i.value === next);
+              if (!item) return;
+              onValueChange?.(item.value, details);
+              onThemeChange?.(item.value, details);
+              if (!details.canceled) setOwnTheme(item.value);
             }}
             aria-label="Theme"
             className="text-meta"
           >
-            {themeItems.map(({ value, label, icon: Icon, name }) => (
-              <ToggleGroupItem key={value} value={value} aria-label={name} title={label} className="gap-1 px-2 text-control">
+            {themeItems.map(({ value: item, label, icon: Icon, name }) => (
+              <ToggleGroupItem key={item} value={item} aria-label={name} title={label} className="gap-1 px-2 text-control">
                 <Icon aria-hidden />
-                {value === selected && <span className="max-sm:sr-only">{label}</span>}
+                {item === selected && <span className="max-sm:sr-only">{label}</span>}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>

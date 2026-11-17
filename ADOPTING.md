@@ -144,6 +144,20 @@ the aliases and old paths go in v0.26.0.
 Props don't change in this release. In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
 Components / Drawer, so links to the old pages need the new address.
 
+## Renamed props and change details
+
+State props take ui-sdk's names too (AVE-145, v0.26.0): `value` / `defaultValue` / `onValueChange`, `checked` /
+`onCheckedChange`, and every change callback gets ui-sdk's `details` second (reason, event, source, `cancel()`). The
+old prop names still work until v0.27.0, typed `@deprecated`. A callback that ignores its second argument needs no
+change.
+
+| Component | Old prop (until v0.27) | New prop |
+| --- | --- | --- |
+| `TableFilters` | `filters`, `onChange` | `value`, `onValueChange` (and `defaultValue`) |
+| `SortMenu` | `onChange` | `onValueChange` (`value` optional, and `defaultValue`) |
+| `RegisterGroupRow` | `selection` (`"all"`, `"some"`, `"none"`), `onSelectedChange` | `checked` (`true`, `"indeterminate"`, `false`), `onCheckedChange` |
+| `ModeToggle` | `choice`, `onThemeChange` | `value`, `onValueChange` (and `defaultValue`; `defaultDev` beside `dev`) |
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

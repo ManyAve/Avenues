@@ -15,7 +15,8 @@ export interface DisclosureProps
   children: ReactNode;
   defaultOpen?: boolean | undefined;
   open?: boolean | undefined;
-  onOpenChange?: ((open: boolean) => void) | undefined;
+  /** Gets the new state and ui-sdk Collapsible's details, passed on unchanged (AVE-145). */
+  onOpenChange?: Loose<ComponentProps<typeof Collapsible>>["onOpenChange"];
   disabled?: boolean | undefined;
   className?: string | undefined;
   /** Extra classes for the content under the summary. */
@@ -46,8 +47,7 @@ export function Disclosure({
   return (
     <Collapsible
       {...defined(props)}
-      {...defined({ defaultOpen, open, disabled })}
-      {...(onOpenChange ? { onOpenChange: (next: boolean) => onOpenChange(next) } : {})}
+      {...defined({ defaultOpen, open, disabled, onOpenChange })}
       className={cn("text-meta text-muted-foreground", className)}
     >
       <CollapsibleTrigger

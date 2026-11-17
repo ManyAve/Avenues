@@ -3,10 +3,12 @@
 import { Button as ButtonPrimitive } from "@ui-sdk/react/button";
 import { createParts, mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, HouseIcon, PlusIcon, type LucideIcon } from "lucide-react";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { CheckboxCheckedChangeReason } from "@ui-sdk/react/checkbox";
+import { useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
+import { report, type ChangeDetails } from "#avenue/lib/change";
 import { tintFor } from "#avenue/lib/format";
 import { register } from "#avenue/lib/register";
 import { cn } from "#avenue/lib/utils";
@@ -233,7 +235,7 @@ export type GroupSelection = "none" | "some" | "all";
  * A street's bar: a tinted heading row, sticky under the column headers, whose button collapses the street.
  * List its `row` in the Register's `spanningRows`.
  *
- * With `selection` and `onSelectedChange` (AVE-123, Management's MANA-1168) the bar leads with a checkbox in the
+ * With `checked` and `onCheckedChange` (AVE-123, Management's MANA-1168) the bar leads with a checkbox in the
  * selection column that selects or clears only that street's rows, half-checked while some are. List the bar in
  * `groupSelectRows` instead: the checkbox is its column 0 and the rest of the bar its column 1, so the arrows reach
  * both. With a mouse the checkbox shows while the bar is hovered or focused, while any of the street's rows is
@@ -241,6 +243,11 @@ export type GroupSelection = "none" | "some" | "all";
  *
  * A named departure from the app, which draws the checkbox inside the bar's padding: here it sits in the selection
  * column, lined up with the rows' checkboxes below it, as Linear does.
+ *
+ * Names follow ui-sdk (AVE-145): `checked` / `onCheckedChange` for the street's checkbox, whose details are ui-sdk
+ * Checkbox's, and `open` / `onOpenChange`, which reports reason "trigger-press" with the press. `selection` and
+ * `onSelectedChange` are the old names, kept until v0.27.0. `open` is controlled only, on purpose: the
+ * app hides the street's rows itself, so it must hold the state.
  */
 function RegisterGroupRow({
   row,
@@ -251,6 +258,8 @@ function RegisterGroupRow({
   onOpenChange,
   icon: Icon = HouseIcon,
   trailing,
+  checked: checkedProp,
+  onCheckedChange: onCheckedChangeProp,
   selection,
   onSelectedChange,
   className,
@@ -261,22 +270,29 @@ function RegisterGroupRow({
   name: string;
   count: number;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean, details: ChangeDetails<"trigger-press">) => void;
   icon?: LucideIcon | undefined;
   /** At the end of the bar, like the street's outstanding total. */
   trailing?: ReactNode | undefined;
+  /** Whether the street's rows are all selected (true), none (false) or some ("indeterminate", half-checked). */
+  checked?: boolean | "indeterminate" | undefined;
+  /** Select (true) or clear (false) every row of this street. Gets ui-sdk Checkbox's details second. */
+  onCheckedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
+  /** @deprecated Use `checked`: "all" is true, "some" is "indeterminate", "none" is false. Kept until v0.27.0 (AVE-145). */
   selection?: GroupSelection | undefined;
-  /** Select (true) or clear (false) every row of this street. */
-  onSelectedChange?: ((checked: boolean) => void) | undefined;
+  /** @deprecated Use `onCheckedChange`. Kept until v0.27.0 (AVE-145). */
+  onSelectedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
 }) {
-  const selectable = selection !== undefined && onSelectedChange !== undefined;
+  const checked = checkedProp ?? (selection === undefined ? undefined : selection === "all" ? true : selection === "some" ? "indeterminate" : false);
+  const onCheckedChange = onCheckedChangeProp ?? onSelectedChange;
+  const selectable = checked !== undefined && onCheckedChange !== undefined;
   const tint = { "data-tint": tintFor(name), style: { "--group-color": "var(--tint-solid)" } as CSSProperties };
   const bar = (
     <div {...tint} className="flex h-full items-center gap-2 rounded-xl px-2">
       <div aria-hidden className={cn("absolute inset-0 -z-[1]", selectable ? "rounded-e-xl" : "rounded-xl", barFill)} />
       <ButtonPrimitive
         aria-expanded={open}
-        onClick={() => onOpenChange(!open)}
+        onClick={(event) => report(onOpenChange, !open, { reason: "trigger-press", event: event.nativeEvent })}
         className="relative hit-area flex min-w-0 flex-1 items-center gap-2 py-1 text-start outline-none"
       >
         {open ? (
@@ -322,11 +338,11 @@ function RegisterGroupRow({
         <div aria-hidden className={cn("absolute inset-0 -z-[1] rounded-s-xl", barStart)} />
         <Checkbox
           aria-label={`Select all on ${name}`}
-          checked={selection === "all" ? true : selection === "some" ? "indeterminate" : false}
-          onCheckedChange={(checked) => onSelectedChange(checked === true)}
+          checked={checked}
+          onCheckedChange={(next, details) => onCheckedChange(next === true, details)}
           className={cn(
             "mx-auto transition-opacity motion-reduce:transition-none",
-            selection === "none" &&
+            checked === false &&
               "opacity-0 group-hover/bar:opacity-100 group-has-[:focus-visible]/bar:opacity-100 group-has-[[data-selected]]/register:opacity-100 pointer-coarse:opacity-100",
           )}
         />
@@ -377,18 +393,46 @@ export type SortDirection = "asc" | "desc";
 export type SortValue = { field: string; direction: SortDirection } | null;
 export type SortField = { key: string; label: string; /** The two directions' words, like ["A–Z", "Z–A"]. */ directions: [string, string] };
 
-/** The body of a column's sort popover: each field with its two directions, Clear, and a help sentence. */
+/** Why the sort changed: a direction was pressed, or Clear. */
+export type SortChangeDetails = ChangeDetails<"item-press" | "clear-press">;
+
+/**
+ * The body of a column's sort popover: each field with its two directions, Clear, and a help sentence.
+ *
+ * `value` / `defaultValue` / `onValueChange`, as ui-sdk names state (AVE-145). The callback gets the new sort and
+ * details: reason "item-press" for a direction, "clear-press" for Clear, the press, how it was made, and
+ * `cancel()`, which keeps the old sort when the menu holds it itself. `onChange` is the old name, kept until the next
+ * minor release.
+ */
 function SortMenu({
   fields,
-  value,
+  value: valueProp,
+  defaultValue = null,
+  onValueChange,
   onChange,
   help,
 }: {
   fields: SortField[];
-  value: SortValue;
-  onChange: (value: SortValue) => void;
+  value?: SortValue | undefined;
+  defaultValue?: SortValue | undefined;
+  onValueChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
+  /** @deprecated Use `onValueChange`. Kept until v0.27.0 (AVE-145). */
+  onChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
   help?: string | undefined;
 }) {
+  const [own, setOwn] = useState<SortValue>(defaultValue);
+  const value = valueProp === undefined ? own : valueProp;
+  const sortBy = (next: SortValue, reason: "item-press" | "clear-press", event: MouseEvent) => {
+    const went = report(
+      (v: SortValue, details: SortChangeDetails) => {
+        onValueChange?.(v, details);
+        onChange?.(v, details);
+      },
+      next,
+      { reason, event },
+    );
+    if (went) setOwn(next);
+  };
   return (
     <div className="text-meta">
       {/* On a phone each row is 44px tall with its buttons centred, so the 44px taps of Clear and the direction
@@ -396,7 +440,7 @@ function SortMenu({
       <div className="flex items-center justify-between px-2 pb-1 pointer-coarse:mb-2 pointer-coarse:min-h-11 pointer-coarse:pb-0 text-muted-foreground">
         <span>Sort by</span>
         <span>Direction</span>
-        <Button variant="ghost" size="xs" onClick={() => onChange(null)} disabled={!value}>
+        <Button variant="ghost" size="xs" onClick={(event) => sortBy(null, "clear-press", event.nativeEvent)} disabled={!value}>
           Clear
         </Button>
       </div>
@@ -418,7 +462,7 @@ function SortMenu({
                 // "Balance, High–low, descending": the visible words, plus the direction, because an agent
                 // matches names by their words and "High–low" and "Low–high" have the same ones (AVE-79).
                 aria-label={`${field.label}, ${field.directions[i]}, ${direction === "asc" ? "ascending" : "descending"}`}
-                onClick={() => onChange({ field: field.key, direction })}
+                onClick={(event) => sortBy({ field: field.key, direction }, "item-press", event.nativeEvent)}
               >
                 {on ? <CheckIcon aria-hidden data-slot="sort-check" className="size-4" /> : <span aria-hidden className="w-1.5" />}
                 {field.directions[i]}

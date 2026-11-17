@@ -120,9 +120,9 @@ function Households({
   const rowCount = count + 1;
   const spanning = groupSelect ? [addRow] : [...groups.map((g) => g.bar), addRow];
   const groupRows = groupSelect ? groups.map((g) => g.bar) : undefined;
-  const streetSelection = (members: Household[]) => {
+  const streetChecked = (members: Household[]) => {
     const on = members.filter((h) => selected.has(h.id)).length;
-    return on === 0 ? "none" : on === members.length ? "all" : "some";
+    return on === 0 ? false : on === members.length ? true : "indeterminate";
   };
   const selectStreet = (members: Household[], on: boolean) =>
     setSelected((s) => {
@@ -144,7 +144,7 @@ function Households({
       return n;
     });
   const header = (field: string) => (
-    <SortMenu fields={[fields[field]!]} value={sort} onChange={setSort} help="Streets keep their order; rows sort inside each street." />
+    <SortMenu fields={[fields[field]!]} value={sort} onValueChange={setSort} help="Streets keep their order; rows sort inside each street." />
   );
 
   return (
@@ -207,7 +207,7 @@ function Households({
                     </>
                   }
                   {...(groupSelect
-                    ? { selection: streetSelection(g.members), onSelectedChange: (on: boolean) => selectStreet(g.members, on) }
+                    ? { checked: streetChecked(g.members), onCheckedChange: (on: boolean) => selectStreet(g.members, on) }
                     : {})}
                 />
                 {g.shown.map(({ h, row }) => (
