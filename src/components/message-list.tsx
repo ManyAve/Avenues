@@ -33,17 +33,20 @@ export type MessageListProps = Loose<Omit<PartProps<"div">, "children" | "classN
     /** What an empty thread shows, inside the log, such as "This is the start of your conversation." */
     empty?: ReactNode | undefined;
     /**
-     * Who is typing, as "Ana is typing…", or "" when nobody is. A polite status under the log, outside it, so it's
-     * heard but never logged. Leave it out where the app has no typing.
+     * Who is typing, as "Ana is typing", or "" when nobody is: a bubble of three dots and these words under the log,
+     * outside it, in a polite status, so it's heard but never logged. Leave it out where the app has no typing.
      */
     typing?: string | undefined;
+    /** Who is typing, drawn beside the typing bubble as the runs draw theirs (`MessageRunAvatar`'s 28px avatar). */
+    typingAvatar?: ReactNode | undefined;
   };
 
 /**
  * A chat thread's messages (AVE-132): newest at the bottom, a WAI-ARIA `log` that a screen reader reads politely as
  * each message arrives. It follows new messages while the reader is at the end, or when the newest is their own;
- * scrolled up, it keeps their place and shows "New message" or "N new messages" under the log, in the flow (above
- * the app's composer, never over the last bubble), which scrolls back down and leaves focus in the log. "Earlier
+ * scrolled up, it keeps their place and floats a "New message" or "N new messages" pill over the log's faded bottom
+ * edge, which scrolls back down and leaves focus in the log. The pill only shows while the reader is scrolled up,
+ * so it never covers the newest message (Neighbors' NEI-68 problem). "Earlier
  * messages" loads history above without moving the view. The behavior is the `message-list` primitive
  * (src/lib/message-list.ts) on ui-sdk's `createStickToBottom`.
  *
@@ -51,8 +54,9 @@ export type MessageListProps = Loose<Omit<PartProps<"div">, "children" | "classN
  * `MessageListDay` draws the day row. Put it in a box with a height (a dock window, a page's pane): the log takes
  * the room left and scrolls.
  *
- * The look is Management's chat window: 4px between rows, the day label centred in meta text, the jump button a
- * small secondary pill (allowed for a floating chip, AVE-2).
+ * The look is Management's chat window: 4px between rows, the day label centred in meta text. The jump pill is an
+ * outline button on the popover surface with a shadow, so it reads as floating (a pill is allowed for a floating
+ * chip, AVE-2); the typing bubble is a them-side bubble of three dots that rise in turn (still under reduced motion).
  */
 export function MessageList({
   count,
@@ -71,6 +75,7 @@ export function MessageList({
   onRetry,
   empty,
   typing,
+  typingAvatar,
   ...props
 }: MessageListProps) {
   const handle = usePrimitive(typed, defined({ count, newest, newestMine, hasEarlier, loadingEarlier, onLoadEarlier }));
@@ -88,46 +93,73 @@ export function MessageList({
       </div>
     ) : (
       <>
-        <parts.Log
-          {...defined({ "aria-label": label, "aria-labelledby": labelledBy })}
-          className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-        >
-          {hasEarlier && (
-            <Button
-              variant="ghost"
-              size="xs"
-              className="mx-auto mb-1"
-              // Its own label says why it's unavailable; a disabledReason line would grow the log under the reader.
-              disabled={loadingEarlier}
-              focusableWhenDisabled
-              onClick={() => handle.api.loadEarlier()}
-            >
-              {loadingEarlier ? "Loading…" : "Earlier messages"}
-            </Button>
-          )}
-          {count === 0 && empty !== undefined && (
-            <div className="m-auto flex flex-col items-center gap-2 px-6 text-center text-meta text-muted-foreground">
-              {empty}
-            </div>
-          )}
-          {children}
-        </parts.Log>
-        <parts.Jump className="flex shrink-0 justify-center py-2">
-          {({ unseen }) => (
-            // Not a live region: the log already announced the messages it counts.
-            <Button
-              variant="secondary"
-              size="xs"
-              className="rounded-full shadow-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-150"
-              onClick={() => handle.api.jumpToLatest()}
-            >
-              {unseen === 1 ? "New message" : `${unseen} new messages`}
-              <ArrowDown data-icon="inline-end" aria-hidden />
-            </Button>
-          )}
-        </parts.Jump>
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <parts.Log
+            {...defined({ "aria-label": label, "aria-labelledby": labelledBy })}
+            className={({ atBottom }) =>
+              cn(
+                "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+                // Scrolled up, the last line fades out under the floating pill instead of stopping at a hard edge.
+                !atBottom && "mask-b-from-[calc(100%-5rem)] mask-b-to-[calc(100%-1rem)]",
+              )
+            }
+          >
+            {hasEarlier && (
+              <Button
+                variant="ghost"
+                size="xs"
+                className="mx-auto mb-1"
+                // Its own label says why it's unavailable; a disabledReason line would grow the log under the reader.
+                disabled={loadingEarlier}
+                focusableWhenDisabled
+                onClick={() => handle.api.loadEarlier()}
+              >
+                {loadingEarlier ? "Loading…" : "Earlier messages"}
+              </Button>
+            )}
+            {count === 0 && empty !== undefined && (
+              <div className="m-auto flex flex-col items-center gap-2 px-6 text-center text-meta text-muted-foreground">
+                {empty}
+              </div>
+            )}
+            {children}
+          </parts.Log>
+          <parts.Jump className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+            {({ unseen }) => (
+              // Not a live region: the log already announced the messages it counts.
+              <Button
+                variant="outline"
+                size="xs"
+                className="pointer-events-auto rounded-full bg-popover shadow-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-150 dark:bg-popover"
+                onClick={() => handle.api.jumpToLatest()}
+              >
+                {unseen === 1 ? "New message" : `${unseen} new messages`}
+                <ArrowDown data-icon="inline-end" aria-hidden />
+              </Button>
+            )}
+          </parts.Jump>
+        </div>
         {typing !== undefined && (
-          <output className="block h-4 shrink-0 ps-12 pe-3 text-meta text-muted-foreground">{typing}</output>
+          // Always in the page, so a screen reader hears it when it fills; it takes no room while nobody types.
+          <output className="block shrink-0 px-3 empty:hidden">
+            {typing && (
+              <span className="flex items-center gap-2 pb-2">
+                <span className="w-7 shrink-0" aria-hidden>
+                  {typingAvatar}
+                </span>
+                <span aria-hidden className="flex h-8 items-center gap-1 rounded-xl bg-foreground/10 px-3">
+                  {[0, 150, 300].map((delay) => (
+                    <span
+                      key={delay}
+                      className="size-1.5 rounded-full bg-muted-foreground motion-safe:animate-typing-dot"
+                      style={{ animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </span>
+                <span className="text-meta text-muted-foreground">{typing}</span>
+              </span>
+            )}
+          </output>
         )}
       </>
     );

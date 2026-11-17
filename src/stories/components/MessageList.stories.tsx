@@ -1,24 +1,35 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
+import { Composer, ComposerField, ComposerSend } from "#avenue/components/composer";
+import { InitialsAvatar } from "#avenue/components/initials-avatar";
+import {
+  Message,
+  MessageBubble,
+  MessageMeta,
+  MessageRow,
+  MessageRun,
+  MessageRunAvatar,
+  MessageRunContent,
+} from "#avenue/components/message";
 import { MessageList, MessageListDay, type MessageListStatus } from "#avenue/components/message-list";
 import { cn } from "#avenue/lib/utils";
 import {
   chatNow,
+  chatRuns,
+  chatTime,
   chatTimeZone,
   dmThread,
   earlierMessages,
   me,
   people,
-  personById,
   type ChatMessage,
 } from "./chat-kit";
 
 // AVE-132. A chat thread's messages: follows new ones at the end, keeps the reader's place when they scroll up.
-// Threads come from the shared chat fixture (chat-kit.ts). The rows are plain stand-ins for Avenue's message bubbles
-// (AVE-133), drawn here only so the list has something to scroll; they switch to the bubbles once those land.
+// Threads come from the shared chat fixture (chat-kit.ts), drawn with Avenue's message bubbles (AVE-133).
 
 const meta = {
   title: "Components/Message list",
@@ -45,33 +56,34 @@ function dayLabel(at: string) {
   );
 }
 
-/** A stand-in bubble: the sides, fills and hidden sender prefix both apps' bubbles have. */
-function Row({ message }: { message: ChatMessage }) {
-  const mine = message.senderId === me.id;
-  return (
-    <div className={cn("flex", mine ? "justify-end" : "justify-start")} data-message={message.id}>
-      <p
-        className={cn(
-          "max-w-[82%] rounded-xl px-3 py-1 text-control break-words",
-          mine ? "bg-primary text-primary-foreground" : "bg-foreground/10",
-        )}
-      >
-        <span className="sr-only">{mine ? "You" : personById(message.senderId).name}: </span>
-        {message.body}
-      </p>
-    </div>
-  );
-}
-
+/** A day's messages as runs of Avenue's bubbles (AVE-133); grouping into runs and days is the app's, here the story's. */
 function Rows({ messages }: { messages: ChatMessage[] }) {
-  const out: ReactNode[] = [];
-  messages.forEach((message, i) => {
-    const day = dateIn(message.at);
-    const previous = messages[i - 1];
-    if (!previous || dateIn(previous.at) !== day) out.push(<MessageListDay key={`day-${day}`}>{dayLabel(message.at)}</MessageListDay>);
-    out.push(<Row key={message.id} message={message} />);
-  });
-  return out;
+  const days: ChatMessage[][] = [];
+  for (const message of messages) {
+    const day = days.at(-1);
+    if (day && dateIn(day[0]!.at) === dateIn(message.at)) day.push(message);
+    else days.push([message]);
+  }
+  return days.map((day) => (
+    <Fragment key={dateIn(day[0]!.at)}>
+      <MessageListDay>{dayLabel(day[0]!.at)}</MessageListDay>
+      {chatRuns(day).map((run) => (
+        <MessageRun key={run.key} from={run.from} sender={run.sender.name}>
+          {run.from === "them" && <MessageRunAvatar name={run.sender.name} tintKey={run.sender.id} />}
+          <MessageRunContent>
+            {run.messages.map((message, i) => (
+              <Message key={message.id} data-message={message.id} time={chatTime(message.at, "full")}>
+                <MessageRow>
+                  <MessageBubble>{message.body}</MessageBubble>
+                </MessageRow>
+                {i === run.messages.length - 1 && <MessageMeta>{chatTime(message.at)}</MessageMeta>}
+              </Message>
+            ))}
+          </MessageRunContent>
+        </MessageRun>
+      ))}
+    </Fragment>
+  ));
 }
 
 /** A dock window's body: the list takes the room above a stand-in composer. */
@@ -108,11 +120,11 @@ function Thread({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(0);
   const [state, setState] = useState(status);
-  const add = (mine: boolean) => {
+  const add = (mine: boolean, text = "On my way to the clubhouse.") => {
     const n = sent + 1;
     setSent(n);
     const message: ChatMessage = mine
-      ? { id: `arrival-${n}`, senderId: me.id, at: chatNow, body: "On my way to the clubhouse." }
+      ? { id: `arrival-${n}`, senderId: me.id, at: chatNow, body: text }
       : { id: `arrival-${n}`, senderId: people.ana.id, at: chatNow, body: `New note ${n} from Ana.` };
     setMessages((m) => [...m, message]);
   };
@@ -139,10 +151,16 @@ function Thread({
           onRetry={() => setState("ready")}
           empty={empty}
           typing={typing}
+          typingAvatar={<InitialsAvatar name={people.ana.name} tintKey={people.ana.id} decorative />}
         >
           <Rows messages={messages} />
         </MessageList>
-        <div className="border-t p-2 text-meta text-muted-foreground">Composer (AVE-134)</div>
+        <div className="border-t p-2">
+          <Composer onSend={(text) => add(true, text)}>
+            <ComposerField aria-label={`Message ${dmThread.title}`} placeholder="Message" />
+            <ComposerSend />
+          </Composer>
+        </div>
       </Frame>
       <div className="flex flex-wrap gap-controls">
         <Button variant="outline" size="sm" onClick={() => add(false)}>
@@ -170,14 +188,14 @@ async function scrollUp(log: HTMLElement) {
 /** A thread open at its newest message, with day rows and the typing line. */
 export const Default: Story = {
   args: { count: 0 },
-  render: () => <Thread typing="Ana is typing…" />,
+  render: () => <Thread typing="Ana is typing" />,
   play: async ({ canvas }) => {
     const log = logOf(canvas);
     await expect(log).toHaveAttribute("aria-relevant", "additions");
     await waitFor(() => atEnd(log));
     // The typing line is its own polite status, outside the log, so it is heard but never logged.
     const typing = canvas.getByRole("status");
-    await expect(typing).toHaveTextContent("Ana is typing…");
+    await expect(typing).toHaveTextContent("Ana is typing");
     await expect(log.contains(typing)).toBe(false);
     // Day rows are plain text in the log, read as the reader passes them.
     await expect(canvas.getByText("Yesterday")).toHaveAttribute("data-slot", "message-list-day");
@@ -212,8 +230,12 @@ export const ArrivalWhileScrolledUp: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Ana sends one" }));
     await waitFor(() => expect(jump).toHaveTextContent("3 new messages"));
     await expect(log.scrollTop).toBe(top);
-    // In the flow under the log, never over its last bubble.
-    await expect(jump.getBoundingClientRect().top).toBeGreaterThanOrEqual(log.getBoundingClientRect().bottom);
+    // It floats over the log's bottom edge, which fades out under it while the reader is scrolled up.
+    const box = jump.getBoundingClientRect();
+    const end = log.getBoundingClientRect();
+    await expect(box.bottom).toBeLessThan(end.bottom);
+    await expect(box.top).toBeGreaterThan(end.bottom - 64);
+    await expect(getComputedStyle(log).maskImage).toContain("gradient");
     // Not a live region of its own: the log already announced each message.
     await expect(jump.closest("[aria-live],[role=status]")).toBeNull();
 
@@ -223,6 +245,8 @@ export const ArrivalWhileScrolledUp: Story = {
     await waitFor(() => atEnd(log));
     await expect(log).toHaveFocus();
     await waitFor(() => expect(jumpOf(canvas)).toBeNull());
+    // At the end the last message shows whole: no fade.
+    await waitFor(() => expect(getComputedStyle(log).maskImage).toBe("none"));
   },
 };
 
@@ -234,8 +258,13 @@ export const OwnMessageFollows: Story = {
     const log = logOf(canvas);
     await waitFor(() => atEnd(log));
     await scrollUp(log);
-    await userEvent.click(canvas.getByRole("button", { name: "You send one" }));
+    // Sent from the composer under it: the list follows to the reader's own message, and focus stays in the field.
+    const field = canvas.getByRole("textbox", { name: "Message Ana Ruiz" });
+    await userEvent.click(field);
+    await userEvent.keyboard("See you there{Enter}");
+    await waitFor(() => expect(log).toHaveTextContent("See you there"));
     await waitFor(() => atEnd(log));
+    await expect(field).toHaveFocus();
     await expect(jumpOf(canvas)).toBeNull();
   },
 };
