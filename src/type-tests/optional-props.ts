@@ -18,6 +18,7 @@ import type * as chip from "#avenue/components/chip";
 import type * as choiceCard from "#avenue/components/choice-card";
 import type * as collapsibleSection from "#avenue/components/collapsible-section";
 import type * as combobox from "#avenue/components/combobox";
+import type * as composer from "#avenue/components/composer";
 import type * as detailList from "#avenue/components/detail-list";
 import type * as dialog from "#avenue/components/dialog";
 import type * as disclosure from "#avenue/components/disclosure";
@@ -79,6 +80,7 @@ type Modules = {
   "choice-card": typeof choiceCard;
   "collapsible-section": typeof collapsibleSection;
   "combobox": typeof combobox;
+  "composer": typeof composer;
   "detail-list": typeof detailList;
   "dialog": typeof dialog;
   "disclosure": typeof disclosure;
@@ -182,4 +184,6 @@ export const plainChildren: ReactNode[] = [
   null as unknown as Children<typeof message.MessageBubble>,
   null as unknown as Children<typeof message.MessageQuote>,
   null as unknown as Children<typeof message.MessageStatus>,
+  null as unknown as Children<typeof composer.Composer>,
+  null as unknown as Children<typeof composer.ComposerContext>,
 ];

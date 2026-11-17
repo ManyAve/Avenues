@@ -4,6 +4,36 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.17.0 (2026-11-17)
+
+- **Chat composer** (AVE-134), new in `@manyave/avenue/components/composer`: the reply box under a chat. Nothing
+  existing changes.
+  - `<Composer onSend={send}><ComposerField aria-label="Message Ana Ruiz" placeholder="Message" /><ComposerSend /></Composer>`.
+    The field is Avenue's Textarea (ui-sdk's) and grows from one line to 112px, then scrolls. Enter sends, Shift+Enter
+    adds a line, and Enter while an input method is composing does nothing. `onSend` gets the trimmed text.
+  - Focus stays in the field after every send, by Enter or by Send. In both apps today, clicking Send left focus on a
+    button that then disabled itself, so it dropped to the page.
+  - A plain return from `onSend` empties the field at once (an optimistic send). A promise keeps the text, read-only,
+    until it resolves, and empties it only then; a rejected one keeps the text so nothing is lost. Showing why it was
+    refused stays the app's.
+  - Send is disabled while the field is empty or a send is pending. It stays reachable by Tab and tells a screen
+    reader why ("Type a message first.", "Sending…").
+  - `<ComposerContext onCancel={…}>Replying to <b>Ana Ruiz</b>: …</ComposerContext>` above the field is the reply
+    banner; `kind="edit"` makes it the edit banner and turns Send into "Save edit" with a check. Escape in the field
+    cancels the banner, and only when there is one, so Escape still reaches a dock or dialog otherwise. Cancelling an
+    edit empties the field.
+  - Pass `value` and `onValueChange` to the field to control it (an edit puts the message's text in), or leave it
+    uncontrolled. `disabledReason` on `Composer` turns it off and says why under it.
+  - Changes from Management's look (AVE-2): the field's corner is rounded-xl (14px; Avenue has no 2xl corner), it is
+    32px at one line (was 34) to match Send, and field and Send sit `gap-controls` apart (was 6px). On a phone both
+    are 44px tall and the field's text is 16px, so iOS doesn't zoom.
+    In dark the banner is `bg-accent`, not `bg-muted`, which is the chat window's own colour there.
+  - Management: replace the raw `<textarea>` and Send in `ChatWindow`'s footer (`app/ui/components/chat.tsx`) with
+    these parts; `sendsOnKey` and the Escape handler go, and the reply/edit banner becomes `ComposerContext`.
+  - Neighbors: when adopting, `ChatComposer` becomes `Composer` with `onSend` returning the send promise; the comment
+    thread's reply field can use it too.
+  - Phone apps: nothing to take; the native chat screens take tokens only.
+
 ## v0.16.0 (2026-11-17)
 
 - **Chat messages** (AVE-133), new in `@manyave/avenue/components/message`: one sender's run of messages and each

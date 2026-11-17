@@ -71,6 +71,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     upstream: "select",
     note: "Documented deviation (UX Engineer, AVE-17): ui-sdk's Select moves focus into the list, which its own combobox check rejects. Avenue ships it as is; revisit when ui-sdk leaves beta.",
   },
+  composer: {
+    upstream: "textarea",
+    note: "AVE-134: ui-sdk's Textarea (autoResize, submitShortcut enter) and Button, wired into a form. Its keys are ui-sdk's but Escape, which cancels a reply or edit banner only while one shows. The Composer stories send by Enter, by Tab and Enter on Send and by the pointer, and check focus stays in the field, a refused send keeps the text, and Escape; Composer / Typing is its agent test.",
+  },
   dialog: { upstream: "dialog" },
   "alert-dialog": { upstream: "alert-dialog" },
   sheet: { upstream: "drawer", note: "The Sheet stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },

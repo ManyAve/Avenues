@@ -587,6 +587,27 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-message--phone": { none: MESSAGE_LOOK },
   "components-message--agent": { none: MESSAGE_LOOK },
   "components-message--beside-management": { none: MESSAGE_LOOK },
+  // ---- Composer (AVE-134). Management's chat window footer (Chat / Board chat / Thread) is the look.
+  "components-composer--typing": [
+    {
+      label: "composer field",
+      app: "chat-board-chat--thread",
+      appCrop: "footer textarea",
+      avenueCrop: "[data-slot=composer] textarea",
+      allow: [
+        { prop: "border-*-radius", app: "16px", avenue: "14px", because: "AVE-2 §3: Avenue retires the 2xl corner; the chat field takes rounded-xl, still a pill at one line" },
+        { prop: "height", app: "34px", avenue: "32px", because: "AVE-2 §2: the field is 32px at one line, the height of Send beside it (controls in a row share a size)" },
+        { prop: "padding-*", app: "6px", avenue: "5px", because: "AVE-2 §2: the padding centres one 20px line in the 32px field" },
+        { prop: "width", because: "AVE-2 §1: field and Send sit gap-controls (8px) apart where the app has 6px, so the field is 2px narrower" },
+      ],
+    },
+    { label: "composer send", app: "chat-board-chat--thread", appCrop: "footer button >> nth=-1", avenueCrop: "[data-slot=composer] [data-slot=button]" },
+  ],
+  ...Object.fromEntries(
+    ["empty", "at-max-height", "sending", "sending-held", "replying", "cancel-reply-by-keyboard", "editing", "save-edit", "disabled", "phone"].map(
+      (story) => [`components-composer--${story}`, { none: BEHAVIOUR("Composer / Typing (beside Management's Chat / Board chat / Thread footer)") }],
+    ),
+  ),
 
   // ---- Skeleton (AVE-128)
   "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
