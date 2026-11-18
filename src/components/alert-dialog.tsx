@@ -93,6 +93,13 @@ function AlertDialogDescription({
   );
 }
 
+/**
+ * ui-sdk's `createConfirm<Payload>()`: `await confirm(payload)` opens the alert dialog given `confirm.controller` and
+ * resolves true when it closes with `"confirm"`, false on any other close. `createAlertDialogController()` for direct
+ * control. PendingConfirmDialogRoot takes either as its `controller` (AVE-147).
+ */
+export { createAlertDialogController, createConfirm } from "@ui-sdk/react/alert-dialog";
+
 export {
   AlertDialog,
   AlertDialogClose,

@@ -3,7 +3,17 @@ import { useState } from "react";
 import { Button } from "#avenue/components/button";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
 import {
+  createConfirm,
   PendingConfirmDialog,
+  PendingConfirmDialogCancel,
+  PendingConfirmDialogConfirm,
+  PendingConfirmDialogContent,
+  PendingConfirmDialogDescription,
+  PendingConfirmDialogFooter,
+  PendingConfirmDialogHeader,
+  PendingConfirmDialogRoot,
+  PendingConfirmDialogTitle,
+  PendingConfirmDialogTrigger,
   type PendingConfirmPhase,
   type PendingConfirmRecovery,
 } from "#avenue/components/pending-confirm-dialog";
@@ -226,5 +236,163 @@ export const PromiseRejects: Story = {
     await screen.findByRole("alertdialog", { name: "Mark as mailed" });
     await expect(screen.getByRole("button", { name: "Mark as mailed" })).toBeInTheDocument();
     await expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  },
+};
+
+// ---- The parts (AVE-147). The phases live in PendingConfirmDialogRoot, so a composed dialog keeps them.
+
+type Payment = { household: string; amount: string };
+
+/**
+ * Parts with ui-sdk's `createConfirm()`: one dialog for every row, asked from the row's handler. `await confirm(row)`
+ * opens it with the row as its payload, and resolves true only once the step has happened (the Promise from
+ * `onConfirm` resolved), false when the person cancels. While the step runs the root holds the dialog: focus on the
+ * status line, Tab and Esc can't leave, Cancel is off.
+ */
+export const PartsCreateConfirm: Story = {
+  render: function Rows() {
+    const [confirm] = useState(() => createConfirm<Payment>());
+    const [log, setLog] = useState("");
+    const [recorded, setRecorded] = useState<string[]>([]);
+    const rows: Payment[] = [
+      { household: "14 Larkspur Lane", amount: "$240.00" },
+      { household: "9 Heron Way", amount: "$120.00" },
+    ];
+    return (
+      <div className="flex flex-col items-start gap-controls p-inset">
+        {rows.map((row) => (
+          <Button
+            key={row.household}
+            variant="outline"
+            onClick={async () => {
+              const done = await confirm(row);
+              setLog(done ? `Recorded ${row.amount} for ${row.household}` : `Kept ${row.household} as it was`);
+            }}
+          >
+            Record payment for {row.household}
+          </Button>
+        ))}
+        <output className="text-meta text-muted-foreground">{log}</output>
+        <PendingConfirmDialogRoot
+          controller={confirm.controller}
+          recovery={retry}
+          pendingMessage="Recording the payment. Please wait."
+          onConfirm={(payment) => {
+            setRecorded((list) => [...list, payment?.household ?? "?"]);
+            return send();
+          }}
+        >
+          <PendingConfirmDialogContent<Payment>>
+            {({ payload }) => (
+              <>
+                <PendingConfirmDialogHeader>
+                  <PendingConfirmDialogTitle>Record payment</PendingConfirmDialogTitle>
+                  <PendingConfirmDialogDescription>
+                    Record {payload?.amount} toward {payload?.household}’s 2026 dues.
+                  </PendingConfirmDialogDescription>
+                </PendingConfirmDialogHeader>
+                <PendingConfirmDialogFooter>
+                  <PendingConfirmDialogCancel />
+                  <PendingConfirmDialogConfirm pendingLabel="Recording…">Record payment</PendingConfirmDialogConfirm>
+                </PendingConfirmDialogFooter>
+              </>
+            )}
+          </PendingConfirmDialogContent>
+        </PendingConfirmDialogRoot>
+        <output data-testid="recorded" className="sr-only">{recorded.join(", ")}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const first = canvas.getByRole("button", { name: "Record payment for 14 Larkspur Lane" });
+    first.focus();
+    await userEvent.keyboard("{Enter}");
+    const dialog = await screen.findByRole("alertdialog", { name: "Record payment" });
+    await expect(dialog).toHaveAccessibleDescription("Record $240.00 toward 14 Larkspur Lane’s 2026 dues.");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus());
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    const status = await screen.findByText("Recording the payment. Please wait.");
+    await waitFor(() => expect(status).toHaveFocus());
+    await expect(screen.getByRole("button", { name: "Recording…" })).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.tab();
+    await expect(status).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    await expect(canvas.getByTestId("recorded")).toHaveTextContent("14 Larkspur Lane");
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(await canvas.findByText("Recorded $240.00 for 14 Larkspur Lane")).toBeInTheDocument();
+    await waitFor(() => expect(first).toHaveFocus());
+
+    // The same dialog, asked from another row, starts on the question again; Cancel answers false.
+    const second = canvas.getByRole("button", { name: "Record payment for 9 Heron Way" });
+    second.focus();
+    await userEvent.keyboard("{Enter}");
+    const again = await screen.findByRole("alertdialog", { name: "Record payment" });
+    await expect(again).toHaveAccessibleDescription("Record $120.00 toward 9 Heron Way’s 2026 dues.");
+    const cancel = screen.getByRole("button", { name: "Cancel" });
+    await waitFor(() => expect(cancel).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(again).not.toBeInTheDocument());
+    await expect(await canvas.findByText("Kept 9 Heron Way as it was")).toBeInTheDocument();
+  },
+};
+
+/**
+ * Parts with a trigger, uncontrolled: a rejection means the outcome is unknown, and when the step isn't safe to retry
+ * the root swaps the confirm button for the place to check, with focus on it and the reason read with it. Close stays
+ * on, so nobody is trapped.
+ */
+export const PartsUnknownCheckFirst: Story = {
+  render: () => (
+    <div className="p-inset">
+      <PendingConfirmDialogRoot
+        pendingMessage="Saving the correction. Please wait."
+        recovery={{
+          safeToRetry: false,
+          message: "We couldn't confirm that the correction was saved. Check the ledger before trying again, so it isn't saved twice.",
+          checkLabel: "Open ledger",
+          onCheck: () => {},
+        }}
+        onConfirm={send}
+      >
+        <PendingConfirmDialogTrigger render={<Button variant="outline" />}>Correct balance…</PendingConfirmDialogTrigger>
+        <PendingConfirmDialogContent>
+          <PendingConfirmDialogHeader>
+            <PendingConfirmDialogTitle>Correct balance</PendingConfirmDialogTitle>
+            <PendingConfirmDialogDescription>Lower 2 Quail Hollow Court’s balance by $40.00.</PendingConfirmDialogDescription>
+          </PendingConfirmDialogHeader>
+          <PendingConfirmDialogFooter>
+            <PendingConfirmDialogCancel />
+            <PendingConfirmDialogConfirm pendingLabel="Saving…">Save correction</PendingConfirmDialogConfirm>
+          </PendingConfirmDialogFooter>
+        </PendingConfirmDialogContent>
+      </PendingConfirmDialogRoot>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Correct balance…" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("alertdialog", { name: "Correct balance" });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus());
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await screen.findByRole("button", { name: "Saving…" });
+    reply?.reject(new Error("timeout"));
+    await expect(await screen.findByRole("alert")).toHaveTextContent("Check the ledger before trying again");
+    const check = screen.getByRole("button", { name: "Open ledger" });
+    await waitFor(() => expect(check).toHaveFocus());
+    await expect(check).toHaveAccessibleDescription(
+      "We couldn't confirm that the correction was saved. Check the ledger before trying again, so it isn't saved twice.",
+    );
+    await expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+    const close = screen.getByRole("button", { name: "Close" });
+    await expect(close).toBeEnabled();
+    close.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };

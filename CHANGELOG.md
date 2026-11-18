@@ -4,6 +4,34 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.33.0 (2026-11-18)
+
+- **FormDialog and PendingConfirmDialog are a root and parts** (AVE-147), as ui-sdk builds a dialog, with the one-tag
+  form kept as a wrapper of those parts (ui-sdk's "Wrap the Parts"). The rules live in the root, so an app that
+  composes the parts keeps them. Nothing renamed, the one-tag props are unchanged, and nothing on screen moves (visual
+  diff in the pull request).
+  - FormDialog: `FormDialogRoot` takes the state (`open`/`defaultOpen`/`onOpenChange`, `onSubmit`, `pending`,
+    `pendingLabel`, `holdWhilePending`, `locked`, `dirty`, `error`, `askAdmin`, `slowAfter`, `again`,
+    `pendingAnnouncement`). Its parts: `FormDialogTrigger`, `FormDialogContent` (`width`, the form and the "Discard
+    changes?" question), `FormDialogHeader` (`icon`), `FormDialogTitle`, `FormDialogDescription` (screen-reader only by
+    default), `FormDialogBody` (the fields, off with `askAdmin`, and the error at its end), `FormDialogError` (to place
+    the error elsewhere), `FormDialogFooter` (the ask-admin reason and the slow line), `FormDialogCancel`,
+    `FormDialogAlternate` (`onClick` may return a Promise) and `FormDialogSubmit` (`disabled` also stops Enter).
+  - Submit can't run twice while pending; Cancel, ✕ and Esc ask before discarding a dirty form; nothing closes while
+    held or `locked`; a returned Promise drives pending (AVE-150), whether the app composes the parts or uses the one
+    tag. A part outside its root logs a `console.error` in development naming the root (it throws in strict story
+    tests) and draws itself with no rules in production.
+  - PendingConfirmDialog: `PendingConfirmDialogRoot` holds the phases (`phase`, `recovery`, `onConfirm`,
+    `pendingMessage`) on Avenue's alert dialog parts, and takes `open`/`defaultOpen`/`onOpenChange` or a `controller`.
+    Parts: `PendingConfirmDialogTrigger` (`payload`), `PendingConfirmDialogContent` (children may be a function of
+    `{ payload }`), `PendingConfirmDialogHeader`/`Title`/`Description`, `PendingConfirmDialogFooter` (the status line
+    and the couldn't-confirm sentence), `PendingConfirmDialogCancel` and `PendingConfirmDialogConfirm` (`pendingLabel`).
+  - **`createConfirm()`**, ui-sdk's, is exported from alert-dialog and pending-confirm-dialog (with
+    `createAlertDialogController`). Pass `confirm.controller` to `PendingConfirmDialogRoot`, and
+    `if (await confirm(row)) …` from a row's handler: it opens one shared dialog with that row as its payload, and
+    resolves true only once `onConfirm` resolved (the step happened), false on Cancel or Close. `onConfirm` gets the
+    payload.
+
 ## v0.32.0 (2026-11-18)
 
 - **Callout and InlineMessage come in parts** (AVE-149, the rest of v0.30.0's layout parts). Nothing on screen moves
