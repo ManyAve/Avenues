@@ -38,20 +38,34 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     `CalendarDay` (children go in the day's round, and may be a function of its state) and `CalendarDayMark` (the dot;
     `tint`, or a `bg-*` class; hidden on today). An empty Calendar still draws them all.
   - New: `TitleCount` (status), the count part PageHeaderCount and SectionCardCount are built on.
-  - **Deprecated, removed in v0.31.0** (each marked `@deprecated` with what to use): EmptyState's `icon`, `title`,
+  - **Deprecated** (each marked `@deprecated` with what to use): EmptyState's `icon`, `title`,
     `description`, `action`, `secondaryAction`, `externalLink` and `headingLevel`; SectionEmpty's `icon`, `title`,
     `line` and `action`; PageHeader's `eyebrow`, `title`, `count`, `countLabel`, `description` and `actions`;
     SectionCard's `title`, `count`, `countLabel` and `action`; TopBar's `logo`, `name`, `homeHref`, `homeRender`,
     `onHome`, `org`, `actions` and `navLabel`; StatusBar's `count`, `hint` and `totals`; ListItem's `title`, `meta`,
     `note` and `trailing`; `Disclosure` (use `CollapsibleSection variant="disclosure"`); Progress's `trackClassName`;
     MonthGrid's `renderDay`; Calendar's `mark`.
+    They stay until Management and Neighbors no longer use them; AVE-154 removes them then, in its own release.
   - Markup changes with no change on screen: TopBar's home link carries `data-slot="top-bar-home"`; the EmptyState icon
     is wrapped in a `span[data-slot=empty-state-icon]`; SectionEmpty's tile is `span[data-slot=section-empty-icon]`, no
     longer an IconTile; SectionCard's title is one h2 (Card's title drawn as the heading) instead of an h2 inside a div;
     the StatusBar count always holds its dot, shown only when the bar has a hint.
-  - Management and Neighbors: nothing to change now. Move to the parts before v0.31.0; the deprecated props show
+  - Management and Neighbors: nothing to change now. Move to the parts at your own pace; the deprecated props show
     struck through in your editor.
   - Phone apps: nothing to take; this is web only.
+
+## v0.29.1 (2026-11-18)
+
+- **A table filter searches a long list of choices** (AVE-155). A TableFilters choice field with more than eight
+  values, such as thirty streets or every household, now shows a search field above its values when its pill opens,
+  as Linear's filter does. Focus starts in the search; typing narrows the list, the arrows move through it, Enter (or a
+  tap) toggles a value, and the search keeps its text after a pick, so several matches of "oak" go in a row. Escape
+  closes it and focus returns to the pill. Built on ui-sdk's Combobox with `multiple`, its input in the popup, so an
+  agent sets the values with `setValue` on the pill. Each value is drawn as the short list's checkbox row; on a touch
+  screen each is 44px tall, and the list shows six whole rows and snaps to them.
+  - **Unchanged:** a field with eight values or fewer keeps its list of checkboxes, and no prop changed. The visual diff
+    changes only the new Long list stories.
+  - Management and Neighbors: nothing to change; a long `items` list gets the search when you take this release.
 
 ## v0.29.0 (2026-11-18)
 

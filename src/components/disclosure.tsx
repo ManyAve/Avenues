@@ -31,7 +31,7 @@ export interface DisclosureProps
  * Built from CollapsibleSection's parts with `variant="disclosure"`, which is the same look.
  *
  * @deprecated Use `<CollapsibleSection variant="disclosure">` with a `CollapsibleSectionTrigger` (the summary) and a
- * `CollapsibleSectionPanel` (v0.30.0, AVE-149). Removed in v0.31.0.
+ * `CollapsibleSectionPanel` (v0.30.0, AVE-149). Removed by AVE-154 once both apps are off it.
  */
 export function Disclosure({ summary, children, panelClassName, ...props }: DisclosureProps) {
   return (

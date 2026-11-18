@@ -139,7 +139,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
   "table-filter": {
     upstream: "menu",
-    note: "AVE-123: ui-sdk's menu, popover, select, checkbox and input in the toolbar's focus order, wired without changing their keys. The Table filter stories add, edit and remove filters by keyboard; Table filter / Agent is its agent test.",
+    note: "AVE-123: ui-sdk's menu, popover, select, checkbox and input in the toolbar's focus order, wired without changing their keys; a long choice list is ui-sdk's combobox with `multiple`, its input in the popup (AVE-155). The Table filter stories add, edit and remove filters by keyboard; Table filter / Agent and Long list agent are its agent tests.",
   },
   "mode-toggle": { upstream: "segmented-control", note: "Dev is a ui-sdk toggle; the theme is Avenue's single-choice ToggleGroup (the radio-group pattern, AVE-17)." },
   "search-input": {
