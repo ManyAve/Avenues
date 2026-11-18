@@ -4,6 +4,28 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.27.0 (2026-11-17)
+
+- **A returned Promise drives pending** (AVE-150), as ui-sdk's Button and a dialog Close part's `action` do. Apps no
+  longer have to keep a separate `pending` or `phase` in step with their own request.
+  - FormDialog: `onSubmit` (and `alternate.onSubmit`) may return a Promise. While it runs the dialog is pending exactly
+    as with `pending` (submit off with its `pendingLabel`, held, the slow line after `slowAfter`); resolved, it closes;
+    rejected, it stays open and the rejection's message shows in the error slot (Avenue's "We couldn’t save this…"
+    when it has none), so reject with the sentence to show. `pending` and `error` stay and win when set.
+  - PendingConfirmDialog: `onConfirm` may return a Promise and `phase` is now optional ("ready" by default). While it
+    runs the dialog is pending; resolved, it closes (it never goes back to asking about a step that is done); rejected,
+    the outcome is unknown and `recovery` shows, with Try again running it again. A `phase` of "pending" or "unknown"
+    wins. Give the call a timeout that rejects.
+  - New `pendingAnnouncement` on FormDialog (default: `pendingLabel`) and Composer (default "Sending"), ui-sdk's name:
+    what a screen reader hears once a save or send has run for a second. An empty string says nothing.
+    PendingConfirmDialog needs none: its status line takes focus and says `pendingMessage`.
+  - The close after a resolved Promise reaches `onOpenChange(false, details)` with reason `"action"`, ui-sdk's reason
+    for a resolved Close action, and can be canceled there.
+  - Resolve only when the work happened. A handler that catches its own failure and resolves closes the dialog; keep
+    such a handler returning nothing and passing `pending` and `error`, or let it reject.
+  - Nothing renamed, nothing on screen moves (visual diff in the pull request). Composer's `onSend` already took a
+    Promise; its type now says so.
+
 ## v0.26.0 (2026-11-17)
 
 - **State and change callbacks take ui-sdk's names, and every callback gets ui-sdk's change details** (AVE-145). ui-sdk

@@ -11,7 +11,8 @@ import {
 } from "#avenue/components/alert-dialog";
 import { TriangleAlertIcon } from "lucide-react";
 import { Button } from "#avenue/components/button";
-import type { ChangeDetails } from "#avenue/lib/change";
+import { report, type ChangeDetails } from "#avenue/lib/change";
+import { useAction } from "#avenue/lib/pending";
 import { cn } from "#avenue/lib/utils";
 
 /** ready: asking. pending: the step is running. unknown: the reply was lost, so nobody knows whether it happened. */
@@ -54,14 +55,21 @@ export interface PendingConfirmDialogProps
   /** The status line while pending, e.g. "Recording mailing confirmation. Please wait." */
   pendingMessage: string;
   /**
-   * Where the step is. While pending the person can't leave (Esc, Tab and Close are held), so the caller must
-   * always end it: move to "unknown" when the call times out or its reply is lost, never leave it pending (AVE-44).
-   * The app's mailing call times out; give every call a timeout before showing this dialog.
+   * Where the step is, when the app tracks it itself; "ready" by default. A Promise returned by `onConfirm` moves the
+   * dialog through pending and unknown by itself, so most callers leave this out. "pending" or "unknown" wins over the
+   * Promise. While pending the person can't leave (Esc, Tab and Close are held), so the caller must always end it:
+   * move to "unknown" (or reject) when the call times out or its reply is lost, never leave it pending (AVE-44). The
+   * app's mailing call times out; give every call a timeout before showing this dialog.
    */
-  phase: PendingConfirmPhase;
+  phase?: PendingConfirmPhase | undefined;
   recovery: PendingConfirmRecovery;
-  /** Runs the step; also Try again when the outcome is unknown and it is safe to retry. */
-  onConfirm: () => void;
+  /**
+   * Runs the step; also Try again when the outcome is unknown and it is safe to retry. Return a Promise and the dialog
+   * is pending until it settles (AVE-150), as a ui-sdk Close part's `action` is: resolved, the dialog closes (so
+   * resolve only when the step happened); rejected, the outcome is unknown and `recovery` shows. Give the call a timeout
+   * that rejects, because a Promise that never settles holds the person here.
+   */
+  onConfirm: () => void | PromiseLike<unknown>;
   cancelLabel?: string | undefined;
 }
 
@@ -81,7 +89,9 @@ export interface PendingConfirmDialogProps
  *   review's finding, kept by the UX Engineer on AVE-44).
  * - The pending message is muted, also at `text-compact`.
  *
- * Pending must end: the caller moves to "unknown" after a timeout (see `phase`).
+ * Pending must end: the caller moves to "unknown" after a timeout (see `phase`), or rejects the Promise `onConfirm`
+ * returned. The status line, which takes focus, is what a screen reader hears while pending, so the dialog sets no
+ * separate `pendingAnnouncement`.
  *
  * ui-sdk's alert dialog: role alertdialog, modal, an outside press never closes it.
  */
@@ -94,7 +104,7 @@ export function PendingConfirmDialog({
   confirmLabel,
   pendingLabel,
   pendingMessage,
-  phase,
+  phase: phaseProp = "ready",
   recovery,
   onConfirm,
   cancelLabel = "Cancel",
@@ -104,6 +114,17 @@ export function PendingConfirmDialog({
   const status = useRef<HTMLOutputElement>(null);
   const recover = useRef<HTMLButtonElement>(null);
   const reasonId = useId();
+  const action = useAction(open);
+  // The app's phase wins; otherwise the Promise onConfirm returned says where the step is. A rejection means the
+  // outcome is unknown, not that it failed: the call may have happened before its reply was lost (UX.md, "Words").
+  const phase: PendingConfirmPhase =
+    phaseProp !== "ready"
+      ? phaseProp
+      : action.status === "running"
+        ? "pending"
+        : action.status === "failed"
+          ? "unknown"
+          : "ready";
   const pending = phase === "pending";
   const unknown = phase === "unknown";
   useLayoutEffect(() => {
@@ -180,7 +201,12 @@ export function PendingConfirmDialog({
               disabled={pending}
               focusableWhenDisabled
               aria-describedby={unknown ? reasonId : undefined}
-              onClick={onConfirm}
+              onClick={() =>
+                // Resolved, the step is done: close rather than return to "ready" and ask again for a step that happened.
+                action.run(onConfirm, {
+                  onResolve: () => report(onOpenChange, false, { reason: "action" }),
+                })
+              }
             >
               {pending ? pendingLabel : unknown ? "Try again" : confirmLabel}
             </Button>

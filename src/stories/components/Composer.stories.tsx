@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Composer, ComposerContext, ComposerField, ComposerSend } from "#avenue/components/composer";
+import { listenForAnnouncements } from "./announce-kit";
 import { dmThread, groupThread, messageById, personById } from "./chat-kit";
 
 // AVE-134. The reply box under a chat, in Management's chat window footer, on the shared chat fixture (AVE-133).
@@ -236,8 +237,12 @@ export const SendingHeld: Story = {
   ),
   play: async ({ canvas }) => {
     await userEvent.click(field(canvas, toBoard));
+    const announcements = listenForAnnouncements();
     await userEvent.keyboard("{Enter}");
     await expect(canvas.getByRole("button", { name: "Send" })).toHaveAccessibleDescription("Sending…");
+    // A send still going after a second is said to a screen reader, as ui-sdk's pendingAnnouncement (AVE-150).
+    await waitFor(() => expect(announcements.heard).toContain("Sending"), { timeout: 3_000 });
+    announcements.stop();
   },
 };
 

@@ -17,6 +17,7 @@ import {
 } from "react";
 import { Button } from "#avenue/components/button";
 import { Textarea } from "#avenue/components/textarea";
+import { isThenable, usePendingAnnouncement } from "#avenue/lib/pending";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
@@ -74,20 +75,21 @@ function useComposer(part: string): ComposerState {
   return state;
 }
 
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return typeof value === "object" && value !== null && typeof (value as { then?: unknown }).then === "function";
-}
-
 type ComposerProps = Omit<OwnPartProps<"form">, "onSubmit"> & {
   /** Sends the trimmed text. Return a promise to keep the text until it resolves; a rejected one keeps it to retry. */
-  onSend: (text: string) => unknown;
+  onSend: (text: string) => void | PromiseLike<unknown>;
+  /**
+   * What screen readers hear once a send's promise has run for a second, as ui-sdk's `pendingAnnouncement`. "Sending"
+   * by default; an empty string says nothing.
+   */
+  pendingAnnouncement?: string | undefined;
   /** Turns the whole composer off (the field and Send). Say why with `disabledReason`. */
   disabled?: boolean | undefined;
   /** Why the composer is off, shown as one muted line under it and read with the field. Implies `disabled`. */
   disabledReason?: ReactNode | undefined;
 };
 
-function Composer({ onSend, disabled, disabledReason, className, children, render, ...props }: NodeChildren<ComposerProps>) {
+function Composer({ onSend, pendingAnnouncement = "Sending", disabled, disabledReason, className, children, render, ...props }: NodeChildren<ComposerProps>) {
   const reasonId = useId();
   const [controller] = useState(createInputController);
   // The field is controlled here unless the app controls it. Clearing through React state, not the controller, keeps
@@ -100,6 +102,7 @@ function Composer({ onSend, disabled, disabledReason, className, children, rende
     else setDraft("");
   }, [shown.controlled, controller]);
   const [sending, setSending] = useState(false);
+  usePendingAnnouncement(sending, pendingAnnouncement);
   const [context, setContext] = useState<ComposerState["context"]>();
   const off = Boolean(disabled || disabledReason);
 

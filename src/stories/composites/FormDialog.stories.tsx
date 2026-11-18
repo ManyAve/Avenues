@@ -9,6 +9,7 @@ import { FormDialog } from "#avenue/components/form-dialog";
 import { Input } from "#avenue/components/input";
 import { Select, type SelectOption } from "#avenue/components/select";
 import { Textarea } from "#avenue/components/textarea";
+import { listenForAnnouncements } from "../components/announce-kit";
 
 // AVE-9, composite 1. Every form dialog in ManyAve: icon title, fields, error slot, Cancel and submit, and the
 // discard guard. All names, addresses and amounts are fictional.
@@ -52,8 +53,8 @@ function AddDocument({
   askAdmin?: string;
   submitLabel?: string;
   submitDisabled?: boolean;
-  alternate?: { label: string; onSubmit: () => void };
-  onSubmit?: (title: string) => void;
+  alternate?: { label: string; onSubmit: () => void | PromiseLike<unknown> };
+  onSubmit?: (title: string) => void | PromiseLike<unknown>;
 }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -464,5 +465,107 @@ export const LongForm: Story = {
     const save = screen.getByRole("button", { name: "Save household" });
     await waitFor(() => expect(save).toBeVisible());
     await expect(save.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+  },
+};
+
+/** A save in flight that the play settles: resolve or reject it from outside, like a server's reply. */
+let reply: { resolve: () => void; reject: (reason: unknown) => void } | undefined;
+const save = () =>
+  new Promise<void>((resolve, reject) => {
+    reply = { resolve, reject };
+  });
+
+/**
+ * AVE-150: `onSubmit` returns a Promise, and that alone drives the dialog, as ui-sdk's Button does. While it runs,
+ * submit shows "Saving…" and is off, a second Enter doesn't submit twice, and Esc and Cancel can't close it. Once it
+ * resolves, the dialog closes and focus goes back to the trigger.
+ */
+export const PromiseResolves: Story = {
+  render: function Resolves() {
+    const [calls, setCalls] = useState(0);
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <AddDocument
+          onSubmit={() => {
+            setCalls((n) => n + 1);
+            return save();
+          }}
+        />
+        <output className="text-meta text-muted-foreground">{calls ? `Saved ${calls} time${calls > 1 ? "s" : ""}` : ""}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Add document" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Title" })).toHaveFocus());
+    await userEvent.keyboard("Pool rules{Enter}");
+    const saving = await screen.findByRole("button", { name: "Saving…" });
+    await expect(saving).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    await expect(canvas.getByText("Saved 1 time")).toBeInTheDocument();
+    reply?.resolve();
+    // Closed without asking "Discard changes?": what was typed is saved.
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/**
+ * A rejected Promise keeps the dialog open with what was typed, and its message shows in the error slot, announced
+ * at once. Submit is on again; the next submit clears the error and saves.
+ */
+export const PromiseRejects: Story = {
+  render: () => <AddDocument defaultOpen onSubmit={save} />,
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    const title = screen.getByRole("textbox", { name: "Title" });
+    await waitFor(() => expect(title).toHaveFocus());
+    await userEvent.keyboard("Pool rules{Enter}");
+    await screen.findByRole("button", { name: "Saving…" });
+    reply?.reject(new Error("We couldn’t save the document. Check your connection and try again."));
+    const alert = await within(dialog).findByRole("alert");
+    await expect(alert).toHaveTextContent("We couldn’t save the document. Check your connection and try again.");
+    await expect(title).toHaveValue("Pool rules");
+    const submit = screen.getByRole("button", { name: "Save document" });
+    await expect(submit).not.toHaveAttribute("aria-disabled");
+    submit.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(within(dialog).queryByText(/couldn’t save/)).not.toBeInTheDocument());
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
+
+/**
+ * A slow Promise: after a second a screen reader hears the pending label (ui-sdk's `pendingAnnouncement`), and after
+ * `slowAfter` (8 seconds in the app, shortened here) the footer's slow line shows, as with `pending`. A rejection with
+ * no message of its own shows Avenue's sentence.
+ */
+export const PromiseSlow: Story = {
+  render: () => <AddDocument defaultOpen again="record" slowAfter={50} submitLabel="Record payment" onSubmit={save} />,
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "Add document" });
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Title" })).toHaveFocus());
+    const announcements = listenForAnnouncements();
+    await userEvent.keyboard("{Enter}");
+    const status = dialog.querySelector<HTMLElement>("[data-slot=slow-save]")!;
+    await waitFor(() =>
+      expect(status).toHaveTextContent(
+        "This is taking longer than usual. Keep this open. It will finish on its own. Closing now won’t stop it, so don’t record it again.",
+      ),
+    );
+    await waitFor(() => expect(announcements.heard).toContain("Saving…"), { timeout: 3_000 });
+    announcements.stop();
+    reply?.reject(undefined);
+    await expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "We couldn’t save this. Check your connection and try again.",
+    );
+    await expect(status).toBeEmptyDOMElement();
   },
 };

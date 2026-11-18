@@ -25,7 +25,8 @@ import {
 } from "#avenue/components/dialog";
 import { FieldGroup, FieldSet } from "#avenue/components/field";
 import { InlineMessage } from "#avenue/components/inline-message";
-import type { ChangeDetails } from "#avenue/lib/change";
+import { report, type ChangeDetails } from "#avenue/lib/change";
+import { rejectionText, useAction, usePendingAnnouncement } from "#avenue/lib/pending";
 import { cn } from "#avenue/lib/utils";
 
 /** What `onOpenChange` gets after the state: ui-sdk Dialog's details, or the Discard confirmation's. */
@@ -46,11 +47,18 @@ interface FormDialogBaseProps {
   title: string;
   /** For screen readers: what the form is for. */
   description: string;
-  /** Shown on the submit button while `pending`, e.g. "Saving…". */
+  /** Shown on the submit button while pending, e.g. "Saving…". */
   pendingLabel?: string | undefined;
   /**
-   * The save is running: submit shows its pending label and is off. After `slowAfter` ms a line in the footer says
-   * the save is slow and will finish (MANA-1039).
+   * What screen readers hear once a save has run for a second, as ui-sdk's `pendingAnnouncement`. `pendingLabel` by
+   * default; an empty string says nothing.
+   */
+  pendingAnnouncement?: string | undefined;
+  /**
+   * A save is running that the dialog didn't start (a mutation already in flight). A Promise returned by `onSubmit` or
+   * `alternate.onSubmit` makes the dialog pending by itself, so most forms don't need this; when true it wins, and the
+   * dialog stays pending after that Promise settles. While pending, submit shows its pending label and is off. After
+   * `slowAfter` ms a line in the footer says the save is slow and will finish (MANA-1039).
    */
   pending?: boolean | undefined;
   /**
@@ -66,7 +74,10 @@ interface FormDialogBaseProps {
   slowAfter?: number | undefined;
   /** The form holds unsaved input: Esc, an outside press, Cancel or ✕ ask "Discard changes?" first. */
   dirty?: boolean | undefined;
-  /** The form's error, under the fields (announced at once). Field errors go on their fields. */
+  /**
+   * The form's error, under the fields (announced at once). Field errors go on their fields. When set, it wins over a
+   * rejected `onSubmit` Promise, whose message shows here otherwise.
+   */
   error?: ReactNode;
   /**
    * Why this person can't save this: a plain member (MAN-795) or a read-only board (MANA-953). The fields and the
@@ -83,11 +94,16 @@ export interface FormDialogSubmitProps extends FormDialogBaseProps {
   submitLabel: string;
   /** Submit is off for a reason other than a save, e.g. while a file uploads (put the progress in `submitLabel`). */
   submitDisabled?: boolean | undefined;
-  /** A second way to save, shown before submit, e.g. "Save & prepare letter". Off whenever submit is. */
-  alternate?: { label: string; onSubmit: () => void } | undefined;
+  /** A second way to save, shown before submit, e.g. "Save & prepare letter". Off whenever submit is. Its `onSubmit` takes a Promise as the main one does. */
+  alternate?: { label: string; onSubmit: () => void | PromiseLike<unknown> } | undefined;
   cancelLabel?: string | undefined;
-  /** Called on Enter in a field or a press of submit, unless pending, submit is off, or `askAdmin`. */
-  onSubmit: () => void;
+  /**
+   * Called on Enter in a field or a press of submit, unless pending, submit is off, or `askAdmin`. Return a Promise
+   * and the dialog is pending until it settles, as ui-sdk's Button and a dialog Close part's `action` are: resolved,
+   * the dialog closes (so resolve only when it saved); rejected, it stays open and the rejection's message shows as the
+   * form's error, so reject with the sentence to show. The next submit clears it.
+   */
+  onSubmit: () => void | PromiseLike<unknown>;
 }
 
 export interface FormDialogCloseOnlyProps extends FormDialogBaseProps {
@@ -103,6 +119,9 @@ export interface FormDialogCloseOnlyProps extends FormDialogBaseProps {
 export type FormDialogProps = FormDialogSubmitProps | FormDialogCloseOnlyProps;
 
 const SLOW_SAVE_MS = 8_000;
+
+/** The form's error when a submit's Promise rejects with no message of its own. */
+const SAVE_FAILED = "We couldn’t save this. Check your connection and try again.";
 
 /** True once `active` has stayed true for `after` ms; false again as soon as it ends. Ported from the app's useSlow. */
 function useSlow(active: boolean, after: number) {
@@ -138,6 +157,10 @@ function slowLine(held: boolean, again: string | undefined) {
  * AVE-120 adds what the app's DuesForm does, so every board form can move onto this one: the slow-save line, the
  * hold while a write is in flight (and `locked`), read-only fields with `askAdmin`, `submitDisabled`, a second submit
  * (`alternate`) and `closeOnly`. Callout (callout.tsx) is the info or warning note those forms show above the fields.
+ *
+ * AVE-150: `onSubmit` may return a Promise, which drives all of that by itself, as ui-sdk's Button does: pending while
+ * it runs, closed when it resolves, its message in the error slot when it rejects. `pending` stays for a save started
+ * somewhere else.
  */
 export function FormDialog(props: FormDialogProps) {
   const {
@@ -149,7 +172,8 @@ export function FormDialog(props: FormDialogProps) {
     title,
     description,
     pendingLabel,
-    pending = false,
+    pendingAnnouncement,
+    pending: pendingProp = false,
     holdWhilePending = true,
     locked = false,
     again,
@@ -163,7 +187,12 @@ export function FormDialog(props: FormDialogProps) {
   const [ownOpen, setOwnOpen] = useState(defaultOpen);
   const [asking, setAsking] = useState(false);
   const askAdminId = useId();
+  const action = useAction(openProp ?? ownOpen);
+  // `pending` wins: it holds the dialog after a Promise settles. A Promise still running keeps it pending even when the
+  // app passes pending={false}, so a second Enter can't submit twice.
+  const pending = pendingProp || action.status === "running";
   const slow = useSlow(pending, slowAfter);
+  usePendingAnnouncement(pending, pendingAnnouncement ?? pendingLabel);
   const open = openProp ?? ownOpen;
   const held = locked || (pending && holdWhilePending);
   const submitOff = pending || !!askAdmin || (!props.closeOnly && !!props.submitDisabled);
@@ -172,6 +201,12 @@ export function FormDialog(props: FormDialogProps) {
     onOpenChange?.(next, details);
     if (!details.canceled && openProp === undefined) setOwnOpen(next);
   };
+  // A resolved save closes the dialog, with reason "action", as a resolved ui-sdk Close `action` does. Resolve only when
+  // it saved.
+  const close = () => {
+    report<boolean, FormDialogOpenChangeDetails["reason"]>(setOpen, false, { reason: "action" });
+  };
+  const shownError = error || (action.status === "failed" ? rejectionText(action.error, SAVE_FAILED) : null);
   return (
     <Dialog
       open={open}
@@ -194,7 +229,7 @@ export function FormDialog(props: FormDialogProps) {
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            if (!props.closeOnly && !submitOff) props.onSubmit();
+            if (!props.closeOnly && !submitOff) action.run(props.onSubmit, { onResolve: close });
           }}
         >
           {/* pe-12 (48px), not the 16px inset (AVE-61): the close button is 24px, 16px from the corner, so a long
@@ -211,7 +246,7 @@ export function FormDialog(props: FormDialogProps) {
             <FieldSet disabled={!!askAdmin} className="contents">
               {children}
             </FieldSet>
-            <InlineMessage tone="error">{error}</InlineMessage>
+            <InlineMessage tone="error">{shownError}</InlineMessage>
           </FieldGroup>
           <DialogFooter className="m-0 shrink-0 px-inset py-row-y sm:flex-wrap sm:items-center">
             {askAdmin && (
@@ -237,7 +272,9 @@ export function FormDialog(props: FormDialogProps) {
                 disabled={submitOff}
                 focusableWhenDisabled
                 aria-describedby={askAdmin ? askAdminId : undefined}
-                onClick={props.alternate.onSubmit}
+                onClick={() => {
+                  if (!props.closeOnly && props.alternate) action.run(props.alternate.onSubmit, { onResolve: close });
+                }}
               >
                 {props.alternate.label}
               </Button>
