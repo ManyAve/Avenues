@@ -322,9 +322,11 @@ function SearchablePill({
                   // The short list's checkbox row, with the highlight as its hover: on a touch screen 44px tall (AVE-22).
                   className="group/value flex cursor-pointer snap-start items-center gap-2 rounded-md px-2 py-1 text-control outline-none data-highlighted:bg-muted pointer-coarse:min-h-11"
                 >
+                  {/* data-[selected], not data-selected: Avenue's shadcn.css reads `data-selected:` as
+                      [data-selected="true"], and ui-sdk sets it empty. */}
                   <span
                     aria-hidden
-                    className="flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-selected/value:border-primary group-data-selected/value:bg-primary group-data-selected/value:text-primary-foreground dark:bg-input/30 dark:group-data-selected/value:bg-primary"
+                    className="flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-[selected]/value:border-primary group-data-[selected]/value:bg-primary group-data-[selected]/value:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/value:bg-primary"
                   >
                     <Ui.ComboboxItemIndicator className="grid place-content-center [&>svg]:size-3.5">
                       <CheckIcon aria-hidden />

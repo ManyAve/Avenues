@@ -454,5 +454,9 @@ export const LongListPhone: Story = {
     await expect(box.right).toBeLessThanOrEqual(window.innerWidth);
     await userEvent.click(screen.getByRole("option", { name: "Pine Ridge" }));
     await expect(count()).toHaveTextContent("2 of 30 households");
+    // A chosen value's box fills like a checked Checkbox (ui-sdk marks it `data-selected=""`, which Tailwind's
+    // `data-selected:` misses here).
+    const fill = (name: string) => getComputedStyle(screen.getByRole("option", { name }).querySelector("span")!).backgroundColor;
+    await expect(fill("Pine Ridge")).not.toBe(fill("Oak Street"));
   },
 };
