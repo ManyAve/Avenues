@@ -116,12 +116,13 @@ anything blocks it.
 ## Renamed parts
 
 Avenue's parts take the names of the ui-sdk parts they wrap (AVE-144, v0.25.0), so a name in ui-sdk's docs is the
-name in Avenue. The old names still work until the next minor release: each is a deprecated alias of the new part
+name in Avenue. The old names still work: each is a deprecated alias of the new part
 (your editor strikes it through), and the old import paths re-export the new files. Nothing on screen changes, and
 `data-slot` values stay as they were, so tests and styles that select them keep working. Rename at your own pace;
-the aliases and old paths go in v0.26.0.
+the aliases and old paths are deprecated and removed once both apps have moved off them (AVE-154). No release before then removes them: earlier
+versions of this page named one, and AVE-158 took that back.
 
-| Old name (until v0.26) | New name | Import from |
+| Old name (deprecated) | New name | Import from |
 | --- | --- | --- |
 | `DropdownMenu` | `Menu` | `@manyave/avenue/components/menu` (was `dropdown-menu`) |
 | `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuGroup` | `MenuTrigger`, `MenuContent`, `MenuGroup` | `components/menu` |
@@ -144,9 +145,10 @@ the aliases and old paths go in v0.26.0.
 Props don't change in this release. In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
 Components / Drawer, so links to the old pages need the new address.
 
-File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old names go in v0.30.0:
+File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old names are deprecated and
+removed once both apps have moved off them (AVE-154):
 
-| Old name (until v0.30) | New name |
+| Old name (deprecated) | New name |
 | --- | --- |
 | `FileName` | `FileFieldName` |
 | `FileThumbnail` | `FileFieldPreview` |
@@ -156,20 +158,20 @@ File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old nam
 
 State props take ui-sdk's names too (AVE-145, v0.26.0): `value` / `defaultValue` / `onValueChange`, `checked` /
 `onCheckedChange`, and every change callback gets ui-sdk's `details` second (reason, event, source, `cancel()`). The
-old prop names still work until v0.27.0, typed `@deprecated`. A callback that ignores its second argument needs no
+old prop names still work, typed `@deprecated`, and are removed once both apps have moved off them (AVE-154). A callback that ignores its second argument needs no
 change.
 
-| Component | Old prop (until v0.27) | New prop |
+| Component | Old prop (deprecated) | New prop |
 | --- | --- | --- |
 | `TableFilters` | `filters`, `onChange` | `value`, `onValueChange` (and `defaultValue`) |
 | `SortMenu` | `onChange` | `onValueChange` (`value` optional, and `defaultValue`) |
 | `RegisterGroupRow` | `selection` (`"all"`, `"some"`, `"none"`), `onSelectedChange` | `checked` (`true`, `"indeterminate"`, `false`), `onCheckedChange` |
 | `ModeToggle` | `choice`, `onThemeChange` | `value`, `onValueChange` (and `defaultValue`; `defaultDev` beside `dev`) |
 
-Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still work until v0.32.0, typed
-`@deprecated`, and draw the same:
+Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still work, typed
+`@deprecated`, draw the same, and are removed once both apps have moved off them (AVE-154):
 
-| Where | Old (until v0.32) | New |
+| Where | Old (deprecated) | New |
 | --- | --- | --- |
 | `MenuItem` | `variant="destructive"` | `destructive` (ui-sdk's prop; sets `data-destructive`) |
 | `MenuItem` | `reason` | `disabledReason`, as on `Button`, `Composer` and `FileField` |
@@ -181,7 +183,7 @@ Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-s
 ## Select and Combobox take items, and come in parts
 
 Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options` is
-the old name and still works until v0.29.0, typed `@deprecated`; the entries are the same, so renaming the prop is
+the old name and still works, typed `@deprecated`, until it is removed once both apps have moved off them (AVE-154); the entries are the same, so renaming the prop is
 the whole change. `SelectOption` is now `ListItem`, `ComboboxOption` is `ComboboxItemData`, and a TableFilters
 field's `options` is `items`.
 

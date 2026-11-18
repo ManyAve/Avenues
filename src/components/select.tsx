@@ -31,7 +31,7 @@ import { cn } from "#avenue/lib/utils";
 
 export type { ListData, ListGroup, ListItem, ListSeparator };
 
-/** @deprecated Use `ListItem`, the shape of each entry in `items`. Kept until v0.29.0 (AVE-146). */
+/** @deprecated Use `ListItem`, the shape of each entry in `items` (AVE-146). */
 export type SelectOption<V extends string = string> = ListItem<V>;
 
 type Native = "auto" | "always" | "never";
@@ -161,7 +161,7 @@ interface SelectRootProps<T> {
    * `itemToValue`. With parts as children, `items` gives the trigger its labels before the list opens.
    */
   items?: ListData<T> | undefined;
-  /** @deprecated Use `items`, which takes the same `{ value, label, disabled }` entries. Kept until v0.29.0 (AVE-146). */
+  /** @deprecated Use `items`, which takes the same `{ value, label, disabled }` entries (AVE-146). */
   options?: readonly ListItem<T>[] | undefined;
   /** The chosen value, or null for none (shows `placeholder`). */
   value?: T | null | undefined;

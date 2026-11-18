@@ -225,7 +225,7 @@ export const InAForm: Story = {
   },
 };
 
-/** "" was "nothing chosen" before v0.21.0 and still reads as none for one release (AVE-137). */
+/** "" was "nothing chosen" (AVE-137) and still reads as none until both apps have moved off it. */
 export const EmptyStringIsNone: Story = {
   name: "Empty string still means none",
   render: () => (

@@ -246,8 +246,8 @@ export const WiderThanAPhone: Story = {
 };
 
 /**
- * The names before AVE-151, deprecated until v0.32.0: `variant="destructive"` is `destructive`, `reason` is
- * `disabledReason`. Each old-name item renders exactly as its new-name twin.
+ * The names before AVE-151, deprecated until both apps have moved off them (AVE-154): `variant="destructive"` is
+ * `destructive`, `reason` is `disabledReason`. Each old-name item renders exactly as its new-name twin.
  */
 export const DeprecatedNames: Story = {
   render: () => (

@@ -49,21 +49,21 @@ function useNoDrag() {
 type TopBarProps = OwnPartProps<"header"> & {
   /** The bar is the desktop window's drag area; its links and actions stay clickable. */
   windowDrag?: boolean | undefined;
-  /** @deprecated Use TopBarHome's `logo` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarHome's `logo` (AVE-149). */
   logo?: ReactNode;
-  /** @deprecated Use TopBarHome's `name` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarHome's `name` (AVE-149). */
   name?: string | undefined;
-  /** @deprecated Use TopBarHome's `href` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarHome's `href` (AVE-149). */
   homeHref?: string | undefined;
-  /** @deprecated Use TopBarHome's `render` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarHome's `render` (AVE-149). */
   homeRender?: RenderProp | undefined;
-  /** @deprecated Use TopBarHome's `onHome` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarHome's `onHome` (AVE-149). */
   onHome?: (() => void) | undefined;
-  /** @deprecated Use `<TopBarOrg>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<TopBarOrg>` (AVE-149). */
   org?: ReactNode;
-  /** @deprecated Use `<TopBarActions>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<TopBarActions>` (AVE-149). */
   actions?: ReactNode;
-  /** @deprecated Use TopBarNav's `aria-label` (v0.30.0, AVE-149). */
+  /** @deprecated Use TopBarNav's `aria-label` (AVE-149). */
   navLabel?: string | undefined;
 };
 

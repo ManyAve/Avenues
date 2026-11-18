@@ -51,7 +51,7 @@ export type ComboboxItemData<T = string> = ListItem<T> & {
   meta?: string | undefined;
 };
 
-/** @deprecated Use `ComboboxItemData`, the shape of each entry in `items`. Kept until v0.29.0 (AVE-146). */
+/** @deprecated Use `ComboboxItemData`, the shape of each entry in `items` (AVE-146). */
 export type ComboboxOption = ComboboxItemData<string>;
 
 // ui-sdk treats an empty value as nothing chosen, so the "none" option carries its own value inside the component. A
@@ -60,7 +60,7 @@ const NONE = "\u0000none";
 const NO_ITEMS: readonly never[] = [];
 type None = typeof NONE;
 
-/** "" is the old "nothing chosen" (before v0.21.0); it still reads as null for one release (AVE-137). */
+/** "" is the old "nothing chosen" (AVE-137); it still reads as null until both apps have moved off it. */
 const chosen = <T,>(value: T | null | undefined): T | null => (value === "" || value === undefined ? null : value);
 
 const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
@@ -349,7 +349,8 @@ function ComboboxSeparator({ className, ...props }: Loose<ComponentProps<typeof 
 interface ComboboxSharedProps<T, Item extends ComboboxItemData<T>> {
   /**
    * The chosen value, or null for none. Pass it with `onValueChange` to control the field, or leave it out
-   * and use `defaultValue`. "" still means none for one release (deprecated in v0.21.0, AVE-137).
+   * and use `defaultValue`. "" still means none, deprecated (AVE-137) and removed once both apps
+   * have moved off it (AVE-154).
    */
   value?: T | null | undefined;
   /** The value chosen at first, when `value` is left out. A form reset returns to it. */
@@ -402,7 +403,7 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
      * an object, with `itemToValue` and `itemToLabel`.
      */
     items?: ListData<NoInfer<T>, Item> | undefined;
-    /** @deprecated Use `items`, which takes the same entries. Kept until v0.29.0 (AVE-146). */
+    /** @deprecated Use `items`, which takes the same entries (AVE-146). */
     options?: readonly Item[] | undefined;
     /** Adds a first option that clears the choice (Documents' "Neighborhood"). Without it, null shows `placeholder`. */
     noneLabel?: string | undefined;

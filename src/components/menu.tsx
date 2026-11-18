@@ -104,9 +104,9 @@ function MenuItem({
   destructive?: boolean | undefined;
   /** Why a disabled item is unavailable: one muted line under the label, read with the item. */
   disabledReason?: ReactNode | undefined;
-  /** @deprecated Use `destructive`. Removed in v0.32.0 (AVE-154). */
+  /** @deprecated Use `destructive`. */
   variant?: "default" | "destructive" | undefined;
-  /** @deprecated Use `disabledReason`. Removed in v0.32.0 (AVE-154). */
+  /** @deprecated Use `disabledReason`. */
   reason?: ReactNode | undefined;
   /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
   onClick?: SelectHandler | undefined;

@@ -246,7 +246,7 @@ export type GroupSelection = "none" | "some" | "all";
  *
  * Names follow ui-sdk (AVE-145): `checked` / `onCheckedChange` for the street's checkbox, whose details are ui-sdk
  * Checkbox's, and `open` / `onOpenChange`, which reports reason "trigger-press" with the press. `selection` and
- * `onSelectedChange` are the old names, kept until v0.27.0. `open` is controlled only, on purpose: the
+ * `onSelectedChange` are the old names, deprecated. `open` is controlled only, on purpose: the
  * app hides the street's rows itself, so it must hold the state.
  */
 function RegisterGroupRow({
@@ -278,9 +278,9 @@ function RegisterGroupRow({
   checked?: boolean | "indeterminate" | undefined;
   /** Select (true) or clear (false) every row of this street. Gets ui-sdk Checkbox's details second. */
   onCheckedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
-  /** @deprecated Use `checked`: "all" is true, "some" is "indeterminate", "none" is false. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `checked`: "all" is true, "some" is "indeterminate", "none" is false (AVE-145). */
   selection?: GroupSelection | undefined;
-  /** @deprecated Use `onCheckedChange`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `onCheckedChange` (AVE-145). */
   onSelectedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
 }) {
   const checked = checkedProp ?? (selection === undefined ? undefined : selection === "all" ? true : selection === "some" ? "indeterminate" : false);
@@ -416,7 +416,7 @@ function SortMenu({
   value?: SortValue | undefined;
   defaultValue?: SortValue | undefined;
   onValueChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
-  /** @deprecated Use `onValueChange`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `onValueChange` (AVE-145). */
   onChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
   help?: string | undefined;
 }) {

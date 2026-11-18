@@ -23,7 +23,7 @@ export type CalendarMark = { className?: string | undefined; tint?: string | und
 export type CalendarProps = NodeChildren<Loose<ComponentProps<typeof CalendarRoot>>> & {
   /**
    * A dot under the day, for days that hold something. Decoration: say what it means beside the calendar.
-   * @deprecated Write the days: `<CalendarDay value={cell.date}><CalendarDayMark /></CalendarDay>` (v0.30.0, AVE-149).
+   * @deprecated Write the days: `<CalendarDay value={cell.date}><CalendarDayMark /></CalendarDay>` (AVE-149).
    */
   mark?: ((date: string) => CalendarMark | undefined) | undefined;
 };

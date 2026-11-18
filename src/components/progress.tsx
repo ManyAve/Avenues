@@ -41,7 +41,7 @@ type ProgressProps = NodeChildren<Loose<ComponentProps<typeof ProgressPrimitive>
   size?: ProgressSize | undefined;
   /**
    * Class for the track, e.g. to lay an xs bar along an edge.
-   * @deprecated Write the track: `<ProgressTrack className="…"><ProgressIndicator /></ProgressTrack>` (v0.30.0, AVE-149).
+   * @deprecated Write the track: `<ProgressTrack className="…"><ProgressIndicator /></ProgressTrack>` (AVE-149).
    */
   trackClassName?: string | undefined;
 };

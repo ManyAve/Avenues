@@ -1,6 +1,6 @@
 // Fails the typecheck if Select, Combobox or TableFilters stop taking what Management and Neighbors pass today
 // (AVE-146). Each case copies the shape of a call site in those apps, with fictional data. `options` is the deprecated
-// name for `items`; it keeps working until v0.29.0.
+// name for `items`; it keeps working until both apps have moved off it.
 import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
 import { Select } from "#avenue/components/select";
 import { TableFilters, type FilterField } from "#avenue/components/table-filter";
