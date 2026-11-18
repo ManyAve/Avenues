@@ -11,7 +11,7 @@ export interface CalloutProps extends OwnPartProps<"div"> {
   tone?: CalloutTone | undefined;
   /**
    * The leading icon. Info by default; pass TriangleAlert with a warning, or Clock for something still processing.
-   * @deprecated Use `<CalloutIcon><TriangleAlertIcon /></CalloutIcon>` and `<CalloutContent>` (v0.31.0, AVE-149).
+   * @deprecated Use `<CalloutIcon><TriangleAlertIcon /></CalloutIcon>` and `<CalloutContent>` (AVE-149).
    */
   icon?: LucideIcon | undefined;
 }

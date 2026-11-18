@@ -391,7 +391,7 @@ export const Phone: Story = {
         moreMenu={
           <>
             <MenuItem>Group by street</MenuItem>
-            <MenuItem disabled reason={importReason}>
+            <MenuItem disabled disabledReason={importReason}>
               Import households
             </MenuItem>
           </>

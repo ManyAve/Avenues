@@ -31,7 +31,7 @@ export interface InlineMessageProps extends Omit<OwnPartProps<"div">, "role" | "
   children?: ReactNode;
   /**
    * Hides the leading icon, for a message under a field where the field's own invalid ring already signals it.
-   * @deprecated Write the parts and leave `InlineMessageIcon` out (v0.31.0, AVE-149).
+   * @deprecated Write the parts and leave `InlineMessageIcon` out (AVE-149).
    */
   hideIcon?: boolean | undefined;
 }

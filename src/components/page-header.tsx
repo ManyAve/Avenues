@@ -41,17 +41,17 @@ function PageHeader({
   render,
   ...props
 }: Omit<OwnPartProps<"header">, "title"> & {
-  /** @deprecated Use `<PageHeaderEyebrow>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<PageHeaderEyebrow>` (AVE-149). */
   eyebrow?: ReactNode;
-  /** @deprecated Use `<PageHeaderTitle>` inside `PageHeaderContent` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<PageHeaderTitle>` inside `PageHeaderContent` (AVE-149). */
   title?: string | undefined;
-  /** @deprecated Use `<PageHeaderCount value={…}>` inside the title (v0.30.0, AVE-149). */
+  /** @deprecated Use `<PageHeaderCount value={…}>` inside the title (AVE-149). */
   count?: ReactNode;
-  /** @deprecated Use PageHeaderCount's `label` (v0.30.0, AVE-149). */
+  /** @deprecated Use PageHeaderCount's `label` (AVE-149). */
   countLabel?: string | undefined;
-  /** @deprecated Use `<PageHeaderDescription>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<PageHeaderDescription>` (AVE-149). */
   description?: ReactNode;
-  /** @deprecated Use `<PageHeaderActions>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<PageHeaderActions>` (AVE-149). */
   actions?: ReactNode;
 }) {
   return renderElement(

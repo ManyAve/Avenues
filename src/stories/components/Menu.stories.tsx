@@ -47,7 +47,7 @@ function HouseholdMenu({ defaultOpen }: { defaultOpen?: boolean }) {
             <PrinterIcon aria-hidden />
             Print statement
           </MenuItem>
-          <MenuItem disabled reason="Only a board admin can send a live notice.">
+          <MenuItem disabled disabledReason="Only a board admin can send a live notice.">
             Send live notice
           </MenuItem>
           <MenuSub>
@@ -72,7 +72,7 @@ function HouseholdMenu({ defaultOpen }: { defaultOpen?: boolean }) {
           </MenuRadioGroup>
         </MenuGroup>
         <MenuSeparator />
-        <MenuItem variant="destructive">
+        <MenuItem destructive>
           <TrashIcon aria-hidden />
           Remove household
         </MenuItem>
@@ -90,6 +90,9 @@ export const Open: Story = {
     const disabled = screen.getByRole("menuitem", { name: /Send live notice/ });
     await expect(disabled).toHaveAttribute("aria-disabled", "true");
     await expect(disabled).toHaveAccessibleDescription("Only a board admin can send a live notice.");
+    // `destructive` is ui-sdk's prop and sets ui-sdk's attribute, which the item's look reads (AVE-151).
+    await expect(screen.getByRole("menuitem", { name: /Remove household/ })).toHaveAttribute("data-destructive");
+    await expect(screen.getByRole("menuitem", { name: /Print statement/ })).not.toHaveAttribute("data-destructive");
     // Placed on whole device pixels (AVE-21, Avenue's ui-sdk patch), so its text is as sharp as the page's on a 1x
     // screen. The trigger is centred and 92.6px wide here, so an unrounded menu lands at 593.688px.
     const popup = screen.getByRole("menu");
@@ -225,7 +228,7 @@ export const WiderThanAPhone: Story = {
           <MailIcon aria-hidden />
           Resend the board invitation to the treasurer at their new address
         </MenuItem>
-        <MenuItem variant="destructive">
+        <MenuItem destructive>
           <TrashIcon aria-hidden />
           Remove from the board
         </MenuItem>
@@ -239,5 +242,39 @@ export const WiderThanAPhone: Story = {
     await expect(r.left).toBeGreaterThanOrEqual(8);
     await expect(document.documentElement.clientWidth - r.right).toBeGreaterThanOrEqual(8);
     await expect(menu.scrollWidth).toBeLessThanOrEqual(menu.clientWidth);
+  },
+};
+
+/**
+ * The names before AVE-151, deprecated until both apps have moved off them (AVE-154): `variant="destructive"` is
+ * `destructive`, `reason` is `disabledReason`. Each old-name item renders exactly as its new-name twin.
+ */
+export const DeprecatedNames: Story = {
+  render: () => (
+    <Menu defaultOpen>
+      <MenuTrigger render={<Button variant="outline" />}>
+        Household
+        <ChevronDownIcon aria-hidden data-icon="inline-end" />
+      </MenuTrigger>
+      <MenuContent>
+        <MenuItem disabled reason="Only a board admin can send a live notice.">
+          Send live notice (old name)
+        </MenuItem>
+        <MenuItem disabled disabledReason="Only a board admin can send a live notice.">
+          Send live notice (new name)
+        </MenuItem>
+        <MenuItem variant="destructive">Remove household (old name)</MenuItem>
+        <MenuItem destructive>Remove household (new name)</MenuItem>
+      </MenuContent>
+    </Menu>
+  ),
+  play: async () => {
+    await waitFor(async () => expect(await screen.findByRole("menu")).toBeVisible());
+    const item = (name: string) => screen.getByRole("menuitem", { name: new RegExp(name) });
+    await expect(item("Send live notice \\(old")).toHaveAccessibleDescription("Only a board admin can send a live notice.");
+    await expect(item("Remove household \\(old")).toHaveAttribute("data-destructive");
+    for (const name of ["Send live notice", "Remove household"]) {
+      await expect(item(`${name} \\(old`).className).toBe(item(`${name} \\(new`).className);
+    }
   },
 };

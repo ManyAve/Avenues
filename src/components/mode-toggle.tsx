@@ -32,7 +32,7 @@ const themeItems = [
  * State follows ui-sdk's names (AVE-145): the theme is `value` / `defaultValue` / `onValueChange`, and Dev, a second
  * piece of state on the same root, is `dev` / `defaultDev` / `onDevChange`, ui-sdk's `<key>` / `default<Key>` /
  * `on<Key>Change` pattern. Each callback gets ui-sdk's details second; `details.cancel()` keeps the old state when
- * the toggle holds it itself. `choice` and `onThemeChange` are the old names, kept until v0.27.0.
+ * the toggle holds it itself. `choice` and `onThemeChange` are the old names, deprecated.
  *
  * Behavior from ui-sdk: Dev is a single Toggle (pressed or not; a group of one would be announced as a group), and
  * the theme, through Avenue's ToggleGroup, is a single choice (ui-sdk's SegmentedControl, a radio group: one Tab stop, the arrow keys choose).
@@ -67,9 +67,9 @@ function ModeToggle({
   value?: ThemeChoice | undefined;
   defaultValue?: ThemeChoice | undefined;
   onValueChange?: ((value: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
-  /** @deprecated Use `value`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `value` (AVE-145). */
   choice?: ThemeChoice | undefined;
-  /** @deprecated Use `onValueChange`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `onValueChange` (AVE-145). */
   onThemeChange?: ((theme: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
 }) {
   const [ownTheme, setOwnTheme] = useState(defaultValue);

@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.31.0 (2026-11-18)
+## v0.32.0 (2026-11-18)
 
 - **Callout and InlineMessage come in parts** (AVE-149, the rest of v0.30.0's layout parts). Nothing on screen moves
   (visual diff in the pull request).
@@ -19,6 +19,34 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     its text in `div[data-slot=callout-content]`; InlineMessage's icon and text spans carry `data-slot`
     `inline-message-icon` and `inline-message-content`.
   - Management and Neighbors: nothing to change now.
+## v0.31.1 (2026-11-18)
+
+- **No release promises to remove an old name any more** (AVE-158). Old part and prop names stay deprecated aliases
+  until both Management and Neighbors have moved off them; AVE-154 checks the apps and removes each one then, in its
+  own release. Earlier entries (v0.25.0, v0.26.0, v0.28.0, v0.29.0 and v0.31.0) named a removal version; each now
+  carries a correction note, and ADOPTING.md and every `@deprecated` message drop the version too.
+  - A script test fails when a `@deprecated` message, a dev warning, or a CHANGELOG, ADOPTING.md or AGENTS.md line
+    ties removing an old name to a version.
+  - Management and Neighbors: nothing to change, and no deadline. Move off the deprecated names at your own pace.
+  - Nothing on screen changes: only comments and docs.
+
+## v0.31.0 (2026-11-18)
+
+- **Menu items and toasts take ui-sdk's names** (AVE-151). A menu item is dangerous with `destructive`, ui-sdk's
+  prop, and is styled from the `data-destructive` attribute ui-sdk sets; the line saying why a disabled item is
+  unavailable is `disabledReason`, as on Button, Composer and FileField. A toast says what it is about with `type`,
+  ui-sdk's toast type: `"success"` (the default), `"error"`, or `"info"` for something under way (what `"progress"`
+  was). ui-sdk's `warning`, `loading` and `default` types aren't taken: Avenue has no look for them yet.
+  - Deprecated; removed once both apps have moved off them (AVE-154): `MenuItem`'s `variant="destructive"` (use `destructive`) and `reason`
+    (use `disabledReason`), and the toast's `variant` (use `type`; `"progress"` is `type: "info"`). Each still works and
+    draws the same.
+  - The menu item no longer carries `data-variant`; select `[data-destructive]` instead.
+  - Button's `variant="destructive"` is unchanged: it picks a look, and ui-sdk has no look props.
+  - **Unchanged on screen:** the visual diff shows no change; only the new Deprecated names stories are added.
+  - Management and Neighbors: nothing to change now. Rename `variant: "error"` to `type: "error"` in toasts at your
+    own pace.
+  - *Corrected by AVE-158:* this entry first named a release that would remove the old names. None does: they stay
+    deprecated and are removed once both apps have moved off them (AVE-154).
   - Phone apps: nothing to take; this is web only.
 
 ## v0.30.0 (2026-11-18)
@@ -101,17 +129,21 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   - A dropped or pasted file reaches `onFileChange` like a picked one; its details' `reason` says `drop` or `paste`.
   - The row's marker moves from `data-slot="file-field-row"` to `data-file-field-row`: the row is ui-sdk's drop zone
     now, and its `data-slot` is ui-sdk's, `file-input-dropzone`.
-  - Deprecated, removed in v0.30.0: `FileName` (use `FileFieldName`), `FileThumbnail` (use `FileFieldPreview`) and
+  - Deprecated; removed once both apps have moved off them (AVE-154): `FileName` (use `FileFieldName`), `FileThumbnail` (use `FileFieldPreview`) and
     `UploadStatus` (use `FileFieldStatus`). Each still works standalone given its old props (`name`, `src`, `status`).
+  - *Corrected by AVE-158:* this entry first named a release that would remove the old names. None does: they stay
+    deprecated and are removed once both apps have moved off them (AVE-154).
   - Management and Neighbors: nothing to change. Management's documents form keeps `FileField` as it is.
   - Phone apps: nothing to take; this is web only.
 
 ## v0.28.0 (2026-11-18)
 
 - **Select and Combobox take `items` in ui-sdk's shape, and come in parts** (AVE-146).
-  - **Rename** (the old names still work until v0.29.0, marked `@deprecated`): Select's and Combobox's `options` →
+  - **Rename** (the old names still work, marked `@deprecated`; removed once both apps have moved off them (AVE-154)): Select's and Combobox's `options` →
     `items`; a TableFilters field's `options` → `items`; the types `SelectOption` → `ListItem` and `ComboboxOption` →
     `ComboboxItemData`. The entries are the same.
+  - *Corrected by AVE-158:* this entry first named a release that would remove the old names. None does: they stay
+    deprecated and are removed once both apps have moved off them (AVE-154).
   - **More in `items`:** plain strings, groups `{ type: "group", label, items }` and separators `{ type: "separator" }`,
     as ui-sdk's `ListData`. A value may be an object, with `itemToValue` (the id it is known and posted by),
     `itemToLabel` and `isItemEqualToValue`. Select's OS picker on phones shows the groups as its own.
@@ -157,7 +189,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   calls each callback as `on<Key>Change(value, details)`, where `details` holds the reason, the DOM event, the source
   (`"keyboard"`, `"mouse"`, `"touch"`, `"agent"`…) and `cancel()`. `source: "agent"` is how an app tells an agent's
   change from a person's. Several Avenue callbacks dropped `details` or had names of their own; now none do.
-  - **Rename** (the old names still work until v0.27.0, marked `@deprecated`):
+  - **Rename** (the old names still work, marked `@deprecated`; removed once both apps have moved off them (AVE-154)):
     - TableFilters: `filters` → `value`, `onChange` → `onValueChange`. It also takes `defaultValue` and holds the
       filters itself.
     - SortMenu: `onChange` → `onValueChange`. `value` may now be left out, with `defaultValue` instead.
@@ -182,6 +214,8 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     when its step succeeds and hides the street's rows itself, so neither can work uncontrolled.
   - `src/type-tests/change-details.ts` fails the typecheck, naming the prop, if an exported `on<Key>Change` callback
     loses ui-sdk's details.
+  - *Corrected by AVE-158:* this entry first named a release that would remove the old names. None does: they stay
+    deprecated and are removed once both apps have moved off them (AVE-154).
   - Management and Neighbors: rename the props above when you take this release; nothing else needs to change, since a
     callback that ignores its second argument still works. Nothing on screen moves (visual diff in the pull request).
 
@@ -193,7 +227,9 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   `DialogBackdrop` (was `DialogOverlay`), `Radio` (was `RadioGroupItem`) and `ToastRegion` (was `Toaster`). Menu and
   Drawer move to `components/menu` and `components/drawer`. ADOPTING.md, "Renamed parts", has the full old-to-new table.
   - Nothing breaks yet: every old name is a deprecated alias of its new part, and `components/dropdown-menu` and
-    `components/sheet` re-export the new files. Both go in v0.26.0, so rename before you take it.
+    `components/sheet` re-export the new files. Both are deprecated; removed once both apps have moved off them (AVE-154).
+  - *Corrected by AVE-158:* this entry first named a release that would remove the old names. None does: they stay
+    deprecated and are removed once both apps have moved off them (AVE-154).
   - Nothing on screen moves, and no `data-slot` changes (visual diff in the pull request).
   - Storybook: "Dropdown menu" is now Components / Menu and "Sheet" is Components / Drawer.
   - `bun run visual:diff` takes `--renamed old=new` story id prefixes, for a branch that renames a story title.

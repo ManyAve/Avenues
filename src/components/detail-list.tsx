@@ -101,16 +101,16 @@ function ListItem({
   render,
   ...props
 }: Omit<OwnPartProps<"div">, "title"> & {
-  /** @deprecated Use `<ListItemContent><ListItemTitle>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<ListItemContent><ListItemTitle>` (AVE-149). */
   title?: ReactNode;
-  /** @deprecated Use `<ListItemMeta>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<ListItemMeta>` (AVE-149). */
   meta?: ReactNode;
   /**
    * Who can see it, e.g. "Board only".
-   * @deprecated Use `<ListItemNote>` (v0.30.0, AVE-149).
+   * @deprecated Use `<ListItemNote>` (AVE-149).
    */
   note?: ReactNode;
-  /** @deprecated Use `<ListItemTrailing>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<ListItemTrailing>` (AVE-149). */
   trailing?: ReactNode;
 }) {
   const fromProps = title !== undefined || meta !== undefined;

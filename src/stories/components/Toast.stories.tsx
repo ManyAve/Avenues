@@ -41,7 +41,7 @@ function Demo() {
         <div className="flex flex-wrap gap-controls">
           <Trigger label="Add household" text="Household added" />
           <Trigger label="Archive notice" text="Notice archived" options={{ action: { label: "Undo", onAction: undo } }} />
-          <Trigger label="Send reminder" text="Couldn't send the reminder. Check the address and try again." options={{ variant: "error" }} />
+          <Trigger label="Send reminder" text="Couldn't send the reminder. Check the address and try again." options={{ type: "error" }} />
         </div>
       </Rows>
     </ToastProvider>
@@ -272,7 +272,7 @@ export const PhoneActionAndClose: Story = {
         <Trigger
           label="Send reminder"
           text={longError}
-          options={{ variant: "error", action: { label: "Retry", onAction: () => {} } }}
+          options={{ type: "error", action: { label: "Retry", onAction: () => {} } }}
         />
       </Rows>
     </ToastProvider>
@@ -299,7 +299,7 @@ function SheetWithToast() {
         </DrawerBody>
         <DrawerFooter>
           <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
-          <Button onClick={() => toast(longError, { variant: "error" })}>Send reminder</Button>
+          <Button onClick={() => toast(longError, { type: "error" })}>Send reminder</Button>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
@@ -334,7 +334,7 @@ export const Progress: Story = {
   render: () => (
     <ToastProvider>
       <Rows>
-        <Trigger label="Send announcement" text="Sending to 42 households…" options={{ variant: "progress" }} />
+        <Trigger label="Send announcement" text="Sending to 42 households…" options={{ type: "info" }} />
       </Rows>
     </ToastProvider>
   ),
@@ -346,6 +346,28 @@ export const Progress: Story = {
     await expect(toast.querySelector("svg.lucide-check")).toBeNull();
     await waitFor(() => expect(liveText("polite")).toContain("Sending to 42 households…"));
     await gone(6000);
+  },
+};
+
+/** `variant`, deprecated (AVE-151) until both apps have moved off it (AVE-154), still works: `"progress"` shows the `info` toast, `"error"` the error. */
+export const DeprecatedVariant: Story = {
+  render: () => (
+    <ToastProvider>
+      <Rows>
+        <div className="flex flex-wrap gap-controls">
+          <Trigger label="Send announcement" text="Sending to 42 households…" options={{ variant: "progress" }} />
+          <Trigger label="Send reminder" text="Couldn't send the reminder." options={{ variant: "error" }} />
+        </div>
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Send announcement" }));
+    await expect(await findToast()).toHaveAttribute("data-type", "info");
+    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
+    await waitFor(() => expect(toastEl()).toHaveAttribute("data-type", "error"));
+    await userEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    await gone(1000);
   },
 };
 

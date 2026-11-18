@@ -32,13 +32,13 @@ function SectionCard({
   className,
   ...props
 }: Omit<Loose<ComponentProps<typeof Card>>, "title"> & {
-  /** @deprecated Use `<CardHeader><SectionCardTitle>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<CardHeader><SectionCardTitle>` (AVE-149). */
   title?: string | undefined;
-  /** @deprecated Use `<SectionCardCount value={…}>` inside the title (v0.30.0, AVE-149). */
+  /** @deprecated Use `<SectionCardCount value={…}>` inside the title (AVE-149). */
   count?: ReactNode;
-  /** @deprecated Use SectionCardCount's `label` (v0.30.0, AVE-149). */
+  /** @deprecated Use SectionCardCount's `label` (AVE-149). */
   countLabel?: string | undefined;
-  /** @deprecated Use `<CardAction>` in the CardHeader (v0.30.0, AVE-149). */
+  /** @deprecated Use `<CardAction>` in the CardHeader (AVE-149). */
   action?: ReactNode;
 }) {
   return (
