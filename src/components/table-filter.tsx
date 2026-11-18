@@ -1,15 +1,23 @@
 "use client";
 
 import type { CheckboxCheckedChangeReason } from "@ui-sdk/react/checkbox";
-import * as Ui from "@ui-sdk/react/combobox";
+import { createComboboxController } from "@ui-sdk/react/combobox";
 import type { ComboboxOpenChangeReason, ComboboxValueChangeReason } from "@ui-sdk/react/combobox";
 import type { InputValueChangeReason } from "@ui-sdk/react/input";
 import type { PopoverOpenChangeReason } from "@ui-sdk/react/popover";
 import type { SelectValueChangeReason } from "@ui-sdk/react/select";
-import { CheckIcon, ListFilterIcon, XIcon } from "lucide-react";
+import { ListFilterIcon, XIcon } from "lucide-react";
 import { useMemo, useRef, useState, type ReactElement, type ReactNode, type RefObject } from "react";
 import { Checkbox } from "#avenue/components/checkbox";
-import { ComboboxEmpty, ComboboxList } from "#avenue/components/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "#avenue/components/combobox";
 import { Menu, MenuContent, MenuItem, MenuGroupLabel, MenuGroup, MenuTrigger } from "#avenue/components/menu";
 import { Input } from "#avenue/components/input";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "#avenue/components/popover";
@@ -17,8 +25,6 @@ import { Select } from "#avenue/components/select";
 import { ToolbarItem } from "#avenue/components/toolbar";
 import { ToolbarButton } from "#avenue/components/toolbar-button";
 import { report, type ChangeDetails } from "#avenue/lib/change";
-import { controlSize, controlSurface } from "#avenue/lib/control";
-import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { filterOps, isComplete, opLabel, opNeedsValue, type FilterKind, type FilterOp, type TableFilter } from "#avenue/lib/table-filters";
 import { cn } from "#avenue/lib/utils";
 
@@ -227,11 +233,11 @@ function FilterPill(props: PillProps) {
 }
 
 /**
- * The pill of a choice field with a long list (AVE-155): its editor is a ui-sdk Combobox with `multiple`, the search
- * field inside the popup under the operator (ui-sdk's "Input in the Popup"), so typing narrows the values, the arrows
- * move through them, Enter toggles one, and an agent sets them with `setValue`. Each value reads as the short list's
- * checkbox row, but it is a combobox option (`aria-selected`), not a checkbox: one control holds the whole choice.
- * The search keeps its text after a pick, so several matches of "oak" go in a row.
+ * The pill of a choice field with a long list (AVE-155): its editor is Avenue's Combobox with `multiple` (AVE-156),
+ * the search field inside the popup under the operator (ui-sdk's "Input in the Popup"), so typing narrows the values,
+ * the arrows move through them, Enter toggles one, and an agent sets them with `setValue`. Each value reads as the
+ * short list's checkbox row, but it is a combobox option (`aria-selected`), not a checkbox: one control holds the
+ * whole choice. The search keeps its text after a pick, so several matches of "oak" go in a row.
  *
  * It stays a popover on a phone, like every other pill's editor, rather than ui-sdk's sheet: the operator's select
  * sits above the search, and a sheet would move the search into its header, above the operator.
@@ -256,16 +262,11 @@ function SearchablePill({
   const chosen = Array.isArray(filter.value) ? filter.value : filter.value ? [filter.value] : [];
   const [query, setQuery] = useState("");
   const search = useRef<HTMLInputElement>(null);
-  const controller = useMemo(() => Ui.createComboboxController<string, true>(), []);
-  // The list lines up with the pill, as ui-sdk's "Input in the Popup" anchors it to its button; without it a
-  // combobox lines up with its input, which here is inside the list.
-  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
+  const controller = useMemo(() => createComboboxController<string, boolean>(), []);
   const trigger = () => pill.current?.querySelector<HTMLElement>("[data-table-filter-pill]") ?? null;
   return (
-    <Ui.Combobox<string>
+    <Combobox
       multiple
-      keepQuery
-      autoHighlight
       presentation="popover"
       open={open}
       onOpenChange={onOpenChange}
@@ -283,63 +284,44 @@ function SearchablePill({
       // the empty message, and empties it through the controller once the editor has closed.
       controller={controller}
       onQueryChange={(next) => setQuery(next)}
-      value={[...chosen]}
+      value={chosen}
       onValueChange={(next, details) => onValueChange({ ...filter, value: next }, details)}
-      itemToLabel={(v) => choices.find((o) => o.value === v)?.label ?? v}
+      itemToLabel={(v: string) => choices.find((o) => o.value === v)?.label ?? v}
     >
-      <ToolbarItem aria-label={`Filter: ${summary}`} render={<Ui.ComboboxTrigger ref={setAnchor} render={button} />}>
+      {/* The list lines up with the pill, as ui-sdk's "Input in the Popup" anchors it to its button. */}
+      <ToolbarItem aria-label={`Filter: ${summary}`} render={<ComboboxTrigger render={button} />}>
         {children}
       </ToolbarItem>
-      <Ui.ComboboxContent
-        anchor={anchor}
-        align="start"
-        side="bottom"
-        sideOffset={4}
-        className={cn(
-          "flex w-64 flex-col gap-2 rounded-lg bg-popover p-2 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
-          popupMaxWidth,
-          popupMotion,
-        )}
+      <ComboboxContent
+        // The editor's frame, as every pill's popover draws it: 256px wide with 8px inside, the operator above the
+        // search. Its own list scrolls, so the frame doesn't cap its height (it scrolls only if the screen is shorter
+        // than the editor, as before), and it keeps its padding when nothing matches.
+        className="flex max-h-none w-64 min-w-0 flex-col gap-2 overflow-auto overscroll-auto p-2 text-sm not-sheet:has-data-empty:p-2"
       >
         <OperatorSelect field={field} filter={filter} onValueChange={onValueChange} />
         {opNeedsValue(filter.op) && (
           <>
-            <Ui.ComboboxInput
-              ref={search}
-              aria-label={`${field.label} values`}
-              placeholder="Search…"
-              className={cn(controlSurface, controlSize({ size: "md" }), "py-1 pointer-coarse:min-h-11")}
-            />
+            <ComboboxInput ref={search} aria-label={`${field.label} values`} placeholder="Search…" />
             <ComboboxEmpty className="px-2 py-1">{query.trim() ? `Nothing matches “${query.trim()}”.` : null}</ComboboxEmpty>
             {/* On a touch screen the list shows six whole 44px rows and snaps to a row's top, so no row sits half under
                 its edge, where a tap on the half you can see would land beside it (AVE-22). */}
             <ComboboxList className="flex max-h-64 min-w-0 flex-col gap-0.5 overflow-y-auto overscroll-contain pointer-coarse:max-h-66 pointer-coarse:snap-y pointer-coarse:snap-mandatory pointer-coarse:scroll-py-0 pointer-coarse:gap-0">
               {choices.map((option) => (
-                <Ui.ComboboxItem
+                <ComboboxItem
                   key={option.value}
                   value={option.value}
                   label={option.label}
                   // The short list's checkbox row, with the highlight as its hover: on a touch screen 44px tall (AVE-22).
-                  className="group/value flex cursor-pointer snap-start items-center gap-2 rounded-md px-2 py-1 text-control outline-none data-highlighted:bg-muted pointer-coarse:min-h-11"
+                  className="flex grid-cols-none cursor-pointer snap-start gap-2 rounded-md select-auto data-highlighted:bg-muted data-highlighted:text-inherit"
                 >
-                  {/* data-[selected], not data-selected: Avenue's shadcn.css reads `data-selected:` as
-                      [data-selected="true"], and ui-sdk sets it empty. */}
-                  <span
-                    aria-hidden
-                    className="flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-[selected]/value:border-primary group-data-[selected]/value:bg-primary group-data-[selected]/value:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/value:bg-primary"
-                  >
-                    <Ui.ComboboxItemIndicator className="grid place-content-center [&>svg]:size-3.5">
-                      <CheckIcon aria-hidden />
-                    </Ui.ComboboxItemIndicator>
-                  </span>
                   {option.label}
-                </Ui.ComboboxItem>
+                </ComboboxItem>
               ))}
             </ComboboxList>
           </>
         )}
-      </Ui.ComboboxContent>
-    </Ui.Combobox>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 

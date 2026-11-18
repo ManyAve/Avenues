@@ -505,6 +505,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--in-a-phone-card": {
     none: "AVE-113: Management's join-request card is in its own Storybook; this story proves the Combobox keeps that card on a 390px phone.",
   },
+  "components-combobox--pick-several": {
+    none: "AVE-156: neither app has a searchable multi-pick of its own yet; the table filter's long list (Table filter / Long list) is the one in use, built from these parts.",
+  },
   "components-combobox--sized-by-content": {
     none: "AVE-113: a layout probe with no app screen of its own; it proves a content-sized Combobox keeps its width.",
   },
