@@ -1257,6 +1257,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-table-filter--same-words-twice": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--remove-by-keyboard": { none: BEHAVIOUR("Table filter / With filters") },
   "composites-table-filter--agent": { none: BEHAVIOUR("Table filter / With filters") },
+  "composites-table-filter--long-list": { none: "AVE-155: the search above a long choice list is Avenue's; the app's filter has no long-list story. The pill is compared through Table filter / With filters." },
+  "composites-table-filter--long-list-agent": { none: BEHAVIOUR("Table filter / Long list") },
+  "composites-table-filter--long-list-phone": { none: "The long list's editor on a phone, 44px rows on a touch screen; the app has no phone TableFilters story." },
   "composites-table-filter--phone": { none: "The filter pills in the phone toolbar's strip, 44px tall on a touch screen; the app has no phone TableFilters story. The pill is compared through Table filter / With filters." },
 
   // ---- Composites part 4: the toolbars (AVE-9)

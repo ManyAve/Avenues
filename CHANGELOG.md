@@ -4,6 +4,19 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.29.1 (2026-11-18)
+
+- **A table filter searches a long list of choices** (AVE-155). A TableFilters choice field with more than eight
+  values, such as thirty streets or every household, now shows a search field above its values when its pill opens,
+  as Linear's filter does. Focus starts in the search; typing narrows the list, the arrows move through it, Enter (or a
+  tap) toggles a value, and the search keeps its text after a pick, so several matches of "oak" go in a row. Escape
+  closes it and focus returns to the pill. Built on ui-sdk's Combobox with `multiple`, its input in the popup, so an
+  agent sets the values with `setValue` on the pill. Each value is drawn as the short list's checkbox row; on a touch
+  screen each is 44px tall, and the list shows six whole rows and snaps to them.
+  - **Unchanged:** a field with eight values or fewer keeps its list of checkboxes, and no prop changed. The visual diff
+    changes only the new Long list stories.
+  - Management and Neighbors: nothing to change; a long `items` list gets the search when you take this release.
+
 ## v0.29.0 (2026-11-18)
 
 - **File field: a root and parts, like ui-sdk's FileInput** (AVE-148). `FileFieldRoot` holds the file, its status,
