@@ -106,19 +106,19 @@ export const Wide: Story = {
     await expect(importButton).toHaveAttribute("aria-disabled", "true");
     await expect(importButton).toHaveAccessibleDescription(importReason);
     await expect(bar.queryByRole("button", { name: "More actions" })).toBeNull();
-    // The reason doesn't widen Import's slot: Import to Export is gap-controls, like every other gap, and the reason
-    // hangs from Import's end without reaching under Export (AVE-86).
+    // The reason doesn't widen Import's column: Import to Export is gap-controls, like every other gap (AVE-86), and
+    // the reason wraps to Import's width without reaching under Export (AVE-160).
     const actionRow = toolbar.querySelector<HTMLElement>("[data-slot=toolbar-actions]")!;
     const gap = parseFloat(getComputedStyle(actionRow).columnGap);
     const exportButton = bar.getByRole("button", { name: /Export/ });
-    const slot = importButton.closest<HTMLElement>("[data-slot=button-with-reason]")!;
-    await expect(Math.round(slot.getBoundingClientRect().width)).toBe(Math.round(importButton.getBoundingClientRect().width));
     await expect(Math.round(exportButton.getBoundingClientRect().left - importButton.getBoundingClientRect().right)).toBe(gap);
-    const reason = slot.querySelector<HTMLElement>("[data-slot=button-reason]")!;
+    const reason = actionRow.querySelector<HTMLElement>("[data-slot=toolbar-actions-reason]")!;
     const text = document.createRange();
     text.selectNodeContents(reason);
-    await expect(Math.round(text.getBoundingClientRect().right)).toBeLessThanOrEqual(Math.round(importButton.getBoundingClientRect().right));
-    await expect(text.getBoundingClientRect().width).toBeGreaterThan(importButton.getBoundingClientRect().width);
+    for (const line of text.getClientRects()) {
+      await expect(Math.round(line.left)).toBeGreaterThanOrEqual(Math.floor(importButton.getBoundingClientRect().left));
+      await expect(Math.round(line.right)).toBeLessThanOrEqual(Math.ceil(importButton.getBoundingClientRect().right));
+    }
   },
 };
 
@@ -433,5 +433,166 @@ export const Phone: Story = {
     await expect(bar.getByRole("button", { name: "More" })).toHaveFocus();
     await userEvent.keyboard("{ArrowRight}");
     await expect(bar.getByRole("button", { name: /Needs attention/ })).toHaveFocus();
+  },
+};
+
+// AVE-160: three disabled actions whose reasons are wider than their buttons. Each reason wraps to its own button's
+// width, and neighbours that share a reason share one line as wide as both, so no two lines ever print over each other.
+// The board's Dues toolbar at 1280px, for an association with no households, is where they first met.
+const boardWidth = {
+  viewport: {
+    options: { board: { name: "Board (1280px)", styles: { width: "1280px", height: "700px" }, type: "desktop" } },
+  },
+};
+const board = { viewport: { value: "board", isRotated: false } };
+
+const longReasons: ToolbarAction[] = [
+  {
+    id: "payment",
+    label: "Record payment",
+    icon: <Plus aria-hidden />,
+    disabledReason: "Add a household to this view before recording a payment.",
+  },
+  { id: "notice", label: "Late-dues notice", disabledReason: "Nobody in this view is late, so there is no one to remind." },
+];
+const longPrimary: ToolbarAction = {
+  id: "request",
+  label: "Request dues",
+  icon: <Mail aria-hidden />,
+  disabledReason: "Set this year's dues amount before you ask anyone to pay.",
+};
+
+const sharedReason = "No households in this view.";
+const sharedReasons: ToolbarAction[] = [
+  { id: "payment", label: "Record payment", icon: <Plus aria-hidden />, disabledReason: sharedReason },
+  { id: "notice", label: "Late-dues notice", disabledReason: sharedReason },
+];
+const sharedPrimary: ToolbarAction = {
+  id: "request",
+  label: "Request dues",
+  icon: <Mail aria-hidden />,
+  disabledReason: "No one in this view owes dues.",
+};
+
+function DuesToolbar({ actions: dues, primary }: { actions: ToolbarAction[]; primary: ToolbarAction }) {
+  return (
+    <div className="min-h-[320px] bg-background">
+      <Toolbar aria-label="Dues">
+        <ToolbarControls>
+          <ToolbarActions actions={dues} primary={primary} />
+        </ToolbarControls>
+      </Toolbar>
+    </div>
+  );
+}
+
+/** No two reason lines overlap, none runs past the buttons it captions, and each disabled button is described by its line. */
+async function expectReasonsApart(canvasElement: HTMLElement, expected: Record<string, string>) {
+  const bar = within(canvasElement.querySelector<HTMLElement>("[role=toolbar]")!);
+  const lines = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=toolbar-actions-reason]")];
+  const boxes = lines.map((line) => {
+    const text = document.createRange();
+    text.selectNodeContents(line);
+    return { line, rects: [...text.getClientRects()] };
+  });
+  for (const [i, a] of boxes.entries())
+    for (const b of boxes.slice(i + 1))
+      for (const r of a.rects)
+        for (const s of b.rects) {
+          const apart = r.right <= s.left || s.right <= r.left || r.bottom <= s.top || s.bottom <= r.top;
+          await expect(apart, `"${a.line.textContent}" overlaps "${b.line.textContent}"`).toBe(true);
+        }
+  for (const [name, reason] of Object.entries(expected)) {
+    const button = bar.getByRole("button", { name: new RegExp(name) });
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+    await expect(button).toHaveAccessibleDescription(reason);
+  }
+  // Each line stays within the buttons it captions.
+  for (const { line, rects } of boxes) {
+    const captioned = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=toolbar-actions] button")].filter((b) =>
+      b.getAttribute("aria-describedby")?.split(" ").includes(line.id),
+    );
+    await expect(captioned.length).toBeGreaterThan(0);
+    const left = Math.min(...captioned.map((b) => b.getBoundingClientRect().left));
+    const right = Math.max(...captioned.map((b) => b.getBoundingClientRect().right));
+    for (const r of rects) {
+      await expect(Math.round(r.left)).toBeGreaterThanOrEqual(Math.floor(left));
+      await expect(Math.round(r.right)).toBeLessThanOrEqual(Math.ceil(right));
+    }
+  }
+  return lines;
+}
+
+/** 1280px: three different long reasons, each wrapped to its own button. */
+export const LongReasons: Story = {
+  globals: board,
+  parameters: boardWidth,
+  render: () => <DuesToolbar actions={longReasons} primary={longPrimary} />,
+  play: async ({ canvasElement }) => {
+    const lines = await expectReasonsApart(canvasElement, {
+      "Record payment": "Add a household to this view before recording a payment.",
+      "Late-dues notice": "Nobody in this view is late, so there is no one to remind.",
+      "Request dues": "Set this year's dues amount before you ask anyone to pay.",
+    });
+    await expect(lines).toHaveLength(3);
+    // Still one Tab stop, and the arrows reach every disabled action.
+    await userEvent.tab();
+    await expect(within(canvasElement).getByRole("button", { name: /Record payment/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(within(canvasElement).getByRole("button", { name: /Late-dues notice/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(within(canvasElement).getByRole("button", { name: /Request dues/ })).toHaveFocus();
+  },
+};
+
+/** 1280px: Record payment and Late-dues notice share a reason, so they share one line; Request dues has its own. */
+export const SharedReason: Story = {
+  globals: board,
+  parameters: boardWidth,
+  render: () => <DuesToolbar actions={sharedReasons} primary={sharedPrimary} />,
+  play: async ({ canvasElement }) => {
+    const lines = await expectReasonsApart(canvasElement, {
+      "Record payment": sharedReason,
+      "Late-dues notice": sharedReason,
+      "Request dues": "No one in this view owes dues.",
+    });
+    await expect(lines.map((line) => line.textContent)).toEqual([sharedReason, "No one in this view owes dues."]);
+  },
+};
+
+/** A phone: the actions fold into More, which keeps each reason under its item; Request dues' reason wraps to it. */
+export const LongReasonsPhone: Story = {
+  globals: phone,
+  render: () => <DuesToolbar actions={longReasons} primary={longPrimary} />,
+  play: async ({ canvasElement }) => {
+    await expectReasonsApart(canvasElement, { "Request dues": "Set this year's dues amount before you ask anyone to pay." });
+    const bar = within(canvasElement.querySelector<HTMLElement>("[role=toolbar]")!);
+    await userEvent.tab();
+    await expect(bar.getByRole("button", { name: "More actions" })).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    const page = within(canvasElement.ownerDocument.body);
+    const item = await page.findByRole("menuitem", { name: /Record payment/ });
+    await expect(item).toHaveAccessibleDescription("Add a household to this view before recording a payment.");
+    await expect(await page.findByRole("menuitem", { name: /Late-dues notice/ })).toHaveAccessibleDescription(
+      "Nobody in this view is late, so there is no one to remind.",
+    );
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(bar.getByRole("button", { name: "More actions" })).toHaveFocus());
+  },
+};
+
+/** A phone with the shared reasons folded into More: Request dues' own reason is the only line on the bar. */
+export const SharedReasonPhone: Story = {
+  globals: phone,
+  render: () => <DuesToolbar actions={sharedReasons} primary={sharedPrimary} />,
+  play: async ({ canvasElement }) => {
+    const lines = await expectReasonsApart(canvasElement, { "Request dues": "No one in this view owes dues." });
+    await expect(lines).toHaveLength(1);
+    const bar = within(canvasElement.querySelector<HTMLElement>("[role=toolbar]")!);
+    bar.getByRole("button", { name: "More actions" }).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const page = within(canvasElement.ownerDocument.body);
+    await expect(await page.findByRole("menuitem", { name: /Record payment/ })).toHaveAccessibleDescription(sharedReason);
+    await userEvent.keyboard("{Escape}");
   },
 };

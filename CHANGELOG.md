@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.37.1 (2026-11-18)
+
+- **Toolbar reasons no longer print over each other** (AVE-160). On a page toolbar, a disabled action's reason now
+  wraps to its button's width instead of running past it in one line, so three disabled actions side by side (the
+  board's Dues toolbar at 1280px, for an association with no households) read as three captions, not one garbled
+  line. Neighbouring actions that share a reason show it once, as one line under both, and each of those buttons is
+  still described by it for a screen reader. The bar grows by the extra lines a long reason takes. With no disabled
+  action nothing moves. Nothing to change in the apps: moving to v0.37.1 fixes the Dues toolbar.
+- The `reasons-hang` utility is deprecated; removed once both apps have moved off it (AVE-154). Neither app uses it.
+  `reasons-hang-start` (the selection bar's) stays.
+
 ## v0.37.0 (2026-11-18)
 
 - **Chips for a multi-pick Combobox with its search in the field** (AVE-159, ui-sdk's "Multiple"). New parts

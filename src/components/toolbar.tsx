@@ -7,7 +7,7 @@ import {
   ToolbarInput,
 } from "@ui-sdk/react/toolbar";
 import { ChevronDown, Ellipsis } from "lucide-react";
-import { useCallback, useLayoutEffect, useRef, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
+import { useCallback, useId, useLayoutEffect, useRef, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { Button } from "#avenue/components/button";
 import { ChipRow } from "#avenue/components/chip";
 import {
@@ -134,10 +134,35 @@ function useWide(beforeChange: () => void) {
   );
 }
 
+/** Two reasons are the same line when they're the same text, or the same node. */
+function sameReason(a: ReactNode, b: ReactNode) {
+  return a === b || (typeof a === "string" && typeof b === "string" && a.trim() === b.trim());
+}
+
+/**
+ * The reason lines under a row of buttons: one line for each run of neighbouring buttons that share a reason, as wide
+ * as that run, so lines never meet (AVE-160).
+ */
+function reasonRuns(row: readonly ToolbarAction[]) {
+  const runs: { from: number; span: number; reason: ReactNode; key: string }[] = [];
+  row.forEach((action, index) => {
+    if (!action.disabledReason) return;
+    const last = runs.at(-1);
+    if (last && last.from + last.span === index && sameReason(last.reason, action.disabledReason)) last.span += 1;
+    else runs.push({ from: index, span: 1, reason: action.disabledReason, key: action.id });
+  });
+  return runs;
+}
+
 /**
  * A page's create and send actions at the toolbar's end. `primary` always shows as a button. From `wide` (1100px) up the
  * other `actions` are outlined buttons; below it they fold into a More menu, so the toolbar fits the 900px desktop
  * minimum. A folded action keeps its disabled reason, as a muted line under its item.
+ *
+ * A disabled button's reason is a muted line under it that wraps to the button's width, so two reasons never print
+ * over each other. Neighbouring buttons that share a reason share one line, as wide as the pair; each of those buttons
+ * is described by it (AVE-160). The row is a grid: buttons on the first line, reasons on the second, each reason
+ * spanning its buttons' columns and never widening them, so the gaps between buttons stay gap-controls (AVE-86).
  *
  * The fold renders one or the other rather than hiding with CSS, so the toolbar's arrow keys never land on a hidden
  * button. When the window crosses 1100px while focus is on a folding action, focus moves to More as they fold and
@@ -156,70 +181,99 @@ function ToolbarActions({
     hadFocus.current = !!folding.current?.contains(document.activeElement);
   }, []);
   const wide = useWide(beforeChange);
+  const baseId = useId();
   useLayoutEffect(() => {
     if (!hadFocus.current) return;
     hadFocus.current = false;
     // Folded, the one button here is More; unfolded, the first is the first action.
     folding.current?.querySelector<HTMLElement>(wide ? "button" : '[aria-label="More actions"]')?.focus();
   }, [wide]);
+  // The buttons on the row, in order: the actions (or More, which has no reason of its own) and then primary.
+  const folded = !wide && actions.length > 0;
+  const row: readonly ToolbarAction[] = wide ? [...actions, primary] : folded ? [{ id: "more", label: "" }, primary] : [primary];
+  const runs = reasonRuns(row);
+  const reasonIdOf = (index: number) => {
+    const run = runs.find((r) => index >= r.from && index < r.from + r.span);
+    return run ? `${baseId}-${run.key}` : undefined;
+  };
+  const primaryIndex = row.length - 1;
+  const reasonLine = (run: (typeof runs)[number]) => (
+    <span
+      key={run.key}
+      id={`${baseId}-${run.key}`}
+      data-slot="toolbar-actions-reason"
+      // contain-inline-size: the line takes no width of its own, so it wraps to the columns it spans.
+      className="row-start-2 contain-inline-size text-meta text-muted-foreground"
+      style={{ gridColumn: `${run.from + 1} / span ${run.span}` }}
+    >
+      {run.reason}
+    </span>
+  );
+  const button = (action: ToolbarAction, index: number, variant?: "outline") => {
+    const reasonId = reasonIdOf(index);
+    return (
+      <ToolbarItem
+        key={action.id}
+        disabled={!!action.disabledReason}
+        onClick={action.disabledReason ? undefined : action.onSelect}
+        style={{ gridColumn: index + 1 }}
+        className="row-start-1"
+        render={
+          <Button
+            variant={variant}
+            data-agent-confirm={action.confirm}
+            {...(reasonId ? { disabled: true, focusableWhenDisabled: true, "aria-describedby": reasonId } : {})}
+          />
+        }
+      >
+        {action.icon}
+        {action.label}
+      </ToolbarItem>
+    );
+  };
   return renderElement(
     "span",
     mergeProps(defined(props), {
       "data-slot": "toolbar-actions",
-      // Spaced by gap-controls alone, like every control before it (AVE-86). A disabled action's reason hangs from
-      // its button's end and never widens its slot (`reasons-hang`; the selection bar hangs from the start, AVE-96).
-      className: cn("flex items-start gap-controls reasons-hang", className),
+      // Spaced by gap-controls alone, like every control before it (AVE-86); 4px between a button and its reason.
+      className: cn("grid items-start gap-x-controls gap-y-1", className),
       children: (
         <>
           {/* The folding actions, so a flip can tell whether focus was among them; display: contents, no box. */}
           <span ref={folding} className="contents">
-          {wide ? (
-            actions.map((action) => (
-              <ToolbarItem
-                key={action.id}
-                disabled={!!action.disabledReason}
-                onClick={action.disabledReason ? undefined : action.onSelect}
-                render={
-                  <Button variant="outline" disabledReason={action.disabledReason} data-agent-confirm={action.confirm} />
-                }
-              >
-                {action.icon}
-                {action.label}
-              </ToolbarItem>
-            ))
-          ) : actions.length > 0 ? (
-            <Menu>
-              <ToolbarItem
-                aria-label="More actions"
-                render={<MenuTrigger render={<Button variant="outline" size="icon-md" />} />}
-              >
-                <Ellipsis />
-              </ToolbarItem>
-              <MenuContent align="end" className="w-60">
-                {actions.map((action) => (
-                  <MenuItem
-                    key={action.id}
-                    disabled={!!action.disabledReason}
-                    disabledReason={action.disabledReason}
-                    data-agent-confirm={action.confirm}
-                    {...(action.onSelect ? { onSelect: action.onSelect } : {})}
-                  >
-                    {action.icon}
-                    {action.label}
-                  </MenuItem>
-                ))}
-              </MenuContent>
-            </Menu>
-          ) : null}
+            {wide ? (
+              <>
+                {actions.map((action, index) => button(action, index, "outline"))}
+                {runs.filter((run) => run.from + run.span <= primaryIndex).map(reasonLine)}
+              </>
+            ) : folded ? (
+              <Menu>
+                <ToolbarItem
+                  aria-label="More actions"
+                  className="col-start-1 row-start-1"
+                  render={<MenuTrigger render={<Button variant="outline" size="icon-md" />} />}
+                >
+                  <Ellipsis />
+                </ToolbarItem>
+                <MenuContent align="end" className="w-60">
+                  {actions.map((action) => (
+                    <MenuItem
+                      key={action.id}
+                      disabled={!!action.disabledReason}
+                      disabledReason={action.disabledReason}
+                      data-agent-confirm={action.confirm}
+                      {...(action.onSelect ? { onSelect: action.onSelect } : {})}
+                    >
+                      {action.icon}
+                      {action.label}
+                    </MenuItem>
+                  ))}
+                </MenuContent>
+              </Menu>
+            ) : null}
           </span>
-          <ToolbarItem
-            disabled={!!primary.disabledReason}
-            onClick={primary.disabledReason ? undefined : primary.onSelect}
-            render={<Button disabledReason={primary.disabledReason} data-agent-confirm={primary.confirm} />}
-          >
-            {primary.icon}
-            {primary.label}
-          </ToolbarItem>
+          {button(primary, primaryIndex)}
+          {runs.filter((run) => run.from + run.span > primaryIndex).map(reasonLine)}
         </>
       ),
     }),

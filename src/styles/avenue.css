@@ -284,8 +284,9 @@
    action's reason never sets its slot's width. It keeps its line's height (the row grows to hold it) but takes no
    width, and hangs under its button from one edge, growing toward empty room so it never sits under a label or
    spreads the gaps. Put it on the row; Button's reason is its `button-reason` part.
-   - `reasons-hang` hangs it from the button's end, growing toward the start: the page toolbar, whose empty room is
-     before its action group.
+   - `reasons-hang` hangs it from the button's end, growing toward the start. The page toolbar no longer uses it: two
+     hanging reasons printed over each other there, so ToolbarActions wraps each to its buttons instead (AVE-160).
+     Deprecated; removed once both apps have moved off it (AVE-154).
    - `reasons-hang-start` hangs it from the button's start, growing toward the end, under the actions that follow:
      the selection bar, where the actions come right after the count, which the reason must not caption. */
 @utility reasons-hang {

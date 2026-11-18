@@ -31,7 +31,7 @@ export type SelectionAction = {
  * The bar is a ui-sdk toolbar: one Tab stop, arrows between the actions. A disabled action stays reachable and shows
  * its reason under it (the app hid it in a title). The reason hangs from the button's start and runs toward the end,
  * under the actions, so it never spreads them apart (AVE-91) and never sits under the count, where it would read as
- * the count's caption (`reasons-hang-start`, AVE-96; the page toolbar hangs its reasons from the end). The count is announced whenever it changes, from a status
+ * the count's caption (`reasons-hang-start`, AVE-96). The count is announced whenever it changes, from a status
  * region that stays mounted while the bar comes and goes, so the first selection is announced too, and clearing says
  * so.
  *
