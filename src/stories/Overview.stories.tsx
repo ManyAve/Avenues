@@ -201,7 +201,7 @@ function InviteBoard() {
               <TooltipTrigger
                 render={
                   // Shares the link field's height on touch (AVE-94, AVE-99): the field is 44px on a coarse pointer.
-                  <Button variant="outline" size="icon" aria-label="Copy invite link" className="pointer-coarse:size-11" />
+                  <Button variant="outline" size="icon-md" aria-label="Copy invite link" className="pointer-coarse:size-11" />
                 }
               >
                 <CopyIcon aria-hidden />
@@ -583,7 +583,7 @@ function People() {
       <ul className="flex flex-col">
         {people.map((p) => (
           <li key={p.name} className="flex items-center gap-3 py-group not-last:border-b">
-            <InitialsAvatar name={p.name} decorative size="default" />
+            <InitialsAvatar name={p.name} decorative size="md" />
             <div className="min-w-0 flex-1">
               <p className="font-[550]">{p.name}</p>
               <p className="text-meta text-muted-foreground">{p.role}</p>

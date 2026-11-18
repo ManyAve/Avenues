@@ -17,7 +17,7 @@ const densities = ["Compact", "Comfortable", "Roomy"];
 export const Variants: Story = {
   render: () => (
     <Rows>
-      {(["sm", "default", "lg"] as const).map((size) => (
+      {(["sm", "md", "lg"] as const).map((size) => (
         <Row key={size} label={`outline, ${size}`}>
           <ToggleGroup variant="outline" size={size} defaultValue="Comfortable" aria-label={`Row height ${size}`}>
             {densities.map((d) => (

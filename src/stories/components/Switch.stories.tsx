@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const States: Story = {
   render: () => (
     <Rows>
-      {(["default", "sm"] as const).map((size) => (
+      {(["md", "sm"] as const).map((size) => (
         <Row key={size} label={size}>
           <Switch size={size} aria-label={`Off, ${size}`} />
           <Switch size={size} aria-label={`On, ${size}`} defaultChecked />

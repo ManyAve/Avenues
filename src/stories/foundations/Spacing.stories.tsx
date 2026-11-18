@@ -51,7 +51,7 @@ function ToolbarAfter() {
       <Chip label="Owing" active height="h-control-md" />
       <Chip label="Paid" height="h-control-md" />
       <Select items={years} defaultValue="2026" aria-label="Dues year" className="w-auto" />
-      <Button variant="outline" size="icon" aria-label="Display options">
+      <Button variant="outline" size="icon-md" aria-label="Display options">
         <SlidersHorizontal aria-hidden="true" className="size-4" />
       </Button>
     </div>

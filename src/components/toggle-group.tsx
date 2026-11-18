@@ -4,13 +4,15 @@ import { Toggle, ToggleGroup as ToggleGroupPrimitive } from "@ui-sdk/react/toggl
 import type { VariantProps } from "class-variance-authority";
 import { createContext, useContext, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { toggleVariants } from "#avenue/components/toggle";
+import { scaleStep } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/toggle-group.tsx (e01cc90). `spacing` is in 4px steps (default 2,
  * 8px); `spacing={0}` joins the items into one segmented control whose outer corners follow the size (md for sm, lg
- * otherwise). Both kinds have one Tab stop.
+ * otherwise). Both kinds have one Tab stop. Sizes are Toggle's: sm, md (the default) and lg; `"default"` is deprecated
+ * (use md), and `data-size` always carries the step's name.
  *
  * A single-choice group (the default) is a radio group, ui-sdk's SegmentedControl: `value` is one string, the
  * arrow keys move and select together, and Tab lands on the chosen item. Pass `multiple` for independent on/off
@@ -29,7 +31,7 @@ type GroupStyle = VariantProps<typeof toggleVariants> & {
 };
 
 const ToggleGroupContext = createContext<GroupStyle & { multiple: boolean }>({
-  size: "default",
+  size: "md",
   variant: "default",
   spacing: 2,
   orientation: "horizontal",
@@ -50,7 +52,7 @@ function ToggleGroup({
 }: NodeChildren<SingleProps | MultipleProps> & GroupStyle) {
   const shared = {
     "data-variant": variant,
-    "data-size": size,
+    "data-size": size && scaleStep(size),
     "data-spacing": spacing,
     "data-orientation": orientation,
     orientation,
@@ -94,7 +96,7 @@ function ToggleGroupItem({
   className,
   children,
   variant = "default",
-  size = "default",
+  size = "md",
   value,
   ...props
 }: Omit<Loose<ComponentProps<typeof Toggle>>, "value" | "children"> & {
@@ -117,7 +119,7 @@ function ToggleGroupItem({
   );
   const itemProps = {
     "data-variant": context.variant || variant,
-    "data-size": context.size || size,
+    "data-size": scaleStep(context.size || size),
     "data-spacing": context.spacing,
     value,
     className: cn(

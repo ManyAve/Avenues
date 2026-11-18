@@ -11,12 +11,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** sm 24, default 32, lg 40; initials fallback, a status badge and a group with a count. Circles (pills allowed). */
+/** sm 24, md 32, lg 40; initials fallback, a status badge and a group with a count. Circles (pills allowed). */
 export const Sizes: Story = {
   tags: ["agent"],
   render: () => (
     <Rows>
-      {(["sm", "default", "lg"] as const).map((size) => (
+      {(["sm", "md", "lg"] as const).map((size) => (
         <Row key={size} label={size}>
           <Avatar size={size} aria-label="Robin Avery">
             <AvatarFallback>RA</AvatarFallback>
@@ -63,7 +63,7 @@ export const WithName: Story = {
 export const GroupOnACard: Story = {
   render: () => (
     <Rows>
-      {(["sm", "default", "lg"] as const).map((size) => (
+      {(["sm", "md", "lg"] as const).map((size) => (
         <Row key={size} label={size}>
           <div className="rounded-xl bg-card p-inset ring-1 ring-foreground/10">
             <AvatarGroup data-testid={`group-${size}`} aria-label="Committee">
@@ -80,7 +80,7 @@ export const GroupOnACard: Story = {
     </Rows>
   ),
   play: async ({ canvas }) => {
-    for (const size of ["sm", "default", "lg"]) {
+    for (const size of ["sm", "md", "lg"]) {
       const group = canvas.getByTestId(`group-${size}`);
       const items = [...group.children] as HTMLElement[];
       for (const [i, item] of items.slice(0, -1).entries()) {

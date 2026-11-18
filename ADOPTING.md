@@ -180,6 +180,24 @@ Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still
 
 Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-sdk has no look props.
 
+## One size scale
+
+Every control that comes in steps takes xs / sm / md / lg, the steps of the `h-control-*` tokens, with md the default
+(AVE-152, v0.34.0). Each takes the steps it has. The old names still work and draw the same; they are deprecated and
+removed once both apps have moved off them (AVE-154).
+
+| Component | Old (deprecated) | New |
+| --- | --- | --- |
+| `Button`, `buttonVariants` | `size="default"` | `size="md"` (or leave it out) |
+| `Button`, `buttonVariants` | `size="icon"` | `size="icon-md"` (beside `icon-xs`, `icon-sm`, `icon-lg`) |
+| `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem` | `size="default"` | `size="md"` |
+| `Switch`, `Avatar`, `InitialsAvatar`, `Card`, `Progress`, `ProgressTrack` | `size="default"` | `size="md"` |
+
+`data-size` always carries the step's name, so it reads `md` where it read `default`, even when the old name is passed.
+A selector such as `data-[size=default]:…` becomes `data-[size=md]:…`. Select and Combobox already took `sm | md`.
+Sizes that name a place, not a step, stay as they are: EmptyState `compact`, IconTile `row | section`, and the `width`
+of FormDialog and Dock.
+
 ## Select and Combobox take items, and come in parts
 
 Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options` is

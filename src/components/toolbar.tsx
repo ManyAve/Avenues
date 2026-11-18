@@ -191,7 +191,7 @@ function ToolbarActions({
             <Menu>
               <ToolbarItem
                 aria-label="More actions"
-                render={<MenuTrigger render={<Button variant="outline" size="icon" />} />}
+                render={<MenuTrigger render={<Button variant="outline" size="icon-md" />} />}
               >
                 <Ellipsis />
               </ToolbarItem>
@@ -265,7 +265,7 @@ function PhoneToolbar({
           <Menu>
             <ToolbarItem
               aria-label="More"
-              render={<MenuTrigger render={<Button variant="outline" size="icon" className="pointer-coarse:size-11" />} />}
+              render={<MenuTrigger render={<Button variant="outline" size="icon-md" className="pointer-coarse:size-11" />} />}
             >
               <Ellipsis />
             </ToolbarItem>

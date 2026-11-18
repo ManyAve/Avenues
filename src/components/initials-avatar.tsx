@@ -1,11 +1,12 @@
 import type { ComponentProps } from "react";
 import { Avatar, AvatarFallback } from "#avenue/components/avatar";
 import { initials, tintFor } from "#avenue/lib/format";
+import { type WithDefault } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * ManyAve's tinted-initials avatar, ported from the app's app/ui/components/Avatar.tsx (e01cc90): sm 28 and
- * default 32, no border ring. Colours unchanged.
+ * md 32, no border ring. Colours unchanged.
  *
  * `tintKey` picks the tint. Pass the person's stable id so one person keeps one colour on every screen, even
  * when their name is written differently (Neighbors' NEI-105, via AVE-23); it falls back to the name, as the
@@ -25,13 +26,14 @@ function InitialsAvatar({
   name: string;
   tintKey?: string | undefined;
   decorative?: boolean | undefined;
-  size?: "sm" | "default" | undefined;
+  /** `sm` 28 (the default here) or `md` 32. `"default"` is deprecated: use md (AVE-152). */
+  size?: WithDefault<"sm" | "md"> | undefined;
 }) {
   return (
     <Avatar
       size={size}
       {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": name })}
-      className={cn("after:hidden data-[size=default]:size-8 data-[size=sm]:size-7", className)}
+      className={cn("after:hidden data-[size=md]:size-8 data-[size=sm]:size-7", className)}
       {...props}
     >
       <AvatarFallback
