@@ -1,7 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
-import { FileField, type FileFieldFile, type FileFieldStatus } from "#avenue/components/file-field";
+import { Button } from "#avenue/components/button";
+import {
+  FileField,
+  FileFieldDescription,
+  FileFieldDropzone,
+  FileFieldError,
+  FileFieldLabel,
+  FileFieldName,
+  FileFieldReason,
+  FileFieldRemove,
+  FileFieldRetry,
+  FileFieldRoot,
+  FileFieldStatus,
+  FileFieldTrigger,
+  FileFieldWarning,
+  type FileFieldFile,
+} from "#avenue/components/file-field";
 
 // AVE-35. Fictional data only: Sunnydale Commons is not a real association.
 
@@ -127,7 +143,7 @@ export const DocumentStates: Story = {
     // and notes start, not 9px in; an action beside another keeps its place. Only the button moves (AVE-83).
     const actions = [...canvasElement.querySelectorAll<HTMLElement>("[data-file-action]")];
     for (const action of actions) {
-      const rowLeft = action.closest("[data-slot=file-field-row]")!.getBoundingClientRect().left;
+      const rowLeft = action.closest("[data-file-field-row]")!.getBoundingClientRect().left;
       if (action.hasAttribute("data-line-start")) {
         const firstLeft = action.querySelector("svg")?.getBoundingClientRect().left ?? action.getBoundingClientRect().left + 9;
         await expect(Math.abs(firstLeft - rowLeft)).toBeLessThan(1);
@@ -365,5 +381,180 @@ export const DisabledRetry: Story = {
     await userEvent.keyboard("{Enter}");
     await expect(args.onRetry).not.toHaveBeenCalled();
     await expect(retry).toHaveFocus();
+  },
+};
+
+/** What a drop on the row does: ui-sdk reads the files from the drop's DataTransfer. */
+function drop(zone: Element, file: File) {
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  for (const type of ["dragenter", "dragover", "drop"]) {
+    zone.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer }));
+  }
+}
+
+/** The app's side of an upload, simulated: each upload fails on its first try and lands on the next. */
+function useSimulatedUpload() {
+  const [file, setFile] = useState<FileFieldFile | null>(null);
+  const [status, setStatus] = useState<FileFieldStatus>("empty");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (status !== "uploading") return;
+    const timer = setTimeout(() => setStatus(attempt === 1 ? "failed" : "uploaded"), 60);
+    return () => clearTimeout(timer);
+  }, [status, attempt]);
+  const upload = () => {
+    setAttempt((n) => n + 1);
+    setStatus("uploading");
+  };
+  return {
+    file,
+    status,
+    choose: (next: File) => {
+      setFile({ name: next.name });
+      upload();
+    },
+    retry: upload,
+    remove: () => {
+      setFile(null);
+      setStatus("empty");
+      setAttempt(0);
+    },
+  };
+}
+
+/**
+ * The parts form (AVE-148): FileFieldRoot holds the file and its status, and the parts read them. Here the hint sits
+ * above the row and the actions come before the name, which the one-tag form doesn't offer. The rules still hold:
+ * the error names the file to screen readers where the screen says "this file" (AVE-82), and focus moves to the
+ * trigger when Try again or Remove unmounts (AVE-49).
+ */
+export const Parts: Story = {
+  args: { label: "Pool rules", kind: "document", hint: documentHint },
+  render: function Render(args) {
+    const upload = useSimulatedUpload();
+    return (
+      <FileFieldRoot
+        kind="document"
+        file={upload.file}
+        status={upload.status}
+        onFileChange={(next, details) => {
+          args.onFileChange(next, details);
+          upload.choose(next);
+        }}
+        onRetry={upload.retry}
+        onRemove={() => {
+          args.onRemove?.();
+          upload.remove();
+        }}
+      >
+        <FileFieldLabel>Pool rules</FileFieldLabel>
+        <FileFieldDescription>{documentHint}</FileFieldDescription>
+        <FileFieldDropzone>
+          <FileFieldTrigger />
+          <FileFieldRetry />
+          <FileFieldRemove />
+          <FileFieldName />
+        </FileFieldDropzone>
+        <FileFieldReason />
+        <FileFieldStatus />
+        <FileFieldError />
+        <FileFieldWarning />
+      </FileFieldRoot>
+    );
+  },
+  play: async ({ canvas, canvasElement, args, step }) => {
+    const input = canvasElement.querySelector<HTMLInputElement>("input[type=file]")!;
+
+    await step("the label and the button name the trigger, and the hint describes it", async () => {
+      const trigger = canvas.getByRole("button", { name: /Choose file/ });
+      await expect(trigger).toHaveAccessibleName(/Pool rules/);
+      await expect(trigger).toHaveAccessibleDescription(documentHint);
+      await userEvent.tab();
+      await expect(trigger).toHaveFocus();
+    });
+
+    await step("the failure is read with the file's name, though the screen says this file (AVE-82)", async () => {
+      choose(input, new File(["rules"], "sunnydale-pool-rules.pdf", { type: "application/pdf" }));
+      await expect(args.onFileChange).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "sunnydale-pool-rules.pdf" }),
+        expect.objectContaining({ reason: "picker" }),
+      );
+      const alert = await waitFor(() => canvas.getByRole("alert"));
+      await waitFor(() => expect(shownText(alert)).toBe("Couldn't upload this file. Check your connection and try again."));
+      await expect(readText(alert)).toBe("Couldn't upload sunnydale-pool-rules.pdf. Check your connection and try again.");
+      await expect(canvas.getByRole("button", { name: /Replace file/ })).toHaveAttribute("aria-invalid", "true");
+    });
+
+    await step("Try again by keyboard: once it unmounts, focus is on the trigger, not the page (AVE-49)", async () => {
+      const retry = canvas.getByRole("button", { name: "Try again" });
+      retry.focus();
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(retry).not.toBeInTheDocument());
+      await expect(canvas.getByRole("button", { name: /Uploading/ })).toHaveFocus();
+      await waitFor(() => expect(canvas.getByRole("button", { name: /Replace file/ })).not.toHaveAttribute("aria-disabled"));
+      await expect(canvas.getByRole("button", { name: /Replace file/ })).toHaveFocus();
+      await expect(canvasElement.querySelector("[data-slot=file-field-status]")).toHaveTextContent("Uploaded");
+    });
+
+    await step("Remove by keyboard: focus moves to Choose file (AVE-49)", async () => {
+      const remove = canvas.getByRole("button", { name: "Remove sunnydale-pool-rules.pdf" });
+      remove.focus();
+      await userEvent.keyboard(" ");
+      await expect(args.onRemove).toHaveBeenCalledOnce();
+      await expect(remove).not.toBeInTheDocument();
+      await expect(canvas.getByRole("button", { name: /Choose file/ })).toHaveFocus();
+    });
+  },
+};
+
+/**
+ * The row is ui-sdk's drop zone: a file dropped on it goes through the same checks as one from the picker, with
+ * `drop` as its reason. While the field is unavailable (uploading, or with a disabled reason), a drop is turned away.
+ */
+export const Dropped: Story = {
+  args: { label: "Pool rules", kind: "document", hint: documentHint, onReject: fn() },
+  render: function Render(args) {
+    const upload = useSimulatedUpload();
+    const [blocked, setBlocked] = useState(false);
+    return (
+      <div className="flex flex-col gap-section">
+        <FileField
+          {...args}
+          file={upload.file}
+          status={upload.status}
+          disabledReason={blocked ? "Only board members can change the documents." : undefined}
+          onFileChange={(next, details) => {
+            args.onFileChange(next, details);
+            upload.choose(next);
+          }}
+          onRetry={upload.retry}
+          onRemove={upload.remove}
+        />
+        <Button variant="outline" size="sm" className="self-start" onClick={() => setBlocked(true)}>
+          Block the field
+        </Button>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement, args }) => {
+    const zone = canvasElement.querySelector("[data-file-field-row]")!;
+    await expect(zone).toHaveAttribute("data-slot", "file-input-dropzone");
+    drop(zone, new File(["rules"], "sunnydale-pool-rules.pdf", { type: "application/pdf" }));
+    await expect(args.onFileChange).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "sunnydale-pool-rules.pdf" }),
+      expect.objectContaining({ reason: "drop" }),
+    );
+    // Uploading: a second drop is turned away, and the first upload carries on.
+    drop(zone, new File(["minutes"], "sunnydale-minutes.pdf", { type: "application/pdf" }));
+    await expect(args.onFileChange).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.getByRole("alert")).toHaveTextContent(/Couldn't upload/));
+    // With a disabled reason, a drop is turned away too, even a file the checks would reject.
+    canvas.getByRole("button", { name: "Block the field" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(canvas.getByText("Only board members can change the documents.")).toBeVisible());
+    drop(zone, new File(["minutes"], "sunnydale-minutes.pdf", { type: "application/pdf" }));
+    await expect(args.onFileChange).toHaveBeenCalledOnce();
+    await expect(args.onReject).not.toHaveBeenCalled();
   },
 };
