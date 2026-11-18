@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.37.0 (2026-11-18)
+
+- **Chips for a multi-pick Combobox with its search in the field** (AVE-159, ui-sdk's "Multiple"). New parts
+  `ComboboxChips`, `ComboboxChip` and `ComboboxChipRemove`: `ComboboxChips` is the field (Avenue's field surface, the
+  chevron at the end, growing a line at a time as chips wrap), holding a `ComboboxValue` that draws one `ComboboxChip`
+  per value and the `ComboboxInput`. A chip is a 20px pill in Badge's secondary look; without children it shows the
+  value's label and a remove button named "Remove" and the label ("Remove Oak Lane"), with a 44px tap on a touch
+  screen. Backspace in the empty search removes the last chip, the arrow keys move between chips, and Backspace on a
+  chip removes it. See Components / Combobox / Chips in the field. Nothing else moves.
+
 ## v0.36.0 (2026-11-18)
 
 - **A long table filter opens as a sheet on phones** (AVE-157). A choice field with more than eight values (a board's

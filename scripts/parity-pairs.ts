@@ -508,6 +508,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--pick-several": {
     none: "AVE-156: neither app has a searchable multi-pick of its own yet; the table filter's long list (Table filter / Long list) is the one in use, built from these parts.",
   },
+  "components-combobox--chips-in-the-field": {
+    none: "AVE-159: neither app has a multi-pick field with chips; the chips are new in Avenue, from ui-sdk's Multiple example.",
+  },
   "components-combobox--sized-by-content": {
     none: "AVE-113: a layout probe with no app screen of its own; it proves a content-sized Combobox keeps its width.",
   },
