@@ -1,5 +1,10 @@
 import * as Ui from "@ui-sdk/react/combobox";
-import type { ComboboxValueChangeReason } from "@ui-sdk/react/combobox";
+import type {
+  ComboboxController,
+  ComboboxOpenChangeReason,
+  ComboboxQueryChangeReason,
+  ComboboxValueChangeReason,
+} from "@ui-sdk/react/combobox";
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
 import {
   createContext,
@@ -14,6 +19,7 @@ import {
   type ReactNode,
 } from "react";
 import { report, type ChangeDetails } from "#avenue/lib/change";
+import { controlSize, controlSurface } from "#avenue/lib/control";
 import {
   fieldControl,
   flatItems,
@@ -77,9 +83,26 @@ function matchWords(item: ListItem<unknown>, query: string): boolean {
 /** What `onValueChange` gets after the value: ui-sdk Combobox's own details (reason, event, source, `cancel()`). */
 export type ComboboxValueChangeDetails = ChangeDetails<ComboboxValueChangeReason>;
 
-/** What the parts share through the root: the field the popup lines up with, and whether the field is disabled. */
-type Shared = { anchor: HTMLDivElement | null; setAnchor: (element: HTMLDivElement | null) => void; disabled: boolean };
+/** What `onOpenChange` gets after the new state: ui-sdk Combobox's own details. */
+export type ComboboxOpenChangeDetails = ChangeDetails<ComboboxOpenChangeReason>;
+
+/** What `onQueryChange` gets after the new text: ui-sdk Combobox's own details. */
+export type ComboboxQueryChangeDetails = ChangeDetails<ComboboxQueryChangeReason>;
+
+/**
+ * What the parts share through the root: the element the popup lines up with (the field, or a `ComboboxTrigger`),
+ * whether the field is disabled, and whether it picks several values.
+ */
+type Shared = {
+  anchor: HTMLElement | null;
+  setAnchor: (element: HTMLElement | null) => void;
+  disabled: boolean;
+  multiple: boolean;
+};
 const SharedContext = createContext<Shared | null>(null);
+
+/** True inside `ComboboxContent`: a `ComboboxInput` there is the popup's search field (ui-sdk's "Input in the Popup"). */
+const InContentContext = createContext(false);
 
 function useShared(part: string): Shared {
   const shared = use(SharedContext);
@@ -87,12 +110,21 @@ function useShared(part: string): Shared {
   return shared;
 }
 
-/** The root's props Avenue hands on to ui-sdk's single-value Combobox. */
+/** The props the root hands on to ui-sdk's Combobox, for one value or, with `multiple`, a list of them. */
 type RootProps<V> = {
-  value?: V | null | undefined;
-  defaultValue?: V | null | undefined;
-  onValueChange?: ((value: V | null, details: ComboboxValueChangeDetails) => void) | undefined;
-  onQueryChange?: ((query: string, details: { reason: string; cancel: () => void }) => void) | undefined;
+  multiple?: boolean | undefined;
+  keepQuery?: boolean | undefined;
+  maxSelected?: number | undefined;
+  value?: V | readonly V[] | null | undefined;
+  defaultValue?: V | readonly V[] | null | undefined;
+  // Either a single value's callback or a list's: the public types below keep them apart.
+  onValueChange?: ((value: never, details: ComboboxValueChangeDetails) => void) | undefined;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean, details: ComboboxOpenChangeDetails) => void) | undefined;
+  onOpenChangeComplete?: ((open: boolean) => void) | undefined;
+  controller?: ComboboxController<V, boolean> | undefined;
+  onQueryChange?: ((query: string, details: ComboboxQueryChangeDetails) => void) | undefined;
   filter?: ((item: ListItem<V>, query: string) => boolean | number) | undefined;
   itemToValue?: ((value: V) => string) | undefined;
   itemToLabel?: ((value: V) => string) | undefined;
@@ -106,18 +138,22 @@ type RootProps<V> = {
 };
 
 /** The root and its shared state, for both forms. */
-function ComboboxRoot<V>({ disabled, presentation = "auto", filter, children, ...props }: RootProps<V>) {
-  const [anchor, setAnchor] = useState<HTMLDivElement | null>(null);
-  const shared = useMemo(() => ({ anchor, setAnchor, disabled: !!disabled }), [anchor, disabled]);
+function ComboboxRoot<V>({ disabled, presentation = "auto", filter, multiple, children, ...props }: RootProps<V>) {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const shared = useMemo(
+    () => ({ anchor, setAnchor, disabled: !!disabled, multiple: !!multiple }),
+    [anchor, disabled, multiple],
+  );
+  // ui-sdk types the value by `Multiple`; the public props below already tie `multiple` to a list value and callback,
+  // so the root hands them on as one shape.
+  const options = {
+    ...defined({ disabled, multiple }),
+    ...(filter ? { filter: filter as (item: Ui.ListItem<V>, query: string) => boolean | number } : {}),
+    ...defined(props),
+  } as Ui.ComboboxProps<V, boolean>;
   return (
     <SharedContext value={shared}>
-      <Ui.Combobox<V>
-        autoHighlight
-        presentation={presentation}
-        {...defined({ disabled })}
-        {...(filter ? { filter: filter as (item: Ui.ListItem<V>, query: string) => boolean | number } : {})}
-        {...defined(props)}
-      >
+      <Ui.Combobox<V, boolean> autoHighlight presentation={presentation} {...options}>
         {children}
       </Ui.Combobox>
     </SharedContext>
@@ -144,10 +180,30 @@ type InputProps = Omit<Loose<ComponentProps<typeof Ui.ComboboxInput>>, "size" | 
  * The closed field: the search input in Avenue's control surface, with an optional leading icon, the phone's clear
  * button and the chevron. Its list opens lined up with the whole field.
  *
+ * Inside `ComboboxContent` it is the popup's search field instead (ui-sdk's "Input in the Popup", opened by a
+ * `ComboboxTrigger`): the text input alone, in the control surface, with no icon, clear button or chevron.
+ *
  * Icons are the app's 14px (its time-zone picker, AVE-59): the leading icon, the chevron and the check. The leading
  * icon sits 8px from the edge where the app's sits 10px, the AVE-2 section 1 step inside a control.
  */
-function ComboboxInput({
+function ComboboxInput(props: InputProps) {
+  const inContent = use(InContentContext);
+  return inContent ? <PopupInput {...props} /> : <FieldInput {...props} />;
+}
+
+/** The search field inside the popup: the input alone, 32px, in Avenue's control surface (44px on a touch screen). */
+function PopupInput({ size, icon: _icon, invalid, triggerLabel: _trigger, clearLabel: _clear, className, ...props }: InputProps) {
+  useShared("ComboboxInput");
+  return (
+    <Ui.ComboboxInput
+      aria-invalid={invalid || undefined}
+      {...defined(props)}
+      className={cn(controlSurface, controlSize({ size: size ?? "md" }), "py-1 pointer-coarse:min-h-11", className)}
+    />
+  );
+}
+
+function FieldInput({
   size,
   icon,
   invalid,
@@ -158,9 +214,10 @@ function ComboboxInput({
   onFocus,
   onMouseUp,
   onBlur,
+  ref,
   ...props
 }: InputProps) {
-  const { setAnchor, disabled } = useShared("ComboboxInput");
+  const { setAnchor, disabled, multiple } = useShared("ComboboxInput");
   // Focus selects the whole label so typing replaces it; the click that focused must not undo that selection.
   const focusing = useRef(false);
   // The clear button's name follows the field's own label, which a Field gives the input after it mounts.
@@ -201,13 +258,20 @@ function ComboboxInput({
         )}
       </Ui.ComboboxValue>
       <Ui.ComboboxInput
-        ref={inputRef}
+        ref={(element: HTMLInputElement | null) => {
+          inputRef.current = element;
+          if (typeof ref === "function") return ref(element);
+          if (ref) ref.current = element;
+        }}
         aria-invalid={invalid || undefined}
         {...defined({ placeholder })}
         {...defined(props)}
         onFocus={(e) => {
           focusing.current = true;
           const input = e.currentTarget;
+          // With `multiple` the text is only the search, never a chosen label, so focus leaves it as it is: typing
+          // goes on from the text kept after a pick (`keepQuery`) rather than replacing it.
+          if (multiple) return onFocus?.(e);
           // On a phone, selected text brings up the system's copy and select handles, so the cursor goes to the end
           // instead; with a mouse or keyboard, the whole label is selected so typing replaces it (AVE-76).
           if (input.ownerDocument.defaultView?.matchMedia("(pointer: coarse)").matches) {
@@ -256,6 +320,31 @@ function ComboboxInput({
 }
 
 /**
+ * A button that opens the list, for a combobox whose search field sits inside the popup (ui-sdk's "Input in the
+ * Popup"): a table filter's pill, a "Streets" button. The list lines up with it. It has no look of its own: give it
+ * `render`, like `render={<Button variant="outline" />}`, and show the choice in it with `ComboboxValue`. A
+ * `ComboboxInput` in the field brings its own chevron, so it needs none of this.
+ */
+function ComboboxTrigger({ ref, ...props }: Loose<ComponentProps<typeof Ui.ComboboxTrigger>>) {
+  const { setAnchor } = useShared("ComboboxTrigger");
+  return (
+    <Ui.ComboboxTrigger
+      ref={(element: HTMLButtonElement | null) => {
+        setAnchor(element);
+        if (typeof ref === "function") return ref(element);
+        if (ref) ref.current = element;
+      }}
+      {...defined(props)}
+    />
+  );
+}
+
+/** The chosen value as text, or a function of it (`{ value, labels, label }`). Draws no element of its own. */
+function ComboboxValue(props: Loose<ComponentProps<typeof Ui.ComboboxValue>>) {
+  return <Ui.ComboboxValue {...defined(props)} />;
+}
+
+/**
  * The open list: a popover as wide as the whole field, or a bottom sheet on a small touch screen, with the sheet's
  * handle. Put a `ComboboxEmpty` and a `ComboboxList` in it.
  */
@@ -263,6 +352,7 @@ function ComboboxContent({
   side = "bottom",
   align = "start",
   sideOffset = 4,
+  anchor: anchorProp,
   className,
   children,
   ...props
@@ -270,7 +360,7 @@ function ComboboxContent({
   const { anchor } = useShared("ComboboxContent");
   return (
     <Ui.ComboboxContent
-      anchor={anchor}
+      anchor={anchorProp ?? anchor}
       side={side}
       align={align}
       sideOffset={sideOffset}
@@ -283,7 +373,7 @@ function ComboboxContent({
       {...defined(props)}
     >
       <div aria-hidden data-slot="sheet-handle" className={listSheetHandle} />
-      {children}
+      <InContentContext value={true}>{children}</InContentContext>
     </Ui.ComboboxContent>
   );
 }
@@ -311,19 +401,36 @@ type ComboboxItemProps<T> = NodeChildren<Loose<ComponentProps<typeof Ui.Combobox
 /**
  * One choice: the check while it is chosen, then its children (a label, or a label and a second line), then `meta`.
  * Give it `label` when the children aren't plain text: the field shows it once chosen, and the search matches it.
+ *
+ * With `multiple` the check sits in a checkbox's box, drawn as Avenue's Checkbox is, so a row reads as one that
+ * toggles. It stays a combobox option (`aria-selected`), not a checkbox: the one combobox holds the whole choice.
  */
 function ComboboxItem<T = string>({ value, className, children, label, meta, ...props }: ComboboxItemProps<T>) {
+  const { multiple } = useShared("ComboboxItem");
   const text = label ?? (typeof children === "string" ? children : undefined);
   return (
     <Ui.ComboboxItem<T>
       value={value}
-      className={cn(listItem, meta != null && "grid-cols-[1rem_1fr_auto]", className)}
+      className={cn(listItem, multiple && "group/combobox-item", meta != null && "grid-cols-[1rem_1fr_auto]", className)}
       {...defined({ label: text })}
       {...defined(props)}
     >
-      <Ui.ComboboxItemIndicator className="col-start-1 flex">
-        <CheckIcon aria-hidden className="size-3.5" />
-      </Ui.ComboboxItemIndicator>
+      {multiple ? (
+        // data-[selected], not data-selected: Avenue's shadcn.css reads `data-selected:` as [data-selected="true"],
+        // and ui-sdk sets it empty.
+        <span
+          aria-hidden
+          className="col-start-1 flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-[selected]/combobox-item:border-primary group-data-[selected]/combobox-item:bg-primary group-data-[selected]/combobox-item:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/combobox-item:bg-primary"
+        >
+          <Ui.ComboboxItemIndicator className="grid place-content-center [&>svg]:size-3.5">
+            <CheckIcon aria-hidden />
+          </Ui.ComboboxItemIndicator>
+        </span>
+      ) : (
+        <Ui.ComboboxItemIndicator className="col-start-1 flex">
+          <CheckIcon aria-hidden className="size-3.5" />
+        </Ui.ComboboxItemIndicator>
+      )}
       <span className="col-start-2 min-w-0">{children}</span>
       {meta != null && <span className="col-start-3 ps-3 text-control text-muted-foreground tabular-nums">{meta}</span>}
     </Ui.ComboboxItem>
@@ -386,12 +493,56 @@ interface ComboboxSharedProps<T, Item extends ComboboxItemData<T>> {
   presentation?: Presentation | undefined;
 }
 
-/** Built from parts: `Combobox` holds the value, and its children are `ComboboxInput` and `ComboboxContent`. */
-type ComboboxPartsProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedProps<T, Item> & {
+/** ui-sdk's open state and search text, which the parts form hands on as they are. */
+interface ComboboxPartsOnlyProps<T> {
+  /** Whether the list is open. Pass it with `onOpenChange` to control it. */
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  /** Gets the new state and ui-sdk's details; `details.cancel()` keeps it as it was. */
+  onOpenChange?: ((open: boolean, details: ComboboxOpenChangeDetails) => void) | undefined;
+  /** Runs once the list has finished opening or closing, after its animation. */
+  onOpenChangeComplete?: ((open: boolean) => void) | undefined;
+  /** Gets the search text as it changes, and ui-sdk's details. */
+  onQueryChange?: ((query: string, details: ComboboxQueryChangeDetails) => void) | undefined;
+  /** Opens, closes, reads and sets the combobox from anywhere: `createComboboxController()` from `@ui-sdk/react/combobox`. */
+  controller?: ComboboxController<T, boolean> | undefined;
   children: ReactNode;
   items?: undefined;
   options?: undefined;
-};
+}
+
+/** Built from parts: `Combobox` holds the value, and its children are `ComboboxInput` and `ComboboxContent`. */
+type ComboboxPartsProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedProps<T, Item> &
+  ComboboxPartsOnlyProps<T> & {
+    multiple?: false | undefined;
+    keepQuery?: undefined;
+    maxSelected?: undefined;
+  };
+
+/**
+ * Built from parts, picking several values (ui-sdk's `multiple`): the value is a list. Choosing an item toggles it and
+ * keeps the list open, and each item shows a checkbox's box.
+ */
+type ComboboxMultipleProps<T, Item extends ComboboxItemData<T>> = Omit<
+  ComboboxSharedProps<T, Item>,
+  "value" | "defaultValue" | "onValueChange"
+> &
+  ComboboxPartsOnlyProps<T> & {
+    multiple: true;
+    /** The chosen values, in the order they were chosen. Pass it with `onValueChange` to control the field. */
+    value?: readonly T[] | undefined;
+    /** The values chosen at first, when `value` is left out. A form reset returns to them. */
+    defaultValue?: readonly T[] | undefined;
+    /** Gets the new list and ui-sdk's details. `details.cancel()` keeps the old list. */
+    onValueChange?: ((value: T[], details: ComboboxValueChangeDetails) => void) | undefined;
+    /**
+     * Whether the search keeps its text after a pick, so several matches of "oak" go in a row. True by default in
+     * Avenue (ui-sdk's default is false, which empties it): a multi-pick is usually several of the same search.
+     */
+    keepQuery?: boolean | undefined;
+    /** How many values can be chosen. Once reached, the other items are disabled. */
+    maxSelected?: number | undefined;
+  };
 
 /** The one-tag Combobox: Avenue draws the field and the list from `items`. */
 type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedProps<T, Item> &
@@ -409,10 +560,14 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
     noneLabel?: string | undefined;
     /** What the list says when nothing matches. Gets the trimmed query. */
     emptyMessage?: ((query: string) => ReactNode) | undefined;
+    multiple?: undefined;
+    keepQuery?: undefined;
+    maxSelected?: undefined;
   };
 
 export type ComboboxProps<T = string, Item extends ComboboxItemData<T> = ComboboxItemData<T>> =
   | ComboboxPartsProps<T, Item>
+  | ComboboxMultipleProps<T, Item>
   | ComboboxWrapperProps<T, Item>;
 
 /**
@@ -434,10 +589,45 @@ export type ComboboxProps<T = string, Item extends ComboboxItemData<T> = Combobo
  *   </ComboboxContent>
  * </Combobox>
  * ```
+ *
+ * With `multiple` the value is a list (ui-sdk's "Multiple"). Its search usually sits inside the popup, opened by a
+ * `ComboboxTrigger` that shows the choice, as a table filter's long list does:
+ *
+ * ```tsx
+ * <Combobox multiple value={streets} onValueChange={setStreets}>
+ *   <ComboboxTrigger render={<Button variant="outline" />}>
+ *     <ComboboxValue>{({ label }) => label || "Any street"}</ComboboxValue>
+ *   </ComboboxTrigger>
+ *   <ComboboxContent className="w-64">
+ *     <ComboboxInput aria-label="Search streets" placeholder="Search…" />
+ *     <ComboboxList>…</ComboboxList>
+ *   </ComboboxContent>
+ * </Combobox>
+ * ```
  */
+// The multiple form is its own signature, first, so a value list infers its item type (string, not string[]): in one
+// union the single form's `value?: T` would claim the list as T.
+export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, T = Item["value"]>(
+  props: ComboboxMultipleProps<T, Item>,
+): ReactNode;
+export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, T = Item["value"]>(
+  props: ComboboxProps<T, Item>,
+): ReactNode;
 export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, T = Item["value"]>(
   props: ComboboxProps<T, Item>,
 ) {
+  if (props.multiple) {
+    const { children, filter, keepQuery = true, ...rest } = props;
+    return (
+      <ComboboxRoot<T>
+        keepQuery={keepQuery}
+        {...(filter ? { filter: (item: ListItem<T>, query: string) => filter(item as Item, query) } : {})}
+        {...rest}
+      >
+        {children}
+      </ComboboxRoot>
+    );
+  }
   if (props.children !== undefined) {
     const { children, value, defaultValue, onValueChange, filter, ...rest } = props;
     return (
@@ -607,4 +797,6 @@ export {
   ComboboxItem,
   ComboboxList,
   ComboboxSeparator,
+  ComboboxTrigger,
+  ComboboxValue,
 };

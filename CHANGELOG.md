@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.35.0 (2026-11-18)
+
+- **Combobox picks several values** (AVE-156). Give the root ui-sdk's `multiple`: `value` and `defaultValue` are then
+  lists and `onValueChange(values, details)` gets the new list. A pick toggles the item and keeps the list open, each
+  item shows a checkbox's box, and the search keeps its text after a pick (`keepQuery`, on by default in Avenue, so
+  several matches of one search go in a row; `keepQuery={false}` empties it as ui-sdk does). `maxSelected` caps the
+  count. Nothing changes for a Combobox without `multiple`.
+- **New Combobox parts for a search inside the popup** (ui-sdk's "Input in the Popup"): `ComboboxTrigger` opens the
+  list and lines it up with itself (give it `render`, like `render={<Button variant="outline" />}`), `ComboboxValue`
+  shows the choice, and a `ComboboxInput` inside `ComboboxContent` is the popup's plain search field. The parts form
+  also takes ui-sdk's `open` / `defaultOpen` / `onOpenChange`, `onOpenChangeComplete`, `onQueryChange` and
+  `controller`. See Components / Combobox / Pick several.
+- TableFilters' long-list editor (AVE-155) is now built from these parts. It looks and works as before.
+
 ## v0.34.0 (2026-11-18)
 
 - **One size scale** (AVE-152): Button, Toggle, ToggleGroup, Switch, Avatar, InitialsAvatar, Card and Progress take

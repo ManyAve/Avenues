@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { GlobeIcon, HouseIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { createComboboxController } from "@ui-sdk/react/combobox";
 import { Button } from "#avenue/components/button";
 import {
   Combobox,
@@ -10,6 +11,8 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
   type ComboboxItemData,
   type ComboboxProps,
   type ListData,
@@ -807,5 +810,116 @@ export const ObjectValues: Story = {
     await expect(canvas.getByTestId("value")).toHaveTextContent("Cora Mendez (1101)");
     await userEvent.click(canvas.getByRole("button", { name: "Post the form" }));
     await expect(canvas.getByTestId("value")).toHaveTextContent("posted: 1101");
+  },
+};
+
+const streets: ComboboxItemData[] = [
+  { value: "aspen", label: "Aspen Way" },
+  { value: "birch", label: "Birch Street" },
+  { value: "cedar", label: "Cedar Court" },
+  { value: "elm", label: "Elm Row" },
+  { value: "oak-hollow", label: "Oak Hollow Road" },
+  { value: "oak-lane", label: "Oak Lane" },
+  { value: "pine", label: "Pine Terrace" },
+  { value: "willow", label: "Willow Bend" },
+];
+
+/**
+ * `multiple` (AVE-156): the value is a list, each row shows a checkbox's box, and a pick keeps the list open and the
+ * search's text, so both "oak" streets go in a row. The search sits inside the popup, opened by a ComboboxTrigger
+ * that shows the choice (ui-sdk's "Input in the Popup"), as a table filter's long list does. Streets are fictional.
+ */
+export const PickSeveral: Story = {
+  name: "Pick several",
+  render: function Render() {
+    const [value, setValue] = useState<string[]>(["elm"]);
+    const search = useRef<HTMLInputElement>(null);
+    // The search keeps its text between picks, so it is emptied once the list has closed: the next open starts afresh.
+    const [controller] = useState(() => createComboboxController<string, boolean>());
+    return (
+      <div className="grid w-80 justify-items-start gap-group">
+        <Combobox
+          multiple
+          presentation="popover"
+          value={value}
+          onValueChange={setValue}
+          itemToLabel={(v: string) => streets.find((s) => s.value === v)?.label ?? v}
+          controller={controller}
+          // The search is inside the popup, so it takes focus once the popup is open.
+          onOpenChangeComplete={(open) => (open ? search.current?.focus() : controller.setQuery(""))}
+        >
+          <ComboboxTrigger render={<Button variant="outline" className="max-w-full justify-start" />}>
+            <span className="truncate">
+              Streets:{" "}
+              <ComboboxValue>{({ label }) => label || "Any"}</ComboboxValue>
+            </span>
+          </ComboboxTrigger>
+          <ComboboxContent className="flex max-h-none w-64 flex-col gap-2 overflow-visible p-2 not-sheet:has-data-empty:p-2">
+            <ComboboxInput ref={search} aria-label="Search streets" placeholder="Search…" />
+            <ComboboxEmpty className="px-2 py-1">No street matches.</ComboboxEmpty>
+            <ComboboxList className="max-h-64 overflow-y-auto overscroll-contain">
+              {streets.map((s) => (
+                <ComboboxItem key={s.value} value={s.value}>
+                  {s.label}
+                </ComboboxItem>
+              ))}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        <output data-testid="value" className="text-meta text-muted-foreground">
+          Chosen: {value.join(", ") || "(none)"}
+        </output>
+      </div>
+    );
+  },
+  play: async ({ canvas, step }) => {
+    const trigger = canvas.getByRole("button", { name: /^Streets/ });
+    const search = () => screen.getByRole<HTMLInputElement>("combobox", { name: "Search streets" });
+    const chosen = canvas.getByTestId("value");
+
+    await step("the trigger shows the choice; the keyboard opens it with focus in the search", async () => {
+      await expect(trigger).toHaveTextContent("Streets: Elm Row");
+      await userEvent.tab();
+      await expect(trigger).toHaveFocus();
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(search()).toHaveFocus());
+      await expect(screen.getByRole("option", { name: "Elm Row" })).toHaveAttribute("aria-selected", "true");
+    });
+
+    await step("Enter toggles the highlighted match on; the list stays open and the search keeps its text", async () => {
+      await userEvent.keyboard("oak");
+      await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+      await userEvent.keyboard("{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-hollow");
+      await expect(search()).toHaveValue("oak");
+      await expect(screen.getByRole("listbox")).toBeVisible();
+      await expect(screen.getByRole("option", { name: "Oak Hollow Road" })).toHaveAttribute("data-selected");
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-hollow, oak-lane");
+    });
+
+    await step("Enter on a chosen item toggles it off", async () => {
+      await userEvent.clear(search());
+      await userEvent.keyboard("elm");
+      await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(1));
+      await userEvent.keyboard("{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: oak-hollow, oak-lane");
+      await expect(screen.getByRole("option", { name: "Elm Row" })).toHaveAttribute("aria-selected", "false");
+    });
+
+    await step("Escape closes it, focus goes back to the trigger, and it reads the new choice", async () => {
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await waitFor(() => expect(trigger).toHaveFocus());
+      await expect(trigger).toHaveTextContent("Streets: Oak Hollow Road, Oak Lane");
+    });
+
+    await step("opened again, the search starts empty", async () => {
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(search()).toHaveFocus());
+      await expect(search()).toHaveValue("");
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+    });
   },
 };
