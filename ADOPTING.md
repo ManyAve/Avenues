@@ -144,6 +144,14 @@ the aliases and old paths go in v0.26.0.
 Props don't change in this release. In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
 Components / Drawer, so links to the old pages need the new address.
 
+File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old names go in v0.30.0:
+
+| Old name (until v0.30) | New name |
+| --- | --- |
+| `FileName` | `FileFieldName` |
+| `FileThumbnail` | `FileFieldPreview` |
+| `UploadStatus` | `FileFieldStatus` |
+
 ## Renamed props and change details
 
 State props take ui-sdk's names too (AVE-145, v0.26.0): `value` / `defaultValue` / `onValueChange`, `checked` /

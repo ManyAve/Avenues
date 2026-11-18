@@ -4,6 +4,28 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.29.0 (2026-11-18)
+
+- **File field: a root and parts, like ui-sdk's FileInput** (AVE-148). `FileFieldRoot` holds the file, its status,
+  progress and error, and the rules that follow from them; its parts read them: `FileFieldLabel`,
+  `FileFieldDropzone` (the row), `FileFieldPreview`, `FileFieldName`, `FileFieldTrigger`, `FileFieldRemove`,
+  `FileFieldRetry`, `FileFieldReason`, `FileFieldDescription`, `FileFieldStatus`, `FileFieldError` and
+  `FileFieldWarning`. Compose them to put the hint above the row, the actions before the name, or the trigger in a
+  different place; the focus rule (Remove and Try again hand focus to the trigger, AVE-49) and the error that names
+  the file to screen readers (AVE-82) hold in any arrangement. Components / File field / Parts shows it.
+  - `FileField` with today's props is now built from those parts. Nothing on screen moves (visual diff in the pull
+    request).
+  - New: the row takes a dropped file, or one pasted while focus is in it, through the same `accept` and `maxSize`
+    checks as the picker. A dashed outline shows while a file is dragged over it (red when it wouldn't be taken).
+    While uploading, or with a `disabledReason`, drops and pastes are turned away.
+  - A dropped or pasted file reaches `onFileChange` like a picked one; its details' `reason` says `drop` or `paste`.
+  - The row's marker moves from `data-slot="file-field-row"` to `data-file-field-row`: the row is ui-sdk's drop zone
+    now, and its `data-slot` is ui-sdk's, `file-input-dropzone`.
+  - Deprecated, removed in v0.30.0: `FileName` (use `FileFieldName`), `FileThumbnail` (use `FileFieldPreview`) and
+    `UploadStatus` (use `FileFieldStatus`). Each still works standalone given its old props (`name`, `src`, `status`).
+  - Management and Neighbors: nothing to change. Management's documents form keeps `FileField` as it is.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.28.0 (2026-11-18)
 
 - **Select and Combobox take `items` in ui-sdk's shape, and come in parts** (AVE-146).
