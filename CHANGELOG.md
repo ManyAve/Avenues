@@ -19,6 +19,8 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     its text in `div[data-slot=callout-content]`; InlineMessage's icon and text spans carry `data-slot`
     `inline-message-icon` and `inline-message-content`.
   - Management and Neighbors: nothing to change now.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.31.1 (2026-11-18)
 
 - **No release promises to remove an old name any more** (AVE-158). Old part and prop names stay deprecated aliases
