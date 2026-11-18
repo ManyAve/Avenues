@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.38.1 (2026-11-18)
+
+- **Selection bar reasons no longer print over each other** (AVE-162). When two neighbouring actions in the
+  selection bar are both unavailable, each reason still starts under its own button and runs on under the actions
+  after it, but on a line of its own, so the second no longer prints over the first. Neighbouring actions that share
+  a reason show it once, as one line under both, and each of those buttons is still described by it for a screen
+  reader. No reason sits under the count (AVE-96), the bar's width and the gaps between its actions don't change, and
+  a bar with one unavailable action looks as it did. Nothing to change in the apps.
+- The `reasons-hang-start` utility is deprecated; removed once both apps have moved off it (AVE-154). Neither app
+  uses it.
+
 ## v0.38.0 (2026-11-18)
 
 - **The one-tag Combobox picks several values** (AVE-161). `<Combobox multiple items={…} />` takes a list for

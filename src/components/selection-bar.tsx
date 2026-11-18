@@ -2,10 +2,11 @@
 
 import { Toolbar as ToolbarPrimitive, ToolbarButton as ToolbarItem } from "@ui-sdk/react/toolbar";
 import { X } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode, type RefObject } from "react";
+import { useId, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode, type RefObject } from "react";
 import { Button } from "#avenue/components/button";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose } from "#avenue/lib/props";
+import { reasonRuns, runAt } from "#avenue/lib/reason-runs";
 
 export type SelectionAction = {
   id: string;
@@ -29,9 +30,13 @@ export type SelectionAction = {
  * positioned container (`relative`), as the app's list is.
  *
  * The bar is a ui-sdk toolbar: one Tab stop, arrows between the actions. A disabled action stays reachable and shows
- * its reason under it (the app hid it in a title). The reason hangs from the button's start and runs toward the end,
- * under the actions, so it never spreads them apart (AVE-91) and never sits under the count, where it would read as
- * the count's caption (`reasons-hang-start`, AVE-96). The count is announced whenever it changes, from a status
+ * its reason under it (the app hid it in a title), described by it for a screen reader. The bar is a grid: the count,
+ * the actions and Clear on the first line, then one line per reason. A reason starts under its button and runs on
+ * under the actions after it to the bar's end, wrapping there; a second disabled action's reason takes the next line,
+ * so two reasons never print over each other (AVE-162), and a short button's long reason stays one line instead of a
+ * narrow column that grows the floating bar over the list. It takes no width of its own, so it never spreads the actions apart
+ * (AVE-91), and it never sits under the count, where it would read as the count's caption (AVE-96). Neighbouring
+ * actions that share a reason share one line, as the page toolbar's do (AVE-160). The count is announced whenever it changes, from a status
  * region that stays mounted while the bar comes and goes, so the first selection is announced too, and clearing says
  * so.
  *
@@ -67,6 +72,10 @@ function SelectionBar({
   // Say "Selection cleared" only after something was selected, so an empty list carries no stray text.
   const [selectedOnce, setSelectedOnce] = useState(false);
   if (count > 0 && !selectedOnce) setSelectedOnce(true);
+  const baseId = useId();
+  // Grid columns: the count is column 1, action i is column i + 2 and Clear comes last.
+  const runs = reasonRuns(actions);
+  const clearIndex = actions.length;
   return (
     <>
       <output aria-live="polite" className="sr-only">
@@ -76,7 +85,7 @@ function SelectionBar({
         <ToolbarPrimitive
           aria-label="Selection actions"
           className={cn(
-            "absolute bottom-12 start-1/2 z-10 flex -translate-x-1/2 items-start gap-controls reasons-hang-start rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
+            "absolute bottom-12 start-1/2 z-10 grid -translate-x-1/2 items-start gap-x-controls gap-y-1 rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
             className,
           )}
           {...defined(props)}
@@ -90,30 +99,59 @@ function SelectionBar({
           }}
         >
           <ReturnFocus focusInside={focusInside} to={returnFocus} />
-          <span data-slot="selection-bar-count" className="flex h-control-sm items-center border-e px-2 font-[550]">
+          <span
+            data-slot="selection-bar-count"
+            className="col-start-1 row-start-1 flex h-control-sm items-center border-e px-2 font-[550]"
+          >
             {label(count)}
           </span>
-          {actions.map((action) => (
-            <ToolbarItem
-              key={action.id}
-              disabled={!!action.disabledReason}
-              onClick={action.disabledReason ? undefined : action.onSelect}
-              render={
-                <Button
-                  size="sm"
-                  variant={action.primary ? "default" : "outline"}
-                  disabledReason={action.disabledReason}
-                  data-agent-confirm={action.confirm}
-                />
-              }
-            >
-              {action.icon}
-              {action.label}
-            </ToolbarItem>
-          ))}
-          <ToolbarItem aria-label="Clear selection" onClick={onClear} render={<Button variant="ghost" size="icon-sm" />}>
+          {actions.map((action, index) => {
+            const run = runAt(runs, index);
+            return (
+              <ToolbarItem
+                key={action.id}
+                disabled={!!action.disabledReason}
+                onClick={action.disabledReason ? undefined : action.onSelect}
+                style={{ gridColumn: index + 2 }}
+                className="row-start-1"
+                render={
+                  <Button
+                    size="sm"
+                    variant={action.primary ? "default" : "outline"}
+                    data-agent-confirm={action.confirm}
+                    {...(run
+                      ? { disabled: true, focusableWhenDisabled: true, "aria-describedby": `${baseId}-${run.key}` }
+                      : {})}
+                  />
+                }
+              >
+                {action.icon}
+                {action.label}
+              </ToolbarItem>
+            );
+          })}
+          <ToolbarItem
+            aria-label="Clear selection"
+            onClick={onClear}
+            style={{ gridColumn: clearIndex + 2 }}
+            className="row-start-1"
+            render={<Button variant="ghost" size="icon-sm" />}
+          >
             <X aria-hidden />
           </ToolbarItem>
+          {runs.map((run, i) => (
+            <span
+              key={run.key}
+              id={`${baseId}-${run.key}`}
+              data-slot="selection-bar-reason"
+              // Its own line, from its first button through Clear. contain-inline-size: the line takes no width of its
+              // own, so it never widens the bar and wraps at its end.
+              className="contain-inline-size text-meta whitespace-normal text-muted-foreground"
+              style={{ gridRow: i + 2, gridColumn: `${run.from + 2} / span ${clearIndex + 1 - run.from}` }}
+            >
+              {run.reason}
+            </span>
+          ))}
         </ToolbarPrimitive>
       ) : null}
     </>

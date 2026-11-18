@@ -19,6 +19,7 @@ import {
 import { SearchInput } from "#avenue/components/search-input";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
+import { reasonRuns, runAt } from "#avenue/lib/reason-runs";
 
 /**
  * ManyAve's page toolbar (the app's app/ui/components/Toolbar.tsx and the phone's MobileToolbar in mobile.tsx, at
@@ -134,26 +135,6 @@ function useWide(beforeChange: () => void) {
   );
 }
 
-/** Two reasons are the same line when they're the same text, or the same node. */
-function sameReason(a: ReactNode, b: ReactNode) {
-  return a === b || (typeof a === "string" && typeof b === "string" && a.trim() === b.trim());
-}
-
-/**
- * The reason lines under a row of buttons: one line for each run of neighbouring buttons that share a reason, as wide
- * as that run, so lines never meet (AVE-160).
- */
-function reasonRuns(row: readonly ToolbarAction[]) {
-  const runs: { from: number; span: number; reason: ReactNode; key: string }[] = [];
-  row.forEach((action, index) => {
-    if (!action.disabledReason) return;
-    const last = runs.at(-1);
-    if (last && last.from + last.span === index && sameReason(last.reason, action.disabledReason)) last.span += 1;
-    else runs.push({ from: index, span: 1, reason: action.disabledReason, key: action.id });
-  });
-  return runs;
-}
-
 /**
  * A page's create and send actions at the toolbar's end. `primary` always shows as a button. From `wide` (1100px) up the
  * other `actions` are outlined buttons; below it they fold into a More menu, so the toolbar fits the 900px desktop
@@ -193,7 +174,7 @@ function ToolbarActions({
   const row: readonly ToolbarAction[] = wide ? [...actions, primary] : folded ? [{ id: "more", label: "" }, primary] : [primary];
   const runs = reasonRuns(row);
   const reasonIdOf = (index: number) => {
-    const run = runs.find((r) => index >= r.from && index < r.from + r.span);
+    const run = runAt(runs, index);
     return run ? `${baseId}-${run.key}` : undefined;
   };
   const primaryIndex = row.length - 1;
