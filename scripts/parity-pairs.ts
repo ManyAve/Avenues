@@ -1366,4 +1366,6 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-section-card--parts": { none: BEHAVIOUR("Section card's one-tag stories") },
   "composites-status-bar--parts": { none: BEHAVIOUR("Status bar's one-tag stories") },
   "composites-top-bar--parts": { none: BEHAVIOUR("Top bar / Home as a router link and Window drag area") },
+  "components-callout--parts": { none: BEHAVIOUR("Callout / Warning") },
+  "components-inline-message--parts": { none: BEHAVIOUR("Inline message / Tones") },
 };

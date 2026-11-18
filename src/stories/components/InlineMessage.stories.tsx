@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent } from "storybook/test";
-import { InlineMessage } from "#avenue/components/inline-message";
+import { InlineMessage, InlineMessageContent, InlineMessageIcon } from "#avenue/components/inline-message";
 
 // AVE-7. One InlineMessage for the app's 32 Alert paragraphs and ~60 inline role=alert / role=status spots.
 
@@ -114,5 +114,36 @@ export const Announcing: Story = {
     });
 
     observer.disconnect();
+  },
+};
+
+/**
+ * The parts (AVE-149): the tone's icon is a part, left out to hide it (a message under a field whose invalid ring
+ * already signals it). An empty InlineMessageContent keeps the region mounted and hidden, as an empty one-tag message.
+ */
+export const Parts: Story = {
+  render: () => (
+    <div className="grid gap-3">
+      <InlineMessage tone="warning">
+        <InlineMessageIcon />
+        <InlineMessageContent>This amount is higher than last year's.</InlineMessageContent>
+      </InlineMessage>
+      <InlineMessage tone="info">
+        <InlineMessageContent>Shown without its icon.</InlineMessageContent>
+      </InlineMessage>
+      <InlineMessage tone="error" data-testid="empty">
+        <InlineMessageIcon />
+        <InlineMessageContent>{null}</InlineMessageContent>
+      </InlineMessage>
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const [warning, info] = canvas.getAllByRole("status");
+    await expect(warning!.querySelectorAll("svg")).toHaveLength(1);
+    await expect(info!.querySelector("svg")).toBeNull();
+    const empty = canvas.getByTestId("empty");
+    await expect(empty).toHaveAttribute("data-empty");
+    await expect(empty).toHaveRole("alert");
+    await expect(canvasElement.querySelectorAll("[data-slot=inline-message]")).toHaveLength(3);
   },
 };

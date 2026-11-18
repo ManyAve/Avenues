@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ClockIcon, TriangleAlertIcon } from "lucide-react";
 import { expect } from "storybook/test";
-import { Callout } from "#avenue/components/callout";
+import { Callout, CalloutContent, CalloutIcon } from "#avenue/components/callout";
 import { Rows } from "./story-kit";
 
 // AVE-120. The board's info and warning note, from the app's dues and payment dialogs. Fictional text only.
@@ -57,4 +57,26 @@ export const Tones: Story = {
       </div>
     </Rows>
   ),
+};
+
+/** The parts (AVE-149): the icon is a part with the icon inside; the text is CalloutContent. */
+export const Parts: Story = {
+  render: () => (
+    <Rows>
+      <div className="max-w-md">
+        <Callout tone="warning">
+          <CalloutIcon>
+            <TriangleAlertIcon />
+          </CalloutIcon>
+          <CalloutContent>Changing the amount resends every unpaid notice.</CalloutContent>
+        </Callout>
+      </div>
+    </Rows>
+  ),
+  play: async ({ canvas }) => {
+    const callout = canvas.getByText("Changing the amount resends every unpaid notice.").closest("[data-slot=callout]")!;
+    await expect(callout).toHaveAttribute("data-tone", "warning");
+    await expect(callout.querySelectorAll("svg")).toHaveLength(1);
+    await expect(callout.querySelector("[data-slot=callout-icon]")).toHaveAttribute("aria-hidden", "true");
+  },
 };

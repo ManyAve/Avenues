@@ -4,6 +4,23 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.31.0 (2026-11-18)
+
+- **Callout and InlineMessage come in parts** (AVE-149, the rest of v0.30.0's layout parts). Nothing on screen moves
+  (visual diff in the pull request).
+  - **Callout**: `CalloutIcon` (Info when empty; put another icon inside, such as TriangleAlert for a warning) and
+    `CalloutContent` (the text).
+  - **InlineMessage**: `InlineMessageIcon` (the tone's icon, a spinner while pending; leave it out to hide it) and
+    `InlineMessageContent` (the message). The region stays mounted and hidden while the content is empty, as before.
+  - Each takes parts when one is among its own children; otherwise its children are the text, as today.
+  - **Deprecated** (marked `@deprecated` with what to use): Callout's `icon` and InlineMessage's `hideIcon`. They stay
+    until Management and Neighbors no longer use them; AVE-154 removes them then.
+  - Markup changes with no change on screen: Callout's icon sits in a `span[data-slot=callout-icon]` (aria-hidden),
+    its text in `div[data-slot=callout-content]`; InlineMessage's icon and text spans carry `data-slot`
+    `inline-message-icon` and `inline-message-content`.
+  - Management and Neighbors: nothing to change now.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.30.0 (2026-11-18)
 
 - **The layout pieces come in parts, like ui-sdk's components** (AVE-149). Each is a root and named parts, each part
