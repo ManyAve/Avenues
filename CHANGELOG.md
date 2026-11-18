@@ -4,6 +4,23 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.31.0 (2026-11-18)
+
+- **Menu items and toasts take ui-sdk's names** (AVE-151). A menu item is dangerous with `destructive`, ui-sdk's
+  prop, and is styled from the `data-destructive` attribute ui-sdk sets; the line saying why a disabled item is
+  unavailable is `disabledReason`, as on Button, Composer and FileField. A toast says what it is about with `type`,
+  ui-sdk's toast type: `"success"` (the default), `"error"`, or `"info"` for something under way (what `"progress"`
+  was). ui-sdk's `warning`, `loading` and `default` types aren't taken: Avenue has no look for them yet.
+  - Deprecated, removed in v0.32.0 (AVE-154): `MenuItem`'s `variant="destructive"` (use `destructive`) and `reason`
+    (use `disabledReason`), and the toast's `variant` (use `type`; `"progress"` is `type: "info"`). Each still works and
+    draws the same.
+  - The menu item no longer carries `data-variant`; select `[data-destructive]` instead.
+  - Button's `variant="destructive"` is unchanged: it picks a look, and ui-sdk has no look props.
+  - **Unchanged on screen:** the visual diff shows no change; only the new Deprecated names stories are added.
+  - Management and Neighbors: nothing to change now. Rename `variant: "error"` to `type: "error"` in toasts before
+    v0.32.0.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.30.0 (2026-11-18)
 
 - **The layout pieces come in parts, like ui-sdk's components** (AVE-149). Each is a root and named parts, each part

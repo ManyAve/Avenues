@@ -166,6 +166,18 @@ change.
 | `RegisterGroupRow` | `selection` (`"all"`, `"some"`, `"none"`), `onSelectedChange` | `checked` (`true`, `"indeterminate"`, `false`), `onCheckedChange` |
 | `ModeToggle` | `choice`, `onThemeChange` | `value`, `onValueChange` (and `defaultValue`; `defaultDev` beside `dev`) |
 
+Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still work until v0.32.0, typed
+`@deprecated`, and draw the same:
+
+| Where | Old (until v0.32) | New |
+| --- | --- | --- |
+| `MenuItem` | `variant="destructive"` | `destructive` (ui-sdk's prop; sets `data-destructive`) |
+| `MenuItem` | `reason` | `disabledReason`, as on `Button`, `Composer` and `FileField` |
+| `toast(text, options)` | `variant: "error"`, `"success"` | `type: "error"`, `"success"` |
+| `toast(text, options)` | `variant: "progress"` | `type: "info"` |
+
+Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-sdk has no look props.
+
 ## Select and Combobox take items, and come in parts
 
 Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options` is
