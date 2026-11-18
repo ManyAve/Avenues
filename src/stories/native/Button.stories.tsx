@@ -31,7 +31,7 @@ export const Sizes: Story = {
         <Button size="sm">Small</Button>
         <Button>Default</Button>
         <Button size="lg">Large</Button>
-        <Button variant="outline" size="icon" aria-label="Add household">
+        <Button variant="outline" size="icon-md" aria-label="Add household">
           <PlusIcon aria-hidden />
         </Button>
       </div>

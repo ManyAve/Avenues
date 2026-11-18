@@ -8,7 +8,7 @@ const meta = { title: "Native/Card", parameters: { layout: "fullscreen" } } sati
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Dues({ size, footer }: { size: "default" | "sm"; footer: boolean }) {
+function Dues({ size, footer }: { size: "md" | "sm"; footer: boolean }) {
   return (
     <Card size={size}>
       <CardHeader>
@@ -33,7 +33,7 @@ function Dues({ size, footer }: { size: "default" | "sm"; footer: boolean }) {
 export const Default: Story = {
   render: (_, { globals }) => (
     <SideBySide slug="card-default" title="Card" theme={globals["theme"]}>
-      <Dues size="default" footer />
+      <Dues size="md" footer />
     </SideBySide>
   ),
 };

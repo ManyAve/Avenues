@@ -7,6 +7,7 @@ import {
 } from "@ui-sdk/react/progress";
 import { Children, createContext, isValidElement, useContext, type ComponentProps } from "react";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { scaleStep, type WithDefault } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -31,11 +32,12 @@ import { cn } from "#avenue/lib/utils";
  */
 
 const sizes = {
-  default: "h-1.5 rounded-full",
+  md: "h-1.5 rounded-full",
   xs: "h-1 rounded-none",
 } as const;
 
-type ProgressSize = keyof typeof sizes;
+/** `md` (the default, 6px) or `xs` (4px). `"default"` is deprecated: use md (AVE-152). */
+type ProgressSize = WithDefault<keyof typeof sizes>;
 
 type ProgressProps = NodeChildren<Loose<ComponentProps<typeof ProgressPrimitive>>> & {
   size?: ProgressSize | undefined;
@@ -46,7 +48,7 @@ type ProgressProps = NodeChildren<Loose<ComponentProps<typeof ProgressPrimitive>
   trackClassName?: string | undefined;
 };
 
-const SizeContext = createContext<ProgressSize>("default");
+const SizeContext = createContext<keyof typeof sizes>("md");
 
 /**
  * The bar, as ui-sdk composes it (AVE-149):
@@ -60,7 +62,8 @@ const SizeContext = createContext<ProgressSize>("default");
  * Write the track yourself to style it (lay an xs bar along an edge); leave it out and Progress draws it after its
  * other children. It looks for a `ProgressTrack` among its own children, not deeper.
  */
-function Progress({ className, children, size = "default", trackClassName, ...props }: ProgressProps) {
+function Progress({ className, children, size: given, trackClassName, ...props }: ProgressProps) {
+  const size = scaleStep(given);
   const ownTrack = Children.toArray(children).some((child) => isValidElement(child) && child.type === ProgressTrack);
   return (
     <SizeContext.Provider value={size}>
@@ -87,7 +90,7 @@ function ProgressTrack({
   ...props
 }: Loose<ComponentProps<typeof ProgressTrackPrimitive>> & { size?: ProgressSize | undefined }) {
   const inherited = useContext(SizeContext);
-  const size = own ?? inherited;
+  const size = own == null ? inherited : scaleStep(own);
   return (
     <ProgressTrackPrimitive
       data-size={size}

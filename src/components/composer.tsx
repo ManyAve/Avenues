@@ -325,7 +325,7 @@ function ComposerSend({
     <>
       <Button
         type="submit"
-        size="icon"
+        size="icon-md"
         aria-label={label ?? (editing ? "Save edit" : "Send")}
         disabled={Boolean(disabled || reason)}
         focusableWhenDisabled={!disabled}

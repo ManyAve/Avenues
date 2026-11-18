@@ -92,12 +92,12 @@ export const OverAnIcon: Story = {
   render: () => (
     <Rows>
       <Row label="ring">
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon-md">
           <Bell aria-hidden />
           <span className="sr-only">Notifications</span>
           <StatusDot tone="destructive" ring className="absolute top-2 right-2" />
         </Button>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon-md">
           <MessageSquare aria-hidden />
           <span className="sr-only">Messages</span>
           <StatusDot tone="primary" size="md" ring label="unread" className="absolute top-1 right-1" />

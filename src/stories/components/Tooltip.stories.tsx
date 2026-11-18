@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 export const Open: Story = {
   render: () => (
     <Tooltip defaultOpen>
-      <TooltipTrigger render={<Button variant="outline" size="icon" aria-label="Display options" />}>
+      <TooltipTrigger render={<Button variant="outline" size="icon-md" aria-label="Display options" />}>
         <Settings2Icon aria-hidden />
       </TooltipTrigger>
       <TooltipContent>Display options</TooltipContent>
@@ -36,7 +36,7 @@ export const Open: Story = {
 export const OnFocus: Story = {
   render: () => (
     <Tooltip>
-      <TooltipTrigger render={<Button variant="outline" size="icon" aria-label="Display options" />}>
+      <TooltipTrigger render={<Button variant="outline" size="icon-md" aria-label="Display options" />}>
         <Settings2Icon aria-hidden />
       </TooltipTrigger>
       <TooltipContent>Display options</TooltipContent>

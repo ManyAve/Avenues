@@ -7,25 +7,34 @@ import { defined, type Loose } from "#avenue/lib/props";
 
 /**
  * Ported from the app's app/ui/components/ui/button.tsx (e01cc90). Colours and states are unchanged.
- * AVE-2 sizes: xs 24 and sm 28 with the md corner (8px), default 32 and lg 40 with the lg corner (10px);
- * the app's `page` size (31px, 6px corner) folds into default. Buttons are never pills.
+ * AVE-2 sizes: xs 24 and sm 28 with the md corner (8px), md 32 (the default) and lg 40 with the lg corner (10px);
+ * the app's `page` size (31px, 6px corner) folds into md. Icon buttons are square at the same steps: icon-xs, icon-sm,
+ * icon-md, icon-lg (AVE-152's one scale). `size="default"` and `size="icon"` are the shadcn names for md and icon-md;
+ * they are deprecated; removed once both apps have moved off them (AVE-154). Buttons are never pills.
  * Size is listed before variant so the `text` variant's own height and padding win the merge.
  * Labels use text-control, 14px on both scales (AVE-29). The `text` variant is running text, not a control label, so
  * it keeps text-sm.
  */
+const md = `${controlShape({ size: "md" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`;
+const iconMd = `${controlShape({ size: "md" })} w-control-md`;
+
 const buttonVariants = cva(
   "group/button relative hit-area inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-control font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 data-disabled:opacity-50 data-disabled:active:translate-y-0 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       size: {
-        default: `${controlShape({ size: "md" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `${controlShape({ size: "xs" })} gap-1 px-2 [&_svg:not([class*='size-'])]:size-3`,
         sm: `${controlShape({ size: "sm" })} gap-1 px-2 [&_svg:not([class*='size-'])]:size-3.5`,
+        md,
         lg: `${controlShape({ size: "lg" })} gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
-        icon: `${controlShape({ size: "md" })} w-control-md`,
         "icon-xs": `${controlShape({ size: "xs" })} w-control-xs [&_svg:not([class*='size-'])]:size-3`,
         "icon-sm": `${controlShape({ size: "sm" })} w-control-sm`,
+        "icon-md": iconMd,
         "icon-lg": `${controlShape({ size: "lg" })} w-control-lg`,
+        /** Deprecated: use `md`. */
+        default: md,
+        /** Deprecated: use `icon-md`. */
+        icon: iconMd,
       },
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
@@ -50,12 +59,17 @@ const buttonVariants = cva(
         text: "h-auto rounded-xs border-0 px-0 text-sm text-start font-normal whitespace-normal text-primary-subtle-foreground underline underline-offset-3 hover:text-foreground active:not-aria-[haspopup]:translate-y-0",
       },
     },
-    defaultVariants: { variant: "default", size: "default" },
+    defaultVariants: { variant: "default", size: "md" },
   },
 );
 
 type ButtonProps = Loose<ComponentProps<typeof ButtonPrimitive>> &
-  VariantProps<typeof buttonVariants> & {
+  Omit<VariantProps<typeof buttonVariants>, "size"> & {
+    /**
+     * The step on Avenue's one scale (AVE-152): xs, sm, md (the default) or lg, or the square icon-xs … icon-lg.
+     * `"default"` (use md) and `"icon"` (use icon-md) are deprecated; removed once both apps have moved off them (AVE-154).
+     */
+    size?: VariantProps<typeof buttonVariants>["size"];
     /**
      * Why the action is unavailable. Disables the button but keeps it focusable, shows the reason as one muted
      * line under it (UX.md: "show the action disabled, with one muted line under it"), and links the two with
@@ -65,7 +79,7 @@ type ButtonProps = Loose<ComponentProps<typeof ButtonPrimitive>> &
     disabledReason?: ReactNode | undefined;
   };
 
-function Button({ className, variant = "default", size = "default", disabledReason, ...props }: ButtonProps) {
+function Button({ className, variant = "default", size = "md", disabledReason, ...props }: ButtonProps) {
   const reasonId = useId();
   const button = (
     <ButtonPrimitive

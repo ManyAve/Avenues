@@ -5,8 +5,8 @@ import { Button } from "#avenue/components/button";
 import { Row, Rows } from "./story-kit";
 
 const variants = ["default", "outline", "secondary", "ghost", "destructive", "link", "text"] as const;
-const sizes = ["xs", "sm", "default", "lg"] as const;
-const iconSizes = ["icon-xs", "icon-sm", "icon", "icon-lg"] as const;
+const sizes = ["xs", "sm", "md", "lg"] as const;
+const iconSizes = ["icon-xs", "icon-sm", "icon-md", "icon-lg"] as const;
 
 const meta = {
   title: "Components/Button",
@@ -29,7 +29,7 @@ export const Playground: Story = {
   },
 };
 
-/** Every variant at the default size (32px, 10px corner). `text` is the inline text action. */
+/** Every variant at the default size, md (32px, 10px corner). `text` is the inline text action. */
 export const Variants: Story = {
   render: () => (
     <Rows>
@@ -76,7 +76,7 @@ export const VariantsOnACard: Story = {
   },
 };
 
-/** AVE-2 heights: xs 24 and sm 28 with an 8px corner, default 32 and lg 40 with a 10px corner. Icon buttons match. */
+/** AVE-2 heights: xs 24 and sm 28 with an 8px corner, md 32 and lg 40 with a 10px corner. Icon buttons match. */
 export const Sizes: Story = {
   render: () => (
     <Rows>

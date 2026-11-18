@@ -14,12 +14,12 @@ type Story = StoryObj<typeof meta>;
 
 const people = ["Robin Avery", "Sam Okafor", "Jordan Rivera", "Mei Lin", "Priya Natarajan", "Alex Moreau", "Élodie Fontaine"];
 
-/** sm 28 and default 32, one tint per person. Screen readers hear the name, not the initials. */
+/** sm 28 and md 32, one tint per person. Screen readers hear the name, not the initials. */
 export const Sizes: Story = {
   tags: ["agent"],
   render: () => (
     <Rows>
-      {(["sm", "default"] as const).map((size) => (
+      {(["sm", "md"] as const).map((size) => (
         <Row key={size} label={size}>
           {people.map((name) => (
             <InitialsAvatar key={name} name={name} size={size} />

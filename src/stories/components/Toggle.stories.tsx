@@ -11,12 +11,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Default and outline at sm 28 (8px corner), default 32 and lg 40 (10px corner); off, pressed and disabled. */
+/** Default and outline at sm 28 (8px corner), md 32 and lg 40 (10px corner); off, pressed and disabled. */
 export const Variants: Story = {
   render: () => (
     <Rows>
       {(["default", "outline"] as const).flatMap((variant) =>
-        (["sm", "default", "lg"] as const).map((size) => (
+        (["sm", "md", "lg"] as const).map((size) => (
           <Row key={`${variant}-${size}`} label={`${variant}, ${size}`}>
             <Toggle variant={variant} size={size} aria-label={`Bold ${variant} ${size}`}>
               <BoldIcon aria-hidden />

@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.34.0 (2026-11-18)
+
+- **One size scale** (AVE-152): Button, Toggle, ToggleGroup, Switch, Avatar, InitialsAvatar, Card and Progress take
+  xs / sm / md / lg (the steps each has), with md the default, as Select, Combobox and the `h-control-*` tokens already
+  did. Nothing on screen moves (visual diff in the pull request).
+  - Rename `size="default"` to `size="md"` (or leave it out), and Button's `size="icon"` to `size="icon-md"`. The old
+    names still work; deprecated; removed once both apps have moved off it (AVE-154). ADOPTING.md, "One size scale".
+  - `data-size` carries `md` where it carried `default`, also when the old name is passed: rename a
+    `data-[size=default]` selector to `data-[size=md]`.
+
 ## v0.33.0 (2026-11-18)
 
 - **FormDialog and PendingConfirmDialog are a root and parts** (AVE-147), as ui-sdk builds a dialog, with the one-tag
