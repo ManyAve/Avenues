@@ -318,3 +318,141 @@ export const Phone: Story = {
     await expect(count()).toHaveTextContent("6 of 6 households");
   },
 };
+
+// AVE-155: a long list of choices. Thirty made-up street names, one household on each.
+const streetNames = [
+  "Alder Way", "Aspen Court", "Birch Lane", "Bluebell Row", "Cedar Court", "Chestnut Drive", "Clover Path", "Cypress Bend",
+  "Dogwood Place", "Elm Street", "Fern Hollow", "Hawthorn Road", "Hazel Close", "Heather Lane", "Hickory Trail",
+  "Juniper Walk", "Larch Avenue", "Laurel Mews", "Linden Street", "Magnolia Drive", "Maple Grove", "Oak Street",
+  "Oakmont Circle", "Pine Ridge", "Poplar Lane", "Redwood Terrace", "Rowan Court", "Spruce Way", "Sycamore Lane",
+  "Willow Bend",
+];
+type Home = { id: string; street: string; address: string; dues: Household["dues"] };
+const homes: Home[] = streetNames.map((street, i) => ({
+  id: `h${i}`,
+  street: street.toLowerCase().replace(/\s+/g, "-"),
+  address: `${i * 2 + 3} ${street}`,
+  dues: (["paid", "owing", "partial"] as const)[i % 3]!,
+}));
+const streetFields: FilterField[] = [
+  { key: "street", label: "Street", kind: "choice", items: streetNames.map((s) => ({ value: s.toLowerCase().replace(/\s+/g, "-"), label: s })) },
+  fields[2]!,
+];
+const homeAccessors: Record<string, FilterAccessor<Home>> = {
+  street: { kind: "choice", get: (h) => h.street },
+  dues: { kind: "choice", get: (h) => h.dues },
+};
+
+/** The long list's values, without the operator's options (a native select on a touch screen). */
+const values = () => within(screen.getByRole("listbox")).getAllByRole("option");
+
+function Streets({ initial = [] }: { initial?: TableFilter[] }) {
+  const [filters, setFilters] = useState<TableFilter[]>(initial);
+  const rows = applyFilters(homes, filters, homeAccessors);
+  return (
+    <div className="min-h-[640px] bg-background">
+      <Toolbar aria-label="Households">
+        <ToolbarFilters>
+          <TableFilters fields={streetFields} value={filters} onValueChange={setFilters} />
+        </ToolbarFilters>
+      </Toolbar>
+      <div className="px-page">
+        <p className="text-meta text-muted-foreground" data-testid="count">
+          {rows.length} of {homes.length} households
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A choice with more than eight values, like a board's thirty streets: a search field sits above the values (AVE-155).
+ * Focus starts in it; typing narrows the list, the arrows move through it, Enter toggles a value, and the search keeps
+ * its text so a second match goes in too. Escape closes the editor and focus returns to the pill. A short list, like
+ * Dues status, stays a list of checkboxes.
+ */
+export const LongList: Story = {
+  globals: desktop,
+  render: () => <Streets />,
+  play: async ({ canvas }) => {
+    await expect(count()).toHaveTextContent("30 of 30 households");
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Filter" })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu");
+    await userEvent.keyboard("s");
+    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: "Street" })).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    const search = await screen.findByRole("combobox", { name: "Street values" });
+    await waitFor(() => expect(search).toHaveFocus());
+    await expect(values()).toHaveLength(30);
+    await userEvent.keyboard("oak");
+    await waitFor(() => expect(values()).toHaveLength(2));
+    await userEvent.keyboard("{Enter}");
+    await expect(screen.getByRole("option", { name: "Oak Street" })).toHaveAttribute("aria-selected", "true");
+    await expect(count()).toHaveTextContent("1 of 30 households");
+    // The search keeps "oak", so the next match is one arrow away.
+    await expect(search).toHaveValue("oak");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await expect(screen.getByRole("option", { name: "Oakmont Circle" })).toHaveAttribute("aria-selected", "true");
+    await expect(count()).toHaveTextContent("2 of 30 households");
+    // Enter on a chosen value takes it out again.
+    await userEvent.keyboard("{Enter}");
+    await expect(count()).toHaveTextContent("1 of 30 households");
+    await userEvent.keyboard("{Enter}");
+    await expect(count()).toHaveTextContent("2 of 30 households");
+    await userEvent.clear(search);
+    await userEvent.type(search, "zz");
+    await expect(await screen.findByText("Nothing matches “zz”.")).toBeVisible();
+    await userEvent.keyboard("{Escape}");
+    const pill = canvas.getByRole("button", { name: "Filter: Street is any of Oak Street, Oakmont Circle" });
+    await waitFor(() => expect(pill).toHaveFocus());
+    // The pill and its × stay in the toolbar's arrow order.
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(canvas.getByRole("button", { name: "Remove filter: Street is any of Oak Street, Oakmont Circle" })).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}{ArrowLeft}");
+    await expect(canvas.getByRole("button", { name: "Add filter" })).toHaveFocus();
+    // Reopened, the search starts empty, the operator still works, and the list is open for the picture.
+    await userEvent.keyboard("{ArrowRight}{Enter}");
+    const reopened = await screen.findByRole("combobox", { name: "Street values" });
+    await waitFor(() => expect(reopened).toHaveFocus());
+    await expect(reopened).toHaveValue("");
+    await expect(screen.getByRole("option", { name: "Oak Street" })).toHaveAttribute("aria-selected", "true");
+    await userEvent.type(reopened, "la");
+  },
+};
+
+/** The agent sets a long list's values through the pill's combobox with `setValue`, by label, without opening it first. */
+export const LongListAgent: Story = {
+  globals: desktop,
+  tags: ["agent"],
+  render: () => <Streets initial={[{ id: "f1", field: "street", op: "any-of", value: [] }]} />,
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    // To the agent the pill is the combobox, named by its words; it opens the list itself to read the values.
+    const pill = agent.snapshot().find((c) => c.component === "combobox");
+    await expect(pill?.label).toBe("Filter: Street is");
+    const set = await agent.act({ steps: [{ ref: pill!.ref, action: "setValue", args: [["Willow Bend", "Elm Street"]] }] });
+    await expect(set.ok, set.error?.message).toBe(true);
+    await waitFor(() => expect(count()).toHaveTextContent("2 of 30 households"));
+    await userEvent.keyboard("{Escape}");
+    await expect(canvas.getByRole("button", { name: "Filter: Street is any of Willow Bend, Elm Street" })).toBeVisible();
+  },
+};
+
+/** On a phone the long list's editor stays a popover on the screen, each value 44px tall on a touch screen. */
+export const LongListPhone: Story = {
+  globals: phone,
+  render: () => <Streets initial={[{ id: "f1", field: "street", op: "any-of", value: ["maple-grove"] }]} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Filter: Street is Maple Grove" }));
+    const search = await screen.findByRole("combobox", { name: "Street values" });
+    const option = screen.getByRole("option", { name: "Maple Grove" });
+    if (matchMedia("(pointer: coarse)").matches) await expect(Math.round(option.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    const box = search.closest<HTMLElement>("[data-slot=combobox-content]")!.getBoundingClientRect();
+    await expect(box.left).toBeGreaterThanOrEqual(0);
+    await expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+    await userEvent.click(screen.getByRole("option", { name: "Pine Ridge" }));
+    await expect(count()).toHaveTextContent("2 of 30 households");
+  },
+};
