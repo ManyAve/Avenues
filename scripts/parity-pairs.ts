@@ -1331,6 +1331,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-selection-bar--wide": [{ label: "selection bar", app: "primitives-selectionbar--many", appCrop: "[role=region]", avenueCrop: "[role=toolbar]", allow: SELECTION_BAR }],
   "composites-selection-bar--desktop-minimum": { none: "Selection bar / Wide at 900px; compared there." },
   "composites-selection-bar--keyboard-flow": { none: BEHAVIOUR("Selection bar / Wide") },
+  "composites-selection-bar--two-disabled-actions": { none: "A fix with no app counterpart (AVE-162): the app's bar hid reasons in titles, and Avenue's hanging reasons overlapped. Its look is compared through Selection bar / Wide." },
+  "composites-selection-bar--shared-reason": { none: "A fix with no app counterpart (AVE-162): one line for neighbours that share a reason. Its look is compared through Selection bar / Wide." },
   "composites-display-options--open": [{ label: "display options", app: "primitives-displayoptions--default", appCrop: "[data-slot=popover-content]", avenueCrop: "[data-slot=popover-content]", allow: DISPLAY_OPTIONS }],
   "composites-display-options--keyboard-flow": { none: BEHAVIOUR("Display options / Open") },
   "composites-display-options--nothing-to-export": { none: STATE_ONLY("Export unavailable with its reason", "Display options / Open") },

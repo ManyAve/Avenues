@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Archive, CircleDollarSign, Megaphone } from "lucide-react";
+import { Archive, CircleDollarSign, Mail, Megaphone } from "lucide-react";
 import { useRef, useState } from "react";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Checkbox } from "#avenue/components/checkbox";
 import { SelectionBar, type SelectionAction } from "#avenue/components/selection-bar";
 
@@ -19,7 +19,12 @@ const dueReason = "Set this year's assessment first.";
 const announce = fn();
 const requestDues = fn();
 
-function List({ initial = [] as string[], duesReady = false, archivable = false }) {
+function List({
+  initial = [] as string[],
+  duesReady = false,
+  archivable = false,
+  extra = [] as SelectionAction[],
+}) {
   const [picked, setPicked] = useState<string[]>(initial);
   const first = useRef<HTMLButtonElement>(null);
   const actions: SelectionAction[] = [
@@ -28,6 +33,8 @@ function List({ initial = [] as string[], duesReady = false, archivable = false 
     // Archive empties the selection, so the bar goes away under focus, as Clear does (AVE-90).
     ...(archivable ? [{ id: "archive", label: "Archive", icon: <Archive aria-hidden />, onSelect: () => setPicked([]) }] : []),
   ];
+  // Actions that go before the others, for the stories where neighbouring actions are disabled (AVE-162).
+  actions.unshift(...extra);
   return (
     <div className="relative min-h-[420px] bg-background px-page py-inset">
       <ul className="grid gap-2">
@@ -150,5 +157,91 @@ export const KeyboardFlow: Story = {
     await waitFor(() => expect(status).toHaveTextContent("Selection cleared"));
     await expect(canvas.queryByRole("toolbar", { name: "Selection actions" })).toBeNull();
     await expect(canvas.getAllByRole("checkbox")[0]).toHaveFocus();
+  },
+};
+
+// AVE-162: neighbouring disabled actions. Each reason starts under its own button and runs on under the actions after
+// it, each on its own line, so no two lines print over each other. Neighbours that share a reason share one line. No
+// reason sits under the count (AVE-96).
+
+/** No two reason lines overlap, none starts before its first button, runs past the bar or sits under the count. */
+async function expectReasonsApart(canvasElement: HTMLElement, expected: Record<string, string>) {
+  const toolbar = canvasElement.querySelector<HTMLElement>("[role=toolbar]")!;
+  const bar = within(toolbar);
+  const lines = [...toolbar.querySelectorAll<HTMLElement>("[data-slot=selection-bar-reason]")];
+  const boxes = lines.map((line) => {
+    const text = document.createRange();
+    text.selectNodeContents(line);
+    return { line, rects: [...text.getClientRects()] };
+  });
+  for (const [i, a] of boxes.entries())
+    for (const b of boxes.slice(i + 1))
+      for (const r of a.rects)
+        for (const s of b.rects) {
+          const apart = r.right <= s.left || s.right <= r.left || r.bottom <= s.top || s.bottom <= r.top;
+          await expect(apart, `"${a.line.textContent}" overlaps "${b.line.textContent}"`).toBe(true);
+        }
+  for (const [name, reason] of Object.entries(expected)) {
+    const button = bar.getByRole("button", { name: new RegExp(name) });
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+    await expect(button).toHaveAccessibleDescription(reason);
+  }
+  const count = toolbar.querySelector('[data-slot="selection-bar-count"]')!.getBoundingClientRect();
+  const frame = toolbar.getBoundingClientRect();
+  for (const { line, rects } of boxes) {
+    const first = toolbar.querySelector<HTMLElement>(`[aria-describedby~="${line.id}"]`)!.getBoundingClientRect();
+    for (const r of rects) {
+      await expect(Math.round(r.left)).toBeGreaterThanOrEqual(Math.floor(first.left));
+      await expect(Math.round(r.left)).toBeGreaterThanOrEqual(Math.ceil(count.right));
+      await expect(Math.round(r.right)).toBeLessThanOrEqual(Math.ceil(frame.right));
+    }
+  }
+  return lines;
+}
+
+const mailReason = "Add a mailing address to each selected household first.";
+const mailing: SelectionAction = { id: "mail", label: "Mail", icon: <Mail aria-hidden />, disabledReason: mailReason };
+
+/** 900px: Mail and Request dues side by side, both unavailable for different reasons that are wider than the buttons. */
+export const TwoDisabledActions: Story = {
+  globals: desktop,
+  render: () => <List initial={["14 Birch Lane", "17 Birch Lane"]} extra={[mailing]} />,
+  play: async ({ canvasElement }) => {
+    const lines = await expectReasonsApart(canvasElement, { Mail: mailReason, "Request dues": dueReason });
+    await expect(lines.map((line) => line.textContent)).toEqual([mailReason, dueReason]);
+    // Each reason is one line here: Mail's runs on under the actions, and Request dues' takes the next line. The gaps
+    // between the buttons stay gap-controls (AVE-91).
+    for (const line of lines) {
+      const text = document.createRange();
+      text.selectNodeContents(line);
+      await expect(text.getClientRects()).toHaveLength(1);
+    }
+    await expect(lines[1]!.getBoundingClientRect().top).toBeGreaterThanOrEqual(lines[0]!.getBoundingClientRect().bottom);
+    const bar = within(canvasElement);
+    const toolbar = bar.getByRole("toolbar", { name: "Selection actions" });
+    const mail = bar.getByRole("button", { name: /Mail/ }).getBoundingClientRect();
+    const dues = bar.getByRole("button", { name: /Request dues/ }).getBoundingClientRect();
+    await expect(dues.left - mail.right).toBeCloseTo(Number.parseFloat(getComputedStyle(toolbar).columnGap), 0);
+    // Still one Tab stop, and the arrows reach both disabled actions.
+    for (const _ of homes) await userEvent.tab();
+    await userEvent.tab();
+    await expect(bar.getByRole("button", { name: /Announcement/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(bar.getByRole("button", { name: /Request dues/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(bar.getByRole("button", { name: /Mail/ })).toHaveFocus();
+    // Back to the list, so the story leaves the page with focus where it can stay.
+    await userEvent.tab({ shift: true });
+    await expect(bar.getAllByRole("checkbox").at(-1)).toHaveFocus();
+  },
+};
+
+/** 900px: Mail and Request dues share a reason, so they share one line under both. */
+export const SharedReason: Story = {
+  globals: desktop,
+  render: () => <List initial={["3 Cedar Court"]} extra={[{ ...mailing, disabledReason: dueReason }]} />,
+  play: async ({ canvasElement }) => {
+    const lines = await expectReasonsApart(canvasElement, { Mail: dueReason, "Request dues": dueReason });
+    await expect(lines.map((line) => line.textContent)).toEqual([dueReason]);
   },
 };
