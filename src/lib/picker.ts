@@ -68,3 +68,106 @@ export const listSheetHandle = cn(sheetHandle, "hidden sheet:order-first sheet:b
 export const listItem =
   "grid pointer-coarse:min-h-11 sheet:min-h-11 cursor-default grid-cols-[1rem_1fr] items-center gap-x-2 rounded-sm px-2 py-1 text-control outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50";
 
+
+/**
+ * One entry of `items`, in ui-sdk's shape (`ListItem` from `@ui-sdk/react/select`), with optional props that also take
+ * `undefined` (AVE-108). `value` is a string, or any value with `itemToValue`.
+ */
+export type ListItem<T = string> = {
+  value: T;
+  /** The text shown, and matched by typing and searching. */
+  label: string;
+  /** More words a search matches, like a spreadsheet ID. */
+  keywords?: string[] | undefined;
+  disabled?: boolean | undefined;
+};
+
+/** A labelled group of items, as ui-sdk's `ListGroup`. */
+export type ListGroup<T = string, Item extends ListItem<T> = ListItem<T>> = {
+  type: "group";
+  label?: string | undefined;
+  items: readonly (Item | (T & string))[];
+};
+
+/** A line between items or groups, as ui-sdk's `ListSeparator`. */
+export type ListSeparator = { type: "separator" };
+
+/** `items` as ui-sdk takes them: items, plain strings (value and label at once), groups and separators. */
+export type ListData<T = string, Item extends ListItem<T> = ListItem<T>> = readonly (
+  | Item
+  | ListGroup<T, Item>
+  | ListSeparator
+  | (T & string)
+)[];
+
+type Entry<T, Item extends ListItem<T>> = ListData<T, Item>[number];
+
+export const isGroup = <T, Item extends ListItem<T>>(entry: Entry<T, Item>): entry is ListGroup<T, Item> =>
+  typeof entry === "object" && "type" in entry && entry.type === "group";
+
+export const isSeparator = <T, Item extends ListItem<T>>(entry: Entry<T, Item>): entry is ListSeparator =>
+  typeof entry === "object" && "type" in entry && entry.type === "separator";
+
+/** A plain string entry is its own value and label. */
+export function toItem<T, Item extends ListItem<T>>(entry: Item | (T & string)): Item {
+  return typeof entry === "string" ? ({ value: entry, label: entry } as unknown as Item) : entry;
+}
+
+/** Every item in `data`, groups opened, separators left out, in order. */
+export function flatItems<T, Item extends ListItem<T>>(data: ListData<T, Item>): Item[] {
+  return data.flatMap((entry) =>
+    isSeparator(entry) ? [] : isGroup(entry) ? entry.items.map((i) => toItem<T, Item>(i)) : [toItem<T, Item>(entry)],
+  );
+}
+
+/**
+ * The string a value is known and posted by: `itemToValue` when the app gives one, otherwise ui-sdk's own rule
+ * (a string is itself, an object its `value` or `id`).
+ */
+export function valueKey<T>(itemToValue: ((value: T) => string) | undefined) {
+  return (value: T): string => {
+    if (itemToValue) return itemToValue(value);
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+      const v = value as { value?: unknown; id?: unknown };
+      return String(v.value ?? v.id);
+    }
+    return String(value);
+  };
+}
+
+/** `data` without its `undefined` props, as ui-sdk's `ListData` takes it. */
+export function toUiData<T, Item extends ListItem<T>>(data: ListData<T, Item>) {
+  const item = (entry: Item | (T & string)) => {
+    if (typeof entry === "string") return entry;
+    const { value, label, keywords, disabled } = entry;
+    return { value, label, ...(keywords ? { keywords } : {}), ...(disabled ? { disabled } : {}) };
+  };
+  return data.map((entry) =>
+    isSeparator(entry)
+      ? entry
+      : isGroup(entry)
+        ? { type: "group" as const, ...(entry.label !== undefined ? { label: entry.label } : {}), items: entry.items.map(item) }
+        : item(entry),
+  );
+}
+
+/** A group's heading inside a Select or Combobox list: in line with the items' text, past the check's column. */
+export const listGroupLabel = "px-2 ps-8 py-1 text-xs font-medium text-muted-foreground";
+
+/** The line between groups, as a menu draws it. */
+export const listSeparator = "-mx-1 my-1 h-px bg-border";
+
+/**
+ * A React key for each entry of `data`: an item's value, a group's label (or its first item), and for a separator,
+ * which has no value of its own, the entry before it.
+ */
+export function entryKeys<T, Item extends ListItem<T>>(data: ListData<T, Item>, keyOf: (value: T) => string): string[] {
+  const own = (entry: Entry<T, Item>): string =>
+    isSeparator(entry)
+      ? "separator"
+      : isGroup(entry)
+        ? `group-${entry.label ?? (entry.items[0] === undefined ? "" : keyOf(toItem<T, Item>(entry.items[0]).value))}`
+        : keyOf(toItem<T, Item>(entry).value);
+  return data.map((entry, i) => (isSeparator(entry) ? `separator-after-${i === 0 ? "start" : own(data[i - 1]!)}` : own(entry)));
+}

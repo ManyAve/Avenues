@@ -36,7 +36,7 @@ const fields: FilterField[] = [
     key: "dues",
     label: "Dues status",
     kind: "choice",
-    options: [
+    items: [
       { value: "paid", label: "Paid" },
       { value: "owing", label: "Owing" },
       { value: "partial", label: "Partial" },

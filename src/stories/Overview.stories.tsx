@@ -21,7 +21,7 @@ import { Button } from "#avenue/components/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "#avenue/components/card";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Chip, ChipRow } from "#avenue/components/chip";
-import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
+import { Combobox, type ComboboxItemData } from "#avenue/components/combobox";
 import { ListItem } from "#avenue/components/detail-list";
 import {
   Dialog,
@@ -86,7 +86,7 @@ function DuesSummary() {
         </CardTitle>
         <CardAction className="gap-group text-meta text-muted-foreground">
           <span className="whitespace-nowrap">Account summary ·</span>
-          <Select aria-label="Dues year" options={years} defaultValue="2026" size="sm" />
+          <Select aria-label="Dues year" items={years} defaultValue="2026" size="sm" />
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 text-compact">
@@ -183,7 +183,7 @@ function InviteBoard() {
             />
             <Select
               aria-labelledby={`${id}-role ${id}-person-${i}`}
-              options={roles}
+              items={roles}
               defaultValue={row.role}
               className="w-32"
             />
@@ -248,11 +248,11 @@ function ReportIssue() {
           <div className="grid grid-cols-2 gap-controls">
             <Field>
               <FieldLabel>Severity</FieldLabel>
-              <Select options={severities} defaultValue="medium" />
+              <Select items={severities} defaultValue="medium" />
             </Field>
             <Field>
               <FieldLabel>Area</FieldLabel>
-              <Select options={areas} defaultValue="gate" />
+              <Select items={areas} defaultValue="gate" />
             </Field>
           </div>
           <Field>
@@ -304,7 +304,7 @@ function MailingAddress() {
             </Field>
             <Field>
               <FieldLabel>State</FieldLabel>
-              <Select options={states} defaultValue="TX" />
+              <Select items={states} defaultValue="TX" />
             </Field>
           </div>
           <Field>
@@ -596,7 +596,7 @@ function People() {
   );
 }
 
-const owners: ComboboxOption[] = [
+const owners: ComboboxItemData[] = [
   { value: "h1", label: "12 Lantern Row · Ada Okafor", meta: "ID 1042" },
   { value: "h2", label: "14 Lantern Row · Bram Hollis", meta: "ID 1043", hint: "$120.00 owing" },
   { value: "h3", label: "3 Quill Court · Cora Mendez", meta: "ID 1101" },
@@ -618,7 +618,7 @@ function SendNotice() {
           <Field>
             <FieldLabel>Applies to</FieldLabel>
             <Combobox
-              options={owners}
+              items={owners}
               value={household}
               onValueChange={setHousehold}
               noneLabel="Whole neighborhood"

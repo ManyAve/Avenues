@@ -2,10 +2,19 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, type ReactNode } from "react";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { HouseIcon } from "lucide-react";
+import { Button } from "#avenue/components/button";
 import { Combobox } from "#avenue/components/combobox";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#avenue/components/field";
-import { Select, type SelectOption } from "#avenue/components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  type ListData,
+  type ListItem,
+} from "#avenue/components/select";
 import { createAgent } from "@ui-sdk/react/agent";
 import { cn } from "#avenue/lib/utils";
 import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
@@ -13,7 +22,7 @@ import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
 // AVE-7. One Select for the app's 20 native selects. md (32px, lg corner) by default; sm (28px, md corner) in a card
 // or dialog header; never a pill. All data is fictional.
 
-const methods: SelectOption[] = [
+const methods: ListItem[] = [
   { value: "check", label: "Check" },
   { value: "cash", label: "Cash" },
   { value: "bank", label: "Bank transfer" },
@@ -21,9 +30,9 @@ const methods: SelectOption[] = [
   { value: "other", label: "Other" },
 ];
 
-const years: SelectOption[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
+const years: ListItem[] = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 
-const roles: SelectOption[] = [
+const roles: ListItem[] = [
   { value: "president", label: "President" },
   { value: "treasurer", label: "Treasurer" },
   { value: "secretary", label: "Secretary" },
@@ -31,7 +40,7 @@ const roles: SelectOption[] = [
   { value: "past", label: "Past president (non-voting, keeps read access to the register)", disabled: true },
 ];
 
-const long: SelectOption[] = [
+const long: ListItem[] = [
   { value: "a", label: "Late dues notice, second reminder, sent by mail and email to the owner of record" },
   { value: "b", label: "Architectural review request for exterior paint colour, fence or landscaping changes" },
   { value: "c", label: "Short" },
@@ -76,7 +85,7 @@ const meta = {
   title: "Components/Select",
   component: Select,
   parameters: { layout: "padded" },
-  args: { options: methods, placeholder: "Choose a method", native: "never" },
+  args: { items: methods, placeholder: "Choose a method", native: "never" },
 } satisfies Meta<typeof Select>;
 
 export default meta;
@@ -94,10 +103,10 @@ export const Sizes: Story = {
   render: () => (
     <div className="grid w-72 gap-section">
       <Labelled label="md · 32px, lg corner (default)">
-        <Select options={methods} defaultValue="check" native="never" />
+        <Select items={methods} defaultValue="check" native="never" />
       </Labelled>
       <Labelled label="sm · 28px, md corner (card or dialog header)">
-        <Select options={methods} defaultValue="check" size="sm" native="never" />
+        <Select items={methods} defaultValue="check" size="sm" native="never" />
       </Labelled>
     </div>
   ),
@@ -106,7 +115,7 @@ export const Sizes: Story = {
 export const Placeholder: Story = {
   render: () => (
     <Labelled label="Payment method">
-      <Select options={methods} placeholder="Choose a method" native="never" />
+      <Select items={methods} placeholder="Choose a method" native="never" />
     </Labelled>
   ),
 };
@@ -114,7 +123,7 @@ export const Placeholder: Story = {
 export const Disabled: Story = {
   render: () => (
     <Labelled label="Payment method" description="Resolve the household first.">
-      <Select options={methods} defaultValue="check" disabled native="never" />
+      <Select items={methods} defaultValue="check" disabled native="never" />
     </Labelled>
   ),
 };
@@ -123,7 +132,7 @@ export const DisabledOption: Story = {
   name: "Disabled option",
   render: () => (
     <Labelled label="Board role">
-      <Select options={roles} defaultValue="treasurer" native="never" />
+      <Select items={roles} defaultValue="treasurer" native="never" />
     </Labelled>
   ),
   play: async ({ canvas }) => {
@@ -142,7 +151,7 @@ export const DisabledOption: Story = {
 export const Invalid: Story = {
   render: () => (
     <Labelled label="Payment method" invalid error="Choose how the payment was made.">
-      <Select options={methods} placeholder="Choose a method" native="never" />
+      <Select items={methods} placeholder="Choose a method" native="never" />
     </Labelled>
   ),
 };
@@ -151,7 +160,7 @@ export const LongOptions: Story = {
   name: "Long options",
   render: () => (
     <Labelled label="Template">
-      <Select options={long} defaultValue="a" native="never" />
+      <Select items={long} defaultValue="a" native="never" />
     </Labelled>
   ),
   play: async ({ canvas }) => {
@@ -168,10 +177,10 @@ export const NativeOnPhones: Story = {
   render: () => (
     <div className="grid w-72 gap-section">
       <Labelled label="Payment method (OS picker)">
-        <Select options={methods} placeholder="Choose a method" native="always" />
+        <Select items={methods} placeholder="Choose a method" native="always" />
       </Labelled>
       <Labelled label="Same field, Avenue list">
-        <Select options={methods} placeholder="Choose a method" native="never" />
+        <Select items={methods} placeholder="Choose a method" native="never" />
       </Labelled>
     </div>
   ),
@@ -203,7 +212,7 @@ export const NativeRefusesAChange: Story = {
       <div className="grid w-72 gap-group">
         <Labelled label="Payment method">
           <Select
-            options={methods}
+            items={methods}
             defaultValue="check"
             native="always"
             onValueChange={(value, details) => {
@@ -235,7 +244,7 @@ export const Keyboard: Story = {
     return (
       <div className="grid gap-group">
         <Labelled label="Payment method">
-          <Select options={methods} value={value} onValueChange={setValue} native="never" />
+          <Select items={methods} value={value} onValueChange={setValue} native="never" />
         </Labelled>
         <output className="text-meta text-muted-foreground" data-testid="value">
           Chosen: {value}
@@ -297,7 +306,7 @@ export const InvalidIsAnnounced: Story = {
   name: "Invalid wiring",
   render: () => (
     <Labelled label="Payment method" invalid error="Choose how the payment was made.">
-      <Select options={methods} placeholder="Choose a method" native="never" />
+      <Select items={methods} placeholder="Choose a method" native="never" />
     </Labelled>
   ),
   play: async ({ canvas }) => {
@@ -362,7 +371,7 @@ function AfterCard() {
         </CardTitle>
         <CardAction className="flex items-center gap-group text-meta text-muted-foreground">
           <span>Account summary ·</span>
-          <Select options={years} defaultValue="2026" size="sm" aria-label="Dues year" native="never" className="w-auto" />
+          <Select items={years} defaultValue="2026" size="sm" aria-label="Dues year" native="never" className="w-auto" />
         </CardAction>
       </CardHeader>
       <CardContent>{balance}</CardContent>
@@ -436,7 +445,7 @@ export const InClippedCardAtEdge: Story = {
           </CardTitle>
           <CardAction>
             <Select
-              options={years}
+              items={years}
               defaultValue="2026"
               size="sm"
               aria-label="Dues year"
@@ -503,10 +512,10 @@ function AgentForm() {
   return (
     <div className="flex flex-col gap-group">
       <Labelled label="Payment method">
-        <Select options={methods} value={method} onValueChange={setMethod} native="never" />
+        <Select items={methods} value={method} onValueChange={setMethod} native="never" />
       </Labelled>
       <Labelled label="Board role">
-        <Select options={roles} value={role} onValueChange={setRole} placeholder="Choose a role" native="never" />
+        <Select items={roles} value={role} onValueChange={setRole} placeholder="Choose a role" native="never" />
       </Labelled>
       <output data-testid="value" className="text-meta text-muted-foreground">
         Chosen: {method ?? "(none)"} / {role ?? "(none)"}
@@ -537,7 +546,7 @@ function PhoneForm({ presentation }: { presentation?: "sheet" | undefined }) {
     <div className="grid gap-group">
       <Labelled label="Payment method" className="w-full">
         {/* On a phone the OS picker opens by default (AVE-7); native="never" asks for Avenue's own list. */}
-        <Select options={methods} value={value} onValueChange={setValue} native="never" presentation={presentation} />
+        <Select items={methods} value={value} onValueChange={setValue} native="never" presentation={presentation} />
       </Labelled>
       <output className="text-meta text-muted-foreground" data-testid="value">
         Chosen: {value}
@@ -653,10 +662,10 @@ export const IconSizes: Story = {
     <div className="grid w-[40rem] grid-cols-2 gap-group">
       {(["md", "sm"] as const).map((size) => (
         <div key={size} className="contents">
-          <Select aria-label={`Year, ${size}`} options={years} defaultValue="2026" size={size} native="never" />
+          <Select aria-label={`Year, ${size}`} items={years} defaultValue="2026" size={size} native="never" />
           <Combobox
             aria-label={`Household, ${size}`}
-            options={[{ value: "h1", label: "12 Lantern Row · Ada Okafor" }]}
+            items={[{ value: "h1", label: "12 Lantern Row · Ada Okafor" }]}
             value="h1"
             onValueChange={() => {}}
             icon={<HouseIcon />}
@@ -682,5 +691,186 @@ export const IconSizes: Story = {
       await expect(icons).toHaveLength(3);
       for (const icon of icons) await expect(icon.getBoundingClientRect().width).toBe(px);
     }
+  },
+};
+
+// AVE-146: items in ui-sdk's shape (groups, separators, object values) and the parts, nested as ui-sdk's Composition
+// shows. All names and addresses are fictional.
+
+const categories: ListData = [
+  { value: "dues", label: "Dues" },
+  { value: "fees", label: "Late fees" },
+  { type: "separator" },
+  {
+    type: "group",
+    label: "Projects",
+    items: [
+      { value: "pool", label: "Pool resurfacing" },
+      { value: "gate", label: "Front gate" },
+    ],
+  },
+  { type: "group", label: "Other", items: ["Donation", "Refund"] },
+];
+
+/** A grouped list: group headings named for screen readers, a line between, arrows straight across the groups. */
+export const Grouped: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<string | null>("dues");
+    return (
+      <div className="grid w-72 gap-section">
+        <Labelled label="Category">
+          <Select items={categories} value={value} onValueChange={setValue} native="never" />
+        </Labelled>
+        <Labelled label="Category (OS picker)">
+          <Select items={categories} defaultValue="dues" native="always" />
+        </Labelled>
+        <output className="text-meta text-muted-foreground" data-testid="value">
+          Chosen: {value}
+        </output>
+      </div>
+    );
+  },
+  play: async ({ canvas, step }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Category" });
+    await step("each group is named by its heading", async () => {
+      trigger.focus();
+      await userEvent.keyboard("{ArrowDown}");
+      const list = await screen.findByRole("listbox");
+      await expect(within(list).getByRole("group", { name: "Projects" })).toBeInTheDocument();
+      await expect(within(list).getByRole("group", { name: "Other" })).toBeInTheDocument();
+      await expect(list.querySelector("[data-slot=select-separator]")).not.toBeNull();
+    });
+    await step("arrows cross from one group into the next; Enter chooses", async () => {
+      // The OS picker beside it has options of its own, so these are found in the open list.
+      const list = screen.getByRole("listbox");
+      await waitFor(() => expect(within(list).getByRole("option", { name: "Dues" })).toHaveFocus());
+      await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}");
+      await waitFor(() => expect(within(list).getByRole("option", { name: "Donation" })).toHaveFocus());
+      await userEvent.keyboard("{Enter}");
+      await waitForClosed("select");
+      await expect(canvas.getByTestId("value")).toHaveTextContent("Donation");
+      await expect(trigger).toHaveTextContent("Donation");
+    });
+    await step("the OS picker shows the same groups as its own", async () => {
+      const native = canvas.getByRole("combobox", { name: "Category (OS picker)" });
+      await expect([...native.querySelectorAll("optgroup")].map((g) => g.label)).toEqual(["Projects", "Other"]);
+      await userEvent.selectOptions(native, "gate");
+      await expect(native).toHaveValue("gate");
+    });
+  },
+};
+
+const people = [
+  { value: "ada", label: "Ada Okafor", line: "Treasurer · 12 Lantern Row" },
+  { value: "bram", label: "Bram Hollis", line: "Secretary · 14 Lantern Row" },
+  { value: "cora", label: "Cora Mendez", line: "Member at large · 3 Quill Court" },
+];
+
+/**
+ * Built from parts (AVE-146): the root keeps `items`, so the trigger has its labels before the list opens, and each
+ * SelectItem draws a second line. The trigger shows only the label.
+ */
+export const SecondLine: Story = {
+  name: "Second line",
+  render: function Render() {
+    const [value, setValue] = useState<string | null>("ada");
+    return (
+      <div className="grid gap-group">
+        <Labelled label="Signer">
+          <Select items={people} value={value} onValueChange={setValue}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {people.map((person) => (
+                <SelectItem key={person.value} value={person.value} label={person.label}>
+                  <span className="block">{person.label}</span>
+                  <span className="block text-meta text-muted-foreground">{person.line}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Labelled>
+        <output className="text-meta text-muted-foreground" data-testid="value">
+          Chosen: {value}
+        </output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Signer" });
+    await expect(trigger).toHaveTextContent(/^Ada Okafor$/);
+    trigger.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await screen.findByRole("listbox");
+    await waitFor(() => expect(screen.getByRole("option", { name: /Ada Okafor/ })).toHaveFocus());
+    await expect(screen.getByRole("option", { name: /Bram Hollis/ })).toHaveTextContent("Secretary · 14 Lantern Row");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await waitForClosed("select");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("bram");
+    await expect(trigger).toHaveTextContent(/^Bram Hollis$/);
+    await expect(trigger).toHaveFocus();
+  },
+};
+
+type Member = { id: number; name: string };
+const members: Member[] = [
+  { id: 1042, name: "Ada Okafor" },
+  { id: 1043, name: "Bram Hollis" },
+  { id: 1101, name: "Cora Mendez" },
+];
+
+/**
+ * Object values (AVE-146): the value is the member, not an id string. `itemToValue` gives the id the form posts,
+ * `itemToLabel` the name, and `isItemEqualToValue` matches a copy of a member (as a server would send back).
+ */
+export const ObjectValues: Story = {
+  name: "Object values",
+  render: function Render() {
+    const [value, setValue] = useState<Member | null>({ id: 1043, name: "Bram Hollis" });
+    const [posted, setPosted] = useState("");
+    return (
+      <form
+        className="grid w-72 gap-group"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setPosted(String(new FormData(event.currentTarget).get("assignee")));
+        }}
+      >
+        <Labelled label="Assignee">
+          <Select
+            name="assignee"
+            items={members.map((m) => ({ value: m, label: m.name }))}
+            value={value}
+            onValueChange={setValue}
+            itemToValue={(m) => String(m.id)}
+            itemToLabel={(m) => m.name}
+            isItemEqualToValue={(a, b) => a.id === b.id}
+            native="never"
+          />
+        </Labelled>
+        <Button type="submit" variant="outline" className="justify-self-start">
+          Post the form
+        </Button>
+        <output className="text-meta text-muted-foreground" data-testid="value">
+          Chosen: {value ? `${value.name} (${value.id})` : "none"}; posted: {posted}
+        </output>
+      </form>
+    );
+  },
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Assignee" });
+    await expect(trigger).toHaveTextContent("Bram Hollis");
+    trigger.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await screen.findByRole("listbox");
+    await waitFor(() => expect(screen.getByRole("option", { name: "Bram Hollis" })).toHaveFocus());
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await waitForClosed("select");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Cora Mendez (1101)");
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Post the form" })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(canvas.getByTestId("value")).toHaveTextContent("posted: 1101");
   },
 };
