@@ -1352,4 +1352,15 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-pending-confirm-dialog--promise-resolves": { none: BEHAVIOUR("Pending confirm dialog / Ready and Pending") },
   "composites-pending-confirm-dialog--promise-rejects": { none: BEHAVIOUR("Pending confirm dialog / Ready and Keyboard flow") },
   "composites-pending-confirm-dialog--keyboard-flow": { none: BEHAVIOUR("Pending confirm dialog / Ready") },
+  // AVE-149: the parts stories draw what the one-tag stories draw, written out; visual:diff proved the one-tag form
+  // unchanged, so the parts' look is compared through those.
+  "components-calendar--parts": { none: BEHAVIOUR("Calendar / Default") },
+  "components-collapsible-section--disclosure": { none: BEHAVIOUR("Disclosure / Closed and Open") },
+  "components-empty-state--parts": { none: BEHAVIOUR("Empty state / Link action") },
+  "components-empty-state--section-parts": { none: BEHAVIOUR("Empty state / Section") },
+  "components-progress--own-track": { none: BEHAVIOUR("Progress / With value") },
+  "composites-page-header--parts": { none: BEHAVIOUR("Page header / Desktop minimum") },
+  "composites-section-card--parts": { none: BEHAVIOUR("Section card's one-tag stories") },
+  "composites-status-bar--parts": { none: BEHAVIOUR("Status bar's one-tag stories") },
+  "composites-top-bar--parts": { none: BEHAVIOUR("Top bar / Home as a router link and Window drag area") },
 };
