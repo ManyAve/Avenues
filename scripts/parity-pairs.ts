@@ -1297,6 +1297,10 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-toolbar--wide-is-a-token": { none: "A token check (AVE-85): the fold reads --breakpoint-wide. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--at-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide." },
   "composites-toolbar--below-the-fold": { none: "A width check on both sides of the 1100px fold; the app has no story at that width. Its look is compared through Toolbar / Wide and Desktop minimum." },
+  "composites-toolbar--long-reasons": { none: "A fix with no app counterpart (AVE-160): the app's toolbar hid reasons in titles, and Avenue's long reasons overlapped. Its look is compared through Toolbar / Wide." },
+  "composites-toolbar--shared-reason": { none: "A fix with no app counterpart (AVE-160): one line for neighbours that share a reason. Its look is compared through Toolbar / Wide." },
+  "composites-toolbar--long-reasons-phone": { none: BEHAVIOUR("Toolbar / Long reasons and Menu / Open") },
+  "composites-toolbar--shared-reason-phone": { none: BEHAVIOUR("Toolbar / Shared reason and Menu / Open") },
 
   // ---- Composites part 4b: the bars (AVE-9)
   "composites-top-bar--wide": [{ label: "top bar", app: "shell-topbar--default", appCrop: "#storybook-root header", avenueCrop: "#storybook-root header", allow: TOP_BAR }],
