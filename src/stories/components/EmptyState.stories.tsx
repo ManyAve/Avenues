@@ -316,7 +316,10 @@ export const SectionParts: Story = {
     const text = canvas.getByText("No notes");
     const action = canvas.getByRole("button", { name: "Add note" });
     await expect(left(tile)).toBeLessThan(left(text));
-    await expect(left(text)).toBeLessThan(left(action));
+    // Beside the text, or (on a phone, where the row wraps) under it.
+    const box = text.getBoundingClientRect();
+    const step = action.getBoundingClientRect();
+    await expect(step.left > box.left || step.top >= box.bottom).toBe(true);
     await userEvent.tab();
     await expect(action).toHaveFocus();
     await userEvent.keyboard("{Enter}");
