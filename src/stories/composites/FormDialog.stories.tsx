@@ -1,14 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { FileTextIcon, ReceiptIcon, TriangleAlertIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, spyOn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Callout } from "#avenue/components/callout";
 import { Field, FieldDescription, FieldLabel } from "#avenue/components/field";
-import { FormDialog } from "#avenue/components/form-dialog";
+import {
+  FormDialog,
+  FormDialogAlternate,
+  FormDialogBody,
+  FormDialogCancel,
+  FormDialogContent,
+  FormDialogDescription,
+  FormDialogError,
+  FormDialogFooter,
+  FormDialogHeader,
+  FormDialogRoot,
+  FormDialogSubmit,
+  FormDialogTitle,
+  FormDialogTrigger,
+} from "#avenue/components/form-dialog";
 import { Input } from "#avenue/components/input";
 import { Select, type SelectOption } from "#avenue/components/select";
 import { Textarea } from "#avenue/components/textarea";
+import { DEVELOPMENT } from "#avenue/lib/dev";
 import { listenForAnnouncements } from "../components/announce-kit";
 
 // AVE-9, composite 1. Every form dialog in ManyAve: icon title, fields, error slot, Cancel and submit, and the
@@ -567,5 +582,290 @@ export const PromiseSlow: Story = {
       "We couldn’t save this. Check your connection and try again.",
     );
     await expect(status).toBeEmptyDOMElement();
+  },
+};
+
+// ---- The parts (AVE-147). The same rules hold when an app composes FormDialogRoot and its parts itself.
+
+/**
+ * An app's own form dialog from the parts: a note field and the error placed above the footer, not under the fields.
+ * The rules come from the root, not from this markup.
+ */
+function AddNote({
+  pending,
+  locked,
+  slowAfter,
+  submitDisabled,
+  onSubmit,
+  onAlternate,
+}: {
+  pending?: boolean;
+  locked?: boolean;
+  slowAfter?: number;
+  submitDisabled?: boolean;
+  onSubmit: () => void | PromiseLike<unknown>;
+  onAlternate?: () => void | PromiseLike<unknown>;
+}) {
+  const [note, setNote] = useState("");
+  return (
+    <FormDialogRoot
+      dirty={note !== ""}
+      pending={pending}
+      locked={locked}
+      slowAfter={slowAfter}
+      pendingLabel="Saving…"
+      onSubmit={onSubmit}
+    >
+      <FormDialogTrigger render={<Button variant="outline" />}>Add note</FormDialogTrigger>
+      <FormDialogContent>
+        <FormDialogHeader icon={FileTextIcon}>
+          <FormDialogTitle>Add note</FormDialogTitle>
+          <FormDialogDescription>A note on 9 Heron Way, seen by the board only.</FormDialogDescription>
+        </FormDialogHeader>
+        <FormDialogBody>
+          <Field>
+            <FieldLabel>Note</FieldLabel>
+            <Input value={note} onChange={(e) => setNote(e.target.value)} autoComplete="off" />
+          </Field>
+        </FormDialogBody>
+        <FormDialogError className="px-inset pb-inset empty:hidden" />
+        <FormDialogFooter>
+          <FormDialogCancel />
+          {onAlternate && <FormDialogAlternate onClick={onAlternate}>Save & email owner</FormDialogAlternate>}
+          <FormDialogSubmit disabled={submitDisabled}>Save note</FormDialogSubmit>
+        </FormDialogFooter>
+      </FormDialogContent>
+    </FormDialogRoot>
+  );
+}
+
+/**
+ * Parts: a Promise from the root's `onSubmit` drives the composed dialog as it does the wrapper. Submit shows the
+ * root's pending label and is off, a second Enter doesn't submit twice, Esc and Cancel can't close it while held, and
+ * once it resolves the dialog closes and focus returns to the trigger.
+ */
+export const PartsPromiseResolves: Story = {
+  tags: ["agent"],
+  render: function Resolves() {
+    const [calls, setCalls] = useState(0);
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <AddNote
+          onSubmit={() => {
+            setCalls((n) => n + 1);
+            return save();
+          }}
+        />
+        <output className="text-meta text-muted-foreground">{calls ? `Saved ${calls} time${calls > 1 ? "s" : ""}` : ""}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Add note" });
+    trigger.focus();
+    await userEvent.keyboard("{Enter}");
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Note" })).toHaveFocus());
+    await userEvent.keyboard("Gate code changed{Enter}");
+    const saving = await screen.findByRole("button", { name: "Saving…" });
+    await expect(saving).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await expect(within(dialog).queryByRole("button", { name: "Close" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    await expect(canvas.getByText("Saved 1 time")).toBeInTheDocument();
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/** Parts: with input typed, Esc, the ✕ and Cancel ask "Discard changes?" first; Discard closes. */
+export const PartsDiscardGuard: Story = {
+  render: () => <AddNote onSubmit={() => {}} />,
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("button", { name: "Add note" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    const note = screen.getByRole("textbox", { name: "Note" });
+    await waitFor(() => expect(note).toHaveFocus());
+    await userEvent.keyboard("Gate code changed");
+
+    await userEvent.keyboard("{Escape}");
+    let ask = await screen.findByRole("alertdialog", { name: "Discard changes?" });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Keep editing" })).toHaveFocus());
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(ask).not.toBeInTheDocument());
+    await expect(note).toHaveValue("Gate code changed");
+
+    await userEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    ask = await screen.findByRole("alertdialog", { name: "Discard changes?" });
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(ask).not.toBeInTheDocument());
+
+    const cancel = screen.getByRole("button", { name: "Cancel" });
+    cancel.focus();
+    await userEvent.keyboard("{Enter}");
+    await screen.findByRole("alertdialog", { name: "Discard changes?" });
+    const discard = screen.getByRole("button", { name: "Discard" });
+    await expect(discard).toHaveAttribute("data-agent-confirm", "Discards what was entered in this form");
+    discard.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/**
+ * Parts: a rejection keeps the dialog open with the note, and its message shows in the app's placed FormDialogError,
+ * once (the body leaves its own out). The next submit clears it.
+ */
+export const PartsPromiseRejects: Story = {
+  render: () => <AddNote onSubmit={save} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add note" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    const note = screen.getByRole("textbox", { name: "Note" });
+    await waitFor(() => expect(note).toHaveFocus());
+    await userEvent.keyboard("Gate code changed{Enter}");
+    await screen.findByRole("button", { name: "Saving…" });
+    reply?.reject(new Error("We couldn’t save the note. Check your connection and try again."));
+    const alert = await within(dialog).findByRole("alert");
+    await expect(alert).toHaveTextContent("We couldn’t save the note.");
+    await expect(within(dialog).getAllByText(/couldn’t save the note/)).toHaveLength(1);
+    // The placed error sits after the body, not inside it.
+    await expect(dialog.querySelector("[data-slot=field-group]")!.contains(alert)).toBe(false);
+    await expect(note).toHaveValue("Gate code changed");
+    note.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(within(dialog).queryByText(/couldn’t save/)).not.toBeInTheDocument());
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
+
+/**
+ * Parts: a save already in flight (`pending` on the root) holds the composed dialog, and after `slowAfter` the
+ * footer's slow line shows. `locked` holds it too, saving or not.
+ */
+export const PartsHeld: Story = {
+  render: () => (
+    <div className="flex gap-controls p-inset">
+      <AddNote pending slowAfter={50} onSubmit={() => {}} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add note" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    await waitFor(() =>
+      expect(dialog.querySelector("[data-slot=slow-save]")).toHaveTextContent(
+        "This is taking longer than usual. Keep this open. It will finish on its own.",
+      ),
+    );
+    await expect(screen.getByRole("button", { name: "Saving…" })).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await expect(within(dialog).queryByRole("button", { name: "Close" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+  },
+};
+
+/** Parts: `locked` on the root holds the dialog even with nothing saving. */
+export const PartsLocked: Story = {
+  render: () => <AddNote locked onSubmit={() => {}} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add note" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    await userEvent.keyboard("{Escape}");
+    await expect(dialog).toBeInTheDocument();
+    await expect(screen.getByRole("button", { name: "Save note" })).not.toHaveAttribute("aria-disabled");
+  },
+};
+
+/**
+ * Parts: a disabled FormDialogSubmit also stops Enter in a field and turns the alternate off, because it tells the
+ * root. Once it is on again, the alternate's Promise drives pending like the main submit's.
+ */
+export const PartsSubmitDisabled: Story = {
+  render: function Uploading() {
+    const [uploading, setUploading] = useState(true);
+    const [saved, setSaved] = useState("");
+    return (
+      <div className="flex flex-col items-start gap-controls p-inset">
+        <Button variant="outline" onClick={() => setUploading(false)}>
+          Finish upload
+        </Button>
+        <AddNote
+          submitDisabled={uploading}
+          onSubmit={() => setSaved("Submitted")}
+          onAlternate={() => {
+            setSaved("Saved, emailing");
+            return save();
+          }}
+        />
+        <output className="text-meta text-muted-foreground">{saved}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add note" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add note" });
+    await expect(screen.getByRole("button", { name: "Save note" })).toHaveAttribute("aria-disabled", "true");
+    await expect(screen.getByRole("button", { name: "Save & email owner" })).toHaveAttribute("aria-disabled", "true");
+    const note = screen.getByRole("textbox", { name: "Note" });
+    await waitFor(() => expect(note).toHaveFocus());
+    await userEvent.keyboard("Gate{Enter}");
+    await expect(canvas.queryByText("Submitted")).not.toBeInTheDocument();
+    // The upload ends out of band, as a file field's would.
+    canvas.getByRole("button", { name: "Finish upload" }).click();
+    const alternate = await screen.findByRole("button", { name: "Save & email owner" });
+    await waitFor(() => expect(alternate).not.toHaveAttribute("aria-disabled"));
+    alternate.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(canvas.getByText("Saved, emailing")).toBeInTheDocument());
+    await expect(await screen.findByRole("button", { name: "Saving…" })).toHaveAttribute("aria-disabled", "true");
+    await expect(alternate).toHaveAttribute("aria-disabled", "true");
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
+
+/**
+ * Parts: a FormDialogSubmit outside a FormDialogRoot can't keep the rules, so in development it says so, naming
+ * FormDialogRoot (once per page); a production build (the published Storybook) stays silent and draws a plain submit
+ * button. The story tests run ui-sdk strict, where it throws instead, so this story turns strict off while it mounts.
+ */
+export const PartsSubmitOutsideRoot: Story = {
+  render: function Outside() {
+    const [shown, setShown] = useState(false);
+    return (
+      <div className="flex flex-col items-start gap-controls p-inset">
+        <Button variant="outline" onClick={() => setShown(true)}>
+          Show a loose submit
+        </Button>
+        {shown && (
+          <form onSubmit={(event) => event.preventDefault()}>
+            <FormDialogSubmit>Save note</FormDialogSubmit>
+          </form>
+        )}
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const strict = Reflect.get(globalThis, "__UI_SDK_STRICT__");
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    Reflect.set(globalThis, "__UI_SDK_STRICT__", false);
+    try {
+      await userEvent.click(canvas.getByRole("button", { name: "Show a loose submit" }));
+      await expect(await canvas.findByRole("button", { name: "Save note" })).toHaveAttribute("type", "submit");
+      const named = error.mock.calls.filter((call) => String(call[0]).includes("<FormDialogSubmit> is outside a <FormDialogRoot>"));
+      await expect(named).toHaveLength(DEVELOPMENT ? 1 : 0);
+    } finally {
+      Reflect.set(globalThis, "__UI_SDK_STRICT__", strict);
+      error.mockRestore();
+    }
   },
 };

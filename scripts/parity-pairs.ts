@@ -1351,6 +1351,13 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-form-dialog--second-submit": { none: BEHAVIOUR("Form dialog / Open; the second submit is an outline sm Button, compared through Button") },
   "composites-form-dialog--close-only": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--with-callouts": { none: "Form dialog / Open with two callouts; compared there, and the callouts through Callout / Info and Callout / Warning." },
+  "composites-form-dialog--parts-promise-resolves": { none: BEHAVIOUR("Form dialog / Open; the parts form draws the same dialog") },
+  "composites-form-dialog--parts-discard-guard": { none: BEHAVIOUR("Form dialog / Open and Alert dialog / Open") },
+  "composites-form-dialog--parts-promise-rejects": { none: BEHAVIOUR("Form dialog / Open and Form dialog / With error") },
+  "composites-form-dialog--parts-held": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Slow save") },
+  "composites-form-dialog--parts-locked": { none: BEHAVIOUR("Form dialog / Locked") },
+  "composites-form-dialog--parts-submit-disabled": { none: BEHAVIOUR("Form dialog / Submit disabled and Second submit") },
+  "composites-form-dialog--parts-submit-outside-root": { none: "A development warning for a misplaced part; it draws a plain Button, compared through Button." },
   "composites-pending-confirm-dialog--ready": [
     { label: "confirm dialog frame", app: "primitives-deleteaccount--allowed", appCrop: "[data-slot=dialog-content]", avenueCrop: "[data-slot=alert-dialog-content]", frame: true, allow: [{ prop: "padding-*", app: "0px", avenue: "16px", because: SECTIONED_DIALOG }] },
   ],
@@ -1372,4 +1379,6 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-top-bar--parts": { none: BEHAVIOUR("Top bar / Home as a router link and Window drag area") },
   "components-callout--parts": { none: BEHAVIOUR("Callout / Warning") },
   "components-inline-message--parts": { none: BEHAVIOUR("Inline message / Tones") },
+  "composites-pending-confirm-dialog--parts-create-confirm": { none: BEHAVIOUR("Pending confirm dialog / Ready and Pending; the parts form draws the same dialog") },
+  "composites-pending-confirm-dialog--parts-unknown-check-first": { none: BEHAVIOUR("Pending confirm dialog / Unknown check first") },
 };

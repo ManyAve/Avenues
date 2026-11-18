@@ -31,6 +31,7 @@ takesAll<Takes<typeof displayOptions.DisplayOptionsDensity, "ref" | "id" | "aria
 takesAll<Takes<typeof fileField.FileField, Root>>();
 // Described by its description, as the tip describes InfoTip's button: both leave aria-describedby to ui-sdk.
 takesAll<Takes<typeof pendingConfirmDialog.PendingConfirmDialog, "ref" | "id" | "aria-label" | "className" | "onKeyDown">>();
+takesAll<Takes<typeof pendingConfirmDialog.PendingConfirmDialogContent, "ref" | "id" | "aria-label" | "className" | "onKeyDown">>();
 takesAll<Takes<typeof modeToggle.ModeToggle, Root | "render">>();
 takesAll<Takes<typeof tooltip.InfoTip, "ref" | "id" | "className">>();
 takesAll<Takes<typeof toolbar.ToolbarActions, Root | "render">>();
