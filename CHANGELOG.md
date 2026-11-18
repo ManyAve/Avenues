@@ -4,6 +4,19 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.38.0 (2026-11-18)
+
+- **The one-tag Combobox picks several values** (AVE-161). `<Combobox multiple items={…} />` takes a list for
+  `value` and `defaultValue`, and `onValueChange` gets the new list and ui-sdk's details. Avenue draws the chosen
+  values as chips in the field with the search after them, from the same parts as Chips in the field: each chip's
+  remove button is named for its value ("Remove Oak Lane"), taps are 44px on a touch screen, and Backspace in the
+  empty search removes the last chip. Labels come from `items`, so chips are named before the list ever opens. A form
+  gets one entry per value, and a reset returns to `defaultValue`. On a small touch screen the list opens as a sheet
+  with the search in its header and the chips behind it, and a pick keeps it open. The search keeps its text after a
+  pick (`keepQuery`, true by default) and `maxSelected` caps the list. There is no "none" option, leading icon or
+  phone Clear button in this form: an empty list is none, and each chip removes itself. See Components / Combobox /
+  Several in one tag. Nothing else moves.
+
 ## v0.37.1 (2026-11-18)
 
 - **Toolbar reasons no longer print over each other** (AVE-160). On a page toolbar, a disabled action's reason now

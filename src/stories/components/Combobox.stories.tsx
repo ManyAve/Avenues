@@ -47,7 +47,7 @@ function Picker({
   invalid,
   error,
   ...props
-}: Omit<Extract<ComboboxProps, { children?: undefined }>, "value" | "onValueChange" | "children"> & {
+}: Omit<Extract<ComboboxProps, { children?: undefined; multiple?: undefined }>, "value" | "onValueChange" | "children"> & {
   label: string;
   initial?: string | null;
   error?: string;
@@ -1036,6 +1036,144 @@ export const ChipsInTheField: Story = {
       await expect(chosen).toHaveTextContent("Chosen: (none)");
       await waitFor(() => expect(search).toHaveFocus());
       await expect(search).toHaveAttribute("placeholder", "Add a street…");
+    });
+  },
+};
+
+/**
+ * The one-tag Combobox with `multiple` (AVE-161): `items` and no children, and Avenue draws the chips field from the
+ * parts in Chips in the field, with the same rules: each chip's remove button named for its street, 44px taps on a
+ * touch screen, Backspace in the empty search removing the last chip. `onValueChange` gets the list and ui-sdk's
+ * details, and the form gets one entry per street. On a small touch screen the list opens as a sheet that stays open
+ * after a pick, with the chips in the field behind it. Streets are fictional.
+ */
+export const SeveralInOneTag: Story = {
+  name: "Several in one tag",
+  render: function Render() {
+    const [value, setValue] = useState<string[]>(["elm", "oak-lane"]);
+    const [reason, setReason] = useState("none yet");
+    return (
+      <form aria-label="Streets form" className="grid w-80 gap-group" onSubmit={(e) => e.preventDefault()}>
+        <Field>
+          <FieldLabel>Streets</FieldLabel>
+          <Combobox
+            multiple
+            items={streets}
+            name="streets"
+            value={value}
+            onValueChange={(next, details) => {
+              setValue(next);
+              setReason(details.reason);
+            }}
+            placeholder="Add a street…"
+            triggerLabel="Show streets"
+          />
+        </Field>
+        <output data-testid="value" className="text-meta text-muted-foreground">
+          Chosen: {value.join(", ") || "(none)"}
+        </output>
+        <output data-testid="reason" className="sr-only">
+          {reason}
+        </output>
+      </form>
+    );
+  },
+  play: async ({ canvas, step }) => {
+    const search = () => screen.getByRole<HTMLInputElement>("combobox", { name: "Streets" });
+    const chosen = canvas.getByTestId("value");
+    const remove = (street: string) => canvas.queryByRole("button", { name: `Remove ${street}` });
+    const chip = (street: string) => canvas.getByRole("group", { name: street });
+    const posted = () => new FormData(canvas.getByRole<HTMLFormElement>("form", { name: "Streets form" })).getAll("streets");
+
+    await step("the chips are named from the items before the list has opened; the form gets one entry each", async () => {
+      await expect(chip("Elm Row")).toBeVisible();
+      await expect(remove("Elm Row")).toBeVisible();
+      await expect(remove("Oak Lane")).toBeVisible();
+      await expect(posted()).toEqual(["elm", "oak-lane"]);
+    });
+
+    if (coarse()) {
+      await step("on a phone the list is a sheet with the search in its header, and a pick keeps it open", async () => {
+        await userEvent.click(canvas.getByRole("button", { name: "Show streets" }));
+        await screen.findByRole("listbox");
+        await expect(content()).toHaveAttribute("data-presentation", "sheet");
+        await expectListSheet(content(), "[data-slot=combobox-item]");
+        await expect(content().contains(search())).toBe(true);
+        await userEvent.click(screen.getByRole("option", { name: "Birch Street" }));
+        await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane, birch");
+        await expect(content()).toHaveAttribute("data-presentation", "sheet");
+        await expect(remove("Birch Street")).toBeInTheDocument();
+        await userEvent.keyboard("{Escape}");
+        await waitForClosed("combobox");
+      });
+      await step("a chip's remove button takes its street off", async () => {
+        await userEvent.click(remove("Birch Street")!);
+        await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane");
+      });
+      return;
+    }
+
+    await step("typing searches; Enter adds the match as a chip, keeps the list open and reports ui-sdk's details", async () => {
+      await userEvent.tab();
+      await expect(search()).toHaveFocus();
+      await userEvent.keyboard("bir");
+      await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(1));
+      await userEvent.keyboard("{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane, birch");
+      await expect(canvas.getByTestId("reason")).toHaveTextContent("item-press");
+      await expect(remove("Birch Street")).toBeVisible();
+      await expect(screen.getByRole("listbox")).toBeVisible();
+      await expect(posted()).toEqual(["elm", "oak-lane", "birch"]);
+    });
+
+    await step("the search keeps its text, so a second match goes in without retyping", async () => {
+      await userEvent.clear(search());
+      await userEvent.keyboard("oak");
+      await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+      await userEvent.keyboard("{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane, birch, oak-hollow");
+      await expect(search()).toHaveValue("oak");
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await expect(search()).toHaveFocus();
+    });
+
+    await step("a search that matches nothing says so", async () => {
+      await userEvent.clear(search());
+      await userEvent.keyboard("zzz");
+      await waitFor(() => expect(screen.getByText("Nothing matches “zzz”.")).toBeVisible());
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+    });
+
+    await step("Backspace in the empty search removes the last chip", async () => {
+      await userEvent.clear(search());
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await expect(search()).toHaveValue("");
+      await userEvent.keyboard("{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane, birch");
+      await expect(remove("Oak Hollow Road")).toBeNull();
+      await expect(search()).toHaveFocus();
+    });
+
+    await step("the arrow keys reach a chip, and Backspace there removes it", async () => {
+      await userEvent.keyboard("{ArrowLeft}");
+      await expect(chip("Birch Street")).toHaveFocus();
+      await userEvent.keyboard("{ArrowLeft}{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, birch");
+      await expect(remove("Oak Lane")).toBeNull();
+      await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+      await waitFor(() => expect(search()).toHaveFocus());
+    });
+
+    await step("ArrowDown opens the list with the chosen streets checked", async () => {
+      await userEvent.keyboard("{ArrowDown}");
+      await screen.findByRole("listbox");
+      await expect(screen.getByRole("option", { name: "Elm Row" })).toHaveAttribute("aria-selected", "true");
+      await expect(screen.getByRole("option", { name: "Aspen Way" })).toHaveAttribute("aria-selected", "false");
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
     });
   },
 };
