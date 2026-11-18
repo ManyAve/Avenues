@@ -54,7 +54,7 @@ type ToastOptions = {
    */
   type?: ToastType | undefined;
   /**
-   * @deprecated Use `type`; `"progress"` is `type: "info"`. Removed in v0.32.0 (AVE-154).
+   * @deprecated Use `type`; `"progress"` is `type: "info"`.
    */
   variant?: "success" | "error" | "progress" | undefined;
   /**

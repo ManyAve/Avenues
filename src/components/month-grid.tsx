@@ -36,7 +36,7 @@ export type MonthGridProps = Omit<Loose<ComponentProps<typeof parts.Root>>, "chi
   children?: ((day: MonthGridDayState) => ReactNode) | undefined;
   /**
    * What a day holds under its number, such as the trigger of a popover over its items.
-   * @deprecated Use the children function and `<MonthGridDay value={day.date}>…</MonthGridDay>` (v0.30.0, AVE-149).
+   * @deprecated Use the children function and `<MonthGridDay value={day.date}>…</MonthGridDay>` (AVE-149).
    */
   renderDay?: ((date: string) => ReactNode) | undefined;
   /** Each week's height in pixels. The board's is 112: room for two chips, or one and "+N more". */

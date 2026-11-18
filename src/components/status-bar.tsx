@@ -25,11 +25,11 @@ function StatusBar({
   render,
   ...props
 }: OwnPartProps<"footer"> & {
-  /** @deprecated Use `<StatusBarCount>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<StatusBarCount>` (AVE-149). */
   count?: ReactNode;
-  /** @deprecated Use `<StatusBarHint>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<StatusBarHint>` (AVE-149). */
   hint?: ReactNode;
-  /** @deprecated Use `<StatusBarTotals items={…}>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<StatusBarTotals items={…}>` (AVE-149). */
   totals?: readonly StatusTotal[] | undefined;
 }) {
   return renderElement(

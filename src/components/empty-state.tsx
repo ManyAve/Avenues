@@ -70,26 +70,26 @@ const emptyStateOrder =
 type EmptyStateProps = OwnPartProps<"div"> & {
   /** `compact` fits inside a card on a 390px phone (AVE-23, Neighbors' NEI-107): 24px top and bottom, 16px sides. */
   size?: "default" | "compact" | undefined;
-  /** @deprecated Use `<EmptyStateIcon><Icon /></EmptyStateIcon>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<EmptyStateIcon><Icon /></EmptyStateIcon>` (AVE-149). */
   icon?: LucideIcon | undefined;
-  /** @deprecated Use `<EmptyStateTitle>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<EmptyStateTitle>` (AVE-149). */
   title?: string | undefined;
-  /** @deprecated Use `<EmptyStateDescription>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<EmptyStateDescription>` (AVE-149). */
   description?: ReactNode;
-  /** @deprecated Use `<EmptyStateActions><EmptyStateAction>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<EmptyStateActions><EmptyStateAction>` (AVE-149). */
   action?: EmptyAction | undefined;
   /**
    * A quieter way out under the action, drawn as a link (e.g. "Use a different email").
-   * @deprecated Use a second `<EmptyStateAction variant="link">` (v0.30.0, AVE-149).
+   * @deprecated Use a second `<EmptyStateAction variant="link">` (AVE-149).
    */
   secondaryAction?: Omit<EmptyAction, "disabled"> | undefined;
   /**
    * A page outside the app, opened in the browser: "{lead} {label}". It stays a real link (an `a` with an href,
    * styled as the link button), never a button, so it opens in a new tab and reads as a link (the app's MAN-954).
-   * @deprecated Write the line as a child (v0.30.0, AVE-149); the root draws it after the parts.
+   * @deprecated Write the line as a child (AVE-149); the root draws it after the parts.
    */
   externalLink?: { lead: string; label: string; href: string } | undefined;
-  /** @deprecated Use `<EmptyStateTitle render={<h2 />}>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<EmptyStateTitle render={<h2 />}>` (AVE-149). */
   headingLevel?: 2 | 3 | 4 | undefined;
 };
 
@@ -245,15 +245,15 @@ const sectionEmptyOrder =
   "*:order-last *:data-[slot=section-empty-icon]:order-1 *:data-[slot=section-empty-content]:order-2 *:data-section-empty-action:order-3";
 
 type SectionEmptyProps = Omit<OwnPartProps<"div">, "title"> & {
-  /** @deprecated Use `<SectionEmptyIcon><Icon /></SectionEmptyIcon>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<SectionEmptyIcon><Icon /></SectionEmptyIcon>` (AVE-149). */
   icon?: LucideIcon | undefined;
-  /** @deprecated Use `<SectionEmptyContent><SectionEmptyTitle>` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<SectionEmptyContent><SectionEmptyTitle>` (AVE-149). */
   title?: string | undefined;
-  /** @deprecated Use `<SectionEmptyDescription>` inside `SectionEmptyContent` (v0.30.0, AVE-149). */
+  /** @deprecated Use `<SectionEmptyDescription>` inside `SectionEmptyContent` (AVE-149). */
   line?: ReactNode;
   /**
    * The next step: a button (`onClick`) or, for one that goes somewhere, a link (`href` or `render`; see EmptyAction).
-   * @deprecated Use `<SectionEmptyAction>` (v0.30.0, AVE-149).
+   * @deprecated Use `<SectionEmptyAction>` (AVE-149).
    */
   action?: (Omit<EmptyAction, "disabled"> & { icon?: LucideIcon | undefined }) | undefined;
 };

@@ -349,7 +349,7 @@ export const Progress: Story = {
   },
 };
 
-/** `variant`, deprecated until v0.32.0 (AVE-151), still works: `"progress"` shows the `info` toast, `"error"` the error. */
+/** `variant`, deprecated (AVE-151) until both apps have moved off it (AVE-154), still works: `"progress"` shows the `info` toast, `"error"` the error. */
 export const DeprecatedVariant: Story = {
   render: () => (
     <ToastProvider>

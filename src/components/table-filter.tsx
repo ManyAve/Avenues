@@ -50,7 +50,7 @@ export type FilterField = {
   kind: FilterKind;
   /** A `choice` field's values, in ui-sdk's item shape: `{ value, label }`. */
   items?: readonly { value: string; label: string }[] | undefined;
-  /** @deprecated Use `items`, which takes the same `{ value, label }` entries. Kept until v0.29.0 (AVE-146). */
+  /** @deprecated Use `items`, which takes the same `{ value, label }` entries (AVE-146). */
   options?: readonly { value: string; label: string }[] | undefined;
 };
 
@@ -358,7 +358,7 @@ function SearchablePill({
  *
  * State follows ui-sdk's names (AVE-145): `value` / `defaultValue` / `onValueChange`, whose second argument is the
  * change's details (`TableFiltersChangeDetails`): its reason, event and source, and `cancel()`, which keeps the old
- * filters when TableFilters holds them itself. `filters` and `onChange` are the old names, kept until v0.27.0.
+ * filters when TableFilters holds them itself. `filters` and `onChange` are the old names, deprecated.
  */
 export function TableFilters({
   fields,
@@ -374,9 +374,9 @@ export function TableFilters({
   value?: readonly TableFilter[] | undefined;
   defaultValue?: readonly TableFilter[] | undefined;
   onValueChange?: ((value: TableFilter[], details: TableFiltersChangeDetails) => void) | undefined;
-  /** @deprecated Use `value`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `value` (AVE-145). */
   filters?: readonly TableFilter[] | undefined;
-  /** @deprecated Use `onValueChange`. Kept until v0.27.0 (AVE-145). */
+  /** @deprecated Use `onValueChange` (AVE-145). */
   onChange?: ((value: TableFilter[], details: TableFiltersChangeDetails) => void) | undefined;
   className?: string | undefined;
 }) {
