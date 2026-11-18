@@ -685,11 +685,14 @@ type ComboboxPartsProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedPro
  * Built from parts, picking several values (ui-sdk's `multiple`): the value is a list. Choosing an item toggles it and
  * keeps the list open, and each item shows a checkbox's box.
  */
-type ComboboxMultipleProps<T, Item extends ComboboxItemData<T>> = Omit<
+type ComboboxMultiplePartsProps<T, Item extends ComboboxItemData<T>> = ComboboxMultipleValueProps<T, Item> &
+  ComboboxPartsOnlyProps<T>;
+
+/** The value, callback and limits of a multi-pick, for both forms. */
+type ComboboxMultipleValueProps<T, Item extends ComboboxItemData<T>> = Omit<
   ComboboxSharedProps<T, Item>,
   "value" | "defaultValue" | "onValueChange"
-> &
-  ComboboxPartsOnlyProps<T> & {
+> & {
     multiple: true;
     /** The chosen values, in the order they were chosen. Pass it with `onValueChange` to control the field. */
     value?: readonly T[] | undefined;
@@ -727,6 +730,31 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
     maxSelected?: undefined;
   };
 
+/**
+ * The one-tag Combobox picking several values: Avenue draws the chosen values as chips in the field, with the search
+ * after them, and the list from `items` (ui-sdk's "Multiple", wrapped as its "Wrap the Parts" guide wraps a part set).
+ */
+type ComboboxWrapperMultipleProps<T, Item extends ComboboxItemData<T>> = ComboboxMultipleValueProps<T, Item> &
+  Pick<InputProps, "id" | "aria-label" | "aria-describedby" | "invalid" | "placeholder"> &
+  Pick<ChipsProps, "size" | "triggerLabel" | "className"> &
+  Pick<ComboboxWrapperProps<T, Item>, "items" | "options" | "emptyMessage"> & {
+    children?: undefined;
+    /** No "none" option: an empty list is none. */
+    noneLabel?: undefined;
+    /** The chips' field has no leading icon: the chips start where the icon would sit. */
+    icon?: undefined;
+    /** No Clear button: each chip has its own remove button. */
+    clearLabel?: undefined;
+    /** The open state and search stay inside the one-tag form, as in the one-value form. */
+    open?: undefined;
+    controller?: undefined;
+  };
+
+/** Picking several values (ui-sdk's `multiple`), from parts or in one tag. */
+type ComboboxMultipleProps<T, Item extends ComboboxItemData<T>> =
+  | ComboboxMultiplePartsProps<T, Item>
+  | ComboboxWrapperMultipleProps<T, Item>;
+
 export type ComboboxProps<T = string, Item extends ComboboxItemData<T> = ComboboxItemData<T>> =
   | ComboboxPartsProps<T, Item>
   | ComboboxMultipleProps<T, Item>
@@ -752,8 +780,20 @@ export type ComboboxProps<T = string, Item extends ComboboxItemData<T> = Combobo
  * </Combobox>
  * ```
  *
- * With `multiple` the value is a list (ui-sdk's "Multiple"). Its search usually sits inside the popup, opened by a
- * `ComboboxTrigger` that shows the choice, as a table filter's long list does:
+ * With `multiple` the value is a list (ui-sdk's "Multiple"), and `onValueChange` gets the new list and ui-sdk's details.
+ * In one tag, Avenue draws the chosen values as chips in the field, each with its own "Remove …" button, and the
+ * search after them; Backspace in the empty search removes the last chip. On a small touch screen the list opens as a
+ * sheet, and a pick keeps it open:
+ *
+ * ```tsx
+ * <Field>
+ *   <FieldLabel>Streets</FieldLabel>
+ *   <Combobox multiple items={streets} value={chosen} onValueChange={setChosen} placeholder="Add a street…" />
+ * </Field>
+ * ```
+ *
+ * From parts, its search can sit in the field with `ComboboxChips`, or inside the popup, opened by a `ComboboxTrigger`
+ * that shows the choice, as a table filter's long list does:
  *
  * ```tsx
  * <Combobox multiple value={streets} onValueChange={setStreets}>
@@ -778,6 +818,9 @@ export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, 
 export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, T = Item["value"]>(
   props: ComboboxProps<T, Item>,
 ) {
+  if (props.multiple && props.children === undefined) {
+    return <ComboboxFromItemsMultiple<T, Item> {...(props as ComboboxWrapperMultipleProps<T, Item>)} />;
+  }
   if (props.multiple) {
     const { children, filter, keepQuery = true, ...rest } = props;
     return (
@@ -807,6 +850,41 @@ export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, 
   return <ComboboxFromItems<T, Item> {...(props as ComboboxWrapperProps<T, Item>)} />;
 }
 
+/** The list's rows from `items`, for both one-tag forms: groups and their labels, separators, and each item. */
+function rowsFrom<T, Item extends ComboboxItemData<T>>(items: ListData<T, Item>, keyOf: (value: T) => string): ReactNode[] {
+  const item = (entry: Item | (T & string)) => {
+    const option = toItem<T, Item>(entry);
+    return (
+      <ComboboxItem<T>
+        key={keyOf(option.value)}
+        value={option.value}
+        label={option.label}
+        meta={option.meta}
+        {...defined({ keywords: option.keywords, disabled: option.disabled || undefined })}
+      >
+        <span>{option.label}</span>
+        {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
+      </ComboboxItem>
+    );
+  };
+  const keys = entryKeys(items, keyOf);
+  return items.map((entry, i) =>
+    isSeparator(entry) ? (
+      <ComboboxSeparator key={keys[i]} />
+    ) : isGroup(entry) ? (
+      <ComboboxGroup key={keys[i]}>
+        {entry.label !== undefined && <ComboboxGroupLabel>{entry.label}</ComboboxGroupLabel>}
+        {entry.items.map(item)}
+      </ComboboxGroup>
+    ) : (
+      item(entry)
+    ),
+  );
+}
+
+const defaultEmptyMessage = (query: string): ReactNode =>
+  query ? `Nothing matches “${query}”.` : "Nothing to choose from yet.";
+
 /** The one-tag Combobox, drawn from its items with Avenue's parts. */
 function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   items: itemsProp,
@@ -819,7 +897,7 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   required,
   noneLabel,
   placeholder,
-  emptyMessage = (query) => (query ? `Nothing matches “${query}”.` : "Nothing to choose from yet."),
+  emptyMessage = defaultEmptyMessage,
   filter = matchWords,
   itemToValue,
   itemToLabel,
@@ -874,34 +952,7 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
       ((a: T | None, b: T | None) => (a === NONE || b === NONE ? a === b : isItemEqualToValue(a as T, b as T))),
   });
 
-  const item = (entry: Item | (T & string)) => {
-    const option = toItem<T, Item>(entry);
-    return (
-      <ComboboxItem<T | None>
-        key={keyOf(option.value)}
-        value={option.value}
-        label={option.label}
-        meta={option.meta}
-        {...defined({ keywords: option.keywords, disabled: option.disabled || undefined })}
-      >
-        <span>{option.label}</span>
-        {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
-      </ComboboxItem>
-    );
-  };
-  const keys = entryKeys(items, keyOf);
-  const rows = items.map((entry, i) =>
-    isSeparator(entry) ? (
-      <ComboboxSeparator key={keys[i]} />
-    ) : isGroup(entry) ? (
-      <ComboboxGroup key={keys[i]}>
-        {entry.label !== undefined && <ComboboxGroupLabel>{entry.label}</ComboboxGroupLabel>}
-        {entry.items.map(item)}
-      </ComboboxGroup>
-    ) : (
-      item(entry)
-    ),
-  );
+  const rows = rowsFrom(items, keyOf);
 
   return (
     <ComboboxRoot<T | None>
@@ -945,6 +996,80 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
           )}
           {rows}
         </ComboboxList>
+      </ComboboxContent>
+    </ComboboxRoot>
+  );
+}
+
+/**
+ * The one-tag Combobox picking several values, drawn from its items with the chips parts: each chosen value is a
+ * `ComboboxChip` with its own "Remove …" button, then the search, then the chevron. ui-sdk keeps the value, the form's
+ * entries (one per value) and its reset, so nothing here stands in for them as the one-value form must for "none".
+ *
+ * Labels come from `items` unless `itemToLabel` says otherwise, so the chips are named before the list has ever
+ * opened. On a small touch screen the list is ui-sdk's sheet: the search moves into its header, the chips stay in the
+ * field behind it, and a pick keeps the sheet open, as a pick keeps the popover open.
+ */
+function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
+  items: itemsProp,
+  options,
+  emptyMessage = defaultEmptyMessage,
+  filter = matchWords,
+  itemToValue,
+  itemToLabel,
+  keepQuery = true,
+  presentation = "auto",
+  size,
+  triggerLabel,
+  className,
+  placeholder,
+  id,
+  invalid,
+  "aria-label": ariaLabel,
+  "aria-describedby": describedBy,
+  noneLabel: _none,
+  icon: _icon,
+  clearLabel: _clear,
+  open: _open,
+  controller: _controller,
+  children: _children,
+  multiple: _multiple,
+  ...props
+}: ComboboxWrapperMultipleProps<T, Item>) {
+  const items: ListData<T, Item> = itemsProp ?? options ?? NO_ITEMS;
+  const keyOf = useMemo(() => valueKey(itemToValue), [itemToValue]);
+  const byKey = useMemo(() => new Map(flatItems(items).map((o) => [keyOf(o.value), o])), [items, keyOf]);
+  const labelFor = useMemo(
+    () => itemToLabel ?? ((v: T) => byKey.get(keyOf(v))?.label ?? String(v)),
+    [itemToLabel, byKey, keyOf],
+  );
+  const [query, setQuery] = useState("");
+  const rows = rowsFrom(items, keyOf);
+  return (
+    <ComboboxRoot<T>
+      multiple
+      keepQuery={keepQuery}
+      presentation={presentation}
+      itemToLabel={labelFor}
+      onQueryChange={(next: string) => setQuery(next)}
+      filter={(entry: ListItem<T>, text: string) => {
+        const option = byKey.get(keyOf(entry.value));
+        return option ? filter(option, text) : false;
+      }}
+      {...defined({ itemToValue })}
+      {...props}
+    >
+      <ComboboxChips {...defined({ size, triggerLabel, className })}>
+        <ComboboxValue>
+          {({ value }) => (value as T[]).map((v) => <ComboboxChip<T> key={keyOf(v)} value={v} />)}
+        </ComboboxValue>
+        <ComboboxInput
+          {...defined({ id, invalid, placeholder, "aria-label": ariaLabel, "aria-describedby": describedBy })}
+        />
+      </ComboboxChips>
+      <ComboboxContent>
+        <ComboboxEmpty>{emptyMessage(query.trim())}</ComboboxEmpty>
+        <ComboboxList>{rows}</ComboboxList>
       </ComboboxContent>
     </ComboboxRoot>
   );

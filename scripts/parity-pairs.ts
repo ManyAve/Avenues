@@ -511,6 +511,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--chips-in-the-field": {
     none: "AVE-159: neither app has a multi-pick field with chips; the chips are new in Avenue, from ui-sdk's Multiple example.",
   },
+  "components-combobox--several-in-one-tag": {
+    none: "AVE-161: the one-tag form of Combobox / Chips in the field; neither app has a multi-pick field with chips yet.",
+  },
   "components-combobox--sized-by-content": {
     none: "AVE-113: a layout probe with no app screen of its own; it proves a content-sized Combobox keeps its width.",
   },
