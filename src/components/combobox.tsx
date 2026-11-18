@@ -104,6 +104,12 @@ const SharedContext = createContext<Shared | null>(null);
 /** True inside `ComboboxContent`: a `ComboboxInput` there is the popup's search field (ui-sdk's "Input in the Popup"). */
 const InContentContext = createContext(false);
 
+/** True inside `ComboboxChips`: a `ComboboxInput` there is the search after the chips, in the field `ComboboxChips` draws. */
+const ChipsContext = createContext(false);
+
+/** The value of the `ComboboxChip` a `ComboboxChipRemove` sits in, so the button can name itself after the chip. */
+const ChipContext = createContext<{ value: unknown } | null>(null);
+
 function useShared(part: string): Shared {
   const shared = use(SharedContext);
   if (!shared) throw new Error(`${part} goes inside Avenue's Combobox.`);
@@ -188,7 +194,9 @@ type InputProps = Omit<Loose<ComponentProps<typeof Ui.ComboboxInput>>, "size" | 
  */
 function ComboboxInput(props: InputProps) {
   const inContent = use(InContentContext);
-  return inContent ? <PopupInput {...props} /> : <FieldInput {...props} />;
+  const inChips = use(ChipsContext);
+  if (inContent) return <PopupInput {...props} />;
+  return inChips ? <ChipsInput {...props} /> : <FieldInput {...props} />;
 }
 
 /** The search field inside the popup: the input alone, 32px, in Avenue's control surface (44px on a touch screen). */
@@ -202,6 +210,10 @@ function PopupInput({ size, icon: _icon, invalid, triggerLabel: _trigger, clearL
     />
   );
 }
+
+// In a sheet, ui-sdk moves the field's input into the sheet's header, where it is a 44px search field of its own.
+const sheetSearch =
+  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30";
 
 function FieldInput({
   size,
@@ -294,8 +306,7 @@ function FieldInput({
           // percentage width lets the browser shrink it to nothing there, while a row sized by its content still gets
           // the default width (AVE-113). flex-1 sizes it inside the group either way, so nothing else moves.
           "h-full w-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
-          // In a sheet, ui-sdk moves this input into the sheet's header, where it is a 44px search field of its own.
-          "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30",
+          sheetSearch,
         )}
       />
       {/* On a phone the cursor lands after the chosen label instead of selecting it (AVE-76), so typing would add to
@@ -342,6 +353,157 @@ function ComboboxTrigger({ ref, ...props }: Loose<ComponentProps<typeof Ui.Combo
 /** The chosen value as text, or a function of it (`{ value, labels, label }`). Draws no element of its own. */
 function ComboboxValue(props: Loose<ComponentProps<typeof Ui.ComboboxValue>>) {
   return <Ui.ComboboxValue {...defined(props)} />;
+}
+
+/**
+ * The search after the chips, inside `ComboboxChips`: the text input alone, on the chips' line. The field around it
+ * (surface, focus ring, chevron) is `ComboboxChips`'s. 24px with a mouse, so a line of chips keeps one height; 44px on
+ * a touch screen, as every text field there.
+ */
+function ChipsInput({ size: _size, icon: _icon, invalid, triggerLabel: _trigger, clearLabel: _clear, className, ...props }: InputProps) {
+  return (
+    <Ui.ComboboxInput
+      aria-invalid={invalid || undefined}
+      {...defined(props)}
+      className={cn(
+        // min-w-24: room for a short placeholder ("Add a street…"), after which the input wraps to a line of its own.
+        "h-6 w-full min-w-24 flex-1 bg-transparent px-1 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed pointer-coarse:h-11",
+        sheetSearch,
+        className,
+      )}
+    />
+  );
+}
+
+type ChipsProps = Loose<ComponentProps<typeof Ui.ComboboxChips>> & {
+  size?: PickerSize | undefined;
+  /** Names the chevron button for screen readers ("Show streets"). */
+  triggerLabel?: string | undefined;
+  /** Classes for the whole field, not only the chips' line inside it. */
+  className?: string | undefined;
+};
+
+/**
+ * A multi-pick field with its search in the field (ui-sdk's "Multiple"): the chosen values as chips, then the search,
+ * in Avenue's field surface with the chevron at the end. The field grows a line at a time as the chips wrap. Put a
+ * `ComboboxValue` that draws one `ComboboxChip` per value, and a `ComboboxInput`, inside it:
+ *
+ * ```tsx
+ * <Combobox multiple value={streets} onValueChange={setStreets} itemToLabel={streetName}>
+ *   <ComboboxChips triggerLabel="Show streets">
+ *     <ComboboxValue>{({ value }) => (value as string[]).map((v) => <ComboboxChip key={v} value={v} />)}</ComboboxValue>
+ *     <ComboboxInput aria-label="Streets" placeholder="Add a street…" />
+ *   </ComboboxChips>
+ *   <ComboboxContent>…</ComboboxContent>
+ * </Combobox>
+ * ```
+ *
+ * ui-sdk gives it its keys: Backspace in the empty search removes the last chip, and the arrow keys move between the
+ * chips. There is no phone Clear button here, as the one-value field has: each chip has its own remove button.
+ *
+ * Sizes as the one-value field: md 32px, sm 28px, with mouse lines of 24px (4px apart); on a touch screen each line is
+ * 44px, so every chip's remove button keeps a 44px tap that touches no other.
+ */
+function ComboboxChips({ size, triggerLabel = "Show options", className, children, ...props }: ChipsProps) {
+  const { setAnchor, disabled } = useShared("ComboboxChips");
+  return (
+    <div
+      ref={setAnchor}
+      data-slot="combobox"
+      data-disabled={disabled || undefined}
+      className={cn(
+        fieldControl({ size }),
+        // The field grows with its lines: a fixed height becomes a minimum, with the line's padding above and below.
+        "h-auto gap-0 ps-1 pe-0 pointer-coarse:min-h-11 pointer-coarse:py-0",
+        size === "sm" ? "min-h-control-sm py-px" : "min-h-control-md py-[3px]",
+        className,
+      )}
+    >
+      <ChipsContext value={true}>
+        <Ui.ComboboxChips
+          {...defined(props)}
+          // gap-controls: 16px between chips on a phone, so the remove buttons' 44px taps never meet (AVE-22).
+          className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-1 pointer-coarse:gap-x-controls pointer-coarse:gap-y-0 pointer-coarse:pe-3"
+        >
+          {children}
+        </Ui.ComboboxChips>
+      </ChipsContext>
+      <Ui.ComboboxTrigger
+        aria-label={triggerLabel}
+        className="flex w-8 shrink-0 items-center justify-center self-stretch text-muted-foreground outline-none disabled:cursor-not-allowed pointer-coarse:w-11"
+      >
+        <ChevronsUpDownIcon aria-hidden />
+      </Ui.ComboboxTrigger>
+    </div>
+  );
+}
+
+/** The label ui-sdk gives a chosen value: from `itemToLabel`, its item's label, or the value itself. */
+function labelOf(state: { value: unknown; labels: string[] }, value: unknown): string {
+  const values = Array.isArray(state.value) ? state.value : [];
+  return state.labels[values.indexOf(value)] ?? String(value);
+}
+
+/**
+ * One chosen value, as a chip in Badge's secondary look: a 20px pill of 12px text. Without children it shows the
+ * value's label and its remove button; with children, they are the chip's whole content (ui-sdk's shape), so add a
+ * `ComboboxChipRemove` yourself. ui-sdk marks it `data-disabled` while the combobox is disabled or read-only.
+ */
+function ComboboxChip<T = string>({
+  value,
+  className,
+  children,
+  ...props
+}: NodeChildren<Loose<ComponentProps<typeof Ui.ComboboxChip<T>>>>) {
+  const chip = useMemo(() => ({ value }), [value]);
+  return (
+    <ChipContext value={chip}>
+      <Ui.ComboboxChip<T>
+        value={value}
+        className={cn(
+          "inline-flex h-5 max-w-full min-w-0 shrink-0 items-center gap-0.5 rounded-full bg-secondary ps-2 pe-0.5 text-xs font-medium whitespace-nowrap text-secondary-foreground outline-none",
+          // Mouse lines are 24px, touch lines 44px: the margin makes up the line, so a line of chips alone is as tall
+          // as one with the search in it.
+          "my-0.5 pointer-coarse:my-3",
+          "focus-visible:ring-3 focus-visible:ring-ring/50 data-disabled:opacity-50",
+          className,
+        )}
+        {...defined(props)}
+      >
+        {children ?? (
+          <>
+            <span className="min-w-0 truncate">
+              <Ui.ComboboxValue>{(state) => labelOf(state, value)}</Ui.ComboboxValue>
+            </span>
+            <ComboboxChipRemove />
+          </>
+        )}
+      </Ui.ComboboxChip>
+    </ChipContext>
+  );
+}
+
+/**
+ * The button in a chip that removes its value: a 16px round button with an ✕, a 24px reach with a mouse and a 44px
+ * tap on a touch screen (`hit-area`). Its name is "Remove" and the chip's label ("Remove Oak Lane"), so every chip's
+ * button has its own; pass `aria-label` to say it otherwise. Undoable (pick it again), so no agent confirm.
+ */
+function ComboboxChipRemove({ className, children, "aria-label": label, ...props }: Loose<ComponentProps<typeof Ui.ComboboxChipRemove>>) {
+  const chip = use(ChipContext);
+  const button = (name: string | undefined) => (
+    <Ui.ComboboxChipRemove
+      aria-label={name}
+      className={cn(
+        "relative hit-area flex size-4 shrink-0 items-center justify-center rounded-full text-secondary-foreground/70 outline-none transition-colors hover:bg-foreground/10 hover:text-secondary-foreground focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none [&>svg]:size-3",
+        className,
+      )}
+      {...defined(props)}
+    >
+      {children ?? <XIcon aria-hidden />}
+    </Ui.ComboboxChipRemove>
+  );
+  if (label !== undefined || !chip) return button(label ?? "Remove");
+  return <Ui.ComboboxValue>{(state) => button(`Remove ${labelOf(state, chip.value)}`)}</Ui.ComboboxValue>;
 }
 
 /**
@@ -789,6 +951,9 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
 }
 
 export {
+  ComboboxChip,
+  ComboboxChipRemove,
+  ComboboxChips,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxGroup,

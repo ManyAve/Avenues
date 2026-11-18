@@ -6,6 +6,8 @@ import { createComboboxController } from "@ui-sdk/react/combobox";
 import { Button } from "#avenue/components/button";
 import {
   Combobox,
+  ComboboxChip,
+  ComboboxChips,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
@@ -920,6 +922,120 @@ export const PickSeveral: Story = {
       await expect(search()).toHaveValue("");
       await userEvent.keyboard("{Escape}");
       await waitForClosed("combobox");
+    });
+  },
+};
+
+/**
+ * `multiple` with the search in the field (AVE-159, ui-sdk's "Multiple"): `ComboboxChips` draws the chosen streets as
+ * chips before the search, each with its own remove button ("Remove Oak Lane"). Backspace in the empty search removes
+ * the last chip; the arrow keys move between the chips. Streets are fictional.
+ */
+export const ChipsInTheField: Story = {
+  name: "Chips in the field",
+  render: function Render() {
+    const [value, setValue] = useState<string[]>(["elm", "oak-lane"]);
+    return (
+      <div className="grid w-80 gap-group">
+        <Field>
+          <FieldLabel>Streets</FieldLabel>
+          <Combobox
+            multiple
+            presentation="popover"
+            value={value}
+            onValueChange={setValue}
+            itemToLabel={(v: string) => streets.find((s) => s.value === v)?.label ?? v}
+          >
+            <ComboboxChips triggerLabel="Show streets">
+              <ComboboxValue>
+                {({ value: chosen }) => (chosen as string[]).map((v) => <ComboboxChip key={v} value={v} />)}
+              </ComboboxValue>
+              <ComboboxInput placeholder="Add a street…" />
+            </ComboboxChips>
+            <ComboboxContent>
+              <ComboboxEmpty>No street matches.</ComboboxEmpty>
+              <ComboboxList>
+                {streets.map((s) => (
+                  <ComboboxItem key={s.value} value={s.value}>
+                    {s.label}
+                  </ComboboxItem>
+                ))}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+        </Field>
+        <output data-testid="value" className="text-meta text-muted-foreground">
+          Chosen: {value.join(", ") || "(none)"}
+        </output>
+      </div>
+    );
+  },
+  play: async ({ canvas, step }) => {
+    const search = canvas.getByRole<HTMLInputElement>("combobox", { name: "Streets" });
+    const chosen = canvas.getByTestId("value");
+    const remove = (street: string) => canvas.queryByRole("button", { name: `Remove ${street}` });
+
+    await step("the field shows each chosen street as a chip, each with its own remove button", async () => {
+      await expect(remove("Elm Row")).toBeVisible();
+      await expect(remove("Oak Lane")).toBeVisible();
+    });
+
+    const chip = (street: string) => canvas.getByRole("group", { name: street });
+
+    await step("the field shows each chosen street as a chip, each remove button named for its street", async () => {
+      await expect(chip("Elm Row")).toBeVisible();
+      await expect(remove("Elm Row")).toBeVisible();
+      await expect(remove("Oak Lane")).toBeVisible();
+    });
+
+    await step("typing searches; Enter adds the match as a chip and the list stays open", async () => {
+      await userEvent.tab();
+      await expect(search).toHaveFocus();
+      await userEvent.keyboard("bir");
+      await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(1));
+      await userEvent.keyboard("{Enter}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane, birch");
+      await expect(remove("Birch Street")).toBeVisible();
+      await expect(screen.getByRole("listbox")).toBeVisible();
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await expect(search).toHaveFocus();
+    });
+
+    await step("Backspace in the empty search removes the last chip", async () => {
+      await userEvent.clear(search);
+      await userEvent.keyboard("{Escape}");
+      await waitForClosed("combobox");
+      await expect(search).toHaveValue("");
+      await userEvent.keyboard("{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: elm, oak-lane");
+      await expect(remove("Birch Street")).toBeNull();
+      await expect(search).toHaveFocus();
+    });
+
+    await step("the arrow keys move from the search through the chips and back", async () => {
+      await userEvent.keyboard("{ArrowLeft}");
+      await expect(chip("Oak Lane")).toHaveFocus();
+      await userEvent.keyboard("{ArrowLeft}");
+      await expect(chip("Elm Row")).toHaveFocus();
+      await userEvent.keyboard("{ArrowRight}");
+      await expect(chip("Oak Lane")).toHaveFocus();
+      await userEvent.keyboard("{ArrowRight}");
+      await expect(search).toHaveFocus();
+    });
+
+    await step("Backspace on a focused chip removes it", async () => {
+      await userEvent.keyboard("{ArrowLeft}{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: elm");
+      await expect(remove("Oak Lane")).toBeNull();
+      await expect(chip("Elm Row")).toHaveFocus();
+    });
+
+    await step("a remove button removes its chip and focus goes back to the search", async () => {
+      await userEvent.click(remove("Elm Row")!);
+      await expect(chosen).toHaveTextContent("Chosen: (none)");
+      await waitFor(() => expect(search).toHaveFocus());
+      await expect(search).toHaveAttribute("placeholder", "Add a street…");
     });
   },
 };
