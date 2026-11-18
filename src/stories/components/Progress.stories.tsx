@@ -3,7 +3,7 @@ import { useState } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { Progress, ProgressLabel, ProgressValue } from "#avenue/components/progress";
+import { Progress, ProgressIndicator, ProgressLabel, ProgressTrack, ProgressValue } from "#avenue/components/progress";
 
 // AVE-129. How far a task has got: ui-sdk's Progress, drawn as Management's activity-card bar.
 
@@ -317,5 +317,29 @@ export const BesideManagement: Story = {
       (theirs.firstElementChild as HTMLElement).getBoundingClientRect().width,
       1,
     );
+  },
+};
+
+/**
+ * The track written out (AVE-149), to style it directly: here a taller track with a gap above it. Progress draws no
+ * second track, and the track takes the bar's `size` unless given its own.
+ */
+export const OwnTrack: Story = {
+  render: () => (
+    <div className="max-w-sm p-inset">
+      <Progress value={40}>
+        <ProgressLabel>Importing households</ProgressLabel>
+        <ProgressValue />
+        <ProgressTrack className="mt-1 h-2">
+          <ProgressIndicator />
+        </ProgressTrack>
+      </Progress>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const bar = canvas.getByRole("progressbar", { name: "Importing households" });
+    await expect(bar.querySelectorAll("[data-slot=progress-track]")).toHaveLength(1);
+    await expect(track(bar).getBoundingClientRect().height).toBe(8);
+    await expectBars();
   },
 };

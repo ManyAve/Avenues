@@ -4,6 +4,55 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.30.0 (2026-11-18)
+
+- **The layout pieces come in parts, like ui-sdk's components** (AVE-149). Each is a root and named parts, each part
+  takes `render` and `className`, and today's one-tag props still work, built from those parts. Nothing on screen
+  moves (visual diff in the pull request). Callout's and InlineMessage's icons follow in the next release.
+  - **EmptyState**: `EmptyStateIcon` (put the icon inside), `EmptyStateTitle` (an h3; `render={<h2 />}` for another
+    level), `EmptyStateDescription`, `EmptyStateActions` and `EmptyStateAction` (an outline sm Button;
+    `variant="link"` for the quieter one; a link with `render`). The root draws icon, title, line and actions in that
+    order whatever order they are written in, and anything else after them, so a screen can't reorder the rule.
+  - **SectionEmpty**: `SectionEmptyIcon` (the 40px tile), `SectionEmptyContent` (the text column) with
+    `SectionEmptyTitle` and `SectionEmptyDescription`, and `SectionEmptyAction`. Same fixed order.
+  - **PageHeader**: `PageHeaderContent` (the text column) with `PageHeaderEyebrow`, `PageHeaderTitle` (the h1),
+    `PageHeaderCount` (inside the title: `value`, and `label` for what a screen reader hears after it) and
+    `PageHeaderDescription`; then `PageHeaderActions`.
+  - **SectionCard** is Card's parts: `<SectionCard><CardHeader><SectionCardTitle>…<SectionCardCount /></SectionCardTitle>
+    <CardAction>…</CardAction></CardHeader><CardContent>…</CardContent></SectionCard>`. `SectionCardTitle` is an h2.
+  - **TopBar**: `TopBarHome` (the home link: `logo`, `name`, `href`, `onHome`, and `render` for the app's router link),
+    `TopBarOrg`, `TopBarNav` (the section links; `aria-label`) and `TopBarActions`. `windowDrag` stays on the root and
+    reaches every part. TopBar takes parts when any of its children is one; otherwise its children are the links.
+  - **StatusBar**: `StatusBarCount`, `StatusBarHint` and `StatusBarTotals` (`items`); the mode toggle stays a child.
+  - **DetailList**: `DetailListItem` with `DetailListTerm` and `DetailListDetail` (`items` still works and isn't
+    deprecated: it is ui-sdk's name for data). **ListItem**: `ListItemContent` with `ListItemTitle`, `ListItemMeta` and
+    `ListItemNote`, then `ListItemTrailing`.
+  - **CollapsibleSection** has a `disclosure` variant: the muted one-line summary Disclosure drew. **Disclosure** is
+    now a wrapper of it.
+  - **Progress**: write `ProgressTrack` (with a `ProgressIndicator`) yourself to style the track; Progress then draws
+    no track of its own, and the track takes the bar's `size`.
+  - **MonthGrid**: its children are a function of each day, returning a `MonthGridDay value={day.date}` with what the
+    day holds inside, as ui-sdk's CalendarWeeks draws its days.
+  - **Calendar** exports its parts in Avenue's look: `CalendarHeader` (Avenue's row) with `CalendarHeading`,
+    `CalendarPrevious` and `CalendarNext`; `CalendarGrid`, `CalendarWeekdays`, `CalendarWeekday`, `CalendarWeeks`,
+    `CalendarDay` (children go in the day's round, and may be a function of its state) and `CalendarDayMark` (the dot;
+    `tint`, or a `bg-*` class; hidden on today). An empty Calendar still draws them all.
+  - New: `TitleCount` (status), the count part PageHeaderCount and SectionCardCount are built on.
+  - **Deprecated, removed in v0.31.0** (each marked `@deprecated` with what to use): EmptyState's `icon`, `title`,
+    `description`, `action`, `secondaryAction`, `externalLink` and `headingLevel`; SectionEmpty's `icon`, `title`,
+    `line` and `action`; PageHeader's `eyebrow`, `title`, `count`, `countLabel`, `description` and `actions`;
+    SectionCard's `title`, `count`, `countLabel` and `action`; TopBar's `logo`, `name`, `homeHref`, `homeRender`,
+    `onHome`, `org`, `actions` and `navLabel`; StatusBar's `count`, `hint` and `totals`; ListItem's `title`, `meta`,
+    `note` and `trailing`; `Disclosure` (use `CollapsibleSection variant="disclosure"`); Progress's `trackClassName`;
+    MonthGrid's `renderDay`; Calendar's `mark`.
+  - Markup changes with no change on screen: TopBar's home link carries `data-slot="top-bar-home"`; the EmptyState icon
+    is wrapped in a `span[data-slot=empty-state-icon]`; SectionEmpty's tile is `span[data-slot=section-empty-icon]`, no
+    longer an IconTile; SectionCard's title is one h2 (Card's title drawn as the heading) instead of an h2 inside a div;
+    the StatusBar count always holds its dot, shown only when the bar has a hint.
+  - Management and Neighbors: nothing to change now. Move to the parts before v0.31.0; the deprecated props show
+    struck through in your editor.
+  - Phone apps: nothing to take; this is web only.
+
 ## v0.29.0 (2026-11-18)
 
 - **File field: a root and parts, like ui-sdk's FileInput** (AVE-148). `FileFieldRoot` holds the file, its status,

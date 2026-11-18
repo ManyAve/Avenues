@@ -2,7 +2,19 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
 import { useState } from "react";
 import { expect, fn, userEvent } from "storybook/test";
-import { Calendar } from "#avenue/components/calendar";
+import {
+  Calendar,
+  CalendarDay,
+  CalendarDayMark,
+  CalendarGrid,
+  CalendarHeader,
+  CalendarHeading,
+  CalendarNext,
+  CalendarPrevious,
+  CalendarWeekday,
+  CalendarWeekdays,
+  CalendarWeeks,
+} from "#avenue/components/calendar";
 
 // AVE-121. The board's small month under the Activity title, which jumps to any day; dots mark days with activity.
 // Dates are fixed so the story renders the same every day. All data is fictional.
@@ -135,5 +147,46 @@ export const Agent: Story = {
     await expect(result.ok, result.error?.message).toBe(true);
     await expect(args.onValueChange).toHaveBeenCalledWith("2026-11-18", expect.anything());
     await expect(canvas.getByRole("gridcell", { name: "Wednesday, November 18, 2026" })).toHaveAttribute("aria-selected", "true");
+  },
+};
+
+/**
+ * The parts (AVE-149), as ui-sdk's Calendar composes them: each day is a CalendarDay, and a CalendarDayMark inside
+ * draws its dot. Today's dot is hidden by the mark itself. With children, `mark` is unused.
+ */
+export const Parts: Story = {
+  render: (args) => (
+    <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-md pointer-coarse:w-auto">
+      <Calendar {...args}>
+        <CalendarHeader>
+          <CalendarHeading />
+          <CalendarPrevious />
+          <CalendarNext />
+        </CalendarHeader>
+        <CalendarGrid>
+          <CalendarWeekdays>{(index) => <CalendarWeekday index={index} />}</CalendarWeekdays>
+          <CalendarWeeks>
+            {(cell) => (
+              <CalendarDay value={cell.date}>
+                {marked[cell.date] || cell.date === "2026-11-12" ? (
+                  <CalendarDayMark tint={marked[cell.date]?.tint} className={marked[cell.date]?.className} />
+                ) : null}
+              </CalendarDay>
+            )}
+          </CalendarWeeks>
+        </CalendarGrid>
+      </Calendar>
+    </div>
+  ),
+  play: async ({ args, canvas, canvasElement }) => {
+    const marks = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=calendar-day-mark]")];
+    await expect(marks.filter((m) => getComputedStyle(m).display !== "none")).toHaveLength(Object.keys(marked).length);
+    const grid = canvas.getByRole("grid");
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(grid.contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard("{ArrowRight}{Enter}");
+    await expect(args.onValueChange).toHaveBeenCalled();
   },
 };

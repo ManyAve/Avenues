@@ -253,3 +253,31 @@ export const Agent: Story = {
     await expect(canvas.getByRole("button", { name: /Thursday, November 12/ })).toHaveAttribute("aria-expanded", "true");
   },
 };
+
+/**
+ * `variant="disclosure"`: secondary detail under a muted one-line summary, as wide as its label. Disclosure was this
+ * shape and is now a wrapper of it (AVE-149). Enter and Space toggle it.
+ */
+export const Disclosure: Story = {
+  render: () => (
+    <CollapsibleSection variant="disclosure">
+      <CollapsibleSectionTrigger>Advanced</CollapsibleSectionTrigger>
+      <CollapsibleSectionPanel>
+        <p>
+          Stripe customer <code className="font-mono">cus_TEST0001</code>
+        </p>
+      </CollapsibleSectionPanel>
+    </CollapsibleSection>
+  ),
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Advanced" });
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+    await expect(canvas.getByText("cus_TEST0001")).toBeVisible();
+    await userEvent.keyboard(" ");
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+  },
+};

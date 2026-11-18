@@ -5,7 +5,7 @@ import {
   ProgressTrack as ProgressTrackPrimitive,
   ProgressValue as ProgressValuePrimitive,
 } from "@ui-sdk/react/progress";
-import type { ComponentProps } from "react";
+import { Children, createContext, isValidElement, useContext, type ComponentProps } from "react";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
@@ -39,35 +39,55 @@ type ProgressSize = keyof typeof sizes;
 
 type ProgressProps = NodeChildren<Loose<ComponentProps<typeof ProgressPrimitive>>> & {
   size?: ProgressSize | undefined;
-  /** Class for the track, e.g. to lay an xs bar along an edge. */
+  /**
+   * Class for the track, e.g. to lay an xs bar along an edge.
+   * @deprecated Write the track: `<ProgressTrack className="…"><ProgressIndicator /></ProgressTrack>` (v0.30.0, AVE-149).
+   */
   trackClassName?: string | undefined;
 };
 
+const SizeContext = createContext<ProgressSize>("default");
+
 /**
- * The bar. Children go above it (a `ProgressLabel` and a `ProgressValue`, which sit on one line, the value at the
- * end); the track and its fill come after them.
+ * The bar, as ui-sdk composes it (AVE-149):
+ *
+ *   Progress                 root: the value, and the `size` its track takes
+ *   ├── ProgressLabel        on one line above the track, the value at its end
+ *   ├── ProgressValue
+ *   └── ProgressTrack
+ *       └── ProgressIndicator
+ *
+ * Write the track yourself to style it (lay an xs bar along an edge); leave it out and Progress draws it after its
+ * other children. It looks for a `ProgressTrack` among its own children, not deeper.
  */
 function Progress({ className, children, size = "default", trackClassName, ...props }: ProgressProps) {
+  const ownTrack = Children.toArray(children).some((child) => isValidElement(child) && child.type === ProgressTrack);
   return (
-    <ProgressPrimitive
-      data-size={size}
-      className={cn("flex w-full flex-wrap items-baseline gap-x-2 gap-y-2", className)}
-      {...defined(props)}
-    >
-      {children}
-      <ProgressTrack size={size} className={trackClassName}>
-        <ProgressIndicator />
-      </ProgressTrack>
-    </ProgressPrimitive>
+    <SizeContext.Provider value={size}>
+      <ProgressPrimitive
+        data-size={size}
+        className={cn("flex w-full flex-wrap items-baseline gap-x-2 gap-y-2", className)}
+        {...defined(props)}
+      >
+        {children}
+        {!ownTrack && (
+          <ProgressTrack className={trackClassName}>
+            <ProgressIndicator />
+          </ProgressTrack>
+        )}
+      </ProgressPrimitive>
+    </SizeContext.Provider>
   );
 }
 
-/** The track on its own, for a layout `Progress` doesn't draw. Holds a `ProgressIndicator`. */
+/** The track and its fill (a `ProgressIndicator` inside). Takes the bar's `size` unless given its own. */
 function ProgressTrack({
   className,
-  size = "default",
+  size: own,
   ...props
 }: Loose<ComponentProps<typeof ProgressTrackPrimitive>> & { size?: ProgressSize | undefined }) {
+  const inherited = useContext(SizeContext);
+  const size = own ?? inherited;
   return (
     <ProgressTrackPrimitive
       data-size={size}

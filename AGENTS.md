@@ -57,8 +57,8 @@ names). This replaces the shadcn component structure and the 2026-11-17 morning 
 - **Renames keep the old name for one minor release.** When a part or prop takes ui-sdk's name, the shadcn or earlier
   Avenue name stays exported as a deprecated alias (`/** @deprecated Use MenuItem. */`) until the next minor, and the
   CHANGELOG entry says what to rename, so Management and Neighbors move at their own pace.
-- `scripts/own-part-render.test.ts`'s `COMPOSITES` list is what is still prop-driven; it shrinks as the composite cards
-  land (AVE-146 to AVE-149). Don't add to it.
+- `scripts/own-part-render.test.ts`'s `COMPOSITES` list is empty since AVE-149: no component is prop-driven any more.
+  Keep it empty; a new component is a root and parts from the start.
 
 **Avenue keeps its own look.** ui-sdk supplies behavior, structure and names, not appearance: the classes, Avenue's
 tokens, `data-slot` names for Avenue's own parts (below), and the look props `variant` and `size`, which ui-sdk doesn't

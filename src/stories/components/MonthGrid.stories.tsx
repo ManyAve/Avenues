@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
 import { useState } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
-import { MonthGrid } from "#avenue/components/month-grid";
+import { MonthGrid, MonthGridDay } from "#avenue/components/month-grid";
 import { Popover, PopoverContent, PopoverTrigger } from "#avenue/components/popover";
 
 // AVE-121. The board's Activity month: weeks of days in one scroll, a day's items folded into chips, and its cards in
@@ -55,15 +55,17 @@ function Month({ weeks: initialWeeks = 5 }: { weeks?: number }) {
         start={start}
         weeks={weeks}
         today="2026-11-12"
-        renderDay={(date) => {
-          const day = days[date];
-          return day ? <DayItems date={date} day={day} /> : undefined;
-        }}
         onExtend={(direction) => {
           if (direction === "earlier") setStart((s) => addDays(s, -14));
           setWeeks((w) => w + 2);
         }}
-      />
+      >
+        {/* Each day, as ui-sdk's CalendarWeeks draws its days (AVE-149): a MonthGridDay with what it holds inside. */}
+        {({ date }) => {
+          const day = days[date];
+          return <MonthGridDay value={date}>{day ? <DayItems date={date} day={day} /> : null}</MonthGridDay>;
+        }}
+      </MonthGrid>
     </section>
   );
 }

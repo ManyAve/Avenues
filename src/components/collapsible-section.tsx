@@ -23,13 +23,19 @@ import { cn } from "#avenue/lib/utils";
  * - `fold`: the quiet-hours fold, a muted band with a bottom border, muted meta text, darker on hover.
  * - `plain`: no chrome, for a row whose container draws it, such as a message card. No chevron: the row itself is
  *   the control, and its state shows in what it reveals.
+ * - `disclosure`: secondary detail under a muted one-line summary (the admin-only Advanced block, a workbook's
+ *   sheets), the shape `Disclosure` drew (AVE-149 folds it in here). The trigger sits in the root with no header,
+ *   as wide as its label, so a tap beside it doesn't toggle the section; the panel is indented under the label.
+ *   Against the app's native summary (AVE-58): the text stays muted when open, as the app's does, and darkens on
+ *   hover; the chevron stands in for the browser's marker and turns to show the state. The 4px side padding and xs
+ *   corner give the focus ring room, and the -4px margin keeps the label where the app's sits.
  *
  * A fold whose content shows elsewhere (the time grid draws the extra hours in its own rows) leaves the panel out;
  * the trigger still reports aria-expanded. The panel opens without a height animation, as the board's rows do, so
  * a long list under a sticky header doesn't move under the reader.
  */
 
-export type CollapsibleSectionVariant = "bar" | "fold" | "plain";
+export type CollapsibleSectionVariant = "bar" | "fold" | "plain" | "disclosure";
 
 const VariantContext = createContext<CollapsibleSectionVariant>("bar");
 
@@ -40,7 +46,11 @@ function CollapsibleSection({
 }: Loose<ComponentProps<typeof Collapsible>> & { variant?: CollapsibleSectionVariant | undefined }) {
   return (
     <VariantContext.Provider value={variant}>
-      <Collapsible data-variant={variant} className={cn("min-w-0", className)} {...defined(props)} />
+      <Collapsible
+        data-variant={variant}
+        className={cn(variant === "disclosure" ? "text-meta text-muted-foreground" : "min-w-0", className)}
+        {...defined(props)}
+      />
     </VariantContext.Provider>
   );
 }
@@ -49,6 +59,7 @@ const headerLook: Record<CollapsibleSectionVariant, string> = {
   bar: "flex h-11 items-center gap-2 rounded-xl bg-muted px-3 text-meta text-muted-foreground",
   fold: "flex items-center border-b bg-muted/50 px-2 text-meta text-muted-foreground hover:bg-muted",
   plain: "grid",
+  disclosure: "",
 };
 
 function CollapsibleSectionHeader({ className, render, ...props }: OwnPartProps<"div">) {
@@ -68,6 +79,14 @@ const triggerLook: Record<CollapsibleSectionVariant, string> = {
   // extension would overlap them.
   fold: "flex min-w-0 flex-1 items-center gap-1 rounded-xs py-1 text-start pointer-coarse:min-h-11",
   plain: "grid w-full gap-1 rounded-xs text-start",
+  disclosure: "-mx-1 inline-flex items-center gap-1 rounded-xs px-1 text-meta text-muted-foreground hover:text-foreground",
+};
+
+/** The chevron per variant: the disclosure's is 16px and takes the label's colour, so it darkens with it on hover. */
+const chevronLook: Record<Exclude<CollapsibleSectionVariant, "plain">, string> = {
+  bar: "size-3.5 text-muted-foreground",
+  fold: "size-3.5 text-muted-foreground",
+  disclosure: "size-4",
 };
 
 function CollapsibleSectionTrigger({ className, children, ...props }: Loose<ComponentProps<typeof CollapsibleTrigger>>) {
@@ -87,7 +106,10 @@ function CollapsibleSectionTrigger({ className, children, ...props }: Loose<Comp
           {variant !== "plain" && (
             <ChevronRightIcon
               aria-hidden
-              className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150 group-data-open/section-trigger:rotate-90 motion-reduce:transition-none"
+              className={cn(
+                "shrink-0 transition-transform duration-150 group-data-open/section-trigger:rotate-90 motion-reduce:transition-none",
+                chevronLook[variant],
+              )}
             />
           )}
           {typeof children === "function" ? children(state) : children}
@@ -98,7 +120,13 @@ function CollapsibleSectionTrigger({ className, children, ...props }: Loose<Comp
 }
 
 function CollapsibleSectionPanel({ className, ...props }: Loose<ComponentProps<typeof CollapsiblePanel>>) {
-  return <CollapsiblePanel className={cn("min-w-0", className)} {...defined(props)} />;
+  const variant = useContext(VariantContext);
+  return (
+    <CollapsiblePanel
+      className={cn(variant === "disclosure" ? "mt-2 grid gap-2 ps-5" : "min-w-0", className)}
+      {...defined(props)}
+    />
+  );
 }
 
 export { CollapsibleSection, CollapsibleSectionHeader, CollapsibleSectionPanel, CollapsibleSectionTrigger };

@@ -35,6 +35,40 @@ function Count({ value, className, render, ...props }: OwnPartProps<"span"> & { 
 }
 
 /**
+ * A heading's count, as a part inside the title (PageHeaderCount, SectionCardCount): screen readers hear ", 2 open"
+ * after the title and the visible Count is hidden from them, so a headings list reads "Complaints, 2 open", not
+ * "Complaints 2" (AVE-69). `label` is the word after the number. It draws no box of its own (`display: contents`), so
+ * the title's row lays out the count as it did TitleWithCount's.
+ */
+function TitleCount({
+  value,
+  label,
+  render,
+  ...props
+}: Omit<OwnPartProps<"span">, "children"> & { value: ReactNode; label?: string | undefined }) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "title-count",
+        className: "contents",
+        children: (
+          <>
+            <span className="sr-only">
+              , {value}
+              {label ? ` ${label}` : ""}
+            </span>
+            <Count aria-hidden value={value} />
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/**
  * A heading's title and its count (PageHeader, SectionCard). The visible Count is hidden from screen readers and the
  * heading's name reads "Complaints, 2 open" instead of "Complaints 2", which in a headings list sounds like a title
  * with a typo (AVE-69). `countLabel` is the word after the number ("open"); without it the name is "Complaints, 2".
@@ -196,4 +230,4 @@ function Status({
   );
 }
 
-export { Count, Status, StatusDot, TitleWithCount, type StatusDotSize, type StatusDotTone, type StatusTone };
+export { Count, Status, StatusDot, TitleCount, TitleWithCount, type StatusDotSize, type StatusDotTone, type StatusTone };

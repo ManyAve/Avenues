@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect } from "storybook/test";
+import { expect, userEvent } from "storybook/test";
 import { ModeToggle, type ThemeChoice } from "#avenue/components/mode-toggle";
-import { StatusBar } from "#avenue/components/status-bar";
+import { StatusBar, StatusBarCount, StatusBarHint, StatusBarTotals } from "#avenue/components/status-bar";
 
 // AVE-9 part 4: the status bar along the bottom of a list. Counts and amounts are fictional.
 
@@ -80,3 +80,37 @@ export const Phone: Story = {
     await expect(credit.right).toBeLessThanOrEqual(bar.right);
   },
 };
+
+/** The parts (AVE-149): the toggle, count, hint and totals written out, drawing as the one-tag bar does. */
+export const Parts: Story = {
+  globals: wide,
+  render: (_, { globals }) => <PartsBar theme={globals["theme"]} />,
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByText("24 households")).toBeVisible();
+    await expect(canvas.getByText("Select a cell to view details")).toBeVisible();
+    // The dot after the count shows because the bar has a hint.
+    const dot = canvasElement.querySelector("[data-slot=status-bar-count] [aria-hidden]")!;
+    await expect(getComputedStyle(dot).display).toBe("inline");
+    await userEvent.tab();
+    await expect(canvasElement.querySelector("[data-slot=status-bar] :focus")).not.toBeNull();
+  },
+};
+
+function PartsBar({ theme }: { theme?: unknown }) {
+  const [choice, setChoice] = useState<ThemeChoice>(theme === "dark" ? "dark" : "light");
+  return (
+    <div className="flex min-h-40 flex-col justify-end bg-background">
+      <StatusBar>
+        <ModeToggle dev={false} value={choice} onValueChange={setChoice} />
+        <StatusBarCount>24 households</StatusBarCount>
+        <StatusBarHint>Select a cell to view details</StatusBarHint>
+        <StatusBarTotals
+          items={[
+            { label: "Outstanding", cents: 51_000 },
+            { label: "Credit", cents: 2_000 },
+          ]}
+        />
+      </StatusBar>
+    </div>
+  );
+}
