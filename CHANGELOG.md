@@ -4,6 +4,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.36.0 (2026-11-18)
+
+- **A long table filter opens as a sheet on phones** (AVE-157). A choice field with more than eight values (a board's
+  thirty streets) now opens its editor as a bottom sheet on a small touch screen, as Select and Combobox do there,
+  instead of a popover: it opens with about seven streets showing and grows to about thirteen with a swipe up or a
+  tap on the search (the popover showed six), the sheet sits where a thumb reaches and
+  stays above the on-screen keyboard, a tap opens it with the keyboard down, and a swipe closes it. The search sits at
+  the top of the sheet, above the operator; a tap on a street ticks it and keeps the search's text. With a mouse, and
+  for short lists, nothing changes.
+- TableFilters takes `presentation` ("auto" by default, "sheet" or "popover"), as Select and Combobox do, for the long
+  list's editor. Nothing to change in the apps.
+
 ## v0.35.0 (2026-11-18)
 
 - **Combobox picks several values** (AVE-156). Give the root ui-sdk's `multiple`: `value` and `defaultValue` are then

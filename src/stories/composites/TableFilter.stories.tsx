@@ -7,6 +7,7 @@ import { Money } from "#avenue/components/money";
 import { TableFilters, type FilterField, type TableFilter } from "#avenue/components/table-filter";
 import { PhoneToolbar, Toolbar, ToolbarControls, ToolbarFilters, ToolbarSearch } from "#avenue/components/toolbar";
 import { applyFilters, type FilterAccessor } from "#avenue/lib/table-filters";
+import { expectListSheet, swipeDown, waitForClosed } from "../components/sheet-kit";
 
 // AVE-123: Linear-style table filters, from Management's Households and Dues toolbars (MANA-1168). Fictional
 // streets, neighbors and balances only.
@@ -346,14 +347,14 @@ const homeAccessors: Record<string, FilterAccessor<Home>> = {
 /** The long list's values, without the operator's options (a native select on a touch screen). */
 const values = () => within(screen.getByRole("listbox")).getAllByRole("option");
 
-function Streets({ initial = [] }: { initial?: TableFilter[] }) {
+function Streets({ initial = [], presentation }: { initial?: TableFilter[]; presentation?: "sheet" }) {
   const [filters, setFilters] = useState<TableFilter[]>(initial);
   const rows = applyFilters(homes, filters, homeAccessors);
   return (
     <div className="min-h-[640px] bg-background">
       <Toolbar aria-label="Households">
         <ToolbarFilters>
-          <TableFilters fields={streetFields} value={filters} onValueChange={setFilters} />
+          <TableFilters fields={streetFields} value={filters} onValueChange={setFilters} presentation={presentation} />
         </ToolbarFilters>
       </Toolbar>
       <div className="px-page">
@@ -440,16 +441,52 @@ export const LongListAgent: Story = {
   },
 };
 
-/** On a phone the long list's editor stays a popover on the screen, each value 44px tall on a touch screen. */
+const coarse = () => matchMedia("(pointer: coarse)").matches;
+const editor = () => screen.getByRole("combobox", { name: "Street values" }).closest<HTMLElement>("[data-slot=combobox-content]")!;
+
+/**
+ * The sheet's contract (AVE-157): it rests on the bottom edge with 44px rows, the search at its top above the operator
+ * (as every picker's sheet puts its search first), and it holds far more than the popover's six rows. A tap on a
+ * street ticks it and keeps the sheet open with the search's text, so the next match is one tap away.
+ */
+async function expectStreetsSheet() {
+  const sheet = editor();
+  await expect(sheet).toHaveAttribute("data-presentation", "sheet");
+  await expectListSheet(sheet, "[data-slot=combobox-item]");
+  const search = screen.getByRole("combobox", { name: "Street values" });
+  const operator = within(sheet).getByLabelText("Street operator");
+  await expect(search.getBoundingClientRect().bottom).toBeLessThanOrEqual(operator.getBoundingClientRect().top);
+  const list = screen.getByRole("listbox").getBoundingClientRect();
+  await expect(list.height).toBeGreaterThan(6 * 44);
+  await userEvent.type(search, "oak");
+  await waitFor(() => expect(values()).toHaveLength(2));
+  await userEvent.click(screen.getByRole("option", { name: "Oak Street" }));
+  await expect(count()).toHaveTextContent("2 of 30 households");
+  await expect(screen.getByRole("combobox", { name: "Street values" })).toHaveValue("oak");
+  await expect(editor()).toBeVisible();
+  await userEvent.click(screen.getByRole("option", { name: "Oakmont Circle" }));
+  await expect(count()).toHaveTextContent("3 of 30 households");
+}
+
+/**
+ * On a phone (AVE-157): by default the long list's editor opens as a bottom sheet on a small touch screen, as Select
+ * and Combobox do there, and as the popover with a mouse, decided each time it opens. Swiping the sheet down closes it.
+ */
 export const LongListPhone: Story = {
   globals: phone,
   render: () => <Streets initial={[{ id: "f1", field: "street", op: "any-of", value: ["maple-grove"] }]} />,
   play: async ({ canvas }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Filter: Street is Maple Grove" }));
-    const search = await screen.findByRole("combobox", { name: "Street values" });
-    const option = screen.getByRole("option", { name: "Maple Grove" });
-    if (matchMedia("(pointer: coarse)").matches) await expect(Math.round(option.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-    const box = search.closest<HTMLElement>("[data-slot=combobox-content]")!.getBoundingClientRect();
+    await screen.findByRole("combobox", { name: "Street values" });
+    if (coarse()) {
+      await expectStreetsSheet();
+      await swipeDown(editor());
+      await waitForClosed("combobox");
+      await expect(canvas.getByRole("button", { name: "Filter: Street is any of 3 selected" })).toBeVisible();
+      return;
+    }
+    await expect(editor()).toHaveAttribute("data-presentation", "popover");
+    const box = editor().getBoundingClientRect();
     await expect(box.left).toBeGreaterThanOrEqual(0);
     await expect(box.right).toBeLessThanOrEqual(window.innerWidth);
     await userEvent.click(screen.getByRole("option", { name: "Pine Ridge" }));
@@ -458,5 +495,20 @@ export const LongListPhone: Story = {
     // `data-selected:` misses here).
     const fill = (name: string) => getComputedStyle(screen.getByRole("option", { name }).querySelector("span")!).backgroundColor;
     await expect(fill("Pine Ridge")).not.toBe(fill("Oak Street"));
+  },
+};
+
+/** The long list's sheet, open, for the light and dark captures: as a phone shows it, on any screen. */
+export const LongListSheet: Story = {
+  name: "Long list, sheet open",
+  globals: phone,
+  render: () => <Streets presentation="sheet" initial={[{ id: "f1", field: "street", op: "any-of", value: ["maple-grove"] }]} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Filter: Street is Maple Grove" }));
+    await screen.findByRole("combobox", { name: "Street values" });
+    await expectStreetsSheet();
+    // Emptied, the search shows every street again, with the three chosen ticked, for the picture.
+    await userEvent.clear(screen.getByRole("combobox", { name: "Street values" }));
+    await waitFor(() => expect(values()).toHaveLength(30));
   },
 };

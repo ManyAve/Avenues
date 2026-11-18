@@ -26,6 +26,7 @@ import { ToolbarItem } from "#avenue/components/toolbar";
 import { ToolbarButton } from "#avenue/components/toolbar-button";
 import { report, type ChangeDetails } from "#avenue/lib/change";
 import { filterOps, isComplete, opLabel, opNeedsValue, type FilterKind, type FilterOp, type TableFilter } from "#avenue/lib/table-filters";
+import type { Presentation } from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
 
 export type { FilterKind, FilterOp, TableFilter };
@@ -167,6 +168,7 @@ type PillProps = {
   onOpenChange: (open: boolean, details: PillOpenChangeDetails) => void;
   onValueChange: (next: TableFilter, details: TableFiltersChangeDetails) => void;
   onRemove: (event: MouseEvent) => void;
+  presentation: Presentation;
 };
 
 /** A filter's pill: press it to change its operator or value; × removes it. Dashed while it has no value yet. */
@@ -239,8 +241,14 @@ function FilterPill(props: PillProps) {
  * short list's checkbox row, but it is a combobox option (`aria-selected`), not a checkbox: one control holds the
  * whole choice. The search keeps its text after a pick, so several matches of "oak" go in a row.
  *
- * It stays a popover on a phone, like every other pill's editor, rather than ui-sdk's sheet: the operator's select
- * sits above the search, and a sheet would move the search into its header, above the operator.
+ * On a small touch screen it opens as ui-sdk's bottom sheet, as Select and Combobox do there (AVE-39), not a popover
+ * (UX Engineer, AVE-157). Thirty streets need the room: the sheet opens with about seven rows showing and grows to
+ * about thirteen with a swipe up or a tap on the search, where the popover showed six; it sits where a thumb reaches,
+ * swipes away, and stays above the on-screen keyboard, which covered the bottom of a popover opened from a pill
+ * halfway down the page. The tap that opens it leaves the keyboard down, so a board member
+ * can scroll and tick streets without it, and tap the search to type. ui-sdk moves the search into the sheet's header,
+ * so on a phone it sits above the operator, as it sits at the top of every other picker's sheet; the operator follows
+ * it, in the same order a screen reader reads them.
  */
 function SearchablePill({
   field,
@@ -251,11 +259,13 @@ function SearchablePill({
   summary,
   button,
   pill,
+  presentation,
   children,
 }: PillProps & {
   summary: string;
   button: ReactElement<Record<string, unknown>>;
   pill: RefObject<HTMLSpanElement | null>;
+  presentation: Presentation;
   children: ReactNode;
 }) {
   const choices = choicesOf(field);
@@ -267,14 +277,15 @@ function SearchablePill({
   return (
     <Combobox
       multiple
-      presentation="popover"
+      presentation={presentation}
       open={open}
       onOpenChange={onOpenChange}
       // Opened from the Filter menu, the pill was never pressed, so focus goes back to it by hand, as ui-sdk's
       // "Input in the Popup" does.
       onOpenChangeComplete={(next) => {
-        // Open, focus goes to the search, as the short list's goes to its first value.
-        if (next) return search.current?.focus();
+        // Open, focus goes to the search, as the short list's goes to its first value. A sheet leaves that to ui-sdk,
+        // which keeps the keyboard down after a tap until the search is tapped.
+        if (next) return search.current?.closest("[data-presentation=sheet]") ? undefined : search.current?.focus();
         controller.setQuery("");
         // After ui-sdk's own return of focus, which goes to where focus was when the list opened (the Filter button,
         // when the pill opened from its menu).
@@ -304,8 +315,9 @@ function SearchablePill({
             <ComboboxInput ref={search} aria-label={`${field.label} values`} placeholder="Search…" />
             <ComboboxEmpty className="px-2 py-1">{query.trim() ? `Nothing matches “${query.trim()}”.` : null}</ComboboxEmpty>
             {/* On a touch screen the list shows six whole 44px rows and snaps to a row's top, so no row sits half under
-                its edge, where a tap on the half you can see would land beside it (AVE-22). */}
-            <ComboboxList className="flex max-h-64 min-w-0 flex-col gap-0.5 overflow-y-auto overscroll-contain pointer-coarse:max-h-66 pointer-coarse:snap-y pointer-coarse:snap-mandatory pointer-coarse:scroll-py-0 pointer-coarse:gap-0">
+                its edge, where a tap on the half you can see would land beside it (AVE-22). In a sheet it fills the
+                sheet below the operator instead. */}
+            <ComboboxList className="flex max-h-64 min-w-0 flex-col gap-0.5 overflow-y-auto overscroll-contain pointer-coarse:max-h-66 pointer-coarse:snap-y pointer-coarse:snap-mandatory pointer-coarse:scroll-py-0 pointer-coarse:gap-0 sheet:max-h-none sheet:snap-y sheet:snap-mandatory sheet:scroll-py-0 sheet:gap-0">
               {choices.map((option) => (
                 <ComboboxItem
                   key={option.value}
@@ -349,6 +361,7 @@ export function TableFilters({
   onValueChange,
   filters: filtersProp,
   onChange,
+  presentation = "auto",
   className,
 }: {
   fields: readonly FilterField[];
@@ -360,6 +373,11 @@ export function TableFilters({
   filters?: readonly TableFilter[] | undefined;
   /** @deprecated Use `onValueChange` (AVE-145). */
   onChange?: ((value: TableFilter[], details: TableFiltersChangeDetails) => void) | undefined;
+  /**
+   * How a long list's editor opens (AVE-157). "auto" (default) opens a bottom sheet on a small touch screen and a
+   * popover elsewhere, as Select and Combobox do; "sheet" or "popover" always. A short list's editor is always a popover.
+   */
+  presentation?: Presentation | undefined;
   className?: string | undefined;
 }) {
   const [ownFilters, setOwnFilters] = useState<readonly TableFilter[]>(defaultValue ?? []);
@@ -428,6 +446,7 @@ export function TableFilters({
             field={field}
             filter={filter}
             repeat={before > 0 ? before + 1 : undefined}
+            presentation={presentation}
             open={editing === filter.id}
             onOpenChange={(open) => setEditing(open ? filter.id : undefined)}
             onValueChange={(updated, details) => change(filters.map((f) => (f.id === filter.id ? updated : f)), details)}
