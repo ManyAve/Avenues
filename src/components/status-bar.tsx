@@ -1,5 +1,7 @@
-import { Fragment, type ComponentProps, type ReactNode } from "react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import { Fragment, type ReactNode } from "react";
 import { Money } from "#avenue/components/money";
+import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 export type StatusTotal = { label: string; cents: number };
@@ -10,7 +12,7 @@ export type StatusTotal = { label: string; cents: number };
  * are never cut.
  *
  * Changes from the app: the totals are a list (`totals`) instead of fixed Outstanding and Credit props, so other
- * screens can show their own; the dots between them are aria-hidden. AVE-2: the totals' off-grid 6px gap becomes
+ * screens can show their own (`StatusBarTotals items`); the dots between them are aria-hidden. AVE-2: the totals' off-grid 6px gap becomes
  * 8px. On a phone, where the toggle, count and totals can't share one line, the totals wrap onto a second line
  * instead of running off the screen. Otherwise the app's sizes: 44px tall, 16px sides.
  */
@@ -20,55 +22,108 @@ function StatusBar({
   totals,
   children,
   className,
+  render,
   ...props
-}: ComponentProps<"footer"> & {
-  count: ReactNode;
+}: OwnPartProps<"footer"> & {
+  /** @deprecated Use `<StatusBarCount>` (v0.30.0, AVE-149). */
+  count?: ReactNode;
+  /** @deprecated Use `<StatusBarHint>` (v0.30.0, AVE-149). */
   hint?: ReactNode;
+  /** @deprecated Use `<StatusBarTotals items={…}>` (v0.30.0, AVE-149). */
   totals?: readonly StatusTotal[] | undefined;
 }) {
-  return (
-    <footer
-      data-slot="status-bar"
-      className={cn(
-        "flex min-h-11 flex-wrap items-center gap-4 border-t bg-background px-4 text-meta max-sm:py-2 whitespace-nowrap text-muted-foreground",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      {/* The dot ends the count, with the bar's 16px on each side of it, so the hint starts with its own words
-          (AVE-91, as AVE-66's meta lines). It goes with the hint below 900px. */}
-      <span data-slot="status-bar-count">
-        {count}
-        {hint ? (
-          <span aria-hidden className="ms-4 hidden opacity-45 desktop:inline">
-            ·
-          </span>
-        ) : null}
-      </span>
-      {hint ? (
-        <span data-slot="status-bar-hint" className="hidden desktop:inline">
-          {hint}
-        </span>
-      ) : null}
-      {totals?.length ? (
-        <span data-slot="status-bar-totals" className="ms-auto flex gap-2">
-          {totals.map((total, i) => (
-            <Fragment key={total.label}>
-              {i > 0 ? (
-                <span aria-hidden className="opacity-45">
-                  ·
-                </span>
-              ) : null}
-              <span>
-                {total.label} <Money cents={total.cents} className="font-[550] text-foreground" />
-              </span>
-            </Fragment>
-          ))}
-        </span>
-      ) : null}
-    </footer>
+  return renderElement(
+    "footer",
+    mergeProps(
+      {
+        "data-slot": "status-bar",
+        className: cn(
+          "group/status-bar flex min-h-11 flex-wrap items-center gap-4 border-t bg-background px-4 text-meta max-sm:py-2 whitespace-nowrap text-muted-foreground",
+          className,
+        ),
+        children: (
+          <>
+            {children}
+            {count !== undefined && <StatusBarCount>{count}</StatusBarCount>}
+            {hint ? <StatusBarHint>{hint}</StatusBarHint> : null}
+            {totals?.length ? <StatusBarTotals items={totals} /> : null}
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
-export { StatusBar };
+/**
+ * How many records show. When the bar has a hint, a dot ends the count, with the bar's 16px on each side of it, so the
+ * hint starts with its own words (AVE-91, as AVE-66's meta lines); the dot goes with the hint below 900px.
+ */
+function StatusBarCount({ className, children, render, ...props }: OwnPartProps<"span">) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "status-bar-count",
+        className,
+        children: (
+          <>
+            {children}
+            <span
+              aria-hidden
+              className="ms-4 hidden opacity-45 desktop:group-has-data-[slot=status-bar-hint]/status-bar:inline"
+            >
+              ·
+            </span>
+          </>
+        ),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/** A hint after the count, such as a keyboard shortcut. It gives way below 900px, so the totals are never cut. */
+function StatusBarHint({ className, render, ...props }: OwnPartProps<"span">) {
+  return renderElement(
+    "span",
+    mergeProps({ "data-slot": "status-bar-hint", className: cn("hidden desktop:inline", className) }, defined(props)),
+    render,
+  );
+}
+
+/** Money totals at the bar's end, dot-separated (the dots are hidden from screen readers). */
+function StatusBarTotals({
+  items,
+  className,
+  render,
+  ...props
+}: Omit<OwnPartProps<"span">, "children"> & { items: readonly StatusTotal[] }) {
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "status-bar-totals",
+        className: cn("ms-auto flex gap-2", className),
+        children: items.map((total, i) => (
+          <Fragment key={total.label}>
+            {i > 0 ? (
+              <span aria-hidden className="opacity-45">
+                ·
+              </span>
+            ) : null}
+            <span>
+              {total.label} <Money cents={total.cents} className="font-[550] text-foreground" />
+            </span>
+          </Fragment>
+        )),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+export { StatusBar, StatusBarCount, StatusBarHint, StatusBarTotals };

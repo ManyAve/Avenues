@@ -3,7 +3,20 @@ import type { ComponentProps } from "react";
 import { FileTextIcon, HomeIcon, InboxIcon, PlusIcon, UsersIcon } from "lucide-react";
 import { expect, fn, userEvent } from "storybook/test";
 import { Card } from "#avenue/components/card";
-import { EmptyState, SectionEmpty } from "#avenue/components/empty-state";
+import {
+  EmptyState,
+  EmptyStateAction,
+  EmptyStateActions,
+  EmptyStateDescription,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  SectionEmpty,
+  SectionEmptyAction,
+  SectionEmptyContent,
+  SectionEmptyDescription,
+  SectionEmptyIcon,
+  SectionEmptyTitle,
+} from "#avenue/components/empty-state";
 import { Rows } from "./story-kit";
 
 const meta = {
@@ -223,5 +236,93 @@ export const SectionLink: Story = {
     await expect(navigate).toHaveBeenCalledWith("/residents/invite");
     await userEvent.tab();
     await expect(documents).toHaveFocus();
+  },
+};
+
+const addHousehold = fn();
+
+/**
+ * The parts, as ui-sdk composes (AVE-149). Written here out of order on purpose: the root draws icon, title, line and
+ * actions in that order whatever order they come in (the UX rule), and anything else after them. The title is an h2
+ * with `render`.
+ */
+export const Parts: Story = {
+  tags: ["agent"],
+  render: () => (
+    <EmptyState>
+      <EmptyStateActions>
+        <EmptyStateAction onClick={addHousehold}>Add a household</EmptyStateAction>
+        {/* oxlint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label -- the action gives the link its label. */}
+        <EmptyStateAction variant="link" render={<a href="#import-households" />}>
+          Import from a spreadsheet
+        </EmptyStateAction>
+      </EmptyStateActions>
+      <p className="mt-3 text-muted-foreground">Households you add show here.</p>
+      {/* oxlint-disable-next-line jsx-a11y/heading-has-content -- EmptyStateTitle passes its children into the h2. */}
+      <EmptyStateTitle render={<h2 />}>No households yet</EmptyStateTitle>
+      <EmptyStateDescription>Add the homes in the association to send dues and notices.</EmptyStateDescription>
+      <EmptyStateIcon>
+        <HomeIcon />
+      </EmptyStateIcon>
+    </EmptyState>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    addHousehold.mockClear();
+    const title = canvas.getByRole("heading", { level: 2, name: "No households yet" });
+    const at = (el: Element) => el.getBoundingClientRect().top;
+    const icon = canvasElement.querySelector("[data-slot=empty-state-icon]")!;
+    const line = canvas.getByText("Add the homes in the association to send dues and notices.");
+    const action = canvas.getByRole("button", { name: "Add a household" });
+    const extra = canvas.getByText("Households you add show here.");
+    await expect(at(icon)).toBeLessThan(at(title));
+    await expect(at(title)).toBeLessThan(at(line));
+    await expect(at(line)).toBeLessThan(at(action));
+    await expect(at(action)).toBeLessThan(at(extra));
+    await userEvent.tab();
+    await expect(action).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(addHousehold).toHaveBeenCalledOnce();
+    await userEvent.tab();
+    await expect(canvas.getByRole("link", { name: "Import from a spreadsheet" })).toHaveFocus();
+  },
+};
+
+const addNote = fn();
+
+/** SectionEmpty's parts, also out of order: the tile, the text and the step still draw in that order. */
+export const SectionParts: Story = {
+  render: () => (
+    <div className="max-w-xl">
+      <Card className="p-inset">
+        <SectionEmpty>
+          <SectionEmptyAction onClick={addNote}>
+            <PlusIcon aria-hidden /> Add note
+          </SectionEmptyAction>
+          <SectionEmptyContent>
+            <SectionEmptyTitle>No notes</SectionEmptyTitle>
+            <SectionEmptyDescription>Notes the board adds about this household show here.</SectionEmptyDescription>
+          </SectionEmptyContent>
+          <SectionEmptyIcon>
+            <FileTextIcon />
+          </SectionEmptyIcon>
+        </SectionEmpty>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    addNote.mockClear();
+    const left = (el: Element) => el.getBoundingClientRect().left;
+    const tile = canvasElement.querySelector("[data-slot=section-empty-icon]")!;
+    const text = canvas.getByText("No notes");
+    const action = canvas.getByRole("button", { name: "Add note" });
+    await expect(left(tile)).toBeLessThan(left(text));
+    // Beside the text, or (on a phone, where the row wraps) under it.
+    const box = text.getBoundingClientRect();
+    const step = action.getBoundingClientRect();
+    await expect(step.left > box.left || step.top >= box.bottom).toBe(true);
+    await userEvent.tab();
+    await expect(action).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(addNote).toHaveBeenCalledOnce();
   },
 };

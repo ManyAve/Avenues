@@ -5,18 +5,8 @@ import { readdirSync, readFileSync } from "node:fs";
 // renders through `renderElement`, so an app can make a CardTitle an h3 or a Card an article without fighting the
 // classes. A part typed with a bare `ComponentProps<"tag">` has no `render`, so this fails on one, naming it.
 //
-// The exceptions are the composites that are still prop-driven: their slots are props, so swapping their root element
-// is not offered yet. Composition now follows ui-sdk (AGENTS.md, "Composition and names follow ui-sdk", AVE-143), so
-// each becomes a root and parts and leaves this list as its card lands (AVE-146 to AVE-149). Don't add to it.
-const COMPOSITES: Record<string, string> = {
-  "detail-list.tsx DetailList": "a description list built from `items`; its dl, dt and dd are the point",
-  "detail-list.tsx ListItem": "a row laid out from title, meta, note and trailing props",
-  "empty-state.tsx EmptyState": "a prop-driven composite: heading level and actions are props",
-  "empty-state.tsx SectionEmpty": "a prop-driven composite: icon, title, line and action are props",
-  "page-header.tsx PageHeader": "the page's header landmark, laid out from its props",
-  "status-bar.tsx StatusBar": "the register's footer landmark, laid out from its props",
-  "top-bar.tsx TopBar": "the app's banner landmark; its home link already takes `homeRender`",
-};
+// There are no exceptions: the last prop-driven composites became a root and parts with AVE-149. Don't add any.
+const COMPOSITES: Record<string, string> = {};
 
 const dir = new URL("../src/components/", import.meta.url);
 

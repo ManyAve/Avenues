@@ -2,7 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DownloadIcon, PlusIcon } from "lucide-react";
 import { expect, userEvent } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { PageHeader } from "#avenue/components/page-header";
+import {
+  PageHeader,
+  PageHeaderActions,
+  PageHeaderContent,
+  PageHeaderCount,
+  PageHeaderDescription,
+  PageHeaderEyebrow,
+  PageHeaderTitle,
+} from "#avenue/components/page-header";
 
 // AVE-9 (from AVE-23 and NEI-101): the top of a page. Fictional data only.
 
@@ -93,4 +101,33 @@ export const ReadingWidthLongTitle: Story = {
       />
     </div>
   ),
+};
+
+/** The parts (AVE-149): the same header, written out. The count reads after the title for screen readers. */
+export const Parts: Story = {
+  globals: desktop,
+  render: () => (
+    <div className="mx-auto max-w-layout px-page py-section">
+      <PageHeader>
+        <PageHeaderContent>
+          <PageHeaderEyebrow>Maple Glen HOA</PageHeaderEyebrow>
+          <PageHeaderTitle>
+            Complaints
+            <PageHeaderCount value={2} label="open" />
+          </PageHeaderTitle>
+          <PageHeaderDescription>What neighbors have reported to the board.</PageHeaderDescription>
+        </PageHeaderContent>
+        <PageHeaderActions>
+          <Button>
+            <PlusIcon aria-hidden /> Log a complaint
+          </Button>
+        </PageHeaderActions>
+      </PageHeader>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: /^Complaints ?, 2 open$/ })).toBeInTheDocument();
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Log a complaint" })).toHaveFocus();
+  },
 };

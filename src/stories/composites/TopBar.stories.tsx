@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, type ComponentProps } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
+import { Button } from "#avenue/components/button";
 import { NavTab } from "#avenue/components/nav-tab";
-import { TopBar } from "#avenue/components/top-bar";
+import { TopBar, TopBarActions, TopBarHome, TopBarNav, TopBarOrg } from "#avenue/components/top-bar";
 
 // AVE-9 part 4: the top bar. The association and counts are fictional; the mark is a stand-in for ManyAve's logo,
 // which the app passes in.
@@ -254,5 +255,51 @@ export const WindowDragArea: Story = {
     await userEvent.tab();
     await userEvent.tab();
     await expect(canvas.getByRole("link", { name: "Households" })).toHaveFocus();
+  },
+};
+
+/**
+ * The parts (AVE-149): the home link is a `TopBarHome` that takes `render` like any part, here the app's router link;
+ * the association, the sections and the actions are parts too. `windowDrag` on the root reaches all of them.
+ */
+export const Parts: StoryObj<{ onNavigate: (to: string) => void }> = {
+  globals: wide,
+  args: { onNavigate: fn() },
+  render: (args) => (
+    <TopBar windowDrag>
+      <TopBarHome
+        logo={<img src={mark} alt="" width={24} height={22} />}
+        render={<RouterLink to="/" onNavigate={args.onNavigate} />}
+      />
+      <TopBarOrg>LCHOA</TopBarOrg>
+      <TopBarNav aria-label="Association sections">
+        <NavTab href="#households" current>
+          Households
+        </NavTab>
+        <NavTab href="#dues">Dues</NavTab>
+      </TopBarNav>
+      <TopBarActions>
+        <Button variant="ghost" size="sm">
+          Account
+        </Button>
+      </TopBarActions>
+    </TopBar>
+  ),
+  play: async ({ args, canvas }) => {
+    const home = canvas.getByRole("link", { name: "manyave home" });
+    await expect(home).toHaveAttribute("data-router-link");
+    await expect(home).toHaveClass("[-webkit-app-region:no-drag]");
+    await expect(canvas.getByRole("navigation", { name: "Association sections" })).toHaveClass(
+      "[-webkit-app-region:no-drag]",
+    );
+    await userEvent.tab();
+    await expect(home).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onNavigate).toHaveBeenCalledWith("/");
+    await userEvent.tab();
+    await expect(canvas.getByRole("link", { name: "Households" })).toHaveFocus();
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Account" })).toHaveFocus();
   },
 };

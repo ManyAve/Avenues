@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
-import { TitleWithCount } from "#avenue/components/status";
+import { TitleCount } from "#avenue/components/status";
+import { defined, type Loose } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -8,12 +9,21 @@ import { cn } from "#avenue/lib/utils";
  * the header line, one action at its end (the year Select, Add person), then the content. From the app's
  * SectionCard (detail.tsx).
  *
+ * Built on Card's parts (AVE-149): SectionCard is the Card, and its header, action and content are Card's own.
+ *
+ *   SectionCard                the Card, with the section's outline and shadow
+ *   ├── CardHeader
+ *   │   ├── SectionCardTitle   Card's title as an h2
+ *   │   │   └── SectionCardCount
+ *   │   └── CardAction         one control, sm size
+ *   └── CardContent            compact text
+ *
  * The action follows AVE-2's corner rule through Card: on the title's line, a full 16px from the top and right
  * edges, sm size (28px, 8px corner), never a pill. The title is a level-2 heading under the page's h1.
  *
  * The outline is the app's border colour (`ring-border`, AVE-70), not Card's 10% foreground ring.
  */
-export function SectionCard({
+function SectionCard({
   title,
   count,
   countLabel,
@@ -21,26 +31,55 @@ export function SectionCard({
   children,
   className,
   ...props
-}: Omit<ComponentProps<typeof Card>, "title"> & {
-  title: string;
-  /** Beside the title: a number, or text such as "2 open". */
-  count?: ReactNode | undefined;
-  /** What a screen reader hears after the count: "open" reads the heading as "Complaints, 2 open". */
+}: Omit<Loose<ComponentProps<typeof Card>>, "title"> & {
+  /** @deprecated Use `<CardHeader><SectionCardTitle>` (v0.30.0, AVE-149). */
+  title?: string | undefined;
+  /** @deprecated Use `<SectionCardCount value={…}>` inside the title (v0.30.0, AVE-149). */
+  count?: ReactNode;
+  /** @deprecated Use SectionCardCount's `label` (v0.30.0, AVE-149). */
   countLabel?: string | undefined;
-  /** One control, sm size. */
-  action?: ReactNode | undefined;
+  /** @deprecated Use `<CardAction>` in the CardHeader (v0.30.0, AVE-149). */
+  action?: ReactNode;
 }) {
   return (
-    <Card data-section="" className={cn("shadow-card ring-border", className)} {...props}>
-      <CardHeader>
-        <CardTitle>
-          <h2 className="flex items-center gap-group text-compact">
-            <TitleWithCount title={title} count={count} countLabel={countLabel} />
-          </h2>
-        </CardTitle>
-        {action && <CardAction>{action}</CardAction>}
-      </CardHeader>
-      <CardContent className="text-compact">{children}</CardContent>
+    <Card
+      data-section=""
+      className={cn("shadow-card ring-border *:data-[slot=card-content]:text-compact", className)}
+      {...defined(props)}
+    >
+      {title !== undefined ? (
+        <>
+          <CardHeader>
+            <SectionCardTitle>
+              {title}
+              {count !== undefined && <SectionCardCount value={count} label={countLabel} />}
+            </SectionCardTitle>
+            {action && <CardAction>{action}</CardAction>}
+          </CardHeader>
+          <CardContent>{children}</CardContent>
+        </>
+      ) : (
+        children
+      )}
     </Card>
   );
 }
+
+/** The section's title: Card's title drawn as an h2 under the page's h1. `render={<h3 />}` for a section inside one. */
+function SectionCardTitle({ className, render, ...props }: Loose<ComponentProps<typeof CardTitle>>) {
+  return (
+    <CardTitle
+      // oxlint-disable-next-line jsx-a11y/heading-has-content -- CardTitle passes its children into the heading.
+      render={render ?? <h2 />}
+      className={cn("flex items-center gap-group group-data-[size=sm]/card:text-compact", className)}
+      {...defined(props)}
+    />
+  );
+}
+
+/** Beside the title: a number, or text such as "2 open". `label` is what a screen reader hears after it. */
+function SectionCardCount(props: ComponentProps<typeof TitleCount>) {
+  return <TitleCount data-section-card-count="" {...props} />;
+}
+
+export { SectionCard, SectionCardCount, SectionCardTitle };
