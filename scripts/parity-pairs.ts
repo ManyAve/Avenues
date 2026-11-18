@@ -660,6 +660,7 @@ export const PAIRS: Record<string, PairEntry> = {
     none: "AVE-112: the app has no story of a fixed-width menu on a 320px phone; this story proves the menu stays on screen.",
   },
   "components-menu--open-by-click": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--deprecated-names": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--action-from-keyboard": { none: BEHAVIOUR("Menu / Open") },
 
   // ---- Empty state (AVE-8)
@@ -1096,6 +1097,9 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
     ]),
   ),
+  "components-toast--deprecated-variant": {
+    none: "The deprecated `variant` option (AVE-151) still raising the same toasts; a behaviour check, compared through Toast / Progress.",
+  },
   "components-toast--without-a-provider": {
     none: "A developer check, not a look (AVE-140): no toast shows without a ToastProvider, so there is nothing to compare.",
   },

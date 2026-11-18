@@ -6,6 +6,7 @@ import {
   ToastRegion as ToastRegionPrimitive,
   ToastTitle,
   type Toaster as ToasterStore,
+  type ToastType as ToastTypeName,
 } from "@ui-sdk/react/toast";
 import { CheckIcon, CircleAlertIcon, SendIcon, XIcon } from "lucide-react";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
@@ -38,13 +39,22 @@ import { cn } from "#avenue/lib/utils";
  * covers it (AVE-118).
  */
 
+/** The ui-sdk toast types Avenue draws. */
+type ToastType = Extract<ToastTypeName, "success" | "error" | "info">;
+
 type ToastOptions = {
   /** A button or link after the text: "Undo", or a link with `href`. */
   action?: { label: string; onAction?: () => unknown; href?: string } | undefined;
   /**
+   * What the toast is about, as ui-sdk's toast `type` names it (AVE-151). `success`, the default: done, timed.
    * `error`: a failure. It stays until the user dismisses it and is announced at once.
-   * `progress`: something started that hasn't finished, such as an announcement sending: a send icon instead of the
-   * success check, otherwise timed and announced like a success (AVE-118).
+   * `info`: something started that hasn't finished, such as an announcement sending: a send icon instead of the
+   * success check, otherwise timed and announced like a success (AVE-118). ui-sdk's `warning`, `loading` and `default`
+   * have no Avenue look yet, so they aren't taken.
+   */
+  type?: ToastType | undefined;
+  /**
+   * @deprecated Use `type`; `"progress"` is `type: "info"`. Removed in v0.32.0 (AVE-154).
    */
   variant?: "success" | "error" | "progress" | undefined;
   /**
@@ -74,9 +84,10 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
   });
   // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
   // contextual type into the destructured default (MANA-1118, TS7031 in Management).
-  return (text: string, { action, variant = "success", focus = false }: ToastOptions = {}) => {
+  return (text: string, { action, type: given, variant, focus = false }: ToastOptions = {}) => {
+    const type: ToastType = given ?? (variant === "progress" ? "info" : variant) ?? "success";
     const options = action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {};
-    if (variant === "error") {
+    if (type === "error") {
       // A success waiting behind the old error keeps waiting behind the new one.
       replacingError = true;
       toaster.dismiss();
@@ -86,9 +97,9 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
     }
     const showNow = () => {
       toaster.dismiss();
-      // A progress toast is ui-sdk's info type: announced politely and timed like a success (not `loading`, which
+      // An info toast (something under way) is announced politely and timed like a success (not `loading`, which
       // stays until it's updated).
-      const show = variant === "progress" ? toaster.info : toaster.success;
+      const show = type === "info" ? toaster.info : toaster.success;
       show(text, { ...options, duration: action ? ACTION_MS : SUCCESS_MS });
     };
     if (showingError()) waiting = showNow;
@@ -195,4 +206,4 @@ function ToastProvider({ children }: { children: ReactNode }) {
 /** @deprecated Use ToastRegion. */
 const Toaster = ToastRegion;
 
-export { ToastProvider, ToastRegion, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions };
+export { ToastProvider, ToastRegion, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions, type ToastType };

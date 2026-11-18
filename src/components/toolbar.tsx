@@ -200,7 +200,7 @@ function ToolbarActions({
                   <MenuItem
                     key={action.id}
                     disabled={!!action.disabledReason}
-                    reason={action.disabledReason}
+                    disabledReason={action.disabledReason}
                     data-agent-confirm={action.confirm}
                     {...(action.onSelect ? { onSelect: action.onSelect } : {})}
                   >

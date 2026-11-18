@@ -691,7 +691,7 @@ function Toasts() {
         </Button>
         <Button
           variant="destructive"
-          onClick={() => toast("Couldn't send the reminder. Check the address and try again.", { variant: "error" })}
+          onClick={() => toast("Couldn't send the reminder. Check the address and try again.", { type: "error" })}
         >
           Show a failure
         </Button>

@@ -78,8 +78,9 @@ function runSelect(onSelect: SelectHandler | undefined, onClick: SelectHandler |
 }
 
 /**
- * A menu action. `variant="destructive"` for delete and similar. A disabled item can carry `reason`: one muted line
- * under the label, read with the item by screen readers, so nobody has to guess why it's unavailable.
+ * A menu action. `destructive` for delete and similar: ui-sdk's prop, which sets `data-destructive` (AVE-151). A
+ * disabled item can carry `disabledReason`, as Button, Composer and FileField do: one muted line under the label,
+ * read with the item by screen readers, so nobody has to guess why it's unavailable.
  *
  * The action goes on `onSelect`, which ui-sdk runs for a pointer click, Enter, Space and an agent alike. `onClick` is
  * the same action under the name shadcn and Base UI items use (AVE-111): ui-sdk's own `onClick` fires for a pointer
@@ -89,7 +90,9 @@ function runSelect(onSelect: SelectHandler | undefined, onClick: SelectHandler |
 function MenuItem({
   className,
   inset,
-  variant = "default",
+  destructive,
+  disabledReason,
+  variant,
   reason,
   children,
   onSelect,
@@ -97,37 +100,44 @@ function MenuItem({
   ...props
 }: NodeChildren<Omit<Loose<ComponentProps<typeof MenuPrimitive.MenuItem>>, "onClick">> & {
   inset?: boolean | undefined;
+  /** Styles the item as dangerous, like Delete. ui-sdk's prop; sets `data-destructive`. */
+  destructive?: boolean | undefined;
+  /** Why a disabled item is unavailable: one muted line under the label, read with the item. */
+  disabledReason?: ReactNode | undefined;
+  /** @deprecated Use `destructive`. Removed in v0.32.0 (AVE-154). */
   variant?: "default" | "destructive" | undefined;
+  /** @deprecated Use `disabledReason`. Removed in v0.32.0 (AVE-154). */
   reason?: ReactNode | undefined;
   /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
   onClick?: SelectHandler | undefined;
 }) {
   const reasonId = useId();
   const select = runSelect(onSelect, onClick);
+  const isDestructive = destructive ?? variant === "destructive";
+  const why = disabledReason ?? reason;
   return (
     <MenuPrimitive.MenuItem
       {...(select ? { onSelect: select } : {})}
       data-inset={inset}
-      data-variant={variant}
-      destructive={variant === "destructive"}
-      aria-describedby={reason ? reasonId : undefined}
+      destructive={isDestructive}
+      aria-describedby={why ? reasonId : undefined}
       className={cn(
         "group/dropdown-menu-item",
         itemClass,
-        "not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground data-[variant=destructive]:text-destructive-subtle-foreground data-[variant=destructive]:data-highlighted:bg-destructive/10 data-[variant=destructive]:data-highlighted:text-destructive-subtle-foreground dark:data-[variant=destructive]:data-highlighted:bg-destructive/20 data-[variant=destructive]:*:[svg]:text-destructive-subtle-foreground",
-        reason && "flex-wrap data-disabled:opacity-100 data-disabled:*:not-data-[slot=dropdown-menu-item-reason]:opacity-50",
+        "not-data-destructive:data-highlighted:**:text-accent-foreground data-destructive:text-destructive-subtle-foreground data-destructive:data-highlighted:bg-destructive/10 data-destructive:data-highlighted:text-destructive-subtle-foreground dark:data-destructive:data-highlighted:bg-destructive/20 data-destructive:*:[svg]:text-destructive-subtle-foreground",
+        why && "flex-wrap data-disabled:opacity-100 data-disabled:*:not-data-[slot=dropdown-menu-item-reason]:opacity-50",
         className,
       )}
       {...defined(props)}
     >
       {children}
-      {reason && (
+      {why && (
         <span
           id={reasonId}
           data-slot="dropdown-menu-item-reason"
           className="basis-full text-meta text-muted-foreground"
         >
-          {reason}
+          {why}
         </span>
       )}
     </MenuPrimitive.MenuItem>
