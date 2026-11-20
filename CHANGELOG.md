@@ -4,6 +4,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.3 (2026-11-20)
+
+- **Storybook builds with Vite 8.4's beta** (AVE-167). Vite, which builds Storybook and runs the story tests, moves
+  from 8.3.8 to 8.4.0-beta.1, and its bundler Rolldown from 1.2.19 to 1.3.3. Vite is a dev dependency, so apps don't
+  install it from Avenue, and no component, token or story moves. Nothing to change in the apps.
+
 ## v0.41.2 (2026-11-20)
 
 - **The token scripts read the stylesheets with PostCSS and convert colours with culori** (AVE-172). The native token
