@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.5 (2026-11-20)
+
+- **ADOPTING.md's class-rule steps are tried on Management** (AVE-179). Followed as written on a copy of Management at
+  v0.41.4, they work: Vite+'s `lint` block takes `extends`, and a planted `rounded-2xl`, `rounded-3xl`, `gap-1.5`,
+  `max-[700px]:` and `hit-area` beside `after:` each fail `vp lint`. "Class rules" now shows the Vite+ block, says the
+  rules need v0.41.0 or newer, names a bare `rounded` as a retired corner too, and shows how to let the app's own
+  plain-CSS classes through (`ignorePrefixes`), which Management's public site needs. Only the docs changed.
+
 ## v0.41.4 (2026-11-20)
 
 - **The checkbox patch to ui-sdk names its own Avenue card** (AVE-177). The comment in
