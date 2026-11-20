@@ -162,7 +162,7 @@ function RegisterColumnHeader({
       control={control || sortMenu !== undefined}
       scope="col"
       className={cn(
-        "sticky top-0 z-10 h-9 pointer-coarse:h-11 bg-background px-3 text-start align-middle text-control font-[450] whitespace-nowrap text-muted-foreground",
+        "sticky top-0 z-sticky h-9 pointer-coarse:h-11 bg-background px-3 text-start align-middle text-control font-quiet whitespace-nowrap text-muted-foreground",
         sorted && "text-foreground",
         ring,
         className,
@@ -299,7 +299,7 @@ function RegisterGroupRow({
   );
   if (!selectable) {
     return (
-      <parts.Row {...defined(props)} id={`${row}`} row={row} className={cn("sticky top-9 z-[5] pointer-coarse:top-11", className)}>
+      <parts.Row {...defined(props)} id={`${row}`} row={row} className={cn("sticky top-9 z-sticky-group pointer-coarse:top-11", className)}>
         <parts.Cell
           id={`${row}:0`}
           row={row}
@@ -318,7 +318,7 @@ function RegisterGroupRow({
       {...defined(props)}
       id={`${row}`}
       row={row}
-      className={cn("group/bar sticky top-9 z-[5] pointer-coarse:top-11", className)}
+      className={cn("group/bar sticky top-9 z-sticky-group pointer-coarse:top-11", className)}
     >
       <parts.Cell id={`${row}:0`} row={row} col={0} control className={cn(barCell, "rounded-s-xl", ring)} {...tint}>
         <div aria-hidden className={cn("absolute inset-0 -z-[1] rounded-s-xl", barStart)} />

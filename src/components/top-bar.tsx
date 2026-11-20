@@ -98,6 +98,8 @@ function TopBarHome({
         href,
         "aria-label": `${name} home`,
         className: cn(
+          // The wordmark's 650 is its own, used nowhere else in Avenue: a literal, not a weight token (docs/tokens.md,
+          // "a value used in one place"). font-heading's 620 draws it a step lighter and 2px narrower (AVE-182).
           "relative hit-area flex shrink-0 items-center gap-2 rounded-md border-e pe-4 text-post font-[650] tracking-[-0.4px] text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-phone:border-0 max-phone:pe-0",
           noDrag,
           className,

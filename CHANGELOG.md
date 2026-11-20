@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.44.0 (2026-11-20)
+
+- **Font weight, motion, layers and the modal overlay have names** (AVE-182). New utilities: `font-quiet` (450),
+  `font-emphasis` (550) and `font-heading` (620) beside Tailwind's `font-normal`, `font-medium` and `font-semibold`;
+  `duration-fast` (100ms), `duration-moderate` (150ms) and `duration-slow` (200ms), the steps Foundations/Motion
+  allows; `z-sticky-group` (5), `z-sticky` (10), `z-dock` (40), `z-overlay` (50) and `z-toast` (70); and `bg-overlay`,
+  the 10% black behind Dialog, AlertDialog and Drawer, which ui-sdk's `--ui-overlay` now reads. Every Avenue component
+  uses them in place of `font-[550]`, `duration-100`, `z-50`, `bg-black/10` and the rest, at the same values; no pixel moves.
+  The top bar's 650 wordmark stays a commented literal, since nothing else draws that weight. `cn`
+  resolves each name against its group (`cn("font-emphasis", "font-medium")` gives `font-medium`). New stories:
+  Tokens/Typography "Font weight", Tokens/Motion and Tokens/Elevation "Layers". To change in the apps: write the names
+  in place of the numbers, using ADOPTING.md's "Weights, durations and layers" table (Management MANA-1241, Neighbors
+  when it adopts). Nothing breaks if an app waits: the numbers still work.
+
 ## v0.43.0 (2026-11-20)
 
 - **Removed the deprecated names** (AVE-154). Every name Avenue kept as a deprecated alias is gone, now that both

@@ -90,12 +90,12 @@ export function MonthGrid({
         className={cn("text-meta", className)}
         {...defined(props)}
       >
-        <parts.Row className="sticky top-0 z-10 grid grid-cols-7 border-b bg-background text-muted-foreground">
+        <parts.Row className="sticky top-0 z-sticky grid grid-cols-7 border-b bg-background text-muted-foreground">
           {short.map((name, i) => (
             <parts.Columnheader
               key={long[i]}
               aria-label={long[i]}
-              className="px-2 py-2 text-start text-[11px] font-[550] tracking-wider uppercase"
+              className="px-2 py-2 text-start text-[11px] font-emphasis tracking-wider uppercase"
             >
               {name}
             </parts.Columnheader>
@@ -166,11 +166,11 @@ export function MonthGridDay({
         className={cn(
           "grid h-6 min-w-6 place-items-center self-start rounded-full px-1 whitespace-nowrap",
           isToday
-            ? "bg-primary font-[600] text-primary-foreground"
+            ? "bg-primary font-semibold text-primary-foreground"
             : date < today
               ? "text-muted-foreground"
               : "text-foreground",
-          first && !isToday && "font-[600] text-foreground",
+          first && !isToday && "font-semibold text-foreground",
         )}
       >
         {first ? `${months[Number(date.slice(5, 7)) - 1]} ${day}` : day}

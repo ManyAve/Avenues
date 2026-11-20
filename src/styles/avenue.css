@@ -105,6 +105,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* The dim layer behind a dialog, alert dialog or drawer (AVE-182): bg-overlay. ui-sdk's --ui-overlay reads it too. */
+  --color-overlay: var(--overlay);
   --shadow-control: var(--shadow-control);
   --shadow-card: var(--shadow-card);
   --shadow-popover: var(--shadow-popover);
@@ -146,6 +148,45 @@
      scripts/display-classes.test.ts fails on it). */
   --container-reading: 48rem;
   --container-layout: 80rem;
+}
+
+/* Font weight, motion and layers (AVE-182). Tailwind's own names stay where they fit: font-normal (400, body),
+   font-medium (500, controls and labels) and font-semibold (600, a selected date, a count). Avenue adds only the
+   weights the app really draws that Tailwind has no name for, each named for where it goes:
+   - font-quiet (450): small muted text, so it keeps its stroke on the lighter colour: column headers, an outline status.
+   - font-emphasis (550): a title or term that stands out from body text without going bold: list and row titles,
+     detail terms, the open nav tab, initials, the calendar's month and weekdays, a day separator, a total.
+   - font-heading (620): page and detail headings. One component in Avenue (PageHeader); Management's detail and
+     announcement headings and title fields are five more. The top bar's wordmark keeps its own 650 as a literal.
+   Durations are the steps Foundations/Motion allows; nothing runs longer than duration-slow. Tailwind's duration-*
+   also sets tw-animate-css's animate-in / animate-out time, so one name covers both.
+   - duration-fast (100ms): an overlay opening or closing: menus, popovers, tooltips, dialogs and their backdrop.
+   - duration-moderate (150ms): a small change in place: a disclosure chevron turning, a button fading in.
+   - duration-slow (200ms): the longest anything moves: a toast arriving. One use in Avenue: kept as the scale's
+     ceiling (docs/tokens.md, a step in a scale), and Neighbors' four duration-200s move onto it.
+   Layers are the page-level stack, lowest first. Inside one component, a small local order (a focused item over its
+   neighbour, a fill behind a bar) keeps Tailwind's numbers under `isolate`; these are for things that stack against
+   the rest of the page.
+   - z-sticky-group (5): a sticky group or day bar that scrolls under the column header. One component in Avenue
+     (Register's group bar and its row); Management's register groups and activity day bars are the other uses.
+   - z-sticky (10): a sticky column header.
+   - z-dock (40): the docked windows along the bottom edge. One component in Avenue: a step in the scale, which
+     Management's chat dock and Neighbors' four z-40 bars also take.
+   - z-overlay (50): dialogs, drawers and their backdrop.
+   - z-toast (70): toasts, above an open dialog. One component in Avenue: the top step of the scale, so a notice
+     never needs a number above it (Management's demo notice writes z-[60]). */
+@theme {
+  --font-weight-quiet: 450;
+  --font-weight-emphasis: 550;
+  --font-weight-heading: 620;
+  --transition-duration-fast: 100ms;
+  --transition-duration-moderate: 150ms;
+  --transition-duration-slow: 200ms;
+  --z-index-sticky-group: 5;
+  --z-index-sticky: 10;
+  --z-index-dock: 40;
+  --z-index-overlay: 50;
+  --z-index-toast: 70;
 }
 
 /* The app's layout breakpoints (AVE-85), as Tailwind breakpoints so classes name them, never a pixel literal.

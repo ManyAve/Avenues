@@ -107,7 +107,7 @@ function CollapsibleSectionTrigger({ className, children, ...props }: Loose<Comp
             <ChevronRightIcon
               aria-hidden
               className={cn(
-                "shrink-0 transition-transform duration-150 group-data-open/section-trigger:rotate-90 motion-reduce:transition-none",
+                "shrink-0 transition-transform duration-moderate group-data-open/section-trigger:rotate-90 motion-reduce:transition-none",
                 chevronLook[variant],
               )}
             />

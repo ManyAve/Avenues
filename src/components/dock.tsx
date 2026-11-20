@@ -48,7 +48,7 @@ function Dock({ className, render, ...props }: OwnPartProps<"div">) {
       {
         "data-slot": "dock",
         className: cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-row-reverse items-end justify-start gap-3 px-4 max-sm:flex-col-reverse max-sm:items-stretch max-sm:px-0",
+          "pointer-events-none fixed inset-x-0 bottom-0 z-dock flex flex-row-reverse items-end justify-start gap-3 px-4 max-sm:flex-col-reverse max-sm:items-stretch max-sm:px-0",
           className,
         ),
       },
@@ -133,7 +133,7 @@ function DockWindowTitle({ className, render, ...props }: OwnPartProps<"span">) 
   return renderElement(
     "span",
     mergeProps(
-      { "data-slot": "dock-window-title", className: cn("min-w-0 truncate text-control font-[600]", className) },
+      { "data-slot": "dock-window-title", className: cn("min-w-0 truncate text-control font-semibold", className) },
       defined(props),
     ),
     render,
@@ -169,7 +169,7 @@ function DockWindowBadge({
             "data-slot": "dock-window-badge",
             "aria-hidden": true,
             className: cn(
-              "inline-flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-meta font-[600] text-primary-foreground tabular-nums",
+              "inline-flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-meta font-semibold text-primary-foreground tabular-nums",
               className,
             ),
             children: unreadText(count),

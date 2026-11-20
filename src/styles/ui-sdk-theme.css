@@ -15,7 +15,7 @@
   --ui-destructive: var(--destructive);
   --ui-ring: color-mix(in oklab, var(--ring) 50%, transparent); /* shadcn's focus-visible:ring-ring/50 */
   --ui-ring-border: var(--ring); /* shadcn's focus-visible:border-ring */
-  --ui-overlay: rgb(0 0 0 / 0.1); /* the dialog overlay's bg-black/10 */
+  --ui-overlay: var(--overlay); /* Avenue's bg-overlay, behind Dialog, AlertDialog and Drawer */
   --ui-shadow: var(--shadow-popover);
   --ui-radius: var(--radius); /* rounded-lg, 10px: AVE-2's corner for md and lg controls, menus and popovers */
   --ui-spacing: 0.25rem; /* Tailwind's 4px grid, which AVE-2 keeps */

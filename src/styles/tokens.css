@@ -173,6 +173,9 @@
   --input: var(--color-onyx-200);
   --ring: var(--color-grape-500);
 
+  /* The modal overlay (AVE-182): the same 10% black dim in both themes, as the app's bg-black/10 was. */
+  --overlay: rgb(0 0 0 / 0.1);
+
   --chart-1: var(--color-grape-500);
   --chart-2: var(--color-teal-600);
   --chart-3: var(--color-slate-500);

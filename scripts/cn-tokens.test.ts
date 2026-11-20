@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cn, SPACING_NAMES, TEXT_SIZE_NAMES } from "../src/lib/utils";
+import { cn, DURATION_NAMES, FONT_WEIGHT_NAMES, SPACING_NAMES, TEXT_SIZE_NAMES, Z_INDEX_NAMES } from "../src/lib/utils";
 
 // Every --spacing-* and --text-* token Avenue defines must be known to cn, or cn mis-resolves conflicts with it.
 const styles = join(import.meta.dir, "..", "src", "styles");
@@ -21,6 +21,26 @@ test("cn knows every Avenue spacing token", () => {
 test("cn knows every Avenue text size", () => {
   const sizes = defined("text").filter((n) => !TAILWIND_TEXT.has(n));
   expect(sizes.filter((n) => !(TEXT_SIZE_NAMES as readonly string[]).includes(n))).toEqual([]);
+});
+
+// AVE-182: and every weight, duration and layer; the font-weight list leaves Tailwind's own (normal, medium, ...) to cn.
+test("cn knows every Avenue weight, duration and layer", () => {
+  expect(defined("font-weight").toSorted()).toEqual([...FONT_WEIGHT_NAMES].toSorted());
+  expect(defined("transition-duration").toSorted()).toEqual([...DURATION_NAMES].toSorted());
+  expect(defined("z-index").toSorted()).toEqual([...Z_INDEX_NAMES].toSorted());
+});
+
+test("conflicts resolve with Avenue's weights, durations and layers", () => {
+  // A weight name is a weight: it gives way to another weight, and stays beside a font family.
+  expect(cn("font-emphasis", "font-medium")).toBe("font-medium");
+  expect(cn("font-medium", "font-heading")).toBe("font-heading");
+  expect(cn("font-emphasis", "font-mono")).toBe("font-emphasis font-mono");
+  expect(cn("duration-fast", "duration-200")).toBe("duration-200");
+  expect(cn("duration-100", "duration-slow")).toBe("duration-slow");
+  expect(cn("z-sticky", "z-20")).toBe("z-20");
+  expect(cn("z-10", "z-overlay")).toBe("z-overlay");
+  expect(cn("z-10", "z-20")).toBe("z-20");
+  expect(cn("bg-overlay", "bg-black/50")).toBe("bg-black/50");
 });
 
 test("conflicts resolve with Avenue's names", () => {

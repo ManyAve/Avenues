@@ -209,7 +209,7 @@ function Status({
       data-tone={tone}
       data-filled={filled ? "" : undefined}
       className={cn(
-        "h-auto gap-1 bg-background px-2 py-px font-[450] text-muted-foreground",
+        "h-auto gap-1 bg-background px-2 py-px font-quiet text-muted-foreground",
         filled && ["border-transparent", fills[tone]],
         className,
       )}

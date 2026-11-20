@@ -343,6 +343,36 @@ from `src/site/site.css`. Name them in the rule's own options, in the app's `rul
 An app's screens that haven't moved to Avenue may fail these rules. Turn a rule off for those folders with an
 `overrides` entry until their slice lands, rather than leaving the whole app unchecked.
 
+## Weights, durations and layers
+
+Avenue names its font weights, durations, page layers and modal overlay (AVE-182), so a screen never writes the
+number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn` knows each one.
+
+| Write this | For | Instead of |
+| --- | --- | --- |
+| `font-normal`, `font-medium`, `font-semibold` | body (400), controls and labels (500), a selected date or count (600) | `font-[400]`, `font-[500]`, `font-[600]` |
+| `font-quiet` | small muted text that needs its stroke: column headers, an outline status (450) | `font-[450]` |
+| `font-emphasis` | a title or term inside body text: row titles, detail terms, the open nav tab (550) | `font-[550]`, `font-[560]` |
+| `font-heading` | page and detail headings (620) | `font-[620]` |
+| `duration-fast` | an overlay opening or closing (100ms) | `duration-100` |
+| `duration-moderate` | a small change in place: a chevron, a button fading in (150ms) | `duration-150`, `duration-120`, `duration-160` |
+| `duration-slow` | the longest anything moves: a toast (200ms) | `duration-200`, and anything longer |
+| `z-sticky-group` | a sticky group or day bar under the column header (5) | `z-[5]` |
+| `z-sticky` | a sticky column header (10) | `z-10` on a sticky header |
+| `z-dock` | a bar or dock fixed to the bottom edge (40) | `z-40` |
+| `z-overlay` | a dialog, drawer or sheet and its backdrop (50) | `z-50` |
+| `z-toast` | toasts and notices above an open dialog (70) | `z-[60]`, `z-[70]` |
+| `bg-overlay` | the dim behind a dialog or drawer (10% black, both themes) | `bg-black/10` |
+
+Pick by meaning, not by number: a sticky toolbar is not `z-sticky` because it happens to be 10, and a 550 that is a
+heading is `font-heading`. A weight used in one place (the top bar's 650 wordmark) stays a literal with a comment. A small order inside one component (a focused segment over its neighbour, a fill behind a
+bar) keeps Tailwind's numbers (`z-1`, `focus:z-10`) inside an `isolate` parent; the names are for things that stack
+against the page. Where an app has a weight or a layer none of these fits, ask for it on an AVE card with the screens
+that use it, rather than adding a one-off.
+
+In plain CSS the same values are `var(--font-weight-emphasis)`, `var(--transition-duration-fast)`,
+`var(--z-index-overlay)` and `var(--overlay)`.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

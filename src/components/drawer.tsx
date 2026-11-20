@@ -38,7 +38,7 @@ function DrawerClose(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerCl
 function DrawerBackdrop({ className, ...props }: Loose<ComponentProps<typeof DrawerPrimitive.DrawerBackdrop>>) {
   return (
     <DrawerPrimitive.DrawerBackdrop
-      className={cn("fixed inset-0 isolate z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs", className)}
+      className={cn("fixed inset-0 isolate z-overlay bg-overlay supports-backdrop-filter:backdrop-blur-xs", className)}
       {...defined(props)}
     />
   );

@@ -101,7 +101,7 @@ function SelectionBar({
           <ReturnFocus focusInside={focusInside} to={returnFocus} />
           <span
             data-slot="selection-bar-count"
-            className="col-start-1 row-start-1 flex h-control-sm items-center border-e px-2 font-[550]"
+            className="col-start-1 row-start-1 flex h-control-sm items-center border-e px-2 font-emphasis"
           >
             {label(count)}
           </span>

@@ -37,7 +37,7 @@ function InitialsAvatar({
     >
       <AvatarFallback
         data-tint={tintFor(tintKey ?? name)}
-        className="bg-(--tint-bg) text-meta font-[550] tracking-[0.2px] text-(--tint-fg)"
+        className="bg-(--tint-bg) text-meta font-emphasis tracking-[0.2px] text-(--tint-fg)"
       >
         <span aria-hidden>{initials(name)}</span>
       </AvatarFallback>
