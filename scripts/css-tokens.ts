@@ -1,8 +1,10 @@
 /**
- * A small reader for the custom properties in a token stylesheet. It returns every `--name: value` declaration
- * with the selector (and any enclosing at-rules) it sits under, which is all the token comparison needs.
- * It is not a general CSS parser: it handles comments, nested blocks and multi-line values, nothing more.
+ * The custom properties in a token stylesheet, read with PostCSS: every `--name: value` declaration with the
+ * selector (and any enclosing at-rules) it sits under, which is all the token comparison and native export need.
+ * PostCSS keeps Tailwind's own syntax (`@theme` with or without options, `--radius-*: initial`) as written, which a
+ * standards-only parser such as lightningcss rejects.
  */
+import { type AtRule, type Node, parse, type Rule } from "postcss";
 
 export interface Declaration {
   /** Enclosing rules, outermost first, e.g. `@theme inline` or `@media (min-width: 40rem) > :root`. */
@@ -11,51 +13,32 @@ export interface Declaration {
   value: string;
 }
 
+const collapse = (text: string) => text.replace(/\s+/g, " ").trim();
+
 /** Collapses whitespace and writes decimals the way oxfmt and the app's files disagree on (`.06` vs `0.06`). */
 export function normalizeValue(value: string): string {
-  return value
-    .replace(/\s+/g, " ")
+  return collapse(value)
     .replace(/\(\s+/g, "(")
     .replace(/\s+\)/g, ")")
-    .replace(/(^|[\s(,/])\.(\d)/g, "$10.$2")
-    .trim();
+    .replace(/(^|[\s(,/])\.(\d)/g, "$10.$2");
 }
 
+const scopeOf = (node: Node): string | undefined => {
+  if (node.type === "rule") return collapse((node as Rule).selector);
+  if (node.type === "atrule") return collapse(`@${(node as AtRule).name} ${(node as AtRule).params}`);
+  return undefined;
+};
+
 export function readDeclarations(css: string): Declaration[] {
-  const text = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const stack: string[] = [];
   const out: Declaration[] = [];
-  let buffer = "";
-  let parens = 0;
-
-  const flushDeclaration = () => {
-    const statement = buffer.trim();
-    buffer = "";
-    const match = /^(--[\w-]+(?:\*)?)\s*:\s*([\s\S]*)$/.exec(statement);
-    if (match?.[1] && match[2] !== undefined && stack.length > 0) {
-      out.push({ scope: stack.join(" > "), name: match[1], value: normalizeValue(match[2]) });
+  parse(css).walkDecls(/^--/, (decl) => {
+    const scopes: string[] = [];
+    for (let node: Node | undefined = decl.parent; node; node = node.parent) {
+      const scope = scopeOf(node);
+      if (scope) scopes.unshift(scope);
     }
-  };
-
-  for (const char of text) {
-    if (char === "(") parens += 1;
-    if (char === ")") parens -= 1;
-    if (parens > 0) {
-      buffer += char;
-      continue;
-    }
-    if (char === "{") {
-      stack.push(buffer.trim().replace(/\s+/g, " "));
-      buffer = "";
-    } else if (char === "}") {
-      flushDeclaration();
-      stack.pop();
-    } else if (char === ";") {
-      flushDeclaration();
-    } else {
-      buffer += char;
-    }
-  }
+    out.push({ scope: scopes.join(" > "), name: decl.prop, value: normalizeValue(decl.value) });
+  });
   return out;
 }
 
