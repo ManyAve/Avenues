@@ -14,7 +14,7 @@ dependencies are fine.
 
 ## Setup
 
-Needs [Bun](https://bun.sh) 1.4.4 or newer.
+Needs [Bun](https://bun.sh) 1.4.5 or newer.
 
 ```sh
 bun install
