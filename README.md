@@ -304,7 +304,11 @@ is built on the Material 3 control (its ripple, focus, TalkBack role and 48dp to
   no slot for.
 - The source compiles with the older of the two apps' toolchains (Kotlin 2.0, AGP 8.9, Compose BOM 2024.12), so an
   app copies `native/android/avenue/src/main/kotlin/com/manyave/avenue/` and `native/AvenueTokens.kt` into its own
-  source from the tag it installs, with a script, as with the tokens. It needs `material3`, nothing else.
+  source from the tag it installs, with a script, as with the tokens. It needs `material3`, nothing else. The module
+  itself builds with the newest tools (Gradle, AGP, the Kotlin compiler, Paparazzi) and holds that floor with Kotlin's
+  language and API level pinned to 2.0 and the BOM held at 2024.12.01, so source that needs anything newer fails here
+  first (`native/android/build.gradle.kts` says why). Kotlin 2.5 can't compile at level 2.0, so the compiler stays on
+  2.4 until Neighbors raises its own.
 - `bun run native:android` builds the module, runs its unit tests (tint and initials match the web's) and records
   each component with Paparazzi in light and dark on a 393dp phone, writing
   `native/screenshots/android/<slug>-<light|dark>.png` for the side-by-side stories. `bun run native:android:check`

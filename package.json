@@ -1,6 +1,6 @@
 {
   "name": "@manyave/avenue",
-  "version": "0.38.2",
+  "version": "0.38.3",
   "private": true,
   "description": "Avenue, ManyAve's design system: tokens, foundations, components and composites, shown in Storybook.",
   "type": "module",

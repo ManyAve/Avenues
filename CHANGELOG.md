@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.38.2 (2026-11-20)
+## v0.38.3 (2026-11-20)
 
 - **AvenueUI builds in Swift 6 language mode** (AVE-174). `Package.swift` declares `swift-tools-version: 6.0`, so the
   SwiftUI components and their tests compile with Swift 6's data-race checks. They already did without a warning: no
@@ -16,6 +16,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   and the story failed on every Mac. Storybook and the component don't change.
 - The Dialog "Open" story waits for the dialog's opening zoom (from 95%) to finish before measuring the close
   button, so a busy machine no longer fails it at 15px instead of 16px (AVE-175).
+
+## v0.38.2 (2026-11-20)
+
+- **Avenue's Android module builds with the newest tools** (AVE-173): Gradle 9.9.2, Android Gradle Plugin
+  9.6.0-alpha04, Kotlin 2.4.21 and Paparazzi 2.0.0-alpha05.1. The component source still compiles in Neighbors:
+  Kotlin's language and API level are pinned to 2.0 and the Compose BOM stays at 2024.12.01, so source that needs
+  anything newer fails in Avenue first. Kotlin 2.5 can't compile at level 2.0, so the compiler stays on 2.4 until
+  Neighbors raises its toolchain. Paparazzi 2.0 renders with Android 16, so the Android screenshots were re-recorded;
+  text edges shift by a pixel's antialiasing and nothing else changes. Nothing to change in the apps.
 
 ## v0.38.1 (2026-11-18)
 
