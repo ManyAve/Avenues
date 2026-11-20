@@ -264,15 +264,16 @@ Avenue's class rules run inside the app's own oxlint, from `@manyave/avenue/oxli
 `avenue-check-classes`). They use oxlint-tailwindcss, which reads the app's Tailwind build:
 
 - `tailwindcss/no-unknown-classes`: a class that makes no CSS under the app's theme fails, with the near name it
-  meant. That covers Avenue's retired corners (`rounded-2xl`, `rounded-3xl`, `rounded-4xl` draw square corners,
-  because Avenue's theme clears them), typos and missing tokens.
+  meant. That covers Avenue's retired corners (`rounded-2xl`, `rounded-3xl`, `rounded-4xl`, and a bare `rounded` with
+  no size, draw square corners, because Avenue's theme clears them; use `rounded-xs` to `rounded-xl`), typos and
+  missing tokens.
 - `tailwindcss/no-restricted-classes`: off-grid spacing (`gap-1.5`, `px-2.5`, `py-1.25`; the 2px `*-0.5` and sizing
   are fine) and literal breakpoints (`max-[700px]:`; use `max-phone:`, `desktop:`, `wide:`), each with its fix.
 - `avenue/hit-area-after`: `hit-area` and an `after:` class in the same string. `hit-area` owns the control's
   `::after`; decorate with `before:` or a child.
 
-oxlint takes no `settings` from an extended config, so the app names its own Tailwind entry: the CSS file that
-imports `@manyave/avenue/styles.css`. In an `oxlint.config.ts` (oxlint loads one through Node; a `.oxlintrc.json`
+The rules ship in v0.41.0, so pin that tag or newer first. oxlint takes no `settings` from an extended config, so the
+app names its own Tailwind entry: the CSS file that imports `@manyave/avenue/styles.css`. In an `oxlint.config.ts` (oxlint loads one through Node; a `.oxlintrc.json`
 can't extend a config that brings JS plugins, so move it to TypeScript):
 
 ```ts
@@ -286,9 +287,39 @@ export default defineConfig({
 });
 ```
 
-Where the lint config is a block inside another config (Vite+'s `lint` in `vite.config.ts`), use `extends` there if
-it takes one, or merge the object yourself: add its `jsPlugins` to the block's and its `rules` to the block's.
-Nothing else is needed: Avenue depends on `oxlint-tailwindcss`, so it installs with Avenue (oxlint 1.43 or newer).
+Where the lint config is a block inside another config, put the same two keys in that block. Vite+'s `lint` in
+`vite.config.ts` takes `extends` (tried on Management with Vite+ 1.5, AVE-179); `vp lint` and `vp check` then run the
+rules:
+
+```ts
+import { defineConfig } from "vite-plus";
+import avenueClasses from "@manyave/avenue/oxlint";
+
+export default defineConfig({
+  lint: {
+    extends: [avenueClasses()],
+    settings: { tailwindcss: { entryPoint: "src/index.css" } },
+    // ...the block's own ignorePatterns, plugins and rules, unchanged.
+  },
+});
+```
+
+The entry ships its own types (v0.41.7 or newer, AVE-181), so a typechecked config needs no `declare module` for it.
+
+A block without `extends` takes the object merged by hand: add its `jsPlugins` to the block's and its `rules` to the
+block's. Nothing else is needed: Avenue depends on `oxlint-tailwindcss`, so it installs with Avenue (oxlint 1.43 or
+newer).
+
+Classes the app writes in its own plain CSS, outside the Tailwind entry, aren't Tailwind's, so
+`no-unknown-classes` reports each one. Management's public site is the case: `site`, `site-hero` and the rest come
+from `src/site/site.css`. Name them in the rule's own options, in the app's `rules`:
+
+```ts
+// The public site's own classes (src/site/site.css) aren't Tailwind utilities.
+"tailwindcss/no-unknown-classes": ["error", { ignorePrefixes: ["site"] }],
+```
+
+(`allowlist` takes whole class names instead of prefixes.)
 
 An app's screens that haven't moved to Avenue may fail these rules. Turn a rule off for those folders with an
 `overrides` entry until their slice lands, rather than leaving the whole app unchecked.

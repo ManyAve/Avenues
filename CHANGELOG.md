@@ -14,6 +14,30 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 - **Swap the ui-sdk patch.** In the app, copy `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag over the
   app's copy; `avenue-check-patches` fails until you do.
 
+## v0.41.7 (2026-11-20)
+
+- **`@manyave/avenue/oxlint` ships its types** (AVE-181). `lint/classes.d.mts` types `avenueClasses()` (returns
+  oxlint's `OxlintConfig`) and `restrictedClassPatterns`, and the `./oxlint` export names it under `types`, so an app's
+  `oxlint.config.ts` typechecks without a declaration of its own (before, it failed TS7016). `oxlint` is now an
+  optional peer dependency, since the types come from it. To change in the apps: Neighbors deletes
+  `types/avenue-oxlint.d.ts` after bumping to this version; Management needs nothing.
+
+## v0.41.6 (2026-11-20)
+
+- **The public-site text sizes are classes now** (AVE-178). `text-web-hero`, `text-web-hero-narrow`, `text-web-section`,
+  `text-web-card` and `text-web-glyph` make their font size (38, 34, 24, 17 and 55px) from Avenue's stylesheet; before,
+  Tailwind made no CSS for them, so a class gave no size and oxlint's unknown-class rule failed it. They carry no line
+  height of their own, as before: the place that uses one sets it (`leading-*`). The `--text-web-*` variables are
+  unchanged. No pixel moves in any component. Nothing to change in the apps.
+
+## v0.41.5 (2026-11-20)
+
+- **ADOPTING.md's class-rule steps are tried on Management** (AVE-179). Followed as written on a copy of Management at
+  v0.41.4, they work: Vite+'s `lint` block takes `extends`, and a planted `rounded-2xl`, `rounded-3xl`, `gap-1.5`,
+  `max-[700px]:` and `hit-area` beside `after:` each fail `vp lint`. "Class rules" now shows the Vite+ block, says the
+  rules need v0.41.0 or newer, names a bare `rounded` as a retired corner too, and shows how to let the app's own
+  plain-CSS classes through (`ignorePrefixes`), which Management's public site needs. Only the docs changed.
+
 ## v0.41.4 (2026-11-20)
 
 - **The checkbox patch to ui-sdk names its own Avenue card** (AVE-177). The comment in

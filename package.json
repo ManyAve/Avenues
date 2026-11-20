@@ -17,7 +17,10 @@
     "./format": "./src/lib/format.ts",
     "./table-filters": "./src/lib/table-filters.ts",
     "./checks/*": "./src/checks/*.ts",
-    "./oxlint": "./lint/classes.mjs"
+    "./oxlint": {
+      "types": "./lint/classes.d.mts",
+      "default": "./lint/classes.mjs"
+    }
   },
   "bin": {
     "avenue-check-patches": "./scripts/check-app-patches.ts"
@@ -55,7 +58,11 @@
   "peerDependencies": {
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "oxlint": ">=1.43.0"
+  },
+  "peerDependenciesMeta": {
+    "oxlint": { "optional": true }
   },
   "dependencies": {
     "@ui-sdk/core": "0.1.0-beta.13",
