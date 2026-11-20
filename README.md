@@ -32,8 +32,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | Command                   | What it does                                                    |
 | ------------------------- | --------------------------------------------------------------- |
 | `bun run typecheck`       | Type-checks `src` and `.storybook` with TypeScript 7.           |
-| `bun run lint`            | Lints with oxlint; any warning fails.                           |
-| `bun run check:classes`   | Fails on retired corners (`rounded-2xl/3xl/4xl`) or off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`). |
+| `bun run lint`            | Lints with oxlint (`oxlint.config.ts`); any warning fails. It runs Avenue's class rules (below), so a retired corner (`rounded-2xl/3xl/4xl`) or any class that makes no CSS, off-grid spacing (`*-1.5`, `*-2.5`, `*-3.5`), a literal breakpoint, or `hit-area` beside an `after:` class fails it. |
 | `bun run test:scripts`    | Tests the check scripts with `bun test`.                        |
 | `bun run test:stories`    | Renders every story in headless Chromium four times (light and dark, web and desktop type scale), runs its play function and runs axe (WCAG 2.2 AA and best practice), then a fifth time as a phone (`touch`), where it also measures every control's tap area (below). A crash, a failed play function, any axe violation or a tap area under 44px fails it. |
 | `bun run build-storybook` | Builds the static Storybook into `storybook-static/`.           |
@@ -224,7 +223,7 @@ on a fine one (WCAG 2.2 target size), never smaller than the control. A control 
 sets `--hit-area-x` / `--hit-area-y` (Checkbox and Switch `[--hit-area-x:--spacing(3)] [--hit-area-y:--spacing(2)]`,
 12px and 8px). Compose it on a positioned element that doesn't clip its own overflow, in place of hand-written
 `after:-inset-*`. It owns the control's `::after`: decoration on a control uses `::before` or a child, and
-`check:classes` flags `hit-area` with an `after:` class in the same string. Scope it with a variant when a part is
+`bun run lint` flags `hit-area` with an `after:` class in the same string. Scope it with a variant when a part is
 only sometimes a control (Badge: `[a]:hit-area`).
 
 **Spacing between controls on phones.** Two neighbouring controls need their centres at least 44px apart, so
@@ -419,9 +418,11 @@ is tied to a Storybook version.
 - **`avenue-check-patches`**, in the app's `check` script, run from the app's root: fails when a patch in the
   installed tag's `patches/` is missing from the app's `patches/`, differs from it, or isn't under the app's
   `patchedDependencies`. Copy the files across and list each as Avenue's `package.json` does.
-- **`avenue-check-classes [paths...]`**: Avenue's class rules over the app's own source (for example
-  `avenue-check-classes app/ui`), relative to where it runs. It catches classes that produce no CSS under Avenue's
-  theme, such as `rounded-4xl`. Run it over the files a slice moves; an app's unmoved screens may still fail it.
+- **`@manyave/avenue/oxlint`**: Avenue's class rules as an oxlint config, for the app's `extends` (ADOPTING.md,
+  "Class rules"). They run inside the app's own oxlint, with editor squiggles: oxlint-tailwindcss reads the app's
+  Tailwind build, so `no-unknown-classes` fails a class that makes no CSS under Avenue's theme (such as
+  `rounded-4xl`, or a typo, with the near name it meant); `no-restricted-classes` fails off-grid spacing and literal
+  breakpoints, and Avenue's own `avenue/hit-area-after` fails `hit-area` beside an `after:` class.
 - **`@manyave/avenue/checks/touch-targets`** and **`@manyave/avenue/checks/name-clash`**: plain functions over the
   DOM, to call after a story or a browser test renders a screen:
 

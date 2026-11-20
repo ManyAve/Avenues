@@ -72,7 +72,7 @@ the steps below in order and stop where a step says to.
    - The visual diff: every changed story is either listed in Avenue's parity map or is the slice's
      named change. Anything else fails.
    - Tap areas (44px on a phone, no overlaps), the name-clash check (both from
-     `@manyave/avenue/checks/*`), `avenue-check-classes` over the slice's files, and one keyboard-only
+     `@manyave/avenue/checks/*`), Avenue's class rules in the app's lint ("Class rules" below), and one keyboard-only
      Playwright journey that asserts where focus lands after a dialog closes or a row goes away.
    - The pull request lists what users will notice, especially where keyboard, focus or dismissal
      behaviour changes.
@@ -257,6 +257,41 @@ as ui-sdk's Composition shows. The styles are Avenue's:
 
 On a phone, the one-tag Select opens the operating system's picker; built from parts it opens Avenue's sheet, since
 the OS picker can only be drawn from data. Keep the one tag where the OS picker matters.
+
+## Class rules
+
+Avenue's class rules run inside the app's own oxlint, from `@manyave/avenue/oxlint` (AVE-171; it replaced
+`avenue-check-classes`). They use oxlint-tailwindcss, which reads the app's Tailwind build:
+
+- `tailwindcss/no-unknown-classes`: a class that makes no CSS under the app's theme fails, with the near name it
+  meant. That covers Avenue's retired corners (`rounded-2xl`, `rounded-3xl`, `rounded-4xl` draw square corners,
+  because Avenue's theme clears them), typos and missing tokens.
+- `tailwindcss/no-restricted-classes`: off-grid spacing (`gap-1.5`, `px-2.5`, `py-1.25`; the 2px `*-0.5` and sizing
+  are fine) and literal breakpoints (`max-[700px]:`; use `max-phone:`, `desktop:`, `wide:`), each with its fix.
+- `avenue/hit-area-after`: `hit-area` and an `after:` class in the same string. `hit-area` owns the control's
+  `::after`; decorate with `before:` or a child.
+
+oxlint takes no `settings` from an extended config, so the app names its own Tailwind entry: the CSS file that
+imports `@manyave/avenue/styles.css`. In an `oxlint.config.ts` (oxlint loads one through Node; a `.oxlintrc.json`
+can't extend a config that brings JS plugins, so move it to TypeScript):
+
+```ts
+import { defineConfig } from "oxlint";
+import avenueClasses from "@manyave/avenue/oxlint";
+
+export default defineConfig({
+  extends: [avenueClasses()],
+  settings: { tailwindcss: { entryPoint: "src/styles.css" } },
+  // ...the app's own plugins, rules and overrides, unchanged.
+});
+```
+
+Where the lint config is a block inside another config (Vite+'s `lint` in `vite.config.ts`), use `extends` there if
+it takes one, or merge the object yourself: add its `jsPlugins` to the block's and its `rules` to the block's.
+Nothing else is needed: Avenue depends on `oxlint-tailwindcss`, so it installs with Avenue (oxlint 1.43 or newer).
+
+An app's screens that haven't moved to Avenue may fail these rules. Turn a rule off for those folders with an
+`overrides` entry until their slice lands, rather than leaving the whole app unchecked.
 
 ## For the Avenue team
 
