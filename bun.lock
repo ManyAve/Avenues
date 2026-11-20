@@ -30,7 +30,7 @@
         "culori": "4.0.2",
         "oxlint": "^1.94.0",
         "pixelmatch": "^8.0.0",
-        "playwright": "1.65.0",
+        "playwright": "1.66.0-alpha-2026-11-20",
         "pngjs": "^7.0.0",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
@@ -876,9 +876,9 @@
 
     "pkg-up": ["pkg-up@3.1.0", "", { "dependencies": { "find-up": "^3.0.0" } }, "sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA=="],
 
-    "playwright": ["playwright@1.65.0", "", { "dependencies": { "playwright-core": "1.65.0" }, "bin": { "playwright": "cli.js" } }, "sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA=="],
+    "playwright": ["playwright@1.66.0-alpha-2026-11-20", "", { "dependencies": { "playwright-core": "1.66.0-alpha-2026-11-20" }, "bin": { "playwright": "cli.js" } }, "sha512-DcYy5VMr8cs/L+m3hBUGHvmuph6vezGvcj8YJBpdwFIC6t4CeuiUjrSW/SvAQoMeNVHNsRjVicvObR2iLdPh0A=="],
 
-    "playwright-core": ["playwright-core@1.65.0", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA=="],
+    "playwright-core": ["playwright-core@1.66.0-alpha-2026-11-20", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-NLHwLaqQVa6gEr89z3771FGRAF5CBoD4B4O3mnJqUxbGVw+tyffn+Dj74BsTxgQNfGOP0PMfYJInQg2MFxrrIg=="],
 
     "pngjs": ["pngjs@7.0.0", "", {}, "sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow=="],
 

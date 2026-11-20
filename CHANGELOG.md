@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.40.3 (2026-11-20)
+
+- **A toast stays above an open bottom sheet in Chromium 159** (AVE-169). In Chromium 159 (Chrome's next release), a
+  toast raised while a bottom Sheet or Drawer was open fell below the bottom of the screen instead of sitting 8px above
+  the sheet's buttons: the browser now follows a scrolled anchor only when it is the element's default anchor. The
+  toast region now names the sheet's footer as its default anchor, so it sits above the footer in every Chromium. No
+  pixel moves in today's browsers. Nothing to change in the apps; they get the fix by installing this version.
+- Avenue's story tests, visual diff and parity proof run on Playwright's 1.66 prerelease
+  (1.66.0-alpha-2026-11-20) and the Chromium it ships (159.0.8154.13). Run `bunx playwright install chromium` once
+  after pulling.
+
 ## v0.40.2 (2026-11-20)
 
 - **Display options fits a phone** (AVE-176). At 390px the Row height buttons ran about 25px past the popover's right

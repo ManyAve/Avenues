@@ -1,6 +1,6 @@
 {
   "name": "@manyave/avenue",
-  "version": "0.40.2",
+  "version": "0.40.3",
   "private": true,
   "description": "Avenue, ManyAve's design system: tokens, foundations, components and composites, shown in Storybook.",
   "type": "module",
@@ -84,7 +84,7 @@
     "culori": "4.0.2",
     "oxlint": "^1.94.0",
     "pixelmatch": "^8.0.0",
-    "playwright": "1.65.0",
+    "playwright": "1.66.0-alpha-2026-11-20",
     "pngjs": "^7.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
