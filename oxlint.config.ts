@@ -1,5 +1,6 @@
 import { defineConfig } from "oxlint";
-import { avenueClasses } from "./lint/classes.mjs";
+// By package name, the way an app imports it, so the typecheck proves the `./oxlint` export carries its types (AVE-181).
+import { avenueClasses } from "@manyave/avenue/oxlint";
 
 const uiSdkRootImport = {
   name: "@ui-sdk/react",

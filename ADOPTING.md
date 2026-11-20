@@ -304,6 +304,8 @@ export default defineConfig({
 });
 ```
 
+The entry ships its own types (v0.41.7 or newer, AVE-181), so a typechecked config needs no `declare module` for it.
+
 A block without `extends` takes the object merged by hand: add its `jsPlugins` to the block's and its `rules` to the
 block's. Nothing else is needed: Avenue depends on `oxlint-tailwindcss`, so it installs with Avenue (oxlint 1.43 or
 newer).

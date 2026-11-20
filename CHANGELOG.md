@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.7 (2026-11-20)
+
+- **`@manyave/avenue/oxlint` ships its types** (AVE-181). `lint/classes.d.mts` types `avenueClasses()` (returns
+  oxlint's `OxlintConfig`) and `restrictedClassPatterns`, and the `./oxlint` export names it under `types`, so an app's
+  `oxlint.config.ts` typechecks without a declaration of its own (before, it failed TS7016). `oxlint` is now an
+  optional peer dependency, since the types come from it. To change in the apps: Neighbors deletes
+  `types/avenue-oxlint.d.ts` after bumping to this version; Management needs nothing.
+
 ## v0.41.6 (2026-11-20)
 
 - **The public-site text sizes are classes now** (AVE-178). `text-web-hero`, `text-web-hero-narrow`, `text-web-section`,
