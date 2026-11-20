@@ -11,6 +11,11 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   Swift source changed, and the catalog screenshots are the same. Language mode is per package, so an app keeps its
   own (Neighbors' 5.9, Management's 6.0); it needs Xcode 16 or later to read the manifest, which both apps' builds
   already use. Nothing to change in the apps.
+- The Combobox "Sized by content" story compares the field with a plain text field in the same font instead of a
+  fixed 200px (AVE-175). Avenue's sans is the platform's own font, so the field is 170px on a Mac and 200px on Linux,
+  and the story failed on every Mac. Storybook and the component don't change.
+- The Dialog "Open" story waits for the dialog's opening zoom (from 95%) to finish before measuring the close button, so a busy
+  machine no longer fails it at 15px instead of 16px (AVE-175).
 
 ## v0.38.1 (2026-11-18)
 
