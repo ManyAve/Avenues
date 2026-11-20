@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.38.2 (2026-11-20)
+
+- **AvenueUI builds in Swift 6 language mode** (AVE-174). `Package.swift` declares `swift-tools-version: 6.0`, so the
+  SwiftUI components and their tests compile with Swift 6's data-race checks. They already did without a warning: no
+  Swift source changed, and the catalog screenshots are the same. Language mode is per package, so an app keeps its
+  own (Neighbors' 5.9, Management's 6.0); it needs Xcode 16 or later to read the manifest, which both apps' builds
+  already use. Nothing to change in the apps.
+
 ## v0.38.1 (2026-11-18)
 
 - **Selection bar reasons no longer print over each other** (AVE-162). When two neighbouring actions in the
