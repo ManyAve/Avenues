@@ -8,7 +8,11 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 - **ui-sdk 0.1.0-beta.13** (AVE-164). Avenue now builds on `@ui-sdk/react` and `@ui-sdk/core` 0.1.0-beta.13, up from
   beta.7. ui-sdk renamed no part, prop, callback or `data-slot` between the two, so there is no code to rename in the
-  apps, and no Avenue component looks different.
+  apps.
+- **Two things look slightly different, both from ui-sdk.** A dialog that opens onto a text field that already holds
+  a value now selects that text, so typing replaces it (Form dialog / With callouts shows its amount selected).
+  A tooltip's arrow can sit a fraction of a pixel differently, now that ui-sdk places popups with the browser's own
+  anchor positioning; the popup itself still lands on whole pixels.
 - **Swap the ui-sdk patch.** In the app, delete `patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch`, copy
   `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag, and list it under `patchedDependencies` as
   `"@ui-sdk/core@0.1.0-beta.13"`; `avenue-check-patches` fails until you do. The new patch is smaller: ui-sdk now keeps
