@@ -37,6 +37,13 @@
   --text-heading--line-height: var(--text-heading--line-height);
   --text-display: var(--text-display);
   --text-display--line-height: var(--text-display--line-height);
+  /* Public-site preview (Georgia) display sizes (AVE-178). No line height of their own: each place sets its own
+     (hero 1.1, card 1.35 or 1.4 in the app), so a class inherits it or takes a leading-* beside it. */
+  --text-web-hero: var(--text-web-hero);
+  --text-web-hero-narrow: var(--text-web-hero-narrow);
+  --text-web-section: var(--text-web-section);
+  --text-web-card: var(--text-web-card);
+  --text-web-glyph: var(--text-web-glyph);
   /* shadcn primitives (badges, buttons, inputs, menus) size with text-xs / text-sm: follow the app scale. */
   --text-xs: var(--text-meta);
   --text-xs--line-height: var(--text-meta--line-height);

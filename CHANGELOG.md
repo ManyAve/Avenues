@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.6 (2026-11-20)
+
+- **The public-site text sizes are classes now** (AVE-178). `text-web-hero`, `text-web-hero-narrow`, `text-web-section`,
+  `text-web-card` and `text-web-glyph` make their font size (38, 34, 24, 17 and 55px) from Avenue's stylesheet; before,
+  Tailwind made no CSS for them, so a class gave no size and oxlint's unknown-class rule failed it. They carry no line
+  height of their own, as before: the place that uses one sets it (`leading-*`). The `--text-web-*` variables are
+  unchanged. No pixel moves in any component. Nothing to change in the apps.
+
 ## v0.41.5 (2026-11-20)
 
 - **ADOPTING.md's class-rule steps are tried on Management** (AVE-179). Followed as written on a copy of Management at
