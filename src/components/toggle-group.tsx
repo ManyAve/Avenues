@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { SegmentedControl, SegmentedControlItem } from "@ui-sdk/react/segmented-control";
 import { Toggle, ToggleGroup as ToggleGroupPrimitive } from "@ui-sdk/react/toggle";
-import type { VariantProps } from "class-variance-authority";
+import type { VariantProps } from "#avenue/lib/cva";
 import { createContext, useContext, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { toggleVariants } from "#avenue/components/toggle";
 import { scaleStep } from "#avenue/lib/control";
