@@ -644,8 +644,18 @@ export const SizedByContent: Story = {
   },
   play: async ({ canvas }) => {
     const input = canvas.getByRole("combobox", { name: "Household" });
-    // 234px with a mouse and 264px on a phone, as before AVE-113.
-    await expect(input.getBoundingClientRect().width).toBeGreaterThan(200);
+    // As wide as a plain text field in the same font, as before AVE-113. The pixels depend on the system font (Avenue's
+    // sans is the platform's own: 200px on Linux, 170px on a Mac), so compare with a field rather than a number
+    // (AVE-175).
+    const style = getComputedStyle(input);
+    const plainField = document.createElement("input");
+    for (const property of ["fontFamily", "fontSize", "fontWeight", "letterSpacing", "padding", "border", "boxSizing"] as const) {
+      plainField.style[property] = style[property];
+    }
+    document.body.append(plainField);
+    const fieldWidth = plainField.getBoundingClientRect().width;
+    plainField.remove();
+    await expect(Math.abs(input.getBoundingClientRect().width - fieldWidth)).toBeLessThanOrEqual(1);
   },
 };
 

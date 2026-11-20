@@ -338,7 +338,9 @@ module is `AvenueUI`, not `Avenue`, because the Neighbors app already has a type
 rebuild is here; everything else stays the platform's own control (the `Foundations/Native` table).
 
 An app adds the repository as a Swift package at the tag it uses, the same tag as its web install
-(`.package(url: "https://github.com/ManyAve/Avenues", exact: "<version>")`).
+(`.package(url: "https://github.com/ManyAve/Avenues", exact: "<version>")`). The package builds in Swift 6 language mode,
+with its data-race checks (`swift-tools-version: 6.0`, AVE-174), so the app needs Xcode 16 or later to read it; the
+app's own code keeps whatever language mode it sets.
 
 **Seeing them.** `AvenueCatalog` shows every component in each of its states with fictional data, for an Xcode
 preview or a debug screen. `bun run native:ios` (`scripts/native-ios.ts`, a Mac with Xcode only; `check` doesn't run
