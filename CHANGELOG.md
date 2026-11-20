@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.44.1 (2026-11-20)
+
+- **A field's placeholder has its own token, and reads dimmer than typed text in dark** (AVE-186). Input, Textarea,
+  Search input, Select and Combobox draw their placeholder in the new `--placeholder` token (`text-placeholder`,
+  `placeholder:text-placeholder`), shown in Foundations / Colors. Light is onyx-700, the grey it had, so nothing moves there. Dark is onyx-400 (was
+  onyx-300, muted-foreground): 2.39:1 from typed text, where it was 1.72:1 and an example could pass for a value, and
+  5.49:1 on a card, 6.11:1 on the page and 4.64:1 on lifted muted. `scripts/surface-contrast.test.ts` holds 2:1 and
+  4.5:1 in all four themes. The native tokens carry `placeholder` too. muted-foreground is unchanged, so secondary
+  text and the AVE-38 control outlines don't move. To change in the apps: a field of the app's own that draws
+  `placeholder:text-muted-foreground` moves to `placeholder:text-placeholder`.
+
 ## v0.44.0 (2026-11-20)
 
 - **Font weight, motion, layers and the modal overlay have names** (AVE-182). New utilities: `font-quiet` (450),

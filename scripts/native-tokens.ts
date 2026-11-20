@@ -41,6 +41,7 @@ export const COLOR_ROLES = [
   "secondary-foreground",
   "muted",
   "muted-foreground",
+  "placeholder",
   "accent",
   "accent-foreground",
   "success",
