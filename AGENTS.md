@@ -97,11 +97,12 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
   when an outside press closed the dialog in the last second (the second half of a double click). Still needed in
   beta.13 (AVE-164: `Dialog/ClickRightAfterClose` fails on beta.13 without it). `Dialog/ClickRightAfterClose` fails if
   the patch stops applying.
-- `@ui-sdk/core` 0.1.0-beta.13 (since v0.39.1), checkboxes entering together (MANA-1235): each checkbox indicator
-  asked for its animations before and after writing `data-starting-style`, and each ask brought the page's styles
-  and animation list up to date, so checking 500 boxes in one render (the board's "Confirm all") froze the page for
-  25 seconds. The patch gathers the indicators that enter in one render into a microtask that asks the document once
-  before all the writes and once after. `Checkbox/CheckManyAtOnce` fails if the patch stops applying.
+- `@ui-sdk/core` 0.1.0-beta.13 (since v0.39.1), checkboxes entering together (AVE-177; first shipped for MANA-1235):
+  each checkbox indicator asked for its animations before and after writing `data-starting-style`, and each ask
+  brought the page's styles and animation list up to date, so checking 500 boxes in one render (the board's "Confirm
+  all") froze the page for 25 seconds. The patch gathers the indicators that enter in one render into a microtask that
+  asks the document once before all the writes and once after. Still needed: beta.13 is ui-sdk's newest release
+  (2026-11-20). `Checkbox/CheckManyAtOnce` fails if the patch stops applying.
 
 Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
 itself; `Toast/EmptyRegion` still guards it. The positioning patch (AVE-21, beta.1 to beta.7): beta.13 rounds a

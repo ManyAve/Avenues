@@ -40,7 +40,7 @@ const prebundle = [
   // Every ui-sdk entry, read from its exports, so a component that starts using a new one can't miss this
   // list. Vite's "@ui-sdk/react/*" glob doesn't read package exports, so it can't be used here.
   ...uiSdkEntries(),
-  "class-variance-authority",
+  "cva",
   "cn/config",
   "lucide-react",
   "react",
