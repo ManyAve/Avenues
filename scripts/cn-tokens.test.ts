@@ -38,6 +38,7 @@ test("conflicts resolve with Avenue's weights, durations and layers", () => {
   expect(cn("duration-fast", "duration-200")).toBe("duration-200");
   expect(cn("duration-100", "duration-slow")).toBe("duration-slow");
   expect(cn("z-sticky", "z-20")).toBe("z-20");
+  expect(cn("z-sticky-bar", "z-sticky")).toBe("z-sticky");
   expect(cn("z-10", "z-overlay")).toBe("z-overlay");
   expect(cn("z-10", "z-20")).toBe("z-20");
   expect(cn("bg-overlay", "bg-black/50")).toBe("bg-black/50");

@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.45.0 (2026-11-20)
+
+- **A layer for a sticky toolbar or tab bar** (AVE-187). New utility `z-sticky-bar` (20), between `z-sticky` (10)
+  and `z-dock` (40): a toolbar or tab bar stuck to the top, which the sticky column headers slide under. Management
+  draws three (the short-screen toolbar, the mobile page header, the announcement reader's tabs) at a hand-written
+  `z-20`; write `z-sticky-bar` there instead (MANA-1241). `cn` knows it, and Tokens/Elevation "Layers" shows it.
+  No Avenue component changes.
+
 ## v0.44.0 (2026-11-20)
 
 - **Font weight, motion, layers and the modal overlay have names** (AVE-182). New utilities: `font-quiet` (450),

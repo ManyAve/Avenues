@@ -37,7 +37,7 @@ export const TEXT_SIZE_NAMES = [
 /** Avenue's font weights, durations and layers (avenue.css, AVE-182), beside Tailwind's own. */
 export const FONT_WEIGHT_NAMES = ["quiet", "emphasis", "heading"] as const;
 export const DURATION_NAMES = ["fast", "moderate", "slow"] as const;
-export const Z_INDEX_NAMES = ["sticky-group", "sticky", "dock", "overlay", "toast"] as const;
+export const Z_INDEX_NAMES = ["sticky-group", "sticky", "sticky-bar", "dock", "overlay", "toast"] as const;
 
 /**
  * Joins class names and resolves Tailwind conflicts. It knows Avenue's text scale:
