@@ -170,9 +170,9 @@
    - z-sticky-group (5): a sticky group or day bar that scrolls under the column header. One component in Avenue
      (Register's group bar and its row); Management's register groups and activity day bars are the other uses.
    - z-sticky (10): a sticky column header.
-   - z-sticky-bar (20): a toolbar or tab bar stuck to the top, which sticky column headers slide under (AVE-187).
-     Nothing in Avenue sticks a bar today: Management's short-screen toolbar, mobile page header and announcement
-     reader tabs are its three uses.
+   - z-sticky-bar (20): a toolbar, tab bar or page header stuck to the top, which sticky column headers slide under
+     (AVE-187, AVE-188). Nothing in Avenue sticks a bar today: Management's short-screen toolbar, mobile page header
+     and announcement reader tabs, and Neighbors' hub and marketing site headers, are its five uses.
    - z-dock (40): the docked windows along the bottom edge. One component in Avenue: a step in the scale, which
      Management's chat dock and Neighbors' four z-40 bars also take.
    - z-overlay (50): dialogs, drawers and their backdrop.
