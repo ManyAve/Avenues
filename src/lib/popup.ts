@@ -19,7 +19,7 @@ export const popupMaxWidth = "max-w-(--available-width)";
  * dialog on a wide screen and a sheet on a phone reads as the same thing. Sizing, corners and position stay with each
  * component.
  */
-export const modalSurface = "bg-popover p-inset text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none";
+export const modalSurface = "bg-popover p-inset text-sm text-popover-foreground ring-1 ring-border outline-none";
 /** Line height is the close button's 24px, so the title and the button share a centre line. */
 /**
  * text-compact, as the app's dialogs set their titles (dues.tsx, dialogs.tsx): 16px on web, 14px at desktop scale

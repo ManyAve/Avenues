@@ -36,7 +36,7 @@ function HoverCardContent({
       side={side}
       sideOffset={sideOffset}
       className={cn(
-        "w-64 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden",
+        "w-64 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-popover ring-1 ring-border outline-hidden",
         popupMaxWidth,
         popupMotion,
         className,

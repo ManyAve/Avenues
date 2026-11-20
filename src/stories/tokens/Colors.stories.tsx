@@ -127,6 +127,7 @@ function SemanticColors() {
 const lines = [
   ["border", "border-border"],
   ["input", "border-input"],
+  ["control-outline", "border-control-outline"],
   ["sidebar-border", "border-sidebar-border"],
 ] as const;
 

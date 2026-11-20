@@ -81,7 +81,7 @@ function MenuContextTrigger({ className, id, ...props }: Loose<ComponentProps<ty
 }
 
 const menuSurface =
-  "max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none";
+  "max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-popover ring-1 ring-border outline-none";
 
 function MenuContent({
   align = "start",
@@ -236,7 +236,7 @@ function MenuSubContent({
       alignOffset={alignOffset}
       side={side}
       sideOffset={sideOffset}
-      className={cn(menuSurface, "w-auto min-w-24 shadow-lg", popupMaxWidth, popupMotion, className)}
+      className={cn(menuSurface, "w-auto min-w-24", popupMaxWidth, popupMotion, className)}
       {...defined(props)}
     />
   );

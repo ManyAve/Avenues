@@ -92,10 +92,12 @@ export function MonthGrid({
       >
         <parts.Row className="sticky top-0 z-sticky grid grid-cols-7 border-b bg-background text-muted-foreground">
           {short.map((name, i) => (
+            // The weekday names inherit the grid's meta (14px, 13px on desktop): the floor (AVE-183). They were 11px
+            // capitals, the only text under it; at meta, sentence case reads as a quiet column header, as a table's does.
             <parts.Columnheader
               key={long[i]}
               aria-label={long[i]}
-              className="px-2 py-2 text-start text-[11px] font-emphasis tracking-wider uppercase"
+              className="px-2 py-2 text-start font-emphasis"
             >
               {name}
             </parts.Columnheader>

@@ -84,7 +84,7 @@ function DockWindow({ label, width = "default", className, open, defaultOpen, ..
         data-width={width}
         {...(open === undefined ? { defaultOpen: defaultOpen ?? true } : { open })}
         className={cn(
-          "pointer-events-auto flex h-11 flex-col overflow-hidden rounded-t-xl border border-b-0 bg-popover text-popover-foreground shadow-lg data-open:h-[min(32rem,calc(100dvh-4rem))] max-sm:w-full",
+          "pointer-events-auto flex h-11 flex-col overflow-hidden rounded-t-xl border border-b-0 bg-popover text-popover-foreground shadow-popover data-open:h-[min(32rem,calc(100dvh-4rem))] max-sm:w-full",
           widthLook[width],
           className,
         )}

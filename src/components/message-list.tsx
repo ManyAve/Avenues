@@ -130,7 +130,7 @@ export function MessageList({
               <Button
                 variant="outline"
                 size="xs"
-                className="pointer-events-auto rounded-full bg-popover shadow-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-moderate dark:bg-popover"
+                className="pointer-events-auto rounded-full bg-popover shadow-popover motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-moderate dark:bg-popover"
                 onClick={() => handle.api.jumpToLatest()}
               >
                 {unseen === 1 ? "New message" : `${unseen} new messages`}
