@@ -93,11 +93,12 @@ export const Open: Story = {
     // `destructive` is ui-sdk's prop and sets ui-sdk's attribute, which the item's look reads (AVE-151).
     await expect(screen.getByRole("menuitem", { name: /Remove household/ })).toHaveAttribute("data-destructive");
     await expect(screen.getByRole("menuitem", { name: /Print statement/ })).not.toHaveAttribute("data-destructive");
-    // Placed on whole device pixels (AVE-21, Avenue's ui-sdk patch), so its text is as sharp as the page's on a 1x
-    // screen. The trigger is centred and 92.6px wide here, so an unrounded menu lands at 593.688px.
-    const popup = screen.getByRole("menu");
-    for (const side of ["left", "top"] as const) {
-      const value = parseFloat(popup.style[side]) * devicePixelRatio;
+    // Placed on whole device pixels (AVE-21), so its text is as sharp as the page's on a 1x screen. The trigger is
+    // centred and 92.6px wide here, so an unrounded menu lands at a fraction of a pixel. Since beta.13 ui-sdk rounds
+    // the place itself (in CSS, with anchor positioning where the browser has it, so the inline left and top are no
+    // longer numbers): measure where the menu lands, not its style.
+    const box = screen.getByRole("menu").getBoundingClientRect();
+    for (const value of [box.left, box.top].map((side) => side * devicePixelRatio)) {
       await expect(Math.abs(value - Math.round(value))).toBeLessThan(0.01);
     }
   },
