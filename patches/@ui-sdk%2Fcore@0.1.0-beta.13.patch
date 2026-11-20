@@ -21,7 +21,7 @@ index e0e85c2ce4ab28b98d7823a40bbd95c6d30c1473..f0cfa59d85c48fe8265b8e9112303c6b
    el.setAttribute("data-starting-style", "");
 +  return startedIn(el, done, running);
 +}
-+// Avenue patch (MANA-1235): animateIn asks the box for its animations before and after it writes
++// Avenue patch (AVE-177): animateIn asks the box for its animations before and after it writes
 +// data-starting-style, and each ask makes the browser bring the page's styles and animation list up to date. Checking
 +// 500 boxes in one render (a "Confirm all") asked 1,000 times, each time over every animation the earlier boxes had
 +// started: 25 seconds. animateInTogether gathers the checkbox indicators that enter in one render into a microtask

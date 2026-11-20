@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.4 (2026-11-20)
+
+- **The checkbox patch to ui-sdk names its own Avenue card** (AVE-177). The comment in
+  `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` and the Checkbox story's note now cite AVE-177 instead of the Management
+  card it first shipped under. Only a comment changed, so the patched code is the same. An app that copied the patch
+  may copy it again from the tag, or keep its copy. ui-sdk's newest release is still beta.13, so the patch stays.
+- **The story tests prebundle `cva`**, not `class-variance-authority`, which v0.41.1 replaced with it; Vite had warned
+  on every story test run that it couldn't find it. Nothing to change in the apps.
+
 ## v0.41.3 (2026-11-20)
 
 - **Storybook builds with Vite 8.4's beta** (AVE-167). Vite, which builds Storybook and runs the story tests, moves

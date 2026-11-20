@@ -87,7 +87,7 @@ const many = Array.from({ length: 40 }, (_, i) => `${i + 1} Hawthorn Row`);
 
 /**
  * Checking many boxes in one render asks the page for its animations twice in all, not twice per box (Avenue's
- * ui-sdk patch, MANA-1235): a "Confirm all" over 500 rows took 25 seconds when each box asked for itself. The play
+ * ui-sdk patch, AVE-177): a "Confirm all" over 500 rows took 25 seconds when each box asked for itself. The play
  * function counts what the indicators ask while they enter: nothing per box, one document read before all the
  * writes and one after, and every box still starts its entry.
  */
