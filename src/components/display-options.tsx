@@ -53,7 +53,8 @@ function DisplayOptions({
         aria-label="Display options"
         // 320px, or wider when Row height's equal columns need it (AVE-50: each holds the widest label and the check).
         // Never wider than the screen's room, as every popover (AVE-112): a minimum would otherwise beat that maximum.
-        className={cn("w-min min-w-[min(--spacing(80),var(--available-width))] gap-0 text-meta", className)}
+        // On a phone (under 640px) it takes all the room there is, so Row height's three heights share one row (AVE-176).
+        className={cn("w-min min-w-[min(--spacing(80),var(--available-width))] gap-0 text-meta max-sm:w-(--available-width)", className)}
       >
         {children}
       </PopoverContent>
@@ -139,10 +140,12 @@ function DisplayOptionsDensity({
       variant="choice"
       size="sm"
       aria-label="Row height"
-      className={cn("w-full", className)}
+      // On a phone (under 640px) the three equal columns don't fit the screen (AVE-176): the heights share the row
+      // instead, each at least as wide as its label and check, and wrap if even that is too wide (a 320px phone).
+      className={cn("w-full max-sm:flex! max-sm:min-w-0! max-sm:flex-wrap", className)}
     >
       {densities.map(([key, label]) => (
-        <ToggleGroupItem key={key} value={key} className="text-control">
+        <ToggleGroupItem key={key} value={key} className="text-control max-sm:flex-auto">
           {label}
         </ToggleGroupItem>
       ))}

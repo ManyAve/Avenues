@@ -20,6 +20,7 @@ type Story = StoryObj<typeof meta>;
 
 const desktop = { viewport: { value: "desktop", isRotated: false } };
 const wide = { viewport: { value: "wide", isRotated: false } };
+const phone = { viewport: { value: "phone", isRotated: false } };
 
 const onOff = (value: boolean) => (value ? "on" : "off");
 const exportReason = "No households match the filters.";
@@ -136,5 +137,30 @@ export const NothingToExport: Story = {
     await expect(exportButton).toHaveAttribute("aria-disabled", "true");
     await expect(exportButton).toHaveAccessibleDescription(exportReason);
     await waitFor(() => expect(panel.getByText(exportReason)).toBeVisible());
+  },
+};
+
+/** 390px phone (AVE-176): every option, Row height's three heights included, sits inside the popover. */
+export const OnAPhone: Story = {
+  globals: phone,
+  render: () => <Options />,
+  play: async ({ canvas, canvasElement }) => {
+    const panel = await open(canvas, canvasElement.ownerDocument.body);
+    const box = panel.getBoundingClientRect();
+    const view = canvasElement.ownerDocument.documentElement.clientWidth;
+    await expect(box.left).toBeGreaterThanOrEqual(0);
+    await expect(box.right).toBeLessThanOrEqual(view);
+    const inset = Number.parseFloat(getComputedStyle(panel).paddingRight);
+    for (const option of [
+      ...within(panel).getAllByRole("radio"),
+      ...within(panel).getAllByRole("checkbox"),
+      ...within(panel).getAllByRole("button"),
+    ]) {
+      const rect = option.getBoundingClientRect();
+      await expect(rect.left, option.textContent ?? "").toBeGreaterThanOrEqual(box.left + inset - 0.5);
+      await expect(rect.right, option.textContent ?? "").toBeLessThanOrEqual(box.right - inset + 0.5);
+    }
+    await userEvent.click(within(panel).getByRole("radio", { name: "Comfortable" }));
+    await expect(canvas.getByTestId("state")).toHaveTextContent("comfortable rows");
   },
 };
