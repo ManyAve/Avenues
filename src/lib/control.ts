@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "#avenue/lib/cva";
 
 /**
  * The field look every text-entry and value control shares: Input, Textarea, and the Select and Combobox
@@ -19,7 +19,7 @@ export const controlSurface =
  * (32, 40) take the lg corner (10px). The one place that pairing lives: fields (controlSize), Button and Toggle all
  * compose it with their own padding, so a corner change happens here only. Controls that share a row share a size.
  */
-export const controlShape = cva("", {
+export const controlShape = cva({
   variants: {
     size: {
       xs: "h-control-xs rounded-md",

@@ -1,6 +1,6 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as FieldPrimitive from "@ui-sdk/react/field";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "#avenue/lib/cva";
 import { createContext, useContext, type ComponentProps } from "react";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
@@ -66,9 +66,8 @@ function FieldGroup({ className, ...props }: Loose<ComponentProps<typeof FieldPr
 
 // On a phone (coarse pointer), a field holding a checkbox or switch is at least 44px tall, so a list of them keeps
 // each control's 44px hit area its own (AVE-22). Desktop is unchanged.
-const fieldVariants = cva(
-  "group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground pointer-coarse:has-[>[role=checkbox]]:min-h-11 pointer-coarse:has-[>[role=radio]]:min-h-11 pointer-coarse:has-[>[role=switch]]:min-h-11",
-  {
+const fieldVariants = cva({
+  base: "group/field flex w-full gap-2 data-invalid:text-destructive-subtle-foreground pointer-coarse:has-[>[role=checkbox]]:min-h-11 pointer-coarse:has-[>[role=radio]]:min-h-11 pointer-coarse:has-[>[role=switch]]:min-h-11",
   variants: {
     orientation: {
       vertical: "flex-col *:not-[[popover]]:w-full [&>.sr-only]:w-auto",
@@ -79,8 +78,7 @@ const fieldVariants = cva(
     },
   },
   defaultVariants: { orientation: "vertical" },
-  },
-);
+});
 
 /**
  * One labelled control. Pass `invalid` (with a FieldError child) to mark it invalid; `disabled` dims the label and
@@ -100,7 +98,7 @@ function Field({
       <FieldPrimitive.Field
         data-slot="field"
         data-orientation={orientation}
-        className={cn(fieldVariants({ orientation }), className)}
+        className={fieldVariants({ orientation, className })}
         {...defined(props)}
       />
     </FieldContext.Provider>

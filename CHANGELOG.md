@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.1 (2026-11-20)
+
+- **Variant classes come from cva 1.0's beta** (AVE-170). Avenue's variant helpers (`buttonVariants`, `toggleVariants`,
+  `badgeVariants`, the field and control sizes) move from `class-variance-authority` 0.7, which stopped releasing in
+  2024, to its successor `cva` 1.0.0-beta.12, through one shared config that runs every result through Avenue's `cn`.
+  `buttonVariants({ variant, size, className })` keeps its name and call shape and returns the same classes, so a
+  screen that wraps it in `cn()` still works; the wrap is no longer needed, since a `className` passed in now replaces
+  the classes it conflicts with. Variant props no longer take `null` (cva 1.0 dropped it); leave the prop out instead.
+  No component, token or story looks different. Nothing to change in the apps.
+
 ## v0.41.0 (2026-11-20)
 
 - **Avenue's class rules run inside oxlint** (AVE-171). The `avenue-check-classes` command is gone; the same rules
