@@ -142,7 +142,9 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
     // 24px above the bottom edge plus the home-indicator safe area, or 8px above --avenue-toast-bottom where a page sets
     // it (a status bar, AVE-118); while a bottom Sheet is open, 8px above its
     // footer instead (CSS anchor positioning on the footer's anchor-name), so it never covers the sheet's actions
-    // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it.
+    // (AVE-40). The region is in the top layer after the sheet, so it can anchor to it. The footer is also the region's
+    // position-anchor: the sheet sits in a scrolled viewport, and Chromium 159 (Playwright 1.66) only follows an
+    // anchor's scroll for the default anchor, so without it the toast falls below the screen (AVE-169).
     // The name is the landmark's while a toast shows. Empty, the region is no landmark and, with Avenue's ui-sdk patch,
     // not in the agent snapshot either (AVE-43, Toast/EmptyRegion).
     <ToastRegionPrimitive
@@ -151,7 +153,7 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
       side="bottom"
       align="center"
       maxVisible={1}
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(anchor(--avenue-sheet-footer_top,var(--avenue-toast-bottom,calc(--spacing(4)+env(safe-area-inset-bottom))))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
+      className="pointer-events-none fixed inset-x-0 [position-anchor:--avenue-sheet-footer] bottom-[calc(anchor(--avenue-sheet-footer_top,var(--avenue-toast-bottom,calc(--spacing(4)+env(safe-area-inset-bottom))))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
     >
       {(item) => (
         <ToastPart
