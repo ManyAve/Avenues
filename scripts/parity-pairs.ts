@@ -473,6 +473,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-radio-group--keyboard": { none: BEHAVIOUR("Checkbox / States") },
   "components-radio-group--unchecked-outline": { none: OUTLINE("radio") },
   "components-checkbox--unchecked-outline": { none: OUTLINE("checkbox") },
+  "components-checkbox--check-many-at-once": { none: BEHAVIOUR("Checkbox / States") },
   "components-choice-card--checkboxes": { none: NEW_IN_AVENUE("The choice card (AVE-33, AVE-37)", "Checkbox / States and Field / Label and description") },
   "components-choice-card--radio": { none: NEW_IN_AVENUE("The choice card (AVE-33, AVE-37)", "Checkbox / States and Field / Label and description") },
   "components-choice-card--phone": { none: NEW_IN_AVENUE("The choice card at phone width (AVE-33)", "Checkbox / States and Field / Label and description") },

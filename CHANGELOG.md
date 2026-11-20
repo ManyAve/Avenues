@@ -4,12 +4,36 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.38.5 (2026-11-20)
+## v0.39.2 (2026-11-20)
 
 - **Storybook deploys with cf 1.0's release candidate** (AVE-166). The `cf` CLI that publishes Storybook to
   avenues.manyave.com moves from 1.0.0-beta.31 to 1.0.0-rc.2, its `latest` release. `cloudflare.config.ts` is
   unchanged and type-checks against the new config package, and a dry-run deploy of the built Storybook passes. Only
   the deploy tool changes: no component, token or story moves. Nothing to change in the apps.
+
+## v0.39.1 (2026-11-20)
+
+- **Checking many boxes at once no longer freezes the page** (MANA-1235). Each checkbox, as its check mark appeared,
+  made the browser bring the page's styles and animations up to date twice, so checking 500 boxes in one render (the
+  board's "Confirm 501 households") froze the page for about 25 seconds. A new patch to ui-sdk gathers the boxes that
+  appear together and does that twice in all: the same 501 boxes now take under a second. Nothing looks different.
+- **Swap the ui-sdk patch.** In the app, copy `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag over the
+  app's copy; `avenue-check-patches` fails until you do.
+
+## v0.39.0 (2026-11-20)
+
+- **ui-sdk 0.1.0-beta.13** (AVE-164). Avenue now builds on `@ui-sdk/react` and `@ui-sdk/core` 0.1.0-beta.13, up from
+  beta.7. ui-sdk renamed no part, prop, callback or `data-slot` between the two, so there is no code to rename in the
+  apps.
+- **Two things look slightly different, both from ui-sdk.** A dialog that opens onto a text field that already holds
+  a value now selects that text, so typing replaces it (Form dialog / With callouts shows its amount selected).
+  A tooltip's arrow can sit a fraction of a pixel differently, now that ui-sdk places popups with the browser's own
+  anchor positioning; the popup itself still lands on whole pixels.
+- **Swap the ui-sdk patch.** In the app, delete `patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch`, copy
+  `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag, and list it under `patchedDependencies` as
+  `"@ui-sdk/core@0.1.0-beta.13"`; `avenue-check-patches` fails until you do. The new patch is smaller: ui-sdk now keeps
+  popups on whole pixels itself, so only the fix for the first click after a dialog closes remains (beta.13 still
+  swallows that click). An app that installs ui-sdk itself moves it to beta.13 too.
 
 ## v0.38.4 (2026-11-20)
 

@@ -39,8 +39,8 @@ comments when ui-sdk is upgraded. Hand-rolled behavior is the last resort, built
 **On every ui-sdk upgrade**, re-check what Avenue works around today, and drop what ui-sdk now does itself:
 - each `// Base UI:` comment (above), and each patch under "Patched ui-sdk" (below);
 - Combobox / Pattern is pinned to `presentation="popover"`, because ui-sdk 0.1's `checkPattern` fails its own
-  Combobox presenting as a sheet ("aria-controls names no open listbox", AVE-39). Remove the pin, run the `touch`
-  project, and if it passes delete the pin and its comment (AVE-75).
+  Combobox presenting as a sheet ("aria-controls names no open listbox", AVE-39; still so in beta.13, AVE-164).
+  Remove the pin, run the `touch` project, and if it passes delete the pin and its comment (AVE-75).
 
 **Composition and names follow ui-sdk** (Zack, 2026-11-17: "For composition let's follow ui-sdk", including prop
 names). This replaces the shadcn component structure and the 2026-11-17 morning call that composites stay prop-driven.
@@ -89,16 +89,23 @@ package's dev dependencies. It loads Avenue's copy, `src/styles/shadcn.css`, ins
 for a ui-sdk bug and is dropped once ui-sdk fixes it upstream; when upgrading ui-sdk, check each one still applies
 and is still needed. To change one, `bun patch <package>`, edit `node_modules`, then `bun patch --commit`.
 
-- `@ui-sdk/core` 0.1.0-beta.7 (since beta.2), closing backdrop (AVE-109): a press on a dialog's backdrop while it fades out was
+- `@ui-sdk/core` 0.1.0-beta.13 (since beta.2), closing backdrop (AVE-109): a press on a dialog's backdrop while it fades out was
   consumed, so the first click on the page after Cancel, Escape or a submit did nothing. The patch consumes it only
-  when an outside press closed the dialog in the last second (the second half of a double click).
-  `Dialog/ClickRightAfterClose` fails if the patch stops applying.
-- `@ui-sdk/core` 0.1.0-beta.7 (since beta.1), positioning (AVE-21): popups were placed at fractional pixels (a menu at
-  593.688px), so their text rendered softer than the page's on 1x screens; Base UI rounded. The patch rounds a
-  popup's `left` and `top` to whole device pixels. `Menu/Open` fails if the patch stops applying.
+  when an outside press closed the dialog in the last second (the second half of a double click). Still needed in
+  beta.13 (AVE-164: `Dialog/ClickRightAfterClose` fails on beta.13 without it). `Dialog/ClickRightAfterClose` fails if
+  the patch stops applying.
+- `@ui-sdk/core` 0.1.0-beta.13 (since v0.39.1), checkboxes entering together (MANA-1235): each checkbox indicator
+  asked for its animations before and after writing `data-starting-style`, and each ask brought the page's styles
+  and animation list up to date, so checking 500 boxes in one render (the board's "Confirm all") froze the page for
+  25 seconds. The patch gathers the indicators that enter in one render into a microtask that asks the document once
+  before all the writes and once after. `Checkbox/CheckManyAtOnce` fails if the patch stops applying.
 
 Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
-itself; `Toast/EmptyRegion` still guards it.
+itself; `Toast/EmptyRegion` still guards it. The positioning patch (AVE-21, beta.1 to beta.7): beta.13 rounds a
+popup's `left` and `top` to whole device pixels itself; `Menu/Open` still guards it.
+
+Story tests run on a prebundled copy of ui-sdk under `node_modules/.cache/storybook` (as well as `node_modules/.vite`).
+After changing a patch or editing `node_modules/@ui-sdk` to try one, delete both, or the tests run the old code.
 
 ### How to build with ui-sdk
 
