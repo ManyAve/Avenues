@@ -3,10 +3,12 @@ import { useState } from "react";
 import { ChevronDownIcon, MailIcon, PrinterIcon, TrashIcon } from "lucide-react";
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#avenue/components/table";
 import {
   Menu,
   MenuCheckboxItem,
   MenuContent,
+  MenuContextTrigger,
   MenuGroup,
   MenuItem,
   MenuGroupLabel,
@@ -243,6 +245,273 @@ export const WiderThanAPhone: Story = {
     await expect(r.left).toBeGreaterThanOrEqual(8);
     await expect(document.documentElement.clientWidth - r.right).toBeGreaterThanOrEqual(8);
     await expect(menu.scrollWidth).toBeLessThanOrEqual(menu.clientWidth);
+  },
+};
+
+type Household = { address: string; owner: string; dues: string };
+
+const households: Household[] = [
+  { address: "14 Larkspur Lane", owner: "R. Okafor", dues: "Paid" },
+  { address: "3 Juniper Court", owner: "M. Lindqvist", dues: "2 months behind" },
+  { address: "27 Larkspur Lane", owner: "T. Ferreira", dues: "Paid" },
+];
+
+const chosen = fn();
+
+/**
+ * Shift+F10 as Chromium sends it: the key, then a `contextmenu` event at the focused element with no pointer behind it
+ * (`pointerType` "", button 0, placed at the element). ui-sdk opens on that event, and user-event's synthetic key
+ * press never makes the browser send it, so the story sends what the browser would.
+ */
+async function shiftF10() {
+  await userEvent.keyboard("{Shift>}[F10]");
+  const target = document.activeElement as HTMLElement;
+  const r = target.getBoundingClientRect();
+  target.dispatchEvent(
+    new PointerEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      button: 0,
+      buttons: 0,
+      pointerType: "",
+      shiftKey: true,
+      clientX: r.left,
+      clientY: r.bottom,
+    }),
+  );
+  await userEvent.keyboard("{/Shift}");
+}
+
+function HouseholdRow({ household, onDone }: { household: Household; onDone: (what: string) => void }) {
+  const act = (what: string) => () => onDone(`${what}: ${household.address}`);
+  return (
+    <li className="first:*:rounded-t-lg last:*:rounded-b-lg">
+      <Menu onAction={(action) => chosen(action)}>
+        <MenuContextTrigger
+          tabIndex={0}
+          aria-label={`${household.address}, ${household.owner}, dues ${household.dues.toLowerCase()}`}
+          className="flex items-center justify-between gap-2 px-3 py-2 text-control"
+        >
+          <span>
+            {household.address}
+            <span className="block text-meta text-muted-foreground">{household.owner}</span>
+          </span>
+          <span className="text-meta text-muted-foreground">{household.dues}</span>
+        </MenuContextTrigger>
+        <MenuContent>
+          <MenuGroup>
+            <MenuGroupLabel>{household.address}</MenuGroupLabel>
+            <MenuItem value="email" onSelect={act("Emailed owner")}>
+              <MailIcon aria-hidden />
+              Email owner
+            </MenuItem>
+            <MenuItem value="print" onSelect={act("Printed statement")}>
+              <PrinterIcon aria-hidden />
+              Print statement
+            </MenuItem>
+          </MenuGroup>
+          <MenuSeparator />
+          <MenuItem
+            value="remove"
+            destructive
+            data-agent-confirm="Removes the household from the directory"
+            onSelect={act("Removed household")}
+          >
+            <TrashIcon aria-hidden />
+            Remove household
+          </MenuItem>
+        </MenuContent>
+      </Menu>
+    </li>
+  );
+}
+
+function HouseholdRows() {
+  const [log, setLog] = useState("No action yet");
+  return (
+    <div className="flex w-full max-w-md flex-col gap-group">
+      <ul aria-label="Households" className="divide-y rounded-lg border">
+        {households.map((household) => (
+          <HouseholdRow key={household.address} household={household} onDone={setLog} />
+        ))}
+      </ul>
+      <output className="block text-meta text-muted-foreground">{log}</output>
+    </div>
+  );
+}
+
+/**
+ * A context menu (AVE-153): each row of a list has its own Menu, opened at the pointer by right-click, by a long press
+ * on touch, or from the keyboard with Shift+F10 on a row that has focus. The menu names the row it acts on, and the
+ * row keeps a muted fill while its menu is open. One Menu per row, not one shared through `payload`, because a
+ * Menu takes its agent name from its trigger: the row's own name. Escape or a choice returns focus
+ * to the row. It stays a popover on phones. Remove household carries `data-agent-confirm`.
+ */
+export const ContextMenu: Story = {
+  tags: ["agent"],
+  render: () => <HouseholdRows />,
+  beforeEach: () => {
+    chosen.mockClear();
+  },
+  play: async ({ canvas }) => {
+    const row = (address: string) => canvas.getByLabelText(new RegExp(address));
+    const status = canvas.getByRole("status");
+    const content = () => document.querySelector<HTMLElement>("[data-slot=menu-content]");
+    const closed = (at: string) => waitFor(() => expect(screen.queryByRole("menu"), at).toBeNull());
+
+    // Keyboard: Tab to the second row, Shift+F10 opens its menu on the first item; choose by arrow and Enter.
+    await userEvent.tab();
+    await userEvent.tab();
+    const juniper = row("3 Juniper Court");
+    await expect(juniper).toHaveFocus();
+    await shiftF10();
+    const menu = await screen.findByRole("menu");
+    await expect(menu).toHaveTextContent("3 Juniper Court");
+    await expect(juniper).toHaveAttribute("data-open");
+    await waitFor(() => expect(screen.getByRole("menuitem", { name: /Email owner/ })).toHaveFocus());
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(screen.getByRole("menuitem", { name: /Print statement/ })).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await closed("after Enter");
+    await expect(juniper).toHaveFocus();
+    await expect(chosen).toHaveBeenLastCalledWith("print");
+    await expect(status).toHaveTextContent("Printed statement: 3 Juniper Court");
+
+    // Escape closes and returns focus to the row too.
+    await shiftF10();
+    await screen.findByRole("menu");
+    await userEvent.keyboard("{Escape}");
+    await closed("after Escape");
+    await expect(juniper).toHaveFocus();
+
+    // Touch: a long press opens it, and it stays a popover, never a sheet, even on a phone.
+    const larkspur = row("27 Larkspur Lane");
+    await userEvent.pointer({ keys: "[TouchA>]", target: larkspur });
+    await waitFor(() => expect(screen.getByRole("menu")).toHaveTextContent("27 Larkspur Lane"), { timeout: 2000 });
+    await userEvent.pointer({ keys: "[/TouchA]", target: larkspur });
+    await expect(content()).toHaveAttribute("data-presentation", "popover");
+    await userEvent.click(screen.getByRole("menuitem", { name: /Email owner/ }));
+    await closed("after a long press");
+    await expect(status).toHaveTextContent("Emailed owner: 27 Larkspur Lane");
+
+    // Right-click opens it at the pointer, naming that row; the destructive action asks an agent to confirm.
+    const first = row("14 Larkspur Lane");
+    const r = first.getBoundingClientRect();
+    const at = { clientX: Math.round(r.left + r.width / 3), clientY: Math.round(r.top + r.height / 2) };
+    await userEvent.pointer({ keys: "[MouseRight]", target: first, coords: at });
+    await waitFor(async () => expect(await screen.findByRole("menu")).toBeVisible());
+    const opened = screen.getByRole("menu");
+    await expect(first).toHaveAttribute("data-open");
+    // Named by its row, as a trigger names its menu, so an agent can find it open or closed.
+    await expect(opened).toHaveAccessibleName("14 Larkspur Lane, R. Okafor, dues paid");
+    await expect(opened).toHaveTextContent("14 Larkspur Lane");
+    // At the pointer, and as wide as its longest item: a point has no width to match, so every item stays on one line.
+    await waitFor(async () => expect(Math.abs(opened.getBoundingClientRect().left - at.clientX)).toBeLessThanOrEqual(1));
+    await expect(opened.getBoundingClientRect().width).toBeGreaterThan(128);
+    for (const item of screen.getAllByRole("menuitem")) {
+      await expect(item.getBoundingClientRect().height).toBeLessThan(48);
+    }
+    await expect(screen.getByRole("menuitem", { name: /Remove household/ })).toHaveAttribute(
+      "data-agent-confirm",
+      "Removes the household from the directory",
+    );
+  },
+};
+
+function HouseholdTable() {
+  const [log, setLog] = useState("No action yet");
+  return (
+    <div className="flex w-full max-w-lg flex-col gap-group">
+      <Table aria-label="Households">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Address</TableHead>
+            <TableHead>Owner</TableHead>
+            <TableHead>Dues</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {households.map((household) => (
+            <Menu key={household.address}>
+              <MenuContextTrigger
+                tabIndex={0}
+                aria-label={`${household.address}, ${household.owner}, dues ${household.dues.toLowerCase()}`}
+                render={<TableRow />}
+              >
+                <TableCell>{household.address}</TableCell>
+                <TableCell>{household.owner}</TableCell>
+                <TableCell>{household.dues}</TableCell>
+              </MenuContextTrigger>
+              <MenuContent container={document.body}>
+                <MenuGroup>
+                  <MenuGroupLabel>{household.address}</MenuGroupLabel>
+                  <MenuItem onSelect={() => setLog(`Emailed owner: ${household.address}`)}>
+                    <MailIcon aria-hidden />
+                    Email owner
+                  </MenuItem>
+                  <MenuItem onSelect={() => setLog(`Printed statement: ${household.address}`)}>
+                    <PrinterIcon aria-hidden />
+                    Print statement
+                  </MenuItem>
+                </MenuGroup>
+                <MenuSeparator />
+                <MenuItem
+                  destructive
+                  data-agent-confirm="Removes the household from the directory"
+                  onSelect={() => setLog(`Removed household: ${household.address}`)}
+                >
+                  <TrashIcon aria-hidden />
+                  Remove household
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          ))}
+        </TableBody>
+      </Table>
+      <output className="block text-meta text-muted-foreground">{log}</output>
+    </div>
+  );
+}
+
+/**
+ * Row actions in a table, as Neighbors' data tables need (AVE-153): the whole row is the area (`render={<TableRow />}`),
+ * and its menu goes into `document.body` (`container`), since a `tbody` takes only rows. Kept out of the row, a
+ * right-click inside the open menu doesn't move it; inside the row, it would open the menu again at that point.
+ */
+export const ContextMenuInATable: Story = {
+  tags: ["agent"],
+  render: () => <HouseholdTable />,
+  play: async ({ canvas }) => {
+    const row = (address: string) => canvas.getByRole("row", { name: new RegExp(address) });
+    const status = canvas.getByRole("status");
+    const closed = () => waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+
+    await userEvent.tab();
+    await userEvent.tab();
+    const juniper = row("3 Juniper Court");
+    await expect(juniper).toHaveFocus();
+    await shiftF10();
+    await waitFor(() => expect(screen.getByRole("menuitem", { name: /Email owner/ })).toHaveFocus());
+    await expect(screen.getByRole("menu")).toHaveAccessibleName(/3 Juniper Court/);
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await closed();
+    await expect(juniper).toHaveFocus();
+    await expect(status).toHaveTextContent("Printed statement: 3 Juniper Court");
+
+    const first = row("14 Larkspur Lane");
+    const r = first.getBoundingClientRect();
+    const at = { clientX: r.left + 40, clientY: r.top + r.height / 2 };
+    await userEvent.pointer({ keys: "[MouseRight]", target: first, coords: at });
+    const email = await screen.findByRole("menuitem", { name: /Email owner/ });
+    await waitFor(() => expect(screen.getByRole("menu")).toBeVisible());
+    const before = screen.getByRole("menu").getBoundingClientRect();
+    await userEvent.pointer({ keys: "[MouseRight]", target: email });
+    await expect(screen.getByRole("menu")).toHaveAccessibleName(/14 Larkspur Lane/);
+    await expect(screen.getByRole("menu").getBoundingClientRect().left).toBe(before.left);
+    await userEvent.click(screen.getByRole("menuitem", { name: /Email owner/ }));
+    await closed();
+    await expect(status).toHaveTextContent("Emailed owner: 14 Larkspur Lane");
   },
 };
 

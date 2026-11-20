@@ -1,7 +1,18 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as MenuPrimitive from "@ui-sdk/react/menu";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
-import { useId, type ComponentProps, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
@@ -14,12 +25,59 @@ import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#aven
  * focus to the trigger. A click opens it with focus inside, and no item looks chosen until the pointer or a key
  * highlights one. Parts carry ui-sdk's own data-slot names (menu-content, menu-item, ...), which its behavior reads.
  */
+type Areas = { ids: readonly string[]; setIds: Dispatch<SetStateAction<readonly string[]>> };
+
+/**
+ * The ids of the areas that open this menu as a context menu (AVE-153), so `MenuContent` can take its width from its
+ * items and, from a menu's only area, its name: ui-sdk 0.1 names an open context menu after nothing, and anchors it at
+ * a point, so `--anchor-width` is 0 there. A menu shared by several areas can't say which one names it, so it takes
+ * no name from them.
+ */
+const ContextAreas = createContext<Areas | null>(null);
+
 function Menu(props: Loose<ComponentProps<typeof MenuPrimitive.Menu>>) {
-  return <MenuPrimitive.Menu {...defined(props)} />;
+  const [ids, setIds] = useState<readonly string[]>([]);
+  const areas = useMemo(() => ({ ids, setIds }), [ids]);
+  return (
+    <ContextAreas.Provider value={areas}>
+      <MenuPrimitive.Menu {...defined(props)} />
+    </ContextAreas.Provider>
+  );
 }
 
 function MenuTrigger(props: Loose<ComponentProps<typeof MenuPrimitive.MenuTrigger>>) {
   return <MenuPrimitive.MenuTrigger {...defined(props)} />;
+}
+
+/**
+ * An area that opens the menu at the pointer: right-click, a long press on touch, or Shift+F10 and the context-menu key
+ * from the keyboard (ui-sdk's MenuContextTrigger, AVE-153). Give the area a tab stop (`tabIndex={0}`, or render it as
+ * something focusable) so a keyboard can reach it, and a name that says what it is, like the row's own text. One Menu
+ * can serve many areas, like every row of a table: each passes its row as `payload`, which `MenuContent` reads from
+ * its state; but give each row its own Menu where an agent should find it, since the open menu takes its name from
+ * the one area it has. Keep `MenuContent` beside the area, not inside it (a right-click inside the open menu would
+ * move it); for a table row, pass it `container={document.body}`. A context menu is always a popover, never a sheet,
+ * on phones too (ui-sdk). `disabled` leaves the browser's own menu there. While its menu is open the area keeps the
+ * muted fill, so it's clear which row it acts on.
+ */
+function MenuContextTrigger({ className, id, ...props }: Loose<ComponentProps<typeof MenuPrimitive.MenuContextTrigger>>) {
+  const ownId = useId();
+  const areaId = id ?? ownId;
+  const setIds = useContext(ContextAreas)?.setIds;
+  useLayoutEffect(() => {
+    setIds?.((ids) => [...ids, areaId]);
+    return () => setIds?.((ids) => ids.filter((other) => other !== areaId));
+  }, [setIds, areaId]);
+  return (
+    <MenuPrimitive.MenuContextTrigger
+      id={areaId}
+      className={cn(
+        "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-open:bg-muted",
+        className,
+      )}
+      {...defined(props)}
+    />
+  );
 }
 
 const menuSurface =
@@ -33,13 +91,19 @@ function MenuContent({
   className,
   ...props
 }: Loose<ComponentProps<typeof MenuPrimitive.MenuContent>>) {
+  // Opened from a context area: named by the area, as a trigger names its menu, and as wide as its items, since it
+  // opens at a point (AVE-153). A dropdown keeps its trigger's width.
+  const areas = useContext(ContextAreas)?.ids ?? [];
+  const contextual = areas.length > 0;
+  const named = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
   return (
     <MenuPrimitive.MenuContent
+      {...(areas.length === 1 && !named ? { "aria-labelledby": areas[0] } : {})}
       align={align}
       alignOffset={alignOffset}
       side={side}
       sideOffset={sideOffset}
-      className={cn(menuSurface, "w-(--anchor-width)", popupMaxWidth, popupMotion, className)}
+      className={cn(menuSurface, contextual ? "w-max" : "w-(--anchor-width)", popupMaxWidth, popupMotion, className)}
       {...defined(props)}
     />
   );
@@ -261,6 +325,7 @@ export {
   Menu,
   MenuCheckboxItem,
   MenuContent,
+  MenuContextTrigger,
   MenuGroup,
   MenuItem,
   MenuGroupLabel,

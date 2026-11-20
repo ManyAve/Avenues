@@ -672,6 +672,12 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-menu--open-by-click": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--deprecated-names": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--action-from-keyboard": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--context-menu": {
+    none: "AVE-153: Management draws no context menu; Neighbors' is Radix (NEI-213) until it moves to this one. Items and surface are Menu / Open's.",
+  },
+  "components-menu--context-menu-in-a-table": {
+    none: "AVE-153: Management draws no context menu; Neighbors' table row menu is Radix (NEI-213) until it moves to this one. Items and surface are Menu / Open's.",
+  },
 
   // ---- Empty state (AVE-8)
   // ---- Progress (AVE-129). No app story draws the activity card with a bar, so Progress / Beside Management

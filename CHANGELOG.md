@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.40.0 (2026-11-20)
+
+- **Context menus** (AVE-153). `MenuContextTrigger`, ui-sdk's part, turns an area into a context menu: it opens the
+  Menu at the pointer on right-click, on a long press on touch, and from Shift+F10 or the context-menu key when the
+  area has focus (give it `tabIndex={0}` and a name). Escape or a choice returns focus to the area, which keeps a
+  muted fill while its menu is open. It takes `render`, `disabled` (the browser's own menu shows instead) and
+  `payload`. The open menu takes its name from the area, as a dropdown takes its trigger's, and is as wide as its
+  longest item, since it opens at a point; it stays a popover on phones. Dropdown menus don't change. ADOPTING.md,
+  "Context menus", says how to replace shadcn's or Radix's `ContextMenu`; Neighbors needs it to drop Radix (NEI-213).
+  See Components / Menu / Context Menu.
+
 ## v0.39.2 (2026-11-20)
 
 - **Storybook deploys with cf 1.0's release candidate** (AVE-166). The `cf` CLI that publishes Storybook to
