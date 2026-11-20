@@ -164,6 +164,23 @@ After changing a patch or editing `node_modules/@ui-sdk` to try one, delete both
    `src/components`, `src/lib` and `src/hooks`); turning `createAgent` on in the ManyAve app is a later
    decision.
 
+## Tokens
+
+Read `docs/tokens.md` before adding, renaming or using a token. In short:
+
+- Three tiers: **base** values (the palette, the grid, named by what they are) feed **semantic** tokens (named by the
+  job: `border`, `input`, `destructive`, `shadow-popover`, `text-meta`), and components and apps read only the semantic
+  tier. A **component** token (`--avenue-<component>-<property>`) exists only for a knob an app must set, and is never a
+  Tailwind utility.
+- Add a semantic token only for a job that repeats (two components or three uses across Avenue and the apps), that no
+  token already does, that holds in light, dark and lifted, and whose fill comes with its `-foreground`. A step in a
+  scale, or a contract kept for shadcn or ui-sdk, may have fewer uses, with a one-line reason next to its definition.
+- Never mint a token for one value, to get past the lint, or as a near-twin of an existing one; a single use stays a
+  commented literal. Never borrow another job's token because its colour matches today (`muted-foreground` as an
+  outline, `shadow-card` on an avatar, `destructive` on an unread count).
+- The PR that adds a token moves the places that do its job onto it, maps it for every theme, lists it in `cn`, shows
+  it in Foundations, exports it to native if it is a colour or size, and says so in the CHANGELOG.
+
 ## Touch targets
 
 Every control composes the shared `hit-area` utility (`src/styles/avenue.css`): 44px on a phone, 24px with a
