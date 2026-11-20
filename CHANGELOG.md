@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.39.1 (2026-11-20)
+
+- **Checking many boxes at once no longer freezes the page** (MANA-1235). Each checkbox, as its check mark appeared,
+  made the browser bring the page's styles and animations up to date twice, so checking 500 boxes in one render (the
+  board's "Confirm 501 households") froze the page for about 25 seconds. A new patch to ui-sdk gathers the boxes that
+  appear together and does that twice in all: the same 501 boxes now take under a second. Nothing looks different.
+- **Swap the ui-sdk patch.** In the app, copy `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag over the
+  app's copy; `avenue-check-patches` fails until you do.
+
 ## v0.39.0 (2026-11-20)
 
 - **ui-sdk 0.1.0-beta.13** (AVE-164). Avenue now builds on `@ui-sdk/react` and `@ui-sdk/core` 0.1.0-beta.13, up from

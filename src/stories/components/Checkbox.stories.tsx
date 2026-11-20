@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent } from "storybook/test";
+import { Button } from "#avenue/components/button";
 import { Checkbox } from "#avenue/components/checkbox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
 import { Card, CardContent } from "#avenue/components/card";
@@ -79,6 +80,58 @@ export const SelectAll: Story = {
     await userEvent.keyboard(" ");
     await expect(all).toBeChecked();
     await expect(canvas.getByRole("checkbox", { name: "301 Sorrel Way" })).toBeChecked();
+  },
+};
+
+const many = Array.from({ length: 40 }, (_, i) => `${i + 1} Hawthorn Row`);
+
+/**
+ * Checking many boxes in one render asks the page for its animations twice in all, not twice per box (Avenue's
+ * ui-sdk patch, MANA-1235): a "Confirm all" over 500 rows took 25 seconds when each box asked for itself. The play
+ * function counts what the indicators ask while they enter: nothing, and every one still starts its entry.
+ */
+export const CheckManyAtOnce: Story = {
+  render: function CheckManyStory() {
+    const [chosen, setChosen] = useState<string[]>([]);
+    return (
+      <Rows>
+        <Button variant="outline" size="sm" className="self-start" onClick={() => setChosen(many)}>
+          Confirm every household
+        </Button>
+        {many.map((row) => (
+          <Field key={row} orientation="horizontal">
+            <Checkbox
+              checked={chosen.includes(row)}
+              onCheckedChange={(on) => setChosen((c) => (on ? [...c, row] : c.filter((r) => r !== row)))}
+            />
+            <FieldLabel>{row}</FieldLabel>
+          </Field>
+        ))}
+      </Rows>
+    );
+  },
+  play: async ({ canvas }) => {
+    const order: ("read" | "write")[] = [];
+    const indicator = (el: Element) => el.getAttribute("data-slot") === "checkbox-indicator";
+    const { getAnimations } = Element.prototype;
+    const { setAttribute } = Element.prototype;
+    Element.prototype.getAnimations = function (this: Element, options?: GetAnimationsOptions) {
+      if (indicator(this)) order.push("read");
+      return getAnimations.call(this, options);
+    };
+    Element.prototype.setAttribute = function (this: Element, name: string, value: string) {
+      if (indicator(this) && name === "data-starting-style") order.push("write");
+      setAttribute.call(this, name, value);
+    };
+    try {
+      await userEvent.click(canvas.getByRole("button", { name: "Confirm every household" }));
+      await expect(canvas.getByRole("checkbox", { name: `${many.length} Hawthorn Row` })).toBeChecked();
+    } finally {
+      Element.prototype.getAnimations = getAnimations;
+      Element.prototype.setAttribute = setAttribute;
+    }
+    await expect(order.filter((step) => step === "write")).toHaveLength(many.length);
+    await expect(order.filter((step) => step === "read")).toHaveLength(0);
   },
 };
 
