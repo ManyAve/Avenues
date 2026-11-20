@@ -103,6 +103,13 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
   all") froze the page for 25 seconds. The patch gathers the indicators that enter in one render into a microtask that
   asks the document once before all the writes and once after. Still needed: beta.13 is ui-sdk's newest release
   (2026-11-20). `Checkbox/CheckManyAtOnce` fails if the patch stops applying.
+- `@ui-sdk/core` 0.1.0-beta.13 (since v0.42.0), a tap on a sheet as it fades in (AVE-180): with reduced motion a sheet
+  opens in place and fades in for 150ms, but its pointer driver still models it rising from closed along a spring, so
+  a mouse or pen press during the fade caught it as if grabbed near the bottom and the release closed it as a swipe.
+  It made `Table filter/Long list, sheet open` capture closed in about one visual:diff run in eight. The patch lands
+  the sheet where it is drawn when a press arrives during the opening fade. `Table filter/Long list, sheet tapped as it
+  fades in` fails in the four mouse projects if the patch stops applying (the `touch` project uses ui-sdk's
+  scroll-snap driver, which this doesn't touch).
 
 Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
 itself; `Toast/EmptyRegion` still guards it. The positioning patch (AVE-21, beta.1 to beta.7): beta.13 rounds a

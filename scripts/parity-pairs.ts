@@ -1281,6 +1281,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-table-filter--long-list-agent": { none: BEHAVIOUR("Table filter / Long list") },
   "composites-table-filter--long-list-phone": { none: "The long list's editor on a phone: a sheet on a touch screen (AVE-157), 44px rows; the app has no phone TableFilters story." },
   "composites-table-filter--long-list-sheet": { none: "AVE-157: the long list's editor as a bottom sheet on a phone is Avenue's; the app has no phone TableFilters story." },
+  "composites-table-filter--long-list-sheet-early-tap": { none: BEHAVIOUR("Table filter / Long list, sheet open") },
   "composites-table-filter--phone": { none: "The filter pills in the phone toolbar's strip, 44px tall on a touch screen; the app has no phone TableFilters story. The pill is compared through Table filter / With filters." },
 
   // ---- Composites part 4: the toolbars (AVE-9)

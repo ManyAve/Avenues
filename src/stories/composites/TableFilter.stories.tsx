@@ -512,3 +512,41 @@ export const LongListSheet: Story = {
     await waitFor(() => expect(values()).toHaveLength(30));
   },
 };
+
+/** With reduced motion asked for (a stand-in installed before render, as ui-sdk reads it when the sheet mounts). */
+function stubReducedMotion() {
+  const real = window.matchMedia.bind(window);
+  window.matchMedia = (query: string) => {
+    if (!query.includes("prefers-reduced-motion")) return real(query);
+    return { ...real(query), media: query, matches: query.includes("reduce"), addEventListener: () => {}, removeEventListener: () => {} };
+  };
+  return () => {
+    window.matchMedia = real;
+  };
+}
+
+/**
+ * AVE-180: with reduced motion the sheet opens in place and fades in. A tap on a street during that fade ticks it and
+ * leaves the sheet open; ui-sdk 0.1 took the tap for a grab of a sheet still rising from the bottom edge and closed it
+ * as a swipe (patched in Avenue). It made "Long list, sheet open" capture closed in some visual diffs.
+ */
+export const LongListSheetEarlyTap: Story = {
+  name: "Long list, sheet tapped as it fades in",
+  globals: phone,
+  beforeEach: stubReducedMotion,
+  render: () => <Streets presentation="sheet" initial={[{ id: "f1", field: "street", op: "any-of", value: ["maple-grove"] }]} />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Filter: Street is Maple Grove" }));
+    const street = await screen.findByRole("option", { name: "Alder Way" });
+    // The tap lands while the sheet is still fading in (a time-based animation; a touch screen's sheet also follows its
+    // scroll position, which never ends).
+    const moving = () => editor().getAnimations().filter((a) => a.timeline === document.timeline);
+    await expect(moving().length).toBeGreaterThan(0);
+    await userEvent.click(street);
+    await expect(count()).toHaveTextContent("2 of 30 households");
+    await waitFor(() => expect(moving()).toHaveLength(0));
+    await expect(editor()).not.toHaveAttribute("data-ending-style");
+    await expect(editor()).toHaveAttribute("data-open");
+    await expect(street).toHaveAttribute("aria-selected", "true");
+  },
+};
