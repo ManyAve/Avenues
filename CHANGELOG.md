@@ -4,6 +4,13 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.38.5 (2026-11-20)
+
+- **Storybook deploys with cf 1.0's release candidate** (AVE-166). The `cf` CLI that publishes Storybook to
+  avenues.manyave.com moves from 1.0.0-beta.31 to 1.0.0-rc.2, its `latest` release. `cloudflare.config.ts` is
+  unchanged and type-checks against the new config package, and a dry-run deploy of the built Storybook passes. Only
+  the deploy tool changes: no component, token or story moves. Nothing to change in the apps.
+
 ## v0.38.4 (2026-11-20)
 
 - **Routine tool releases** (AVE-165). lucide-react moves to 1.77 (Avenue now asks for `^1.77.0`), and Avenue's own
