@@ -7,12 +7,13 @@
  *   bun run tokens:native --check   fail if any of them is out of date (scripts/native-tokens.test.ts runs it too)
  *
  * Colours resolve the cascade the way a browser does (light = :root then :root:not(.dark); dark = :root, .dark, then
- * :root.dark) and convert OKLCH to sRGB, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
+ * :root.dark) and convert OKLCH to sRGB with culori, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
  * which are points on iOS and dp (sp for text) on Android. Spacing takes the phone (coarse pointer) and narrow-screen
  * values, since that's where the apps run. Shadows and the colour-mix colours (selection, filled field) are left out:
  * phones draw elevation and selection with the platform's own.
  */
 import { resolve } from "node:path";
+import { formatHex, parse } from "culori";
 import { readDeclarations, type Declaration } from "./css-tokens";
 
 export const root = resolve(import.meta.dir, "..");
@@ -116,7 +117,7 @@ export interface NativeTokens {
   touchMinimum: number;
 }
 
-/** The selectors of tokens.css's lifted surface blocks (AVE-115), as css-tokens reads them. */
+/** The selectors of tokens.css's lifted surface blocks (AVE-115), as css-tokens writes their scope. */
 export const LIFTED_SCOPES = {
   light: ':root[data-surface="lifted"]:not(.dark), :root:not(.dark) [data-surface="lifted"]',
   dark: ':root.dark[data-surface="lifted"], :root.dark [data-surface="lifted"]',
@@ -147,34 +148,11 @@ export function substitute(value: string, vars: Vars, seen: Set<string> = new Se
   });
 }
 
-const number = (s: string) => (s.endsWith("%") ? Number.parseFloat(s) / 100 : Number.parseFloat(s));
-
-/** `oklch(L C H)` (L as a number or a percentage) to `#rrggbb`, clipping each channel to sRGB. */
-export function oklchToHex(value: string): string {
-  const match = /^oklch\(\s*([\d.]+%?)\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec(value.trim());
-  if (!match?.[1] || !match[2] || !match[3]) throw new Error(`Not an oklch() colour: ${value}`);
-  const L = number(match[1]);
-  const C = Number.parseFloat(match[2]);
-  const h = (Number.parseFloat(match[3]) * Math.PI) / 180;
-  const a = C * Math.cos(h);
-  const b = C * Math.sin(h);
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const linear = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
-  ];
-  return `#${linear
-    .map((x) => {
-      const c = Math.min(1, Math.max(0, x));
-      const encoded = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
-      return Math.round(encoded * 255)
-        .toString(16)
-        .padStart(2, "0");
-    })
-    .join("")}`;
+/** A CSS colour (here `oklch(...)`) to sRGB `#rrggbb`, clipping each channel to the sRGB gamut as a browser does. */
+export function toHex(value: string): string {
+  const color = parse(value);
+  if (!color) throw new Error(`Not a colour: ${value}`);
+  return formatHex(color);
 }
 
 /** A length in rem or px, or `calc(<length> * <n>)`, in CSS pixels. */
@@ -200,12 +178,12 @@ export function buildTokens(tokensCss: string, avenueCss: string): NativeTokens 
   const tints = readTints(avenue);
   const colors = (vars: Vars) => {
     const out: Record<string, string> = {};
-    for (const role of COLOR_ROLES) out[role] = oklchToHex(substitute(`var(--${role})`, vars));
+    for (const role of COLOR_ROLES) out[role] = toHex(substitute(`var(--${role})`, vars));
     for (const [tint, [hue, k]] of Object.entries(tints)) {
       for (const part of ["bg", "fg", "solid"] as const) {
         const l = substitute(`var(--tint-${part}-l)`, vars);
         const c = Number.parseFloat(substitute(`var(--tint-${part}-c)`, vars)) * k;
-        out[`tint-${tint}-${part}`] = oklchToHex(`oklch(${l} ${round(c * 1000) / 1000} ${hue})`);
+        out[`tint-${tint}-${part}`] = toHex(`oklch(${l} ${round(c * 1000) / 1000} ${hue})`);
       }
     }
     return out;

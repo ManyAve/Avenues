@@ -4,6 +4,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.2 (2026-11-20)
+
+- **The token scripts read the stylesheets with PostCSS and convert colours with culori** (AVE-172). The native token
+  export and the token comparison drop Avenue's own CSS reader and OKLCH formula. The generated Swift, Kotlin and JSON
+  tokens are byte for byte the same. Nothing to change in the apps.
+
 ## v0.41.1 (2026-11-20)
 
 - **Variant classes come from cva 1.0's beta** (AVE-170). Avenue's variant helpers (`buttonVariants`, `toggleVariants`,
