@@ -57,10 +57,12 @@ function Layers() {
         title="Overlay"
         note="bg-overlay dims the page behind a dialog, alert dialog or drawer: 10% black in both themes. ui-sdk's --ui-overlay reads the same token."
       >
-        <div className="relative isolate flex h-32 w-80 items-center justify-center overflow-hidden rounded-xl border bg-background">
+        <div className="relative isolate h-32 w-80 overflow-hidden rounded-xl border bg-background p-inset">
           <span className="text-meta text-muted-foreground">Maple Row households</span>
           <div data-slot="overlay-sample" className="absolute inset-0 bg-overlay" />
-          <div className="absolute rounded-lg bg-popover px-4 py-2 text-meta shadow-popover">Record payment</div>
+          <div className="absolute end-inset bottom-inset rounded-lg bg-popover px-4 py-2 text-meta shadow-popover">
+            Record payment
+          </div>
         </div>
       </Section>
     </Page>
