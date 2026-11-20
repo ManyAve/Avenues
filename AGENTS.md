@@ -41,6 +41,9 @@ comments when ui-sdk is upgraded. Hand-rolled behavior is the last resort, built
 - Combobox / Pattern is pinned to `presentation="popover"`, because ui-sdk 0.1's `checkPattern` fails its own
   Combobox presenting as a sheet ("aria-controls names no open listbox", AVE-39; still so in beta.13, AVE-164).
   Remove the pin, run the `touch` project, and if it passes delete the pin and its comment (AVE-75).
+- Menu names an open context menu after its only `MenuContextTrigger` area and draws it `w-max`, because ui-sdk 0.1
+  leaves it unnamed and anchors it at a point (`--anchor-width` 0); still so in beta.13 (AVE-153). Remove the
+  `ContextAreas` code in `menu.tsx`; if Menu / Context Menu still passes, ui-sdk does both itself.
 
 **Composition and names follow ui-sdk** (Zack, 2026-11-17: "For composition let's follow ui-sdk", including prop
 names). This replaces the shadcn component structure and the 2026-11-17 morning call that composites stay prop-driven.
