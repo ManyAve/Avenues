@@ -58,7 +58,7 @@ const PILL = "AVE-2 §3: the label's 4xl corner (26px) becomes full, which rende
 const DUES_DIALOG =
   "app: app/ui/components/dues.tsx: the payment dialogs pass `gap-0 p-0` and draw their own bordered header, body and footer sections; Avenue's Dialog keeps the app's default p-4 gap-4 (app/ui/components/ui/dialog.tsx)";
 const DETAIL_CARD =
-  "app: app/ui/components/detail.tsx: the household detail cards add `shadow-card ring-border`; the app's Card itself is ring-1 ring-foreground/10, as Avenue's";
+  "app: app/ui/components/detail.tsx: the household detail cards add `shadow-card ring-border`; the app's Card itself is ring-1 ring-foreground/10; Avenue's Card draws ring-border since AVE-183 (one edge colour for a surface), so the detail cards' ring is now Card's own";
 const DUES_TABLE =
   "app: app/ui/components/dues-table.tsx: the Dues table sets its own 34px muted headers, background and 7px padding; the app's Table itself is h-10 px-2 font-medium text-foreground, as Avenue's";
 
@@ -273,7 +273,7 @@ const OUTLINE = (control: string) =>
 
 const OUTLINE_BORDER: Allowance = {
   prop: "border-*-color",
-  because: "AVE-38: an unchecked checkbox's outline and an off switch's border are muted-foreground (3:1 or better, WCAG 1.4.11); the app's input-token outline measures about 1.5:1",
+  because: "AVE-38: an unchecked checkbox's outline and an off switch's border are control-outline (AVE-183; the same onyx step as muted-foreground, 3:1 or better, WCAG 1.4.11); the app's input-token outline measures about 1.5:1",
 };
 
 const TOP_BAR: Allowance[] = [

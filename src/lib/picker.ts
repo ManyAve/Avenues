@@ -37,7 +37,7 @@ export function fieldControl({ size = "md" }: { size?: PickerSize | null | undef
  */
 export const listPopup = cn(
   popupMotion,
-  "max-h-[min(20rem,var(--available-height))] w-(--anchor-width) min-w-48 max-w-(--available-width) overflow-y-auto overscroll-contain rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none",
+  "max-h-[min(20rem,var(--available-height))] w-(--anchor-width) min-w-48 max-w-(--available-width) overflow-y-auto overscroll-contain rounded-lg bg-popover p-1 text-popover-foreground shadow-popover ring-1 ring-border outline-none",
   listSheet(),
 );
 

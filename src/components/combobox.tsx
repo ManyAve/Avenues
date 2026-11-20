@@ -302,7 +302,7 @@ function FieldInput({
           // its content (a grid's automatic column) it set that column's minimum and widened a card past a phone. A
           // percentage width lets the browser shrink it to nothing there, while a row sized by its content still gets
           // the default width (AVE-113). flex-1 sizes it inside the group either way, so nothing else moves.
-          "h-full w-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+          "h-full w-full min-w-0 flex-1 bg-transparent px-2 outline-none placeholder:text-placeholder disabled:cursor-not-allowed",
           sheetSearch,
         )}
       />
@@ -364,7 +364,7 @@ function ChipsInput({ size: _size, icon: _icon, invalid, triggerLabel: _trigger,
       {...defined(props)}
       className={cn(
         // min-w-24: room for a short placeholder ("Add a street…"), after which the input wraps to a line of its own.
-        "h-6 w-full min-w-24 flex-1 bg-transparent px-1 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed pointer-coarse:h-11",
+        "h-6 w-full min-w-24 flex-1 bg-transparent px-1 outline-none placeholder:text-placeholder disabled:cursor-not-allowed pointer-coarse:h-11",
         sheetSearch,
         className,
       )}
@@ -579,7 +579,7 @@ function ComboboxItem<T = string>({ value, className, children, label, meta, ...
         // and ui-sdk sets it empty.
         <span
           aria-hidden
-          className="col-start-1 flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-[selected]/combobox-item:border-primary group-data-[selected]/combobox-item:bg-primary group-data-[selected]/combobox-item:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/combobox-item:bg-primary"
+          className="col-start-1 flex size-4 shrink-0 items-center justify-center rounded-xs border border-control-outline transition-colors group-data-[selected]/combobox-item:border-primary group-data-[selected]/combobox-item:bg-primary group-data-[selected]/combobox-item:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/combobox-item:bg-primary"
         >
           <Ui.ComboboxItemIndicator className="grid place-content-center [&>svg]:size-3.5">
             <CheckIcon aria-hidden />

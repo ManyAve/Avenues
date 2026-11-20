@@ -131,6 +131,10 @@
   --muted: var(--color-onyx-100);
 
   --muted-foreground: var(--color-onyx-700);
+  /* An empty field's hint text (AVE-186): every field's placeholder reads it (Input, Textarea, Search input, Select,
+     Combobox). Its own job, not secondary text, though light shares its grey: at least 2:1 from typed text and 4.5:1 on
+     the field, page and card, in light, dark and lifted (scripts/surface-contrast.test.ts). */
+  --placeholder: var(--color-onyx-700);
   --accent: var(--color-onyx-100);
   --accent-foreground: var(--color-onyx-900);
 
@@ -171,6 +175,10 @@
 
   --border: var(--color-onyx-200);
   --input: var(--color-onyx-200);
+  /* A checkbox's, radio's or switch's outline (AVE-183): the edge that is the control's only shape, so it reaches 3:1
+     on every surface (WCAG 1.4.11; scripts/surface-contrast.test.ts). Not `input`, which outlines a text field whose
+     label and size already show it; not `muted-foreground`, which is text. Same onyx step AVE-38 chose. */
+  --control-outline: var(--color-onyx-700);
   --ring: var(--color-grape-500);
 
   /* The modal overlay (AVE-182): the same 10% black dim in both themes, as the app's bg-black/10 was. */
@@ -211,6 +219,8 @@
   --secondary-foreground: var(--color-onyx-100);
   --muted: var(--color-onyx-800);
   --muted-foreground: var(--color-onyx-300);
+  /* AVE-186: muted-foreground is only 1.72:1 from typed text here, so an example could pass for a value. */
+  --placeholder: var(--color-onyx-400);
   --accent: var(--color-onyx-750);
   --accent-foreground: var(--color-onyx-100);
 
@@ -251,6 +261,7 @@
 
   --border: var(--color-onyx-700);
   --input: var(--color-onyx-700);
+  --control-outline: var(--color-onyx-300);
   --ring: var(--color-grape-400);
 
   --chart-1: var(--color-grape-400);

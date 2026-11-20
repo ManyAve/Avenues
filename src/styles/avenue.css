@@ -66,6 +66,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: var(--placeholder);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -88,6 +89,7 @@
   --color-slate-subtle-foreground: var(--slate-subtle-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-control-outline: var(--control-outline);
   /* The filled field's tint (the toolbar search, AVE-63): 8% of the foreground over the background, so it follows the
      theme. Inline, so it resolves where it's used. `muted` is lighter in light mode (L 0.977 vs 0.930), so not it. */
   --color-field-filled: color-mix(in oklab, var(--foreground) 8%, var(--background));
@@ -162,8 +164,8 @@
    also sets tw-animate-css's animate-in / animate-out time, so one name covers both.
    - duration-fast (100ms): an overlay opening or closing: menus, popovers, tooltips, dialogs and their backdrop.
    - duration-moderate (150ms): a small change in place: a disclosure chevron turning, a button fading in.
-   - duration-slow (200ms): the longest anything moves: a toast arriving. One use in Avenue: kept as the scale's
-     ceiling (docs/tokens.md, a step in a scale), and Neighbors' four duration-200s move onto it.
+   - duration-slow (200ms): the longest anything moves: a toast arriving, a progress bar filling (AVE-183, was 300ms).
+     Also the scale's ceiling, and Neighbors' four duration-200s move onto it.
    Layers are the page-level stack, lowest first. Inside one component, a small local order (a focused item over its
    neighbour, a fill behind a bar) keeps Tailwind's numbers under `isolate`; these are for things that stack against
    the rest of the page.

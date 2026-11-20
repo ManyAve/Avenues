@@ -81,11 +81,11 @@ function SelectTrigger({
   );
 }
 
-/** The chosen item's label in the trigger, or the select's `placeholder` in muted text. */
+/** The chosen item's label in the trigger, or the select's `placeholder` in the placeholder token (AVE-186). */
 function SelectValue({ className, ...props }: Loose<ComponentProps<typeof Ui.SelectValue>>) {
   return (
     <Ui.SelectValue
-      className={cn("min-w-0 flex-1 truncate data-placeholder:text-muted-foreground", className)}
+      className={cn("min-w-0 flex-1 truncate data-placeholder:text-placeholder", className)}
       {...defined(props)}
     />
   );
@@ -386,7 +386,7 @@ export function Select<T = string>(props: SelectProps<T>) {
             data-placeholder={chosenLabel === undefined ? true : undefined}
             className={cn(
               fieldControl({ size }),
-              "pe-8 data-placeholder:text-muted-foreground",
+              "pe-8 data-placeholder:text-placeholder",
               "peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
               "peer-aria-invalid:border-destructive peer-aria-invalid:ring-3 peer-aria-invalid:ring-destructive/20 dark:peer-aria-invalid:border-destructive/50 dark:peer-aria-invalid:ring-destructive/40",
               "peer-disabled:bg-input/50 peer-disabled:opacity-50 dark:peer-disabled:bg-input/80",
@@ -411,7 +411,7 @@ export function Select<T = string>(props: SelectProps<T>) {
           data-placeholder={placeholderShown || undefined}
           className={cn(
             fieldControl({ size }),
-            "pointer-coarse:min-h-11 appearance-none truncate pe-8 data-placeholder:text-muted-foreground dark:[color-scheme:dark]",
+            "pointer-coarse:min-h-11 appearance-none truncate pe-8 data-placeholder:text-placeholder dark:[color-scheme:dark]",
           )}
         >
           {nativeOptions}

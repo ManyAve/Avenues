@@ -49,13 +49,25 @@ export const Variants: Story = {
   ),
 };
 
+/** The sRGB lightness (0 to 255, the mean of the channels) of the colours painted in order onto one pixel. */
+function lightness(layers: string[]) {
+  const context = document.createElement("canvas").getContext("2d")!;
+  for (const fill of layers) {
+    context.fillStyle = fill;
+    context.fillRect(0, 0, 1, 1);
+  }
+  const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+  return (r! + g! + b!) / 3;
+}
+
 /**
  * Every variant on a card, where most buttons sit (AVE-99). In dark the page is darker than a card, so an outline
- * button takes the card's own surface, never the page's: it must not read as a hole in the card.
+ * button must not take the page's surface: it would read as a hole in the card. Its fill is shadcn's `bg-input/30`
+ * (AVE-183), which lifts a little off the card, so the play function checks it draws no darker than the card.
  */
 export const VariantsOnACard: Story = {
   render: () => (
-    <div data-testid="card" className="m-inset rounded-xl bg-card p-inset text-card-foreground ring-1 ring-foreground/10">
+    <div data-testid="card" className="m-inset rounded-xl bg-card p-inset text-card-foreground ring-1 ring-border">
       <Rows>
         {variants.map((variant) => (
           <Row key={variant} label={variant}>
@@ -72,7 +84,7 @@ export const VariantsOnACard: Story = {
   play: async ({ canvas }) => {
     const card = getComputedStyle(canvas.getByTestId("card")).backgroundColor;
     const outline = canvas.getAllByRole("button", { name: "Record payment" })[variants.indexOf("outline")]!;
-    await expect(getComputedStyle(outline).backgroundColor).toBe(card);
+    await expect(lightness([card, getComputedStyle(outline).backgroundColor])).toBeGreaterThanOrEqual(lightness([card]));
   },
 };
 

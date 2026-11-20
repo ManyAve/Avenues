@@ -20,6 +20,7 @@ public enum AvenueTokens {
         public let secondaryForeground: UInt32
         public let muted: UInt32
         public let mutedForeground: UInt32
+        public let placeholder: UInt32
         public let accent: UInt32
         public let accentForeground: UInt32
         public let success: UInt32
@@ -42,6 +43,7 @@ public enum AvenueTokens {
         public let slateSubtleForeground: UInt32
         public let border: UInt32
         public let input: UInt32
+        public let controlOutline: UInt32
         public let ring: UInt32
         public let chart1: UInt32
         public let chart2: UInt32
@@ -77,6 +79,7 @@ public enum AvenueTokens {
         secondaryForeground: 0x141419,
         muted: 0xF7F7F7,
         mutedForeground: 0x45464D,
+        placeholder: 0x45464D,
         accent: 0xF3F3F3,
         accentForeground: 0x141419,
         success: 0x36763D,
@@ -99,6 +102,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0x3F4F60,
         border: 0xE4E4E4,
         input: 0xD4D4D4,
+        controlOutline: 0x45464D,
         ring: 0x7359A6,
         chart1: 0x7359A6,
         chart2: 0x5B715B,
@@ -134,6 +138,7 @@ public enum AvenueTokens {
         secondaryForeground: 0xE5E5EA,
         muted: 0x1E1F25,
         mutedForeground: 0xAFB0B7,
+        placeholder: 0x93959D,
         accent: 0x2B2C33,
         accentForeground: 0xE5E5EA,
         success: 0x57985D,
@@ -156,6 +161,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0xABC0D7,
         border: 0x2B2C33,
         input: 0x36373E,
+        controlOutline: 0xAFB0B7,
         ring: 0x8F7AB8,
         chart1: 0x8F7AB8,
         chart2: 0x718E71,
@@ -193,6 +199,7 @@ public enum AvenueTokens {
         secondaryForeground: 0x141419,
         muted: 0xE5E5EA,
         mutedForeground: 0x45464D,
+        placeholder: 0x45464D,
         accent: 0xE5E5EA,
         accentForeground: 0x141419,
         success: 0x36763D,
@@ -215,6 +222,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0x3F4F60,
         border: 0xE4E4E4,
         input: 0xD4D4D4,
+        controlOutline: 0x45464D,
         ring: 0x7359A6,
         chart1: 0x7359A6,
         chart2: 0x5B715B,
@@ -250,6 +258,7 @@ public enum AvenueTokens {
         secondaryForeground: 0xE5E5EA,
         muted: 0x2B2C33,
         mutedForeground: 0xAFB0B7,
+        placeholder: 0x93959D,
         accent: 0x2B2C33,
         accentForeground: 0xE5E5EA,
         success: 0x57985D,
@@ -272,6 +281,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0xABC0D7,
         border: 0x2B2C33,
         input: 0x36373E,
+        controlOutline: 0xAFB0B7,
         ring: 0x8F7AB8,
         chart1: 0x8F7AB8,
         chart2: 0x718E71,
