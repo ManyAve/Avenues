@@ -227,11 +227,6 @@ const barCell = "relative isolate h-12 border-y-4 border-background bg-clip-padd
 type RowRest = Omit<Loose<ComponentProps<typeof parts.Row>>, "id" | "row" | "children">;
 
 /**
- * Which of a street's rows are selected, for its bar's checkbox: none, some (half-checked) or all.
- */
-export type GroupSelection = "none" | "some" | "all";
-
-/**
  * A street's bar: a tinted heading row, sticky under the column headers, whose button collapses the street.
  * List its `row` in the Register's `spanningRows`.
  *
@@ -245,8 +240,7 @@ export type GroupSelection = "none" | "some" | "all";
  * column, lined up with the rows' checkboxes below it, as Linear does.
  *
  * Names follow ui-sdk (AVE-145): `checked` / `onCheckedChange` for the street's checkbox, whose details are ui-sdk
- * Checkbox's, and `open` / `onOpenChange`, which reports reason "trigger-press" with the press. `selection` and
- * `onSelectedChange` are the old names, deprecated. `open` is controlled only, on purpose: the
+ * Checkbox's, and `open` / `onOpenChange`, which reports reason "trigger-press" with the press. `open` is controlled only, on purpose: the
  * app hides the street's rows itself, so it must hold the state.
  */
 function RegisterGroupRow({
@@ -258,10 +252,8 @@ function RegisterGroupRow({
   onOpenChange,
   icon: Icon = HouseIcon,
   trailing,
-  checked: checkedProp,
-  onCheckedChange: onCheckedChangeProp,
-  selection,
-  onSelectedChange,
+  checked,
+  onCheckedChange,
   className,
   ...props
 }: RowRest & {
@@ -278,13 +270,7 @@ function RegisterGroupRow({
   checked?: boolean | "indeterminate" | undefined;
   /** Select (true) or clear (false) every row of this street. Gets ui-sdk Checkbox's details second. */
   onCheckedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
-  /** @deprecated Use `checked`: "all" is true, "some" is "indeterminate", "none" is false (AVE-145). */
-  selection?: GroupSelection | undefined;
-  /** @deprecated Use `onCheckedChange` (AVE-145). */
-  onSelectedChange?: ((checked: boolean, details: ChangeDetails<CheckboxCheckedChangeReason>) => void) | undefined;
 }) {
-  const checked = checkedProp ?? (selection === undefined ? undefined : selection === "all" ? true : selection === "some" ? "indeterminate" : false);
-  const onCheckedChange = onCheckedChangeProp ?? onSelectedChange;
   const selectable = checked !== undefined && onCheckedChange !== undefined;
   const tint = { "data-tint": tintFor(name), style: { "--group-color": "var(--tint-solid)" } as CSSProperties };
   const bar = (
@@ -401,33 +387,26 @@ export type SortChangeDetails = ChangeDetails<"item-press" | "clear-press">;
  *
  * `value` / `defaultValue` / `onValueChange`, as ui-sdk names state (AVE-145). The callback gets the new sort and
  * details: reason "item-press" for a direction, "clear-press" for Clear, the press, how it was made, and
- * `cancel()`, which keeps the old sort when the menu holds it itself. `onChange` is the old name, kept until the next
- * minor release.
+ * `cancel()`, which keeps the old sort when the menu holds it itself.
  */
 function SortMenu({
   fields,
   value: valueProp,
   defaultValue = null,
   onValueChange,
-  onChange,
   help,
 }: {
   fields: SortField[];
   value?: SortValue | undefined;
   defaultValue?: SortValue | undefined;
   onValueChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
-  /** @deprecated Use `onValueChange` (AVE-145). */
-  onChange?: ((value: SortValue, details: SortChangeDetails) => void) | undefined;
   help?: string | undefined;
 }) {
   const [own, setOwn] = useState<SortValue>(defaultValue);
   const value = valueProp === undefined ? own : valueProp;
   const sortBy = (next: SortValue, reason: "item-press" | "clear-press", event: MouseEvent) => {
     const went = report(
-      (v: SortValue, details: SortChangeDetails) => {
-        onValueChange?.(v, details);
-        onChange?.(v, details);
-      },
+      (v: SortValue, details: SortChangeDetails) => onValueChange?.(v, details),
       next,
       { reason, event },
     );

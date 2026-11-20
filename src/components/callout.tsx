@@ -1,5 +1,5 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
-import { InfoIcon, type LucideIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { Children, isValidElement, type ReactNode } from "react";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
@@ -9,11 +9,6 @@ export type CalloutTone = "info" | "warning";
 export interface CalloutProps extends OwnPartProps<"div"> {
   /** info (the default) for a note that helps; warning for one that changes what happens if they go on. */
   tone?: CalloutTone | undefined;
-  /**
-   * The leading icon. Info by default; pass TriangleAlert with a warning, or Clock for something still processing.
-   * @deprecated Use `<CalloutIcon><TriangleAlertIcon /></CalloutIcon>` and `<CalloutContent>` (AVE-149).
-   */
-  icon?: LucideIcon | undefined;
 }
 
 /**
@@ -33,7 +28,7 @@ export interface CalloutProps extends OwnPartProps<"div"> {
  *
  * AVE-2 spacing: the app's off-grid 10px top and bottom padding becomes 8px.
  */
-export function Callout({ tone = "info", icon: Icon, className, children, render, ...props }: CalloutProps) {
+export function Callout({ tone = "info", className, children, render, ...props }: CalloutProps) {
   const parts = Children.toArray(children).some(
     (child) => isValidElement(child) && (child.type === CalloutIcon || child.type === CalloutContent),
   );
@@ -52,7 +47,7 @@ export function Callout({ tone = "info", icon: Icon, className, children, render
           children
         ) : (
           <>
-            <CalloutIcon>{Icon ? <Icon aria-hidden /> : undefined}</CalloutIcon>
+            <CalloutIcon />
             <CalloutContent>{children}</CalloutContent>
           </>
         ),

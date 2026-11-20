@@ -37,8 +37,5 @@ function Radio({ className, ...props }: Loose<ComponentProps<typeof RadioPrimiti
   );
 }
 
-/** @deprecated Use Radio. */
-const RadioGroupItem = Radio;
-
 export { Radio, RadioGroup };
-export { RadioGroupItem };
+;

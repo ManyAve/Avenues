@@ -548,11 +548,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-dialog--escape-blocked-while-pending": { none: BEHAVIOUR("Dialog / Open") },
   "components-dialog--click-right-after-close": { none: BEHAVIOUR("Dialog / Open") },
 
-  // ---- Disclosure (AVE-7)
-  ...Object.fromEntries(
-    (["closed", "open"] as const).map((story) => [
-      `components-disclosure--${story}`,
-      [
+  // ---- Disclosure (AVE-7): CollapsibleSection's disclosure variant since AVE-154 removed Disclosure; its story ends closed.
+  "components-collapsible-section--disclosure": [
         {
           label: "Advanced trigger",
           app: "dues-payments--stripe-customer",
@@ -566,15 +563,7 @@ export const PAIRS: Record<string, PairEntry> = {
             { prop: "width", because: "AVE-58: the trigger fits its label, so a tap beside it doesn't toggle the section; the app's summary fills the row" },
           ],
         },
-      ],
-    ]),
-  ),
-  "components-disclosure--disabled": {
-    none: "The app hides its Advanced section from board members who can't use it rather than disabling it, so it has no disabled disclosure. The resting look is compared through Disclosure / Closed.",
-  },
-  "components-disclosure--in-a-card": { none: STATE_ONLY("its skipped-sheets disclosure collapsed in a card", "Disclosure / Closed") },
-  "components-disclosure--keyboard": { none: BEHAVIOUR("Disclosure / Closed") },
-  "components-disclosure--agent": { none: BEHAVIOUR("Disclosure / Open") },
+  ],
 
   // ---- Collapsible section, Calendar, Month grid (AVE-121). The board draws these by hand today (activity.tsx,
   // activity-timegrid.tsx, messages.tsx, activity-month.tsx) and has no story of any of them on its own; they are
@@ -670,7 +659,6 @@ export const PAIRS: Record<string, PairEntry> = {
     none: "AVE-112: the app has no story of a fixed-width menu on a 320px phone; this story proves the menu stays on screen.",
   },
   "components-menu--open-by-click": { none: BEHAVIOUR("Menu / Open") },
-  "components-menu--deprecated-names": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--action-from-keyboard": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--context-menu": {
     none: "AVE-153: Management draws no context menu; Neighbors' is Radix (NEI-213) until it moves to this one. Items and surface are Menu / Open's.",
@@ -1113,9 +1101,6 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
     ]),
   ),
-  "components-toast--deprecated-variant": {
-    none: "The deprecated `variant` option (AVE-151) still raising the same toasts; a behaviour check, compared through Toast / Progress.",
-  },
   "components-toast--without-a-provider": {
     none: "A developer check, not a look (AVE-140): no toast shows without a ToastProvider, so there is nothing to compare.",
   },
@@ -1394,7 +1379,6 @@ export const PAIRS: Record<string, PairEntry> = {
   // AVE-149: the parts stories draw what the one-tag stories draw, written out; visual:diff proved the one-tag form
   // unchanged, so the parts' look is compared through those.
   "components-calendar--parts": { none: BEHAVIOUR("Calendar / Default") },
-  "components-collapsible-section--disclosure": { none: BEHAVIOUR("Disclosure / Closed and Open") },
   "components-empty-state--parts": { none: BEHAVIOUR("Empty state / Link action") },
   "components-empty-state--section-parts": { none: BEHAVIOUR("Empty state / Section") },
   "components-progress--own-track": { none: BEHAVIOUR("Progress / With value") },

@@ -1,7 +1,6 @@
 // Fails the typecheck if Select, Combobox or TableFilters stop taking what Management and Neighbors pass today
-// (AVE-146). Each case copies the shape of a call site in those apps, with fictional data. `options` is the deprecated
-// name for `items`; it keeps working until both apps have moved off it.
-import { Combobox, type ComboboxOption } from "#avenue/components/combobox";
+// (AVE-146). Each case copies the shape of a call site in those apps, with fictional data.
+import { Combobox, type ComboboxItemData } from "#avenue/components/combobox";
 import { Select } from "#avenue/components/select";
 import { TableFilters, type FilterField } from "#avenue/components/table-filter";
 
@@ -11,13 +10,13 @@ declare const maybe: boolean | undefined;
 declare const onChange: (next: string) => void;
 
 // Management's household picker: options with fields of its own, a filter typed by them, a ranked match.
-type Household = ComboboxOption & { address: string; owner?: string | undefined; spreadsheetId?: string | undefined };
+type Household = ComboboxItemData<string> & { address: string; owner?: string | undefined; spreadsheetId?: string | undefined };
 declare const households: Household[];
 declare function matchHousehold(option: Household, query: string): boolean | number;
 export const householdPicker = (
   <Combobox
     id={id}
-    options={households}
+    items={households}
     value={value}
     onValueChange={(next) => next && onChange(next)}
     noneLabel="Neighborhood"
@@ -33,7 +32,7 @@ export const householdPicker = (
 declare function isCategory(value: string): value is "minutes" | "budget";
 export const documentsCategory = (
   <Select
-    options={[{ value: "minutes", label: "Minutes" }, { value: "budget", label: "Budget", disabled: !!maybe }]}
+    items={[{ value: "minutes", label: "Minutes" }, { value: "budget", label: "Budget", disabled: !!maybe }]}
     value={value}
     onValueChange={(category) => {
       if (isCategory(category)) onChange(category);
@@ -47,7 +46,7 @@ declare const setPropertyId: (next: string) => void;
 export const ballotProperty = (
   <Select
     id={id}
-    options={[{ value: "p1", label: "1 Example Way" }]}
+    items={[{ value: "p1", label: "1 Example Way" }]}
     value={value === "" ? null : value}
     onValueChange={setPropertyId}
     placeholder="Choose a property"
@@ -55,9 +54,9 @@ export const ballotProperty = (
   />
 );
 
-// Management's table filter: a choice field still listing `options`.
+// Management's table filter: choice fields listing `items`.
 const fields: FilterField[] = [
-  { key: "status", label: "Dues status", kind: "choice", options: [{ value: "owing", label: "Owing" }] },
+  { key: "status", label: "Dues status", kind: "choice", items: [{ value: "owing", label: "Owing" }] },
   { key: "street", label: "Street", kind: "choice", items: [{ value: "lantern", label: "Lantern Row" }] },
 ];
 export const tableFilters = <TableFilters fields={fields} defaultValue={[]} />;

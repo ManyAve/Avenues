@@ -4,6 +4,31 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.43.0 (2026-11-20)
+
+- **Removed the deprecated names** (AVE-154). Every name Avenue kept as a deprecated alias is gone, now that both
+  Management and Neighbors have moved off them: an app at its pinned Avenue typechecks against this release with no
+  change (checked on each app before the removal). ADOPTING.md's tables now say "removed in v0.43.0" for each:
+  - the shadcn part names (`DropdownMenu*`, `Sheet*`, `TabsTrigger`, `TabsContent`, `DialogOverlay`,
+    `RadioGroupItem`, `Toaster`) and the old paths `components/dropdown-menu` and `components/sheet` (AVE-144), and
+    `FileName`, `FileThumbnail`, `UploadStatus` (AVE-148);
+  - the old prop names: TableFilters `filters`/`onChange`, SortMenu `onChange`, RegisterGroupRow
+    `selection`/`onSelectedChange` (and its `GroupSelection` type), ModeToggle `choice`/`onThemeChange` (AVE-145);
+    `options` on Select, Combobox and a TableFilters field, and the `SelectOption` and `ComboboxOption` types (AVE-146);
+  - the slot props of EmptyState, SectionEmpty, PageHeader, SectionCard, TopBar, StatusBar and ListItem, Callout
+    `icon`, InlineMessage `hideIcon`, Progress `trackClassName`, MonthGrid `renderDay`, Calendar `mark`, and the
+    `Disclosure` component (AVE-149). These roots now draw only their parts. TopBar no longer adds a Help button of
+    its own: put one in `TopBarActions`;
+  - MenuItem `variant="destructive"` and `reason`, and the toast option `variant` (AVE-151);
+  - `size="default"` and Button's `size="icon"` (AVE-152), and the `WithDefault` type;
+  - the `reasons-hang` and `reasons-hang-start` utilities (AVE-160, AVE-162).
+- **Stories.** Menu / Deprecated names, Toast / Deprecated variant and the Disclosure stories are gone; the
+  disclosure look is Collapsible section / Disclosure. Every other story draws as before, now written with parts.
+- **Kept on purpose.** Combobox still reads a `value` of `""` as nothing chosen (AVE-137): that is a value at run
+  time, not a name, so a typecheck can't prove an app never passes it, and Management's time-zone picker may.
+- **Nothing to change in the apps** at their current pins. An app still on a version before the new names first
+  follows ADOPTING.md's tables.
+
 ## v0.42.0 (2026-11-20)
 
 - **A tap on a sheet as it fades in no longer closes it** (AVE-180). With reduced motion asked for, a sheet (a phone's

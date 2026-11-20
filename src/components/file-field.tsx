@@ -721,13 +721,6 @@ function MiddleCutName({ name, className, render, ...props }: Omit<OwnPartProps<
   );
 }
 
-/** @deprecated Use FileFieldName (AVE-148). Given a `name`, it draws the same middle-cut name. */
-const FileName = FileFieldName;
-/** @deprecated Use FileFieldPreview (AVE-148). Given a `src`, it draws the same thumbnail. */
-const FileThumbnail = FileFieldPreview;
-/** @deprecated Use FileFieldStatus (AVE-148). Given a `status`, it announces it the same way. */
-const UploadStatus = FileFieldStatus;
-
 export {
   FileField,
   FileFieldDescription,
@@ -743,7 +736,4 @@ export {
   FileFieldStatus,
   FileFieldTrigger,
   FileFieldWarning,
-  FileName,
-  FileThumbnail,
-  UploadStatus,
 };

@@ -34,11 +34,6 @@ export type MonthGridProps = Omit<Loose<ComponentProps<typeof parts.Root>>, "chi
    * as ui-sdk's CalendarWeeks takes its days. Leave it out and every day is drawn empty.
    */
   children?: ((day: MonthGridDayState) => ReactNode) | undefined;
-  /**
-   * What a day holds under its number, such as the trigger of a popover over its items.
-   * @deprecated Use the children function and `<MonthGridDay value={day.date}>…</MonthGridDay>` (AVE-149).
-   */
-  renderDay?: ((date: string) => ReactNode) | undefined;
   /** Each week's height in pixels. The board's is 112: room for two chips, or one and "+N more". */
   rowHeight?: number | undefined;
   /** The language of the weekday and day names. Defaults to the page's. */
@@ -74,7 +69,6 @@ export function MonthGrid({
   weeks,
   today,
   children,
-  renderDay,
   rowHeight = 112,
   locale,
   onExtend,
@@ -86,7 +80,7 @@ export function MonthGrid({
   const months = monthNames(locale, "short");
   const rows = Array.from({ length: weeks }, (_, row) => row);
   const day =
-    children ?? ((state: MonthGridDayState) => <MonthGridDay value={state.date}>{renderDay?.(state.date)}</MonthGridDay>);
+    children ?? ((state: MonthGridDayState) => <MonthGridDay value={state.date} />);
   return (
     <GridContext.Provider value={{ start, today, locale, months }}>
       <parts.Root

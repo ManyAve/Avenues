@@ -255,8 +255,8 @@ export const Agent: Story = {
 };
 
 /**
- * `variant="disclosure"`: secondary detail under a muted one-line summary, as wide as its label. Disclosure was this
- * shape and is now a wrapper of it (AVE-149). Enter and Space toggle it.
+ * `variant="disclosure"`: secondary detail under a muted one-line summary, as wide as its label. It is the shape the
+ * old Disclosure drew (AVE-149; AVE-154 removed Disclosure). Enter and Space toggle it.
  */
 export const Disclosure: Story = {
   render: () => (

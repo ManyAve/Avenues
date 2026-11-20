@@ -31,9 +31,6 @@ import { cn } from "#avenue/lib/utils";
 
 export type { ListData, ListGroup, ListItem, ListSeparator };
 
-/** @deprecated Use `ListItem`, the shape of each entry in `items` (AVE-146). */
-export type SelectOption<V extends string = string> = ListItem<V>;
-
 type Native = "auto" | "always" | "never";
 
 /** What `onValueChange` gets after the value: ui-sdk Select's own details (reason, event, source, `cancel()`). */
@@ -161,8 +158,6 @@ interface SelectRootProps<T> {
    * `itemToValue`. With parts as children, `items` gives the trigger its labels before the list opens.
    */
   items?: ListData<T> | undefined;
-  /** @deprecated Use `items`, which takes the same `{ value, label, disabled }` entries (AVE-146). */
-  options?: readonly ListItem<T>[] | undefined;
   /** The chosen value, or null for none (shows `placeholder`). */
   value?: T | null | undefined;
   defaultValue?: T | null | undefined;
@@ -272,7 +267,6 @@ function SelectItems<T>({ data, keyOf }: { data: ListData<T>; keyOf: (value: T) 
 export function Select<T = string>(props: SelectProps<T>) {
   const {
     items: itemsProp,
-    options,
     value,
     defaultValue,
     onValueChange,
@@ -285,7 +279,7 @@ export function Select<T = string>(props: SelectProps<T>) {
     required,
     presentation = "auto",
   } = props;
-  const items: ListData<T> = itemsProp ?? options ?? [];
+  const items: ListData<T> = itemsProp ?? [];
   const keyOf = valueKey(itemToValue);
   const coarsePointer = useCoarsePointer();
   // The native overlay below shows the chosen label itself, so it tracks an uncontrolled value.
@@ -294,7 +288,7 @@ export function Select<T = string>(props: SelectProps<T>) {
 
   const root = (children: ReactNode) => (
     <Ui.Select<T>
-      {...(itemsProp !== undefined || options !== undefined ? { items: toUiData(items) as Ui.ListData<T> } : {})}
+      {...(itemsProp !== undefined ? { items: toUiData(items) as Ui.ListData<T> } : {})}
       {...(value !== undefined ? { value } : {})}
       {...(defaultValue !== undefined ? { defaultValue } : {})}
       onValueChange={(next: T | T[] | null, details: SelectValueChangeDetails) => {

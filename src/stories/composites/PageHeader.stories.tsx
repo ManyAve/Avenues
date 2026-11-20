@@ -25,22 +25,24 @@ const phone = { viewport: { value: "phone", isRotated: false } };
 function Households() {
   return (
     <div className="mx-auto max-w-layout px-page py-section">
-      <PageHeader
-        eyebrow="Maple Glen HOA"
-        title="Households"
-        count={128}
-        description="Owners, mailing addresses and dues for every lot."
-        actions={
-          <>
-            <Button variant="outline">
-              <DownloadIcon aria-hidden /> Export
-            </Button>
-            <Button>
-              <PlusIcon aria-hidden /> Add household
-            </Button>
-          </>
-        }
-      />
+      <PageHeader>
+        <PageHeaderContent>
+          <PageHeaderEyebrow>Maple Glen HOA</PageHeaderEyebrow>
+          <PageHeaderTitle>
+            Households
+            <PageHeaderCount value={128} />
+          </PageHeaderTitle>
+          <PageHeaderDescription>Owners, mailing addresses and dues for every lot.</PageHeaderDescription>
+        </PageHeaderContent>
+        <PageHeaderActions>
+          <Button variant="outline">
+            <DownloadIcon aria-hidden /> Export
+          </Button>
+          <Button>
+            <PlusIcon aria-hidden /> Add household
+          </Button>
+        </PageHeaderActions>
+      </PageHeader>
       <div className="mt-section h-40 rounded-xl border border-dashed text-meta text-muted-foreground grid place-items-center">
         Page content
       </div>
@@ -94,11 +96,15 @@ export const ReadingWidthLongTitle: Story = {
   globals: desktop,
   render: () => (
     <div className="mx-auto max-w-reading px-page py-section">
-      <PageHeader
-        eyebrow="Announcements"
-        title="Pool opening weekend, new gate codes and the summer lifeguard schedule for residents"
-        description="Sent to all members on May 22, 2026."
-      />
+      <PageHeader>
+        <PageHeaderContent>
+          <PageHeaderEyebrow>Announcements</PageHeaderEyebrow>
+          <PageHeaderTitle>
+            Pool opening weekend, new gate codes and the summer lifeguard schedule for residents
+          </PageHeaderTitle>
+          <PageHeaderDescription>Sent to all members on May 22, 2026.</PageHeaderDescription>
+        </PageHeaderContent>
+      </PageHeader>
     </div>
   ),
 };

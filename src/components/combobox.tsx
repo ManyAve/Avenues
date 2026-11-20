@@ -57,9 +57,6 @@ export type ComboboxItemData<T = string> = ListItem<T> & {
   meta?: string | undefined;
 };
 
-/** @deprecated Use `ComboboxItemData`, the shape of each entry in `items` (AVE-146). */
-export type ComboboxOption = ComboboxItemData<string>;
-
 // ui-sdk treats an empty value as nothing chosen, so the "none" option carries its own value inside the component. A
 // form gets "" for it instead, like a native select's empty option (see the hidden input below).
 const NONE = "\u0000none";
@@ -670,7 +667,6 @@ interface ComboboxPartsOnlyProps<T> {
   controller?: ComboboxController<T, boolean> | undefined;
   children: ReactNode;
   items?: undefined;
-  options?: undefined;
 }
 
 /** Built from parts: `Combobox` holds the value, and its children are `ComboboxInput` and `ComboboxContent`. */
@@ -719,8 +715,6 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
      * an object, with `itemToValue` and `itemToLabel`.
      */
     items?: ListData<NoInfer<T>, Item> | undefined;
-    /** @deprecated Use `items`, which takes the same entries (AVE-146). */
-    options?: readonly Item[] | undefined;
     /** Adds a first option that clears the choice (Documents' "Neighborhood"). Without it, null shows `placeholder`. */
     noneLabel?: string | undefined;
     /** What the list says when nothing matches. Gets the trimmed query. */
@@ -737,7 +731,7 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
 type ComboboxWrapperMultipleProps<T, Item extends ComboboxItemData<T>> = ComboboxMultipleValueProps<T, Item> &
   Pick<InputProps, "id" | "aria-label" | "aria-describedby" | "invalid" | "placeholder"> &
   Pick<ChipsProps, "size" | "triggerLabel" | "className"> &
-  Pick<ComboboxWrapperProps<T, Item>, "items" | "options" | "emptyMessage"> & {
+  Pick<ComboboxWrapperProps<T, Item>, "items" | "emptyMessage"> & {
     children?: undefined;
     /** No "none" option: an empty list is none. */
     noneLabel?: undefined;
@@ -888,7 +882,6 @@ const defaultEmptyMessage = (query: string): ReactNode =>
 /** The one-tag Combobox, drawn from its items with Avenue's parts. */
 function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   items: itemsProp,
-  options,
   value,
   defaultValue,
   onValueChange,
@@ -906,7 +899,7 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   presentation = "auto",
   ...input
 }: ComboboxWrapperProps<T, Item>) {
-  const items: ListData<T, Item> = itemsProp ?? options ?? NO_ITEMS;
+  const items: ListData<T, Item> = itemsProp ?? NO_ITEMS;
   const keyOf = useMemo(() => valueKey(itemToValue), [itemToValue]);
   const byKey = useMemo(() => new Map(flatItems(items).map((o) => [keyOf(o.value), o])), [items, keyOf]);
   // Uncontrolled, the field still tracks its value, for the form reset below.
@@ -1012,7 +1005,6 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
  */
 function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
   items: itemsProp,
-  options,
   emptyMessage = defaultEmptyMessage,
   filter = matchWords,
   itemToValue,
@@ -1036,7 +1028,7 @@ function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
   multiple: _multiple,
   ...props
 }: ComboboxWrapperMultipleProps<T, Item>) {
-  const items: ListData<T, Item> = itemsProp ?? options ?? NO_ITEMS;
+  const items: ListData<T, Item> = itemsProp ?? NO_ITEMS;
   const keyOf = useMemo(() => valueKey(itemToValue), [itemToValue]);
   const byKey = useMemo(() => new Map(flatItems(items).map((o) => [keyOf(o.value), o])), [items, keyOf]);
   const labelFor = useMemo(

@@ -54,10 +54,6 @@ type ToastOptions = {
    */
   type?: ToastType | undefined;
   /**
-   * @deprecated Use `type`; `"progress"` is `type: "info"`.
-   */
-  variant?: "success" | "error" | "progress" | undefined;
-  /**
    * Move focus to the action as the toast shows. Only for when the control the person just used is gone, such as a
    * removed section's Undo, so focus lands on the way back instead of falling to the page (AVE-118). Otherwise
    * leave focus where it is; F6 reaches the toast.
@@ -84,8 +80,7 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
   });
   // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
   // contextual type into the destructured default (MANA-1118, TS7031 in Management).
-  return (text: string, { action, type: given, variant, focus = false }: ToastOptions = {}) => {
-    const type: ToastType = given ?? (variant === "progress" ? "info" : variant) ?? "success";
+  return (text: string, { action, type = "success", focus = false }: ToastOptions = {}) => {
     const options = action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {};
     if (type === "error") {
       // A success waiting behind the old error keeps waiting behind the new one.
@@ -205,7 +200,4 @@ function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** @deprecated Use ToastRegion. */
-const Toaster = ToastRegion;
-
-export { ToastProvider, ToastRegion, Toaster, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions, type ToastType };
+export { ToastProvider, ToastRegion, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions, type ToastType };

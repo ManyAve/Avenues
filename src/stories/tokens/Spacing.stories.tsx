@@ -83,7 +83,7 @@ function Control({ size, use }: { size: (typeof heights)[number][0]; use: string
     <div className="grid grid-cols-[3rem_9rem_8rem_1fr] items-center gap-4 border-b py-row-y">
       <Code className="text-foreground">{size}</Code>
       <Code>{height}</Code>
-      <Button ref={ref} variant="outline" size={size === "md" ? "default" : size} className="justify-self-start">
+      <Button ref={ref} variant="outline" size={size} className="justify-self-start">
         Save
       </Button>
       <span className="text-meta text-muted-foreground">{use}</span>

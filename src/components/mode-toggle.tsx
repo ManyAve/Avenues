@@ -32,7 +32,7 @@ const themeItems = [
  * State follows ui-sdk's names (AVE-145): the theme is `value` / `defaultValue` / `onValueChange`, and Dev, a second
  * piece of state on the same root, is `dev` / `defaultDev` / `onDevChange`, ui-sdk's `<key>` / `default<Key>` /
  * `on<Key>Change` pattern. Each callback gets ui-sdk's details second; `details.cancel()` keeps the old state when
- * the toggle holds it itself. `choice` and `onThemeChange` are the old names, deprecated.
+ * the toggle holds it itself.
  *
  * Behavior from ui-sdk: Dev is a single Toggle (pressed or not; a group of one would be announced as a group), and
  * the theme, through Avenue's ToggleGroup, is a single choice (ui-sdk's SegmentedControl, a radio group: one Tab stop, the arrow keys choose).
@@ -51,8 +51,6 @@ function ModeToggle({
   value,
   defaultValue,
   onValueChange,
-  choice,
-  onThemeChange,
   className,
   render,
   ...props
@@ -67,14 +65,10 @@ function ModeToggle({
   value?: ThemeChoice | undefined;
   defaultValue?: ThemeChoice | undefined;
   onValueChange?: ((value: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
-  /** @deprecated Use `value` (AVE-145). */
-  choice?: ThemeChoice | undefined;
-  /** @deprecated Use `onValueChange` (AVE-145). */
-  onThemeChange?: ((theme: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
 }) {
   const [ownTheme, setOwnTheme] = useState(defaultValue);
   const [ownDev, setOwnDev] = useState(defaultDev);
-  const selected = value ?? choice ?? ownTheme ?? theme ?? "light";
+  const selected = value ?? ownTheme ?? theme ?? "light";
   const devOn = dev ?? ownDev;
   return renderElement(
     "span",
@@ -107,7 +101,6 @@ function ModeToggle({
               const item = themeItems.find((i) => i.value === next);
               if (!item) return;
               onValueChange?.(item.value, details);
-              onThemeChange?.(item.value, details);
               if (!details.canceled) setOwnTheme(item.value);
             }}
             aria-label="Theme"

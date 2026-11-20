@@ -176,38 +176,4 @@ export {
   DrawerTrigger,
 };
 
-// Deprecated aliases (AVE-144): shadcn's names for these parts, kept so apps can rename at their own pace. They go in the next minor release.
-
-/** @deprecated Use Drawer. */
-const Sheet = Drawer;
-/** @deprecated Use DrawerTrigger. */
-const SheetTrigger = DrawerTrigger;
-/** @deprecated Use DrawerClose. */
-const SheetClose = DrawerClose;
-/** @deprecated Use DrawerContent. */
-const SheetContent = DrawerContent;
-/** @deprecated Use DrawerTitle. */
-const SheetTitle = DrawerTitle;
-/** @deprecated Use DrawerDescription. */
-const SheetDescription = DrawerDescription;
-/** @deprecated Use DrawerHeader. */
-const SheetHeader = DrawerHeader;
-/** @deprecated Use DrawerBody. */
-const SheetBody = DrawerBody;
-/** @deprecated Use DrawerFooter. */
-const SheetFooter = DrawerFooter;
-/** @deprecated Use DrawerBackdrop. */
-const SheetOverlay = DrawerBackdrop;
-
-export {
-  Sheet,
-  SheetBody,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-};
+;

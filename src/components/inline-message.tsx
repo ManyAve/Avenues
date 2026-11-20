@@ -29,11 +29,6 @@ export interface InlineMessageProps extends Omit<OwnPartProps<"div">, "role" | "
    * is still read.
    */
   children?: ReactNode;
-  /**
-   * Hides the leading icon, for a message under a field where the field's own invalid ring already signals it.
-   * @deprecated Write the parts and leave `InlineMessageIcon` out (AVE-149).
-   */
-  hideIcon?: boolean | undefined;
 }
 
 const ToneContext = createContext<InlineMessageTone>("error");
@@ -62,7 +57,7 @@ const isEmpty = (node: ReactNode) => node === null || node === undefined || node
  *
  * InlineMessage takes parts when one is among its own children; it is empty when its InlineMessageContent is.
  */
-export function InlineMessage({ tone = "error", children, hideIcon, className, render, ...props }: InlineMessageProps) {
+export function InlineMessage({ tone = "error", children, className, render, ...props }: InlineMessageProps) {
   const { role, text } = tones[tone];
   const kids = Children.toArray(children);
   const parts = kids.some(
@@ -87,7 +82,7 @@ export function InlineMessage({ tone = "error", children, hideIcon, className, r
             children
           ) : (
             <>
-              {!hideIcon && <InlineMessageIcon />}
+              <InlineMessageIcon />
               <InlineMessageContent>{children}</InlineMessageContent>
             </>
           ),

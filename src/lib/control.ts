@@ -49,15 +49,10 @@ export function controlSize({ size = "md" }: { size?: ControlSize | undefined } 
  * steps names them xs / sm / md / lg, the steps controlShape and the `h-control-*` tokens use, and `md` is the default.
  * Each component takes the steps it has. Sizes that name a place rather than a step (EmptyState `compact`, IconTile
  * `row | section`, FormDialog and Dock `width`) are not on the scale.
- *
- * `"default"` was the shadcn name for md. It is deprecated; removed once both apps have moved off it (AVE-154). Use md.
  */
 export type ScaleStep = "xs" | "sm" | "md" | "lg";
 
-/** A component's own steps, plus the deprecated `"default"` (use md). */
-export type WithDefault<S extends ScaleStep> = S | "default";
-
-/** The step a size names: `"default"` (deprecated) and no size are md. What `data-size` carries, so CSS reads one name. */
-export function scaleStep<S extends ScaleStep>(size: S | "default" | null | undefined): S | "md" {
-  return size == null || size === "default" ? "md" : size;
+/** The step a size names: no size is md. What `data-size` carries, so CSS reads one name. */
+export function scaleStep<S extends ScaleStep>(size: S | null | undefined): S | "md" {
+  return size ?? "md";
 }

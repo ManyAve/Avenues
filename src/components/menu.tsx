@@ -156,8 +156,6 @@ function MenuItem({
   inset,
   destructive,
   disabledReason,
-  variant,
-  reason,
   children,
   onSelect,
   onClick,
@@ -168,40 +166,34 @@ function MenuItem({
   destructive?: boolean | undefined;
   /** Why a disabled item is unavailable: one muted line under the label, read with the item. */
   disabledReason?: ReactNode | undefined;
-  /** @deprecated Use `destructive`. */
-  variant?: "default" | "destructive" | undefined;
-  /** @deprecated Use `disabledReason`. */
-  reason?: ReactNode | undefined;
   /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
   onClick?: SelectHandler | undefined;
 }) {
   const reasonId = useId();
   const select = runSelect(onSelect, onClick);
-  const isDestructive = destructive ?? variant === "destructive";
-  const why = disabledReason ?? reason;
   return (
     <MenuPrimitive.MenuItem
       {...(select ? { onSelect: select } : {})}
       data-inset={inset}
-      destructive={isDestructive}
-      aria-describedby={why ? reasonId : undefined}
+      destructive={destructive ?? false}
+      aria-describedby={disabledReason ? reasonId : undefined}
       className={cn(
         "group/dropdown-menu-item",
         itemClass,
         "not-data-destructive:data-highlighted:**:text-accent-foreground data-destructive:text-destructive-subtle-foreground data-destructive:data-highlighted:bg-destructive/10 data-destructive:data-highlighted:text-destructive-subtle-foreground dark:data-destructive:data-highlighted:bg-destructive/20 data-destructive:*:[svg]:text-destructive-subtle-foreground",
-        why && "flex-wrap data-disabled:opacity-100 data-disabled:*:not-data-[slot=dropdown-menu-item-reason]:opacity-50",
+        disabledReason && "flex-wrap data-disabled:opacity-100 data-disabled:*:not-data-[slot=dropdown-menu-item-reason]:opacity-50",
         className,
       )}
       {...defined(props)}
     >
       {children}
-      {why && (
+      {disabledReason && (
         <span
           id={reasonId}
           data-slot="dropdown-menu-item-reason"
           className="basis-full text-meta text-muted-foreground"
         >
-          {why}
+          {disabledReason}
         </span>
       )}
     </MenuPrimitive.MenuItem>
@@ -339,50 +331,4 @@ export {
   MenuTrigger,
 };
 
-// Deprecated aliases (AVE-144): shadcn's names for these parts, kept so apps can rename at their own pace. They go in the next minor release.
-
-/** @deprecated Use Menu. */
-const DropdownMenu = Menu;
-/** @deprecated Use MenuTrigger. */
-const DropdownMenuTrigger = MenuTrigger;
-/** @deprecated Use MenuContent. */
-const DropdownMenuContent = MenuContent;
-/** @deprecated Use MenuGroup. */
-const DropdownMenuGroup = MenuGroup;
-/** @deprecated Use MenuSub. */
-const DropdownMenuSub = MenuSub;
-/** @deprecated Use MenuSubTrigger. */
-const DropdownMenuSubTrigger = MenuSubTrigger;
-/** @deprecated Use MenuSubContent. */
-const DropdownMenuSubContent = MenuSubContent;
-/** @deprecated Use MenuItem. */
-const DropdownMenuItem = MenuItem;
-/** @deprecated Use MenuCheckboxItem. */
-const DropdownMenuCheckboxItem = MenuCheckboxItem;
-/** @deprecated Use MenuRadioGroup. */
-const DropdownMenuRadioGroup = MenuRadioGroup;
-/** @deprecated Use MenuRadioItem. */
-const DropdownMenuRadioItem = MenuRadioItem;
-/** @deprecated Use MenuSeparator. */
-const DropdownMenuSeparator = MenuSeparator;
-/** @deprecated Use MenuShortcut. */
-const DropdownMenuShortcut = MenuShortcut;
-/** @deprecated Use MenuGroupLabel. */
-const DropdownMenuLabel = MenuGroupLabel;
-
-export {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-};
+;

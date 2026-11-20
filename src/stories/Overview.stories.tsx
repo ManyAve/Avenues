@@ -22,7 +22,7 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Checkbox } from "#avenue/components/checkbox";
 import { Chip, ChipRow } from "#avenue/components/chip";
 import { Combobox, type ComboboxItemData } from "#avenue/components/combobox";
-import { ListItem } from "#avenue/components/detail-list";
+import { ListItem, ListItemContent, ListItemMeta, ListItemNote, ListItemTitle } from "#avenue/components/detail-list";
 import {
   Dialog,
   DialogClose,
@@ -33,7 +33,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "#avenue/components/dialog";
-import { Disclosure } from "#avenue/components/disclosure";
+import {
+  CollapsibleSection,
+  CollapsibleSectionPanel,
+  CollapsibleSectionTrigger,
+} from "#avenue/components/collapsible-section";
 import {
   Menu,
   MenuContent,
@@ -41,7 +45,20 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "#avenue/components/menu";
-import { EmptyState, SectionEmpty } from "#avenue/components/empty-state";
+import {
+  EmptyState,
+  EmptyStateAction,
+  EmptyStateActions,
+  EmptyStateDescription,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  SectionEmpty,
+  SectionEmptyAction,
+  SectionEmptyContent,
+  SectionEmptyDescription,
+  SectionEmptyIcon,
+  SectionEmptyTitle,
+} from "#avenue/components/empty-state";
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "#avenue/components/field";
 import { IconTile } from "#avenue/components/icon-tile";
 import { InitialsAvatar } from "#avenue/components/initials-avatar";
@@ -50,7 +67,7 @@ import { Input } from "#avenue/components/input";
 import { Money } from "#avenue/components/money";
 import { RadioGroup, Radio } from "#avenue/components/radio-group";
 import { SearchInput } from "#avenue/components/search-input";
-import { SectionCard } from "#avenue/components/section-card";
+import { SectionCard, SectionCardCount, SectionCardTitle } from "#avenue/components/section-card";
 import { Select } from "#avenue/components/select";
 import { Status } from "#avenue/components/status";
 import { Switch } from "#avenue/components/switch";
@@ -334,58 +351,63 @@ const payments = [
 
 function Payments() {
   return (
-    <SectionCard
-      title="Recent payments"
-      count={4}
-      action={
-        <Menu>
-          <MenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Payment actions" />}>
-            <MoreHorizontalIcon aria-hidden />
-          </MenuTrigger>
-          <MenuContent align="end" className="w-48">
-            <MenuItem>Export to CSV</MenuItem>
-            <MenuItem>Print deposit slip</MenuItem>
-            <MenuSeparator />
-            <MenuItem>Open the ledger</MenuItem>
-          </MenuContent>
-        </Menu>
-      }
-    >
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Household</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {payments.map((p) => (
-            <TableRow key={p.who}>
-              <TableCell className="font-medium">
-                {p.who}
-                <span className="block text-meta font-normal text-muted-foreground">{p.method}</span>
-              </TableCell>
-              <TableCell>
-                <Status tone={p.status === "Cleared" ? "success" : p.status === "Pending" ? "info" : "neutral"}>
-                  {p.status}
-                </Status>
-              </TableCell>
+    <SectionCard>
+      <CardHeader>
+        <SectionCardTitle>
+          Recent payments
+          <SectionCardCount value={4} />
+        </SectionCardTitle>
+        <CardAction>
+          <Menu>
+            <MenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Payment actions" />}>
+              <MoreHorizontalIcon aria-hidden />
+            </MenuTrigger>
+            <MenuContent align="end" className="w-48">
+              <MenuItem>Export to CSV</MenuItem>
+              <MenuItem>Print deposit slip</MenuItem>
+              <MenuSeparator />
+              <MenuItem>Open the ledger</MenuItem>
+            </MenuContent>
+          </Menu>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Household</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {payments.map((p) => (
+              <TableRow key={p.who}>
+                <TableCell className="font-medium">
+                  {p.who}
+                  <span className="block text-meta font-normal text-muted-foreground">{p.method}</span>
+                </TableCell>
+                <TableCell>
+                  <Status tone={p.status === "Cleared" ? "success" : p.status === "Pending" ? "info" : "neutral"}>
+                    {p.status}
+                  </Status>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Money cents={p.cents} signed />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={2}>Net this week</TableCell>
               <TableCell className="text-right">
-                <Money cents={p.cents} signed />
+                <Money cents={57500} />
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={2}>Net this week</TableCell>
-            <TableCell className="text-right">
-              <Money cents={57500} />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableFooter>
+        </Table>
+      </CardContent>
     </SectionCard>
   );
 }
@@ -434,14 +456,16 @@ function Collection() {
 function NoBoard() {
   return (
     <Card>
-      <EmptyState
-        size="compact"
-        headingLevel={2}
-        icon={UsersIcon}
-        title="No committee members yet"
-        description="Add neighbors to the landscaping committee so they can see its requests."
-        action={{ label: "Add committee members" }}
-      >
+      <EmptyState size="compact">
+        <EmptyStateIcon>
+          <UsersIcon />
+        </EmptyStateIcon>
+        {/* oxlint-disable-next-line jsx-a11y/heading-has-content -- EmptyStateTitle passes its children into the h2. */}
+        <EmptyStateTitle render={<h2 />}>No committee members yet</EmptyStateTitle>
+        <EmptyStateDescription>Add neighbors to the landscaping committee so they can see its requests.</EmptyStateDescription>
+        <EmptyStateActions>
+          <EmptyStateAction disabled={false}>Add committee members</EmptyStateAction>
+        </EmptyStateActions>
         <AvatarGroup className="mt-3" aria-hidden>
           {["RA", "SO", "LM"].map((initials) => (
             <Avatar key={initials}>
@@ -553,21 +577,48 @@ function Notifications() {
 
 function Activity() {
   return (
-    <SectionCard title="Activity" count="3 today" countLabel="today">
-      <div className="flex flex-col">
-        <ActivityRow icon={<IconTile icon={ReceiptIcon} tone="success" />} title="Payment recorded" meta="14 Larkspur Lane · 9:12 am" trailing={<Money cents={24000} />} />
-        <ActivityRow icon={<IconTile icon={WrenchIcon} tone="warning" />} title="Complaint opened: gate latch" meta="Maple Court · 8:40 am" />
-        <ActivityRow icon={<IconTile icon={MegaphoneIcon} tone="tint" tint="plum" />} title="Notice sent: pool hours" meta="All households · 8:00 am" note="Board only" />
-      </div>
+    <SectionCard>
+      <CardHeader>
+        <SectionCardTitle>
+          Activity
+          <SectionCardCount value="3 today" label="today" />
+        </SectionCardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col">
+          <ActivityRow icon={<IconTile icon={ReceiptIcon} tone="success" />} title="Payment recorded" meta="14 Larkspur Lane · 9:12 am" trailing={<Money cents={24000} />} />
+          <ActivityRow icon={<IconTile icon={WrenchIcon} tone="warning" />} title="Complaint opened: gate latch" meta="Maple Court · 8:40 am" />
+          <ActivityRow icon={<IconTile icon={MegaphoneIcon} tone="tint" tint="plum" />} title="Notice sent: pool hours" meta="All households · 8:00 am" note="Board only" />
+        </div>
+      </CardContent>
     </SectionCard>
   );
 }
 
-function ActivityRow({ icon, ...item }: { icon: ReactNode } & React.ComponentProps<typeof ListItem>) {
+function ActivityRow({
+  icon,
+  title,
+  meta: when,
+  note,
+  trailing,
+}: {
+  icon: ReactNode;
+  title: string;
+  meta: string;
+  note?: string | undefined;
+  trailing?: ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3 not-last:border-b [&>[data-slot=list-item]]:flex-1 [&>[data-slot=list-item]]:border-0">
       <span className="pt-group">{icon}</span>
-      <ListItem {...item} />
+      <ListItem>
+        <ListItemContent>
+          <ListItemTitle>{title}</ListItemTitle>
+          <ListItemMeta>{when}</ListItemMeta>
+          {note && <ListItemNote>{note}</ListItemNote>}
+        </ListItemContent>
+        {trailing}
+      </ListItem>
     </div>
   );
 }
@@ -579,19 +630,27 @@ function People() {
     { name: "Lee Marchetti", role: "Renter", status: <Status tone="info">Renter</Status> },
   ];
   return (
-    <SectionCard title="People" count={3}>
-      <ul className="flex flex-col">
-        {people.map((p) => (
-          <li key={p.name} className="flex items-center gap-3 py-group not-last:border-b">
-            <InitialsAvatar name={p.name} decorative size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="font-[550]">{p.name}</p>
-              <p className="text-meta text-muted-foreground">{p.role}</p>
-            </div>
-            {p.status}
-          </li>
-        ))}
-      </ul>
+    <SectionCard>
+      <CardHeader>
+        <SectionCardTitle>
+          People
+          <SectionCardCount value={3} />
+        </SectionCardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col">
+          {people.map((p) => (
+            <li key={p.name} className="flex items-center gap-3 py-group not-last:border-b">
+              <InitialsAvatar name={p.name} decorative size="md" />
+              <div className="min-w-0 flex-1">
+                <p className="font-[550]">{p.name}</p>
+                <p className="text-meta text-muted-foreground">{p.role}</p>
+              </div>
+              {p.status}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
     </SectionCard>
   );
 }
@@ -628,9 +687,12 @@ function SendNotice() {
             />
           </Field>
           <InlineMessage tone="info">2 households get this on paper, at 63¢ each.</InlineMessage>
-          <Disclosure summary="Who doesn't get it (1)">
-            <p className="text-meta text-muted-foreground">5 Quill Court has no email or mailing address yet.</p>
-          </Disclosure>
+          <CollapsibleSection variant="disclosure">
+            <CollapsibleSectionTrigger>Who doesn't get it (1)</CollapsibleSectionTrigger>
+            <CollapsibleSectionPanel>
+              <p className="text-meta text-muted-foreground">5 Quill Court has no email or mailing address yet.</p>
+            </CollapsibleSectionPanel>
+          </CollapsibleSection>
         </FieldGroup>
       </CardContent>
       <CardFooter className="justify-end">
@@ -702,12 +764,43 @@ function Toasts() {
 
 function Upcoming() {
   return (
-    <SectionCard title="Documents" count={2}>
-      <ListItem title="2026 budget.pdf" meta="Added by Robin Avery · Mar 2" trailing={<FileTextIcon aria-hidden className="size-4 text-muted-foreground" />} />
-      <ListItem title="Pool rules.pdf" meta="Added by Sam Okafor · Feb 18" note="Board only" />
-      <div className="border-t pt-3">
-        <SectionEmpty icon={CalendarIcon} title="No meetings scheduled" line="Schedule the annual meeting to send the notice." action={{ label: "Schedule meeting", icon: CalendarIcon, onClick: () => {} }} />
-      </div>
+    <SectionCard>
+      <CardHeader>
+        <SectionCardTitle>
+          Documents
+          <SectionCardCount value={2} />
+        </SectionCardTitle>
+      </CardHeader>
+      <CardContent>
+        <ListItem>
+          <ListItemContent>
+            <ListItemTitle>2026 budget.pdf</ListItemTitle>
+            <ListItemMeta>Added by Robin Avery · Mar 2</ListItemMeta>
+          </ListItemContent>
+          <FileTextIcon aria-hidden className="size-4 text-muted-foreground" />
+        </ListItem>
+        <ListItem>
+          <ListItemContent>
+            <ListItemTitle>Pool rules.pdf</ListItemTitle>
+            <ListItemMeta>Added by Sam Okafor · Feb 18</ListItemMeta>
+            <ListItemNote>Board only</ListItemNote>
+          </ListItemContent>
+        </ListItem>
+        <div className="border-t pt-3">
+          <SectionEmpty>
+            <SectionEmptyIcon>
+              <CalendarIcon />
+            </SectionEmptyIcon>
+            <SectionEmptyContent>
+              <SectionEmptyTitle>No meetings scheduled</SectionEmptyTitle>
+              <SectionEmptyDescription>Schedule the annual meeting to send the notice.</SectionEmptyDescription>
+            </SectionEmptyContent>
+            <SectionEmptyAction onClick={() => {}}>
+              <CalendarIcon aria-hidden /> Schedule meeting
+            </SectionEmptyAction>
+          </SectionEmpty>
+        </div>
+      </CardContent>
     </SectionCard>
   );
 }

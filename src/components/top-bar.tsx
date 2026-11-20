@@ -1,9 +1,6 @@
-import { mergeProps, renderElement, type RenderProp } from "@ui-sdk/react/primitive";
-import { CircleHelp } from "lucide-react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import {
-  Children,
   createContext,
-  isValidElement,
   useContext,
   useEffect,
   useRef,
@@ -11,14 +8,13 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { Button } from "#avenue/components/button";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * ManyAve's top bar (the app's app/ui/components/TopBar.tsx at e01cc90): the home link, the association's name, the
- * section links (NavTab) and trailing actions, which default to a Help button. Avenue never ships ManyAve's logo
- * file, so the app passes its mark as `logo`.
+ * section links (NavTab) and trailing actions. Avenue never ships ManyAve's logo file, so the app passes its mark as
+ * TopBarHome's `logo`.
  *
  * From 1100px down the section links take their own full-width row; at 700px and narrower they are one scrolling
  * strip that keeps the current section in view, and the brand shows its mark only. The strip fades its last 28px on
@@ -31,10 +27,7 @@ import { cn } from "#avenue/lib/utils";
  * so their tap areas on a phone don't reach the Help button's, and the strip runs to the bar's edges
  * with the page inset as scroll padding, so a link it snaps to the edge keeps its whole tap area inside it.
  *
- * The home link is the app's to handle (AVE-110). `homeRender` swaps the link for the app's own, such as its router's
- * link, as NavTab's `render` does. `onHome` runs on a plain click or Enter instead of following `homeHref`; a click
- * with cmd, ctrl, shift or alt, or one a handler already prevented, still follows the link, so it can open in a new
- * tab or window. `windowDrag` makes the bar the desktop window's drag area (Electron's `-webkit-app-region`) with
+ * The home link is the app's to handle (AVE-110): see TopBarHome. `windowDrag` makes the bar the desktop window's drag area (Electron's `-webkit-app-region`) with
  * the home link, the section links and the actions left clickable, and stops text selecting as the window is
  * dragged. It does nothing in a browser.
  */
@@ -49,47 +42,10 @@ function useNoDrag() {
 type TopBarProps = OwnPartProps<"header"> & {
   /** The bar is the desktop window's drag area; its links and actions stay clickable. */
   windowDrag?: boolean | undefined;
-  /** @deprecated Use TopBarHome's `logo` (AVE-149). */
-  logo?: ReactNode;
-  /** @deprecated Use TopBarHome's `name` (AVE-149). */
-  name?: string | undefined;
-  /** @deprecated Use TopBarHome's `href` (AVE-149). */
-  homeHref?: string | undefined;
-  /** @deprecated Use TopBarHome's `render` (AVE-149). */
-  homeRender?: RenderProp | undefined;
-  /** @deprecated Use TopBarHome's `onHome` (AVE-149). */
-  onHome?: (() => void) | undefined;
-  /** @deprecated Use `<TopBarOrg>` (AVE-149). */
-  org?: ReactNode;
-  /** @deprecated Use `<TopBarActions>` (AVE-149). */
-  actions?: ReactNode;
-  /** @deprecated Use TopBarNav's `aria-label` (AVE-149). */
-  navLabel?: string | undefined;
 };
 
-const PARTS = new Set<unknown>();
-
-/**
- * The bar. Written with parts (`TopBarHome`, `TopBarOrg`, `TopBarNav`, `TopBarActions`), or in one tag with today's
- * props, whose children are the section links. It tells the two apart by its children: any part among them means
- * parts.
- */
-function TopBar({
-  logo,
-  name,
-  homeHref,
-  homeRender,
-  onHome,
-  windowDrag = false,
-  org,
-  actions,
-  navLabel,
-  children,
-  className,
-  render,
-  ...props
-}: TopBarProps) {
-  const parts = Children.toArray(children).some((child) => isValidElement(child) && PARTS.has(child.type));
+/** The bar, written with parts: `TopBarHome`, `TopBarOrg`, `TopBarNav`, `TopBarActions`. */
+function TopBar({ windowDrag = false, className, render, ...props }: TopBarProps) {
   return (
     <TopBarContext.Provider value={{ windowDrag }}>
       {renderElement(
@@ -102,22 +58,6 @@ function TopBar({
               "flex min-h-14 flex-wrap items-center gap-4 border-b bg-background px-page py-3 text-meta max-phone:gap-x-3",
               windowDrag && "select-none [-webkit-app-region:drag]",
               className,
-            ),
-            children: parts ? (
-              children
-            ) : (
-              <>
-                <TopBarHome logo={logo} name={name} href={homeHref} render={homeRender} onHome={onHome} />
-                {org ? <TopBarOrg>{org}</TopBarOrg> : null}
-                <TopBarNav aria-label={navLabel}>{children}</TopBarNav>
-                <TopBarActions>
-                  {actions ?? (
-                    <Button variant="ghost" size="icon-sm" aria-label="Help">
-                      <CircleHelp aria-hidden />
-                    </Button>
-                  )}
-                </TopBarActions>
-              </>
             ),
           },
           defined(props),
@@ -257,8 +197,6 @@ function TopBarActions({ className, render, ...props }: OwnPartProps<"div">) {
     render,
   );
 }
-
-for (const part of [TopBarHome, TopBarOrg, TopBarNav, TopBarActions]) PARTS.add(part);
 
 /**
  * The home link's click: a plain one (the main button, no modifier key, not already handled; Enter counts) runs

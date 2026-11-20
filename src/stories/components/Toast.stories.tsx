@@ -349,28 +349,6 @@ export const Progress: Story = {
   },
 };
 
-/** `variant`, deprecated (AVE-151) until both apps have moved off it (AVE-154), still works: `"progress"` shows the `info` toast, `"error"` the error. */
-export const DeprecatedVariant: Story = {
-  render: () => (
-    <ToastProvider>
-      <Rows>
-        <div className="flex flex-wrap gap-controls">
-          <Trigger label="Send announcement" text="Sending to 42 households…" options={{ variant: "progress" }} />
-          <Trigger label="Send reminder" text="Couldn't send the reminder." options={{ variant: "error" }} />
-        </div>
-      </Rows>
-    </ToastProvider>
-  ),
-  play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Send announcement" }));
-    await expect(await findToast()).toHaveAttribute("data-type", "info");
-    await userEvent.click(canvas.getByRole("button", { name: "Send reminder" }));
-    await waitFor(() => expect(toastEl()).toHaveAttribute("data-type", "error"));
-    await userEvent.click(screen.getByRole("button", { name: "Dismiss" }));
-    await gone(1000);
-  },
-};
-
 const restore = fn();
 
 function RemoveSection() {

@@ -35,8 +35,13 @@ export const Warning: Story = {
   render: () => (
     <Rows>
       <div className="max-w-md">
-        <Callout tone="warning" icon={TriangleAlertIcon}>
-          This household already has an email late notice for 2026 dues. Use its delivery history actions below.
+        <Callout tone="warning">
+          <CalloutIcon>
+            <TriangleAlertIcon aria-hidden />
+          </CalloutIcon>
+          <CalloutContent>
+            This household already has an email late notice for 2026 dues. Use its delivery history actions below.
+          </CalloutContent>
         </Callout>
       </div>
     </Rows>
@@ -49,10 +54,20 @@ export const Tones: Story = {
     <Rows>
       <div className="flex max-w-md flex-col gap-3">
         <Callout>Enter the date these dues were due to see the notice and its balance.</Callout>
-        <Callout icon={ClockIcon}>An online payment is processing and has not been applied yet.</Callout>
-        <Callout tone="warning" icon={TriangleAlertIcon}>
-          Replacing an earlier notice. Review the notice below and approve it again. The earlier notice stays in
-          history, and this creates a new paid mailing.
+        <Callout>
+          <CalloutIcon>
+            <ClockIcon aria-hidden />
+          </CalloutIcon>
+          <CalloutContent>An online payment is processing and has not been applied yet.</CalloutContent>
+        </Callout>
+        <Callout tone="warning">
+          <CalloutIcon>
+            <TriangleAlertIcon aria-hidden />
+          </CalloutIcon>
+          <CalloutContent>
+            Replacing an earlier notice. Review the notice below and approve it again. The earlier notice stays in
+            history, and this creates a new paid mailing.
+          </CalloutContent>
         </Callout>
       </div>
     </Rows>

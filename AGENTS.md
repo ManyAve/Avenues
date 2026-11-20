@@ -60,8 +60,12 @@ names). This replaces the shadcn component structure and the 2026-11-17 morning 
 - **Renames keep the old name until both apps have moved off it.** When a part or prop takes ui-sdk's name, the shadcn
   or earlier Avenue name stays exported as a deprecated alias (`/** @deprecated Use MenuItem. */`) until AVE-154's check
   shows neither Management nor Neighbors uses it, and the CHANGELOG entry says what to rename, so the apps move at their
-  own pace. Never name a removal version, in a `@deprecated` message, a dev warning, the CHANGELOG or ADOPTING.md:
-  write "deprecated; removed once both apps have moved off it (AVE-154)" (`scripts/deprecation-versions.test.ts`).
+  own pace. Never name a removal version ahead of time, in a `@deprecated` message, a dev warning, the CHANGELOG or
+  ADOPTING.md: write "deprecated; removed once both apps have moved off it". The check is AVE-154's: strip every
+  `@deprecated` name from a copy of Avenue and typecheck each app at the Avenue it pins against it. The release that
+  removes names says so in a CHANGELOG item led by "**Removed the deprecated names**", and only that release may be
+  named as the one that removed them (`scripts/deprecation-versions.test.ts`). v0.43.0 removed every name deprecated
+  until then.
 - `scripts/own-part-render.test.ts`'s `COMPOSITES` list is empty since AVE-149: no component is prop-driven any more.
   Keep it empty; a new component is a root and parts from the start.
 

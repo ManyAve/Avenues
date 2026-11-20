@@ -1,6 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { InboxIcon } from "lucide-react";
-import { EmptyState } from "#avenue/components/empty-state";
+import {
+  EmptyState,
+  EmptyStateAction,
+  EmptyStateActions,
+  EmptyStateDescription,
+  EmptyStateIcon,
+  EmptyStateTitle,
+} from "#avenue/components/empty-state";
 import { SideBySide } from "./native-kit";
 
 // Avenue's EmptyState beside Android's (native/android). iOS builds none: the system's ContentUnavailableView already
@@ -14,12 +21,16 @@ const ios = { ios: "SwiftUI's ContentUnavailableView, the system's own empty sta
 export const Default: Story = {
   render: (_, { globals }) => (
     <SideBySide slug="empty-state-default" title="Empty state" theme={globals["theme"]} instead={ios}>
-      <EmptyState
-        icon={InboxIcon}
-        title="No complaints yet"
-        description="Complaints neighbors file show up here."
-        action={{ label: "New complaint", onClick: () => {} }}
-      />
+      <EmptyState>
+        <EmptyStateIcon>
+          <InboxIcon />
+        </EmptyStateIcon>
+        <EmptyStateTitle>No complaints yet</EmptyStateTitle>
+        <EmptyStateDescription>Complaints neighbors file show up here.</EmptyStateDescription>
+        <EmptyStateActions>
+          <EmptyStateAction onClick={() => {}}>New complaint</EmptyStateAction>
+        </EmptyStateActions>
+      </EmptyState>
     </SideBySide>
   ),
 };
@@ -27,12 +38,13 @@ export const Default: Story = {
 export const Compact: Story = {
   render: (_, { globals }) => (
     <SideBySide slug="empty-state-compact" title="Compact empty state" theme={globals["theme"]} instead={ios}>
-      <EmptyState
-        size="compact"
-        icon={InboxIcon}
-        title="No payments"
-        description="Payments recorded for this household show up here."
-      />
+      <EmptyState size="compact">
+        <EmptyStateIcon>
+          <InboxIcon />
+        </EmptyStateIcon>
+        <EmptyStateTitle>No payments</EmptyStateTitle>
+        <EmptyStateDescription>Payments recorded for this household show up here.</EmptyStateDescription>
+      </EmptyState>
     </SideBySide>
   ),
 };

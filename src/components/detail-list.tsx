@@ -90,49 +90,17 @@ function DetailListDetail({ className, render, ...props }: OwnPartProps<"dd">) {
  *   │   ├── ListItemMeta
  *   │   └── ListItemNote   with a lock: who can see it
  *   └── ListItemTrailing   an amount, a button
+ *
+ * No `title`: it was the slot prop for the title part (AVE-149), and an HTML tooltip in its place would hide a
+ * stale call.
  */
-function ListItem({
-  title,
-  meta,
-  note,
-  trailing,
-  children,
-  className,
-  render,
-  ...props
-}: Omit<OwnPartProps<"div">, "title"> & {
-  /** @deprecated Use `<ListItemContent><ListItemTitle>` (AVE-149). */
-  title?: ReactNode;
-  /** @deprecated Use `<ListItemMeta>` (AVE-149). */
-  meta?: ReactNode;
-  /**
-   * Who can see it, e.g. "Board only".
-   * @deprecated Use `<ListItemNote>` (AVE-149).
-   */
-  note?: ReactNode;
-  /** @deprecated Use `<ListItemTrailing>` (AVE-149). */
-  trailing?: ReactNode;
-}) {
-  const fromProps = title !== undefined || meta !== undefined;
+function ListItem({ className, render, ...props }: Omit<OwnPartProps<"div">, "title">) {
   return renderElement(
     "div",
     mergeProps(
       {
         "data-slot": "list-item",
         className: cn("flex items-start justify-between gap-row-y py-group text-compact not-last:border-b", className),
-        children: (
-          <>
-            {fromProps && (
-              <ListItemContent>
-                {title !== undefined && <ListItemTitle>{title}</ListItemTitle>}
-                {meta !== undefined && <ListItemMeta>{meta}</ListItemMeta>}
-                {note && <ListItemNote>{note}</ListItemNote>}
-              </ListItemContent>
-            )}
-            {trailing}
-            {children}
-          </>
-        ),
       },
       defined(props),
     ),

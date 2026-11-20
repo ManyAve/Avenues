@@ -116,13 +116,12 @@ anything blocks it.
 ## Renamed parts
 
 Avenue's parts take the names of the ui-sdk parts they wrap (AVE-144, v0.25.0), so a name in ui-sdk's docs is the
-name in Avenue. The old names still work: each is a deprecated alias of the new part
-(your editor strikes it through), and the old import paths re-export the new files. Nothing on screen changes, and
-`data-slot` values stay as they were, so tests and styles that select them keep working. Rename at your own pace;
-the aliases and old paths are deprecated and removed once both apps have moved off them (AVE-154). No release before then removes them: earlier
-versions of this page named one, and AVE-158 took that back.
+name in Avenue. The old names were deprecated aliases of the new parts, and the old import paths re-exported the new
+files, until both apps had moved off them. v0.43.0 removed them all (AVE-154): an app on v0.43.0 or newer imports the new
+names from the new paths, and the old ones fail the typecheck. `data-slot` values stay as they were, so tests and
+styles that select them keep working.
 
-| Old name (deprecated) | New name | Import from |
+| Old name (removed in v0.43.0) | New name | Import from |
 | --- | --- | --- |
 | `DropdownMenu` | `Menu` | `@manyave/avenue/components/menu` (was `dropdown-menu`) |
 | `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuGroup` | `MenuTrigger`, `MenuContent`, `MenuGroup` | `components/menu` |
@@ -142,13 +141,12 @@ versions of this page named one, and AVE-158 took that back.
 | `RadioGroupItem` | `Radio` | `components/radio-group` |
 | `Toaster` | `ToastRegion` | `components/toast` |
 
-Props don't change in this release. In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
+In Storybook, "Dropdown menu" is now Components / Menu and "Sheet" is now
 Components / Drawer, so links to the old pages need the new address.
 
-File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old names are deprecated and
-removed once both apps have moved off them (AVE-154):
+File field parts (v0.29.0, AVE-148), all in `components/file-field`; the old names were removed in v0.43.0 (AVE-154):
 
-| Old name (deprecated) | New name |
+| Old name (removed in v0.43.0) | New name |
 | --- | --- |
 | `FileName` | `FileFieldName` |
 | `FileThumbnail` | `FileFieldPreview` |
@@ -158,20 +156,18 @@ removed once both apps have moved off them (AVE-154):
 
 State props take ui-sdk's names too (AVE-145, v0.26.0): `value` / `defaultValue` / `onValueChange`, `checked` /
 `onCheckedChange`, and every change callback gets ui-sdk's `details` second (reason, event, source, `cancel()`). The
-old prop names still work, typed `@deprecated`, and are removed once both apps have moved off them (AVE-154). A callback that ignores its second argument needs no
-change.
+old prop names were removed in v0.43.0 (AVE-154). A callback that ignores its second argument needs no change.
 
-| Component | Old prop (deprecated) | New prop |
+| Component | Old prop (removed in v0.43.0) | New prop |
 | --- | --- | --- |
 | `TableFilters` | `filters`, `onChange` | `value`, `onValueChange` (and `defaultValue`) |
 | `SortMenu` | `onChange` | `onValueChange` (`value` optional, and `defaultValue`) |
 | `RegisterGroupRow` | `selection` (`"all"`, `"some"`, `"none"`), `onSelectedChange` | `checked` (`true`, `"indeterminate"`, `false`), `onCheckedChange` |
 | `ModeToggle` | `choice`, `onThemeChange` | `value`, `onValueChange` (and `defaultValue`; `defaultDev` beside `dev`) |
 
-Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still work, typed
-`@deprecated`, draw the same, and are removed once both apps have moved off them (AVE-154):
+Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones were removed in v0.43.0 (AVE-154):
 
-| Where | Old (deprecated) | New |
+| Where | Old (removed in v0.43.0) | New |
 | --- | --- | --- |
 | `MenuItem` | `variant="destructive"` | `destructive` (ui-sdk's prop; sets `data-destructive`) |
 | `MenuItem` | `reason` | `disabledReason`, as on `Button`, `Composer` and `FileField` |
@@ -179,6 +175,30 @@ Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still
 | `toast(text, options)` | `variant: "progress"` | `type: "info"` |
 
 Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-sdk has no look props.
+
+## Parts instead of slot props
+
+Components that took their content as props are a root and parts (AVE-149, v0.30.0 and v0.32.0), as ui-sdk composes.
+The slot props were removed in v0.43.0 (AVE-154); write the parts:
+
+| Component | Old props (removed in v0.43.0) | Parts |
+| --- | --- | --- |
+| `EmptyState` | `icon`, `title`, `description`, `action`, `secondaryAction`, `externalLink`, `headingLevel` | `EmptyStateIcon`, `EmptyStateTitle` (`render={<h2 />}` for another level), `EmptyStateDescription`, `EmptyStateActions` with `EmptyStateAction` (a second one `variant="link"`); an outside link is a child |
+| `SectionEmpty` | `icon`, `title`, `line`, `action` | `SectionEmptyIcon`, `SectionEmptyContent` with `SectionEmptyTitle` and `SectionEmptyDescription`, `SectionEmptyAction` |
+| `PageHeader` | `eyebrow`, `title`, `count`, `countLabel`, `description`, `actions` | `PageHeaderContent` with `PageHeaderEyebrow`, `PageHeaderTitle` (holding `PageHeaderCount value label`), `PageHeaderDescription`; `PageHeaderActions` |
+| `SectionCard` | `title`, `count`, `countLabel`, `action` | `CardHeader` with `SectionCardTitle` (holding `SectionCardCount`) and `CardAction`; `CardContent` |
+| `TopBar` | `logo`, `name`, `homeHref`, `homeRender`, `onHome`, `org`, `actions`, `navLabel` | `TopBarHome` (`logo`, `name`, `href`, `render`, `onHome`), `TopBarOrg`, `TopBarNav` (`aria-label`), `TopBarActions`. The bar no longer adds a Help button: put it in `TopBarActions` |
+| `StatusBar` | `count`, `hint`, `totals` | `StatusBarCount`, `StatusBarHint`, `StatusBarTotals items` |
+| `ListItem` | `title`, `meta`, `note`, `trailing` | `ListItemContent` with `ListItemTitle`, `ListItemMeta`, `ListItemNote`; `ListItemTrailing` |
+| `Callout` | `icon` | `CalloutIcon` (holding the icon) and `CalloutContent` |
+| `InlineMessage` | `hideIcon` | `InlineMessageContent` with no `InlineMessageIcon` |
+| `Progress` | `trackClassName` | `ProgressTrack className` holding `ProgressIndicator` |
+| `MonthGrid` | `renderDay` | the children function, returning `MonthGridDay` |
+| `Calendar` | `mark` | `CalendarDay` holding `CalendarDayMark` |
+| `Disclosure` (the component) | `summary`, `panelClassName` | `CollapsibleSection variant="disclosure"` with `CollapsibleSectionTrigger` and `CollapsibleSectionPanel` |
+
+The `reasons-hang` and `reasons-hang-start` utilities went in v0.43.0 too; neither the toolbar nor the selection bar
+used them any more (AVE-160, AVE-162).
 
 ## Context menus
 
@@ -205,27 +225,26 @@ the area, never inside it: a right-click inside the open menu would move it. In 
 ## One size scale
 
 Every control that comes in steps takes xs / sm / md / lg, the steps of the `h-control-*` tokens, with md the default
-(AVE-152, v0.34.0). Each takes the steps it has. The old names still work and draw the same; they are deprecated and
-removed once both apps have moved off them (AVE-154).
+(AVE-152, v0.34.0). Each takes the steps it has. The old names were removed in v0.43.0 (AVE-154).
 
-| Component | Old (deprecated) | New |
+| Component | Old (removed in v0.43.0) | New |
 | --- | --- | --- |
 | `Button`, `buttonVariants` | `size="default"` | `size="md"` (or leave it out) |
 | `Button`, `buttonVariants` | `size="icon"` | `size="icon-md"` (beside `icon-xs`, `icon-sm`, `icon-lg`) |
 | `Toggle`, `toggleVariants`, `ToggleGroup`, `ToggleGroupItem` | `size="default"` | `size="md"` |
 | `Switch`, `Avatar`, `InitialsAvatar`, `Card`, `Progress`, `ProgressTrack` | `size="default"` | `size="md"` |
 
-`data-size` always carries the step's name, so it reads `md` where it read `default`, even when the old name is passed.
+`data-size` always carries the step's name, so it reads `md` where it once read `default`.
 A selector such as `data-[size=default]:…` becomes `data-[size=md]:…`. Select and Combobox already took `sm | md`.
 Sizes that name a place, not a step, stay as they are: EmptyState `compact`, IconTile `row | section`, and the `width`
 of FormDialog and Dock.
 
 ## Select and Combobox take items, and come in parts
 
-Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options` is
-the old name and still works, typed `@deprecated`, until it is removed once both apps have moved off them (AVE-154); the entries are the same, so renaming the prop is
-the whole change. `SelectOption` is now `ListItem`, `ComboboxOption` is `ComboboxItemData`, and a TableFilters
-field's `options` is `items`.
+Select, Combobox and TableFilters take their choices as `items`, in ui-sdk's shape (AVE-146, v0.28.0). `options`
+was the old name, removed in v0.43.0 (AVE-154); the entries are the same, so renaming the prop is the whole change.
+`SelectOption` is now `ListItem`, `ComboboxOption` is `ComboboxItemData`, and a TableFilters field's `options` is
+`items`; the old type names went in v0.43.0 too.
 
 `items` also takes plain strings, groups (`{ type: "group", label, items }`) and separators (`{ type: "separator" }`),
 and a value may be an object, with `itemToValue` (the id it posts), `itemToLabel` and `isItemEqualToValue`.

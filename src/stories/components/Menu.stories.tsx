@@ -514,37 +514,3 @@ export const ContextMenuInATable: Story = {
     await expect(status).toHaveTextContent("Emailed owner: 14 Larkspur Lane");
   },
 };
-
-/**
- * The names before AVE-151, deprecated until both apps have moved off them (AVE-154): `variant="destructive"` is
- * `destructive`, `reason` is `disabledReason`. Each old-name item renders exactly as its new-name twin.
- */
-export const DeprecatedNames: Story = {
-  render: () => (
-    <Menu defaultOpen>
-      <MenuTrigger render={<Button variant="outline" />}>
-        Household
-        <ChevronDownIcon aria-hidden data-icon="inline-end" />
-      </MenuTrigger>
-      <MenuContent>
-        <MenuItem disabled reason="Only a board admin can send a live notice.">
-          Send live notice (old name)
-        </MenuItem>
-        <MenuItem disabled disabledReason="Only a board admin can send a live notice.">
-          Send live notice (new name)
-        </MenuItem>
-        <MenuItem variant="destructive">Remove household (old name)</MenuItem>
-        <MenuItem destructive>Remove household (new name)</MenuItem>
-      </MenuContent>
-    </Menu>
-  ),
-  play: async () => {
-    await waitFor(async () => expect(await screen.findByRole("menu")).toBeVisible());
-    const item = (name: string) => screen.getByRole("menuitem", { name: new RegExp(name) });
-    await expect(item("Send live notice \\(old")).toHaveAccessibleDescription("Only a board admin can send a live notice.");
-    await expect(item("Remove household \\(old")).toHaveAttribute("data-destructive");
-    for (const name of ["Send live notice", "Remove household"]) {
-      await expect(item(`${name} \\(old`).className).toBe(item(`${name} \\(new`).className);
-    }
-  },
-};
