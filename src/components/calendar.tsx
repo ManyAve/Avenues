@@ -83,7 +83,7 @@ export function CalendarHeader({ className, render, ...props }: OwnPartProps<"di
 export function CalendarHeading({ className, ...props }: Loose<ComponentProps<typeof CalendarHeadingPrimitive>>) {
   return (
     <CalendarHeadingPrimitive
-      className={cn("me-auto text-compact font-[550] whitespace-nowrap", className)}
+      className={cn("me-auto text-compact font-emphasis whitespace-nowrap", className)}
       {...defined(props)}
     />
   );
@@ -118,7 +118,7 @@ export function CalendarGrid({ className, ...props }: Loose<ComponentProps<typeo
 export function CalendarWeekday({ className, ...props }: Loose<ComponentProps<typeof CalendarWeekdayPrimitive>>) {
   return (
     <CalendarWeekdayPrimitive
-      className={cn("py-1 text-[11px] font-[550] text-muted-foreground", className)}
+      className={cn("py-1 text-[11px] font-emphasis text-muted-foreground", className)}
       {...defined(props)}
     />
   );
@@ -146,8 +146,8 @@ export function CalendarDay({
             "relative mx-auto grid size-7 place-items-center rounded-full pointer-coarse:size-11",
             "group-hover/day:bg-accent group-focus-visible/day:ring-3 group-focus-visible/day:ring-ring/50",
             day.outside && "text-muted-foreground",
-            day.selected && "bg-primary-subtle font-[600] text-primary-subtle-foreground group-hover/day:bg-primary-subtle",
-            day.today && "bg-primary font-[600] text-primary-foreground group-hover/day:bg-primary",
+            day.selected && "bg-primary-subtle font-semibold text-primary-subtle-foreground group-hover/day:bg-primary-subtle",
+            day.today && "bg-primary font-semibold text-primary-foreground group-hover/day:bg-primary",
             day.today && day.selected && "ring-2 ring-primary/40 ring-offset-1 ring-offset-background",
             day.unavailable && "line-through",
             day.disabled && "opacity-50",

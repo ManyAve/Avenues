@@ -187,7 +187,7 @@ function SectionEmptyContent({ className, render, ...props }: OwnPartProps<"div"
 function SectionEmptyTitle({ className, render, ...props }: OwnPartProps<"p">) {
   return renderElement(
     "p",
-    mergeProps({ "data-slot": "section-empty-title", className: cn("font-[550]", className) }, defined(props)),
+    mergeProps({ "data-slot": "section-empty-title", className: cn("font-emphasis", className) }, defined(props)),
     render,
   );
 }

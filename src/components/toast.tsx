@@ -148,13 +148,13 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
       side="bottom"
       align="center"
       maxVisible={1}
-      className="pointer-events-none fixed inset-x-0 [position-anchor:--avenue-sheet-footer] bottom-[calc(anchor(--avenue-sheet-footer_top,var(--avenue-toast-bottom,calc(--spacing(4)+env(safe-area-inset-bottom))))+--spacing(2))] z-[70] m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
+      className="pointer-events-none fixed inset-x-0 [position-anchor:--avenue-sheet-footer] bottom-[calc(anchor(--avenue-sheet-footer_top,var(--avenue-toast-bottom,calc(--spacing(4)+env(safe-area-inset-bottom))))+--spacing(2))] z-toast m-0 flex w-auto max-w-none translate-none! justify-center bg-transparent px-4"
     >
       {(item) => (
         <ToastPart
           data-slot="toast"
           className={cn(
-            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-200 data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
+            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
             "data-[type=error]:border-destructive/50 data-[type=error]:pr-2",
           )}
         >

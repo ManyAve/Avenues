@@ -77,6 +77,45 @@ function SiteStep({ name, cls }: { name: string; cls: string }) {
   );
 }
 
+// AVE-182: Tailwind's three weights and the three Avenue adds, in order, with where each goes.
+const weights = [
+  ["normal", "font-normal", "400", "Body text, descriptions, a field's help"],
+  ["quiet", "font-quiet", "450", "Small muted text, so it keeps its stroke: column headers, an outline status"],
+  ["medium", "font-medium", "500", "Controls and labels: buttons, tabs, field labels, table headings"],
+  ["emphasis", "font-emphasis", "550", "A title or term inside body text: row and list titles, detail terms, the open nav tab"],
+  ["semibold", "font-semibold", "600", "A selected or today date, a count badge, an empty state's title"],
+  ["heading", "font-heading", "620", "Page and detail headings"],
+] as const;
+
+function Weight({ name, cls, use }: { name: string; cls: string; use: string }) {
+  const [ref, weight] = useComputed<HTMLParagraphElement>((s) => s.fontWeight);
+  return (
+    <div className="grid grid-cols-[7rem_4rem_16rem_1fr] items-baseline gap-4 border-b py-row-y">
+      <Code className="text-foreground">{name}</Code>
+      <Code>{weight}</Code>
+      <p ref={ref} className={cn(cls, "truncate text-compact")}>
+        Maple Row households
+      </p>
+      <span className="text-meta text-muted-foreground">{use}</span>
+    </div>
+  );
+}
+
+function WeightScale() {
+  return (
+    <Page title="Font weight">
+      <Section
+        title="Six weights"
+        note="normal, medium and semibold are Tailwind's own. muted, emphasis and heading are the in-between weights the app draws, named for where they go. Use the name, never font-[550]."
+      >
+        {weights.map(([name, cls, , use]) => (
+          <Weight key={name} name={name} cls={cls} use={use} />
+        ))}
+      </Section>
+    </Page>
+  );
+}
+
 function SiteScale() {
   return (
     <Page title="Public-site preview scale">
@@ -102,6 +141,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Scale: Story = { render: () => <TypeScale /> };
 export const Desktop: Story = { render: () => <TypeScale />, globals: { typeScale: "desktop" } };
+export const Weights: Story = {
+  name: "Font weight",
+  render: () => <WeightScale />,
+  // Each weight class makes its weight (AVE-182).
+  play: async ({ canvasElement }) => {
+    for (const [, cls, weight] of weights) {
+      const el = canvasElement.querySelector(`.${cls}`);
+      await expect(el && getComputedStyle(el).fontWeight, cls).toBe(weight);
+    }
+  },
+};
 export const PublicSite: Story = {
   name: "Public-site preview",
   render: () => <SiteScale />,

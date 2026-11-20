@@ -51,7 +51,7 @@ function DialogBackdrop({ className, ...props }: Loose<ComponentProps<typeof Dia
   return (
     <DialogPrimitive.DialogBackdrop
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 transition-opacity duration-100 supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none",
+        "fixed inset-0 isolate z-overlay bg-overlay transition-opacity duration-fast supports-backdrop-filter:backdrop-blur-xs data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:transition-none",
         className,
       )}
       {...defined(props)}
@@ -72,7 +72,7 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           modalSurface,
-          "fixed top-1/2 right-auto bottom-auto left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-100 backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
+          "fixed top-1/2 right-auto bottom-auto left-1/2 z-overlay grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-fast backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
         {...defined(props)}

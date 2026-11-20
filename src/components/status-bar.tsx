@@ -92,7 +92,7 @@ function StatusBarTotals({
               </span>
             ) : null}
             <span>
-              {total.label} <Money cents={total.cents} className="font-[550] text-foreground" />
+              {total.label} <Money cents={total.cents} className="font-emphasis text-foreground" />
             </span>
           </Fragment>
         )),

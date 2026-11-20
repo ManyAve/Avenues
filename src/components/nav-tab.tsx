@@ -26,7 +26,7 @@ function NavTab({
         "aria-current": current ? ("page" as const) : undefined,
         className: cn(
           "relative hit-area inline-flex h-control-sm shrink-0 snap-start items-center gap-2 rounded-md px-3 text-control whitespace-nowrap text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
-          "aria-[current=page]:bg-muted aria-[current=page]:font-[550] aria-[current=page]:text-foreground",
+          "aria-[current=page]:bg-muted aria-[current=page]:font-emphasis aria-[current=page]:text-foreground",
           className,
         ),
         children: (

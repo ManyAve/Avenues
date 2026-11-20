@@ -10,11 +10,11 @@ import { DoDont, households, Rule, Rules } from "./foundation-docs";
 // Avenue's stylesheet honours prefers-reduced-motion on every surface, as the desktop app's desktop.css does.
 
 const patterns = [
-  ["Menu, popover, tooltip", "100ms fade and zoom from 95%, from the side it opens on", "data-open:animate-in fade-in-0 zoom-in-95 duration-100"],
-  ["Dialog", "100ms fade and zoom; the backdrop fades", "data-open:animate-in fade-in-0 zoom-in-95 duration-100"],
-  ["Toast", "Fades in and slides up 8px", "animate-in fade-in slide-in-from-bottom-2"],
+  ["Menu, popover, tooltip", "100ms fade and zoom from 95%, from the side it opens on", "data-open:animate-in fade-in-0 zoom-in-95 duration-fast"],
+  ["Dialog", "100ms fade and zoom; the backdrop fades", "data-open:animate-in fade-in-0 zoom-in-95 duration-fast"],
+  ["Toast", "Fades in and slides up 8px", "animate-in fade-in slide-in-from-bottom-2 duration-slow"],
   ["Hover, focus, press", "Colour change only; buttons drop 1px when pressed", "transition-colors"],
-  ["Disclosure chevron", "Turns 180° as the section opens", "transition-transform rotate-180"],
+  ["Disclosure chevron", "Turns 180° as the section opens", "transition-transform duration-moderate rotate-180"],
 ] as const;
 
 function useReducedMotion() {
@@ -42,7 +42,7 @@ function Replay({ slow }: { slow?: boolean }) {
         className={cn(
           "flex w-48 flex-col rounded-lg border bg-popover p-1 shadow-popover animate-in",
           // The don't is deliberately slow and far: 600ms, sliding 48px.
-          slow ? "fade-in-0 slide-in-from-left-12 duration-[600ms]" : "fade-in-0 zoom-in-95 slide-in-from-top-2 duration-100",
+          slow ? "fade-in-0 slide-in-from-left-12 duration-[600ms]" : "fade-in-0 zoom-in-95 slide-in-from-top-2 duration-fast",
         )}
       >
         {["Record payment", "Send reminder", "Open ledger"].map((item) => (
@@ -122,7 +122,8 @@ function MotionUse() {
       <Section title="Rules">
         <Rules>
           <Rule why="A board member doing one quick job shouldn't wait for the interface.">
-            Overlays open in 100ms. Nothing animates for longer than 200ms.
+            Overlays open in 100ms. Nothing animates for longer than 200ms. Name the step: duration-fast (100ms),
+            duration-moderate (150ms) or duration-slow (200ms), never a number (Tokens/Motion).
           </Rule>
           <Rule why="Motion that isn't triggered by the person pulls their eye away from the task.">
             Nothing moves on its own. No counting-up numbers, looping pulses or animated page changes; a spinner is the

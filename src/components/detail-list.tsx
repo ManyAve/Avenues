@@ -59,7 +59,7 @@ function DetailListItem({ render, ...props }: OwnPartProps<"div">) {
 function DetailListTerm({ className, render, ...props }: OwnPartProps<"dt">) {
   return renderElement(
     "dt",
-    mergeProps({ "data-slot": "detail-list-term", className: cn("font-[550]", className) }, defined(props)),
+    mergeProps({ "data-slot": "detail-list-term", className: cn("font-emphasis", className) }, defined(props)),
     render,
   );
 }
@@ -121,7 +121,7 @@ function ListItemContent({ className, render, ...props }: OwnPartProps<"div">) {
 function ListItemTitle({ className, render, ...props }: OwnPartProps<"p">) {
   return renderElement(
     "p",
-    mergeProps({ "data-slot": "list-item-title", className: cn("font-[550] wrap-break-word", className) }, defined(props)),
+    mergeProps({ "data-slot": "list-item-title", className: cn("font-emphasis wrap-break-word", className) }, defined(props)),
     render,
   );
 }

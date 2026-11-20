@@ -77,7 +77,7 @@ function PageHeaderTitle({ className, render, ...props }: OwnPartProps<"h1">) {
     mergeProps(
       {
         "data-slot": "page-header-title",
-        className: cn("flex items-center gap-group text-heading font-[620] tracking-[-0.7px] wrap-break-word", className),
+        className: cn("flex items-center gap-group text-heading font-heading tracking-[-0.7px] wrap-break-word", className),
       },
       defined(props),
     ),
