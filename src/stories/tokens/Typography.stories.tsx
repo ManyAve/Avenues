@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "./token-docs";
 
@@ -54,28 +55,37 @@ function TypeScale() {
   );
 }
 
+// Name, class and the size tokens.css gives it.
 const webSite = [
-  ["web-hero", "--text-web-hero"],
-  ["web-hero-narrow", "--text-web-hero-narrow"],
-  ["web-section", "--text-web-section"],
-  ["web-card", "--text-web-card"],
-  ["web-glyph", "--text-web-glyph"],
+  ["web-hero", "text-web-hero", "38px"],
+  ["web-hero-narrow", "text-web-hero-narrow", "34px"],
+  ["web-section", "text-web-section", "24px"],
+  ["web-card", "text-web-card", "17px"],
+  ["web-glyph", "text-web-glyph", "55px"],
 ] as const;
+
+function SiteStep({ name, cls }: { name: string; cls: string }) {
+  const [ref, size] = useComputed<HTMLParagraphElement>((s) => s.fontSize);
+  return (
+    <div className="grid grid-cols-[10rem_6rem_1fr] items-baseline gap-4 border-b py-row-y">
+      <Code className="text-foreground">{name}</Code>
+      <Code>{size}</Code>
+      <p ref={ref} className={cn(cls, "truncate leading-tight")} style={{ fontFamily: "Georgia, serif" }}>
+        Maple Row
+      </p>
+    </div>
+  );
+}
 
 function SiteScale() {
   return (
     <Page title="Public-site preview scale">
       <Section
         title="Georgia display sizes"
-        note="Used only by the embedded public-site preview; its body and meta reuse the app steps. These are raw sizes, not utilities."
+        note="Used only by the public-site preview; its body and meta reuse the app steps. Each is a utility (text-web-card, ...) with no line height of its own: the place that uses it sets one."
       >
-        {webSite.map(([name, variable]) => (
-          <div key={name} className="grid grid-cols-[10rem_1fr] items-baseline gap-4 border-b py-row-y">
-            <Code className="text-foreground">{name}</Code>
-            <p className="truncate leading-tight" style={{ fontFamily: "Georgia, serif", fontSize: `var(${variable})` }}>
-              Maple Row
-            </p>
-          </div>
+        {webSite.map(([name, cls]) => (
+          <SiteStep key={name} name={name} cls={cls} />
         ))}
       </Section>
     </Page>
@@ -92,4 +102,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Scale: Story = { render: () => <TypeScale /> };
 export const Desktop: Story = { render: () => <TypeScale />, globals: { typeScale: "desktop" } };
-export const PublicSite: Story = { name: "Public-site preview", render: () => <SiteScale /> };
+export const PublicSite: Story = {
+  name: "Public-site preview",
+  render: () => <SiteScale />,
+  // Each text-web-* class makes its font size (AVE-178): before, Tailwind made no CSS for them.
+  play: async ({ canvasElement }) => {
+    for (const [, cls, px] of webSite) {
+      const el = canvasElement.querySelector(`.${cls}`);
+      await expect(el && getComputedStyle(el).fontSize, cls).toBe(px);
+    }
+  },
+};
