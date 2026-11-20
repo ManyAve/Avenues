@@ -22,11 +22,13 @@ function Card({ fixed }: { fixed?: boolean }) {
       className={
         fixed
           ? // The don't hard-codes light-theme colours on purpose.
+            // oxlint-disable-next-line tailwindcss/no-hardcoded-colors
             "flex w-full max-w-xs flex-col gap-inline rounded-xl border border-[#e5e5e5] bg-[#ffffff] p-inset text-[#171717]"
           : "flex w-full max-w-xs flex-col gap-inline rounded-xl border bg-card p-inset text-card-foreground shadow-card"
       }
     >
       <span className="text-compact font-medium">{h.address}</span>
+      {/* oxlint-disable-next-line tailwindcss/no-hardcoded-colors -- the don't, as above. */}
       <span className={fixed ? "text-meta text-[#525252]" : "text-meta text-muted-foreground"}>
         {h.owner} · {h.amount} owed of $240.00
       </span>

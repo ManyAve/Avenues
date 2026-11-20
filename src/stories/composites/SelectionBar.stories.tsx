@@ -36,7 +36,7 @@ function List({
   // Actions that go before the others, for the stories where neighbouring actions are disabled (AVE-162).
   actions.unshift(...extra);
   return (
-    <div className="relative min-h-[420px] bg-background px-page py-inset">
+    <div className="relative min-h-105 bg-background px-page py-inset">
       <ul className="grid gap-2">
         {homes.map((home, i) => (
           <li key={home}>

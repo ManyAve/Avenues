@@ -36,6 +36,7 @@ function Row({ small }: { small?: boolean }) {
       <span className="flex min-w-0 flex-col">
         <span className="truncate text-compact">{h.address}</span>
         {/* The don't deliberately uses 12px to show what breaking the floor looks like. */}
+        {/* oxlint-disable-next-line tailwindcss/no-restricted-classes */}
         <span className={small ? "text-[12px] leading-4 text-muted-foreground" : "text-meta text-muted-foreground"}>
           {h.owner} · last paid 14 Mar
         </span>

@@ -70,8 +70,12 @@ function SearchInput({
         className={cn(
           "ps-7",
           kbd && "pe-8 pointer-coarse:pe-2",
-          // dark: repeats the token to beat the field surface's own dark background (controlSurface).
-          filled && "border-border bg-field-filled dark:bg-field-filled",
+          // The filled tint (the toolbar search, AVE-63): 8% of the foreground over the background, so it follows the
+          // theme. `muted` is lighter in light mode (L 0.977 vs 0.930), so not it. One field draws it: a literal, not a
+          // token (docs/tokens.md; AVE-184 retired --color-field-filled). dark: repeats it to beat the field surface's
+          // own dark background (controlSurface).
+          filled &&
+            "border-border bg-[color:color-mix(in_oklab,var(--foreground)_8%,var(--background))] dark:bg-[color:color-mix(in_oklab,var(--foreground)_8%,var(--background))]",
         )}
         {...props}
       />

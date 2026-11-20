@@ -97,7 +97,7 @@ function Households({ initial = [] }: { initial?: TableFilter[] }) {
   const [owing, setOwing] = useState(false);
   const rows = applyFilters(households, filters, accessors).filter((h) => !owing || h.balance > 0);
   return (
-    <div className="min-h-[520px] bg-background">
+    <div className="min-h-130 bg-background">
       <Toolbar aria-label="Households">
         <ToolbarFilters>
           <Chip count={3} pressed={owing} onPressedChange={setOwing}>
@@ -291,7 +291,7 @@ export const Phone: Story = {
     const [filters, setFilters] = useState<TableFilter[]>(someFilters.slice(0, 1));
     const rows = applyFilters(households, filters, accessors);
     return (
-      <div className="min-h-[600px] bg-background">
+      <div className="min-h-150 bg-background">
         <PhoneToolbar
           aria-label="Households"
           searchProps={{ "aria-label": "Search households or people" }}
@@ -351,7 +351,7 @@ function Streets({ initial = [], presentation }: { initial?: TableFilter[]; pres
   const [filters, setFilters] = useState<TableFilter[]>(initial);
   const rows = applyFilters(homes, filters, homeAccessors);
   return (
-    <div className="min-h-[640px] bg-background">
+    <div className="min-h-160 bg-background">
       <Toolbar aria-label="Households">
         <ToolbarFilters>
           <TableFilters fields={streetFields} value={filters} onValueChange={setFilters} presentation={presentation} />

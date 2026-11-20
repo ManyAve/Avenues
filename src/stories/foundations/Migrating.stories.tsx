@@ -255,6 +255,7 @@ function Card({ children }: { children: ReactNode }) {
   return <div className="w-full max-w-[390px] rounded-xl border bg-card">{children}</div>;
 }
 
+/* oxlint-disable tailwindcss/no-restricted-classes -- the older rows below type the apps' old sizes in on purpose, to show what moving to Avenue changes. */
 /** The row as the older set draws it: the same markup, with the older sizes typed in to show them. */
 function FeedRowOlder() {
   return (
@@ -359,6 +360,7 @@ function Member({ look }: { look: MemberLook }) {
     </div>
   );
 }
+/* oxlint-enable tailwindcss/no-restricted-classes */
 
 // ---- Fixed heights (fictional labels) ----
 

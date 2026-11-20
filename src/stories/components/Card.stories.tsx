@@ -55,7 +55,7 @@ export const HeaderWithAction: Story = {
   render: () => (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
+        <CardTitle className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">Dues</CardTitle>
         <CardAction className="gap-group text-meta text-muted-foreground">
           <span>Account summary ·</span>
           <Button variant="outline" size="sm" className="pr-1" aria-label="Year, 2026">

@@ -26,19 +26,19 @@ type Story = StoryObj<typeof meta>;
 
 function DayHeader({ defaultOpen = true, today = false }: { defaultOpen?: boolean; today?: boolean }) {
   return (
-    <CollapsibleSection defaultOpen={defaultOpen} className="w-[640px] max-w-full">
-      <div className="sticky top-0 z-[5] bg-background py-2">
+    <CollapsibleSection defaultOpen={defaultOpen} className="w-160 max-w-full">
+      <div className="sticky top-0 z-sticky-group bg-background py-2">
         <CollapsibleSectionHeader>
           <CollapsibleSectionTrigger>
             {today && (
-              <span className="grid size-6 place-items-center rounded-full bg-primary text-[12px] font-[600] text-primary-foreground">
+              <span className="grid size-6 place-items-center rounded-full bg-primary text-meta font-semibold text-primary-foreground">
                 12
               </span>
             )}
-            <span className="text-compact font-[550] text-foreground">Thursday, November 12</span>
+            <span className="text-compact font-emphasis text-foreground">Thursday, November 12</span>
             <span>3</span>
             {today && (
-              <span className="text-[11px] font-[600] tracking-wider text-primary-subtle-foreground uppercase">Today</span>
+              <span className="text-meta font-semibold tracking-wider text-primary-subtle-foreground uppercase">Today</span>
             )}
           </CollapsibleSectionTrigger>
           <span>$1,240.00 received</span>
@@ -71,7 +71,7 @@ function QuietFold() {
   const [open, setOpen] = useState(false);
   const hours = open ? ["12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM"] : [];
   return (
-    <div className="w-[480px] max-w-full border">
+    <div className="w-120 max-w-full border">
       <CollapsibleSection variant="fold" open={open} onOpenChange={setOpen}>
         <CollapsibleSectionHeader>
           <CollapsibleSectionTrigger>{open ? "Hide 12 AM – 7 AM" : "12 AM – 7 AM · nothing scheduled"}</CollapsibleSectionTrigger>
@@ -114,7 +114,7 @@ const messages = [
 function MessageList() {
   const [openId, setOpenId] = useState<string | undefined>("m1");
   return (
-    <ul aria-label="Messages" className="grid w-[640px] max-w-full gap-2">
+    <ul aria-label="Messages" className="grid w-160 max-w-full gap-2">
       {messages.map((m) => (
         <li key={m.id} className={cn("rounded-md border bg-background px-4 py-3 text-compact", !m.read && "border-primary/40")}>
           <CollapsibleSection
@@ -128,7 +128,7 @@ function MessageList() {
                 {(state) => (
                   <>
                     <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className={m.read ? "font-[450]" : "font-[600]"}>{m.name}</span>
+                      <span className={m.read ? "font-quiet" : "font-semibold"}>{m.name}</span>
                       <span className="min-w-0 truncate text-meta text-muted-foreground">{m.email}</span>
                       <span className="ms-auto flex items-center gap-2">
                         {!m.read && (

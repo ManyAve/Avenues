@@ -75,7 +75,7 @@ function NestedCorners() {
       >
         <div data-dues-card className="w-full max-w-md rounded-xl border bg-card shadow-card">
           <div className="flex items-center justify-between gap-group border-b px-inset pt-inset pb-row-y">
-            <h3 className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</h3>
+            <h3 className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">Dues</h3>
             <div className="flex items-center gap-group text-meta text-muted-foreground">
               <span>Account summary ·</span>
               <Select items={years} defaultValue="2026" size="sm" aria-label="Dues year" className="w-auto" />

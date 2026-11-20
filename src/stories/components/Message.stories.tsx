@@ -77,7 +77,7 @@ function OneMessage({ thread, message, last }: { thread: ChatThread; message: Ch
       </MessageRow>
       {(delivery === "failed" || (delivery === "pending" && last)) && (
         <MessageStatus>
-          <Button variant="text" className="text-meta font-[600] text-current" aria-label="Retry sending">
+          <Button variant="text" className="text-meta font-semibold text-current" aria-label="Retry sending">
             Retry
           </Button>
           <Button

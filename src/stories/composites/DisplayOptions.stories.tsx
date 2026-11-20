@@ -32,7 +32,7 @@ function Options({ empty = false }: { empty?: boolean }) {
   const [keep, setKeep] = useState(false);
   const [density, setDensity] = useState<Density>("normal");
   return (
-    <div className="min-h-[560px] bg-background">
+    <div className="min-h-140 bg-background">
       <Toolbar aria-label="Households">
         <ToolbarControls>
           <DisplayOptions>

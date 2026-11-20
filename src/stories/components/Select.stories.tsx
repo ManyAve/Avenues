@@ -329,7 +329,7 @@ function Figure({ label, children }: { label: string; children: ReactNode }) {
 
 const balance = (
   <div className="grid gap-1">
-    <p className="text-[1.75rem] leading-tight font-[560] tabular-nums">$120.00</p>
+    <p className="text-display leading-tight font-emphasis tabular-nums">$120.00</p>
     <p className="text-meta text-muted-foreground">Outstanding balance</p>
   </div>
 );
@@ -342,7 +342,7 @@ function BeforeCard() {
   return (
     <div className="flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground shadow-card ring-1 ring-border">
       <div className="grid auto-rows-min grid-cols-[1fr_auto] items-start gap-1 border-b px-4 pb-3">
-        <div className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">Dues</div>
+        <div className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">Dues</div>
         <div className="col-start-2 row-span-2 row-start-1 flex items-center gap-1 self-start justify-self-end text-meta text-muted-foreground">
           Account summary ·{" "}
           <select
@@ -366,7 +366,7 @@ function AfterCard() {
   return (
     <Card className="shadow-card ring-border">
       <CardHeader className="border-b pb-3">
-        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+        <CardTitle className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">
           <h2>Dues</h2>
         </CardTitle>
         <CardAction className="flex items-center gap-group text-meta text-muted-foreground">
@@ -437,10 +437,10 @@ export const InClippedCardAtEdge: Story = {
   // the 390px phone (AVE-22); the touch targets are still measured.
   parameters: { layout: "fullscreen", viewport: { disabled: true } },
   render: () => (
-    <div className="flex w-[900px] justify-end p-inset">
+    <div className="flex w-225 justify-end p-inset">
       <Card className="w-80 overflow-hidden rounded-xl shadow-card ring-border" data-testid="card">
         <CardHeader className="border-b pb-3">
-          <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+          <CardTitle className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">
             <h2>Dues</h2>
           </CardTitle>
           <CardAction>
@@ -659,7 +659,7 @@ export const SheetSwipeToClose: Story = {
  */
 export const IconSizes: Story = {
   render: () => (
-    <div className="grid w-[40rem] grid-cols-2 gap-group">
+    <div className="grid w-160 grid-cols-2 gap-group">
       {(["md", "sm"] as const).map((size) => (
         <div key={size} className="contents">
           <Select aria-label={`Year, ${size}`} items={years} defaultValue="2026" size={size} native="never" />

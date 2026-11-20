@@ -63,7 +63,7 @@ function Filters() {
 
 function HouseholdsToolbar() {
   return (
-    <div className="min-h-[360px] bg-background">
+    <div className="min-h-90 bg-background">
       <Toolbar aria-label="Households">
         <Filters />
         <ToolbarControls>
@@ -204,7 +204,7 @@ const sendPrimary: ToolbarAction = {
 
 function NoticesToolbar() {
   return (
-    <div className="min-h-[360px] bg-background">
+    <div className="min-h-90 bg-background">
       <Toolbar aria-label="Dues notices">
         <ToolbarControls>
           <ToolbarSearch placeholder="Search notices…" aria-label="Search notices" />
@@ -373,7 +373,7 @@ const newHousehold = fn();
 export const Phone: Story = {
   globals: phone,
   render: () => (
-    <div className="min-h-[400px] bg-background">
+    <div className="min-h-100 bg-background">
       <PhoneToolbar
         aria-label="Households"
         searchProps={{ "aria-label": "Search households" }}
@@ -476,7 +476,7 @@ const sharedPrimary: ToolbarAction = {
 
 function DuesToolbar({ actions: dues, primary }: { actions: ToolbarAction[]; primary: ToolbarAction }) {
   return (
-    <div className="min-h-[320px] bg-background">
+    <div className="min-h-80 bg-background">
       <Toolbar aria-label="Dues">
         <ToolbarControls>
           <ToolbarActions actions={dues} primary={primary} />

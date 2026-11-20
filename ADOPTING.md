@@ -343,6 +343,52 @@ from `src/site/site.css`. Name them in the rule's own options, in the app's `rul
 An app's screens that haven't moved to Avenue may fail these rules. Turn a rule off for those folders with an
 `overrides` entry until their slice lands, rather than leaving the whole app unchecked.
 
+### Raw values and tokens (AVE-184)
+
+From v0.46.0 the same config also rejects values typed in where Avenue has a name for them. Each
+message names the class to use:
+
+| Rule | Fails on | Write instead |
+| --- | --- | --- |
+| `no-restricted-classes` | `text-[11px]`, `text-[1.75rem]` | a step of the type scale: `text-meta` (14px) to `text-display` (32px); nothing under 14px |
+| `no-restricted-classes` | `text-lg` to `text-9xl` | `text-post`, `text-title`, `text-heading`, `text-display` (`text-xs`, `text-sm` and `text-base` stay) |
+| `no-restricted-classes` | `font-[550]` and any `font-[NNN]` | the weights under "Weights, durations and layers" below |
+| `no-restricted-classes` | `shadow`, `shadow-xs` to `shadow-2xl` | `shadow-control`, `shadow-card`, `shadow-popover` |
+| `no-restricted-classes` | `z-20` and up, `z-[60]`, `-z-[1]` | a layer name; a local order under `isolate` keeps a bare number under 20 (`z-1`, `-z-1`, `focus:z-10`) |
+| `no-restricted-classes` | `duration-300`, `duration-[250ms]` | `duration-fast`, `duration-moderate`, `duration-slow` |
+| `no-hardcoded-colors` | `bg-[#fff]`, `shadow-[0_1px_2px_rgb(0_0_0/0.1)]`, a `#000` mask | a colour token; for a fading edge, Tailwind's mask utilities (`mask-r-from-[calc(100%-28px)]`) |
+| `no-unnecessary-arbitrary-value` | an arbitrary value a named class already draws | that class |
+| `prefer-scale-token` | a literal equal to a token or a whole 4px step (`w-[640px]`, `z-[5]`) | `w-160`, `z-sticky-group` (`w-[390px]`, between steps, stays) |
+| `prefer-theme-tokens` | `bg-(--card)` | `bg-card` |
+
+A deliberate exception (a story's "don't", a one-place value such as the top bar's 650 wordmark) keeps its literal
+with `// oxlint-disable-next-line <rule>` and a comment that says why.
+
+Both apps fail these today: a probe of Management's `main` and Neighbors' `production` on 2026-11-20 found about 320
+hits in Management (178 weights, 63 scale literals, 30 type sizes, 22 layers) and about 126 in Neighbors (76 Tailwind
+type sizes, 19 shadows, 14 layers, 8 durations). Moving them is MANA-1241 and NEI-326 (NEI-322 cleared Neighbors'
+dead tokens first). Until a screen's slice lands,
+keep the grid rules and drop the new ones for its folders, rather than leaving the app unchecked:
+
+```ts
+import avenueClasses, { gridClassPatterns } from "@manyave/avenue/oxlint";
+
+// overrides: [{ files: ["app/ui/screens/**"], rules: { ... } }]
+"tailwindcss/no-restricted-classes": ["error", { patterns: gridClassPatterns }],
+"tailwindcss/no-hardcoded-colors": "off",
+"tailwindcss/prefer-scale-token": "off",
+```
+
+Avenue's own token rule is the other half: a token in Avenue's stylesheets needs two users, or a `kept:` reason beside
+its definition (docs/tokens.md). So an app asks for a token on an AVE card with the screens that would use it; a value
+one screen draws stays a commented literal in that screen.
+
+The same rule deprecates the five `text-web-*` sizes: only Management's public site draws them, so they move into its
+own stylesheet as `site-*` sizes (MANA-1243); they stay in Avenue until both apps have moved off them. AVE-184 also
+retired two tokens no app used: `bg-field-filled` (the toolbar search's tint, now a literal inside SearchInput) and
+`--color-selection` (now a value in the `::selection` rule), and folded the `--light-*` values into the state tokens
+that read them.
+
 ## Weights, durations and layers
 
 Avenue names its font weights, durations, page layers and modal overlay (AVE-182), so a screen never writes the

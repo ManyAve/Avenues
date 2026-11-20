@@ -21,6 +21,7 @@
 
 /* Expose the semantic tokens as Tailwind utilities (bg-primary, text-muted-foreground, ...). */
 @theme inline {
+  /* kept: Tailwind's own family names, pointed at Avenue's stacks: font-sans is every page's text. */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --text-meta: var(--text-meta);
@@ -38,7 +39,8 @@
   --text-display: var(--text-display);
   --text-display--line-height: var(--text-display--line-height);
   /* Public-site preview (Georgia) display sizes (AVE-178). No line height of their own: each place sets its own
-     (hero 1.1, card 1.35 or 1.4 in the app), so a class inherits it or takes a leading-* beside it. */
+     (hero 1.1, card 1.35 or 1.4 in the app), so a class inherits it or takes a leading-* beside it.
+     kept: deprecated (AVE-184, tokens.css); removed once both apps have moved off them. */
   --text-web-hero: var(--text-web-hero);
   --text-web-hero-narrow: var(--text-web-hero-narrow);
   --text-web-section: var(--text-web-section);
@@ -56,9 +58,6 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
-  /* Selected text (AVE-76): primary at 25%, in both themes, in place of the browser's own blue. The text keeps its
-     colour, which stays readable over the light tint. */
-  --color-selection: color-mix(in oklab, var(--primary) 25%, transparent);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-subtle: var(--primary-subtle);
   --color-primary-subtle-foreground: var(--primary-subtle-foreground);
@@ -90,9 +89,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-control-outline: var(--control-outline);
-  /* The filled field's tint (the toolbar search, AVE-63): 8% of the foreground over the background, so it follows the
-     theme. Inline, so it resolves where it's used. `muted` is lighter in light mode (L 0.977 vs 0.930), so not it. */
-  --color-field-filled: color-mix(in oklab, var(--foreground) 8%, var(--background));
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -109,7 +105,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
   /* The dim layer behind a dialog, alert dialog or drawer (AVE-182): bg-overlay. ui-sdk's --ui-overlay reads it too. */
   --color-overlay: var(--overlay);
-  --shadow-control: var(--shadow-control);
+  --shadow-control: var(--shadow-control); /* kept: a step in the elevation scale (control, card, popover) */
   --shadow-card: var(--shadow-card);
   --shadow-popover: var(--shadow-popover);
 
@@ -126,6 +122,7 @@
   /* Spacing (AVE-2 section 1): Tailwind's 4px base stays (p-1 = 4px … p-12 = 48px). Components pick an alias,
      not a raw step: p-inset, gap-group, py-row-y, px-page, gap-section. Off-grid steps (*-1.5, *-2.5, *-3.5) are
      flagged by `bun run check:classes`. */
+  /* kept: the spacing aliases are a scale (Foundations/Spacing), and inline and section are its ends. */
   --spacing-inline: 0.25rem;
   --spacing-group: 0.5rem;
   --spacing-row-y: 0.75rem;
@@ -148,6 +145,7 @@
      max-w-reading, max-w-layout. Tailwind also makes `inline-<name>` and `block-<name>` sizes from these names, so a
      name must never finish a display class: `grid` turned `inline-grid` into an 80rem-wide box (AVE-114;
      scripts/display-classes.test.ts fails on it). */
+  /* kept: the page frame's two widths, for an app's pages; Avenue's components draw no page. */
   --container-reading: 48rem;
   --container-layout: 80rem;
 }
@@ -183,12 +181,12 @@
   --font-weight-heading: 620;
   --transition-duration-fast: 100ms;
   --transition-duration-moderate: 150ms;
-  --transition-duration-slow: 200ms;
-  --z-index-sticky-group: 5;
+  --transition-duration-slow: 200ms; /* kept: the duration scale's ceiling */
+  --z-index-sticky-group: 5; /* kept: a step in the layer scale */
   --z-index-sticky: 10;
-  --z-index-dock: 40;
+  --z-index-dock: 40; /* kept: a step in the layer scale */
   --z-index-overlay: 50;
-  --z-index-toast: 70;
+  --z-index-toast: 70; /* kept: the layer scale's top */
 }
 
 /* The app's layout breakpoints (AVE-85), as Tailwind breakpoints so classes name them, never a pixel literal.
@@ -199,12 +197,13 @@
    (`desktop:`). `static` keeps them on :root even when no class uses them. */
 @theme static {
   --breakpoint-wide: 68.75rem;
-  --breakpoint-desktop: 56.25rem;
+  --breakpoint-desktop: 56.25rem; /* kept: the desktop app's smallest window, one of the three breakpoints */
   --breakpoint-phone: 43.75rem;
 }
 
 /* Progress (AVE-129): an indeterminate bar's highlight sweeps from off the left edge to off the right. */
 @theme {
+  /* kept: a keyframe's animation */
   --animate-progress-sweep: progress-sweep 1.6s ease-in-out infinite;
   @keyframes progress-sweep {
     from {
@@ -218,6 +217,7 @@
 
 /* Message list (AVE-132): the typing bubble's three dots rise and brighten in turn. */
 @theme {
+  /* kept: a keyframe's animation */
   --animate-typing-dot: typing-dot 1.2s ease-in-out infinite;
   @keyframes typing-dot {
     0%,
@@ -235,6 +235,7 @@
 
 /* Page inset: 16px on narrow screens, 20px from 640px (AVE-2 section 1). */
 :root {
+  /* kept: each switches by width or pointer below, which a theme value can't; its spacing alias reads it. */
   --avenue-page-inset: 1rem;
   --avenue-controls-gap: 0.5rem;
   --avenue-control-xs: 1.5rem;
@@ -342,8 +343,11 @@
   body {
     @apply bg-background text-compact text-foreground;
   }
+  /* Selected text (AVE-76): primary at 25%, in both themes, in place of the browser's own blue. The text keeps its
+     colour, which stays readable over the light tint. Only this rule draws it, so it is a value here, not a token
+     (AVE-184). */
   ::selection {
-    background-color: --theme(--color-selection);
+    background-color: color-mix(in oklab, var(--primary) 25%, transparent);
   }
 }
 
@@ -364,6 +368,7 @@
 [data-tint] {
   --tint-bg: oklch(var(--tint-bg-l) calc(var(--tint-bg-c) * var(--tint-k, 1)) var(--tint-hue));
   --tint-fg: oklch(var(--tint-fg-l) calc(var(--tint-fg-c) * var(--tint-k, 1)) var(--tint-hue));
+  /* kept: the tint's solid step, beside its fill and text */
   --tint-solid: oklch(
     var(--tint-solid-l) calc(var(--tint-solid-c) * var(--tint-k, 1)) var(--tint-hue)
   );

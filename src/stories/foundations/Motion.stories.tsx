@@ -42,6 +42,7 @@ function Replay({ slow }: { slow?: boolean }) {
         className={cn(
           "flex w-48 flex-col rounded-lg border bg-popover p-1 shadow-popover animate-in",
           // The don't is deliberately slow and far: 600ms, sliding 48px.
+          // oxlint-disable-next-line tailwindcss/no-restricted-classes
           slow ? "fade-in-0 slide-in-from-left-12 duration-[600ms]" : "fade-in-0 zoom-in-95 slide-in-from-top-2 duration-fast",
         )}
       >
