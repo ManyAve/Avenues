@@ -88,7 +88,8 @@ const many = Array.from({ length: 40 }, (_, i) => `${i + 1} Hawthorn Row`);
 /**
  * Checking many boxes in one render asks the page for its animations twice in all, not twice per box (Avenue's
  * ui-sdk patch, MANA-1235): a "Confirm all" over 500 rows took 25 seconds when each box asked for itself. The play
- * function counts what the indicators ask while they enter: nothing, and every one still starts its entry.
+ * function counts what the indicators ask while they enter: nothing per box, one document read before all the
+ * writes and one after, and every box still starts its entry.
  */
 export const CheckManyAtOnce: Story = {
   render: function CheckManyStory() {
@@ -111,10 +112,15 @@ export const CheckManyAtOnce: Story = {
     );
   },
   play: async ({ canvas }) => {
-    const order: ("read" | "write")[] = [];
+    const order: ("read" | "write" | "document read")[] = [];
     const indicator = (el: Element) => el.getAttribute("data-slot") === "checkbox-indicator";
     const { getAnimations } = Element.prototype;
     const { setAttribute } = Element.prototype;
+    const documentAnimations = Document.prototype.getAnimations;
+    Document.prototype.getAnimations = function (this: Document) {
+      order.push("document read");
+      return documentAnimations.call(this);
+    };
     Element.prototype.getAnimations = function (this: Element, options?: GetAnimationsOptions) {
       if (indicator(this)) order.push("read");
       return getAnimations.call(this, options);
@@ -129,9 +135,16 @@ export const CheckManyAtOnce: Story = {
     } finally {
       Element.prototype.getAnimations = getAnimations;
       Element.prototype.setAttribute = setAttribute;
+      Document.prototype.getAnimations = documentAnimations;
     }
     await expect(order.filter((step) => step === "write")).toHaveLength(many.length);
     await expect(order.filter((step) => step === "read")).toHaveLength(0);
+    // One document read before all the writes and one after, not one per box.
+    const first = order.indexOf("write");
+    const last = order.lastIndexOf("write");
+    await expect(order.slice(first, last + 1).every((step) => step === "write")).toBe(true);
+    await expect(order[first - 1]).toBe("document read");
+    await expect(order[last + 1]).toBe("document read");
   },
 };
 
