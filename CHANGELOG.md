@@ -19,6 +19,28 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   popups on whole pixels itself, so only the fix for the first click after a dialog closes remains (beta.13 still
   swallows that click). An app that installs ui-sdk itself moves it to beta.13 too.
 
+## v0.38.3 (2026-11-20)
+
+- **AvenueUI builds in Swift 6 language mode** (AVE-174). `Package.swift` declares `swift-tools-version: 6.0`, so the
+  SwiftUI components and their tests compile with Swift 6's data-race checks. They already did without a warning: no
+  Swift source changed, and the catalog screenshots are the same. Language mode is per package, so an app keeps its
+  own (Neighbors' 5.9, Management's 6.0); it needs Xcode 16 or later to read the manifest, which both apps' builds
+  already use. Nothing to change in the apps.
+- The Combobox "Sized by content" story compares the field with a plain text field in the same font instead of a
+  fixed 200px (AVE-175). Avenue's sans is the platform's own font, so the field is 170px on a Mac and 200px on Linux,
+  and the story failed on every Mac. Storybook and the component don't change.
+- The Dialog "Open" story waits for the dialog's opening zoom (from 95%) to finish before measuring the close
+  button, so a busy machine no longer fails it at 15px instead of 16px (AVE-175).
+
+## v0.38.2 (2026-11-20)
+
+- **Avenue's Android module builds with the newest tools** (AVE-173): Gradle 9.9.2, Android Gradle Plugin
+  9.6.0-alpha04, Kotlin 2.4.21 and Paparazzi 2.0.0-alpha05.1. The component source still compiles in Neighbors:
+  Kotlin's language and API level are pinned to 2.0 and the Compose BOM stays at 2024.12.01, so source that needs
+  anything newer fails in Avenue first. Kotlin 2.5 can't compile at level 2.0, so the compiler stays on 2.4 until
+  Neighbors raises its toolchain. Paparazzi 2.0 renders with Android 16, so the Android screenshots were re-recorded;
+  text edges shift by a pixel's antialiasing and nothing else changes. Nothing to change in the apps.
+
 ## v0.38.1 (2026-11-18)
 
 - **Selection bar reasons no longer print over each other** (AVE-162). When two neighbouring actions in the
