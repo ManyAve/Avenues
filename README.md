@@ -204,6 +204,11 @@ fictional data, so the whole Storybook is safe to publish; keep it that way.
 | `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17), and ManyAve's own components built on them (AVE-8: Status and Count, Money, InitialsAvatar, AskAdmin, EmptyState and SectionEmpty, Toast, Chip and ChipRow, ToolbarButton, NavTab, ModeToggle, SearchInput; AVE-117: Tabs; AVE-128: Skeleton and Loading; AVE-129: Progress; AVE-130: StatusDot; AVE-132: MessageList; AVE-133: Message and its parts; AVE-134: Composer; AVE-135: Dock). Stories in `src/stories/components/`. |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
+## Tokens
+
+`docs/tokens.md` is the rule for tokens: the base, semantic and component tiers, when a token earns a place and when a
+value stays a literal, how to pick the token for a job, and how to add, change or remove one.
+
 ## Spacing and corners
 
 Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components use the aliases `inline` (4),
