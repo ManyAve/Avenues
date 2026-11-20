@@ -396,7 +396,7 @@ function FileFieldTrigger({
       {...defined(props)}
       // Through the root's controller, so the trigger works wherever it sits among the parts, in the row or not.
       {...(state ? { controller: state.controller } : {})}
-      // ui-sdk's trigger has no focusableWhenDisabled (still so in beta.7), and disabling it mid-upload drops focus on
+      // ui-sdk's trigger has no focusableWhenDisabled (still so in beta.13), and disabling it mid-upload drops focus on
       // the page, so it stays enabled, says it's unavailable with aria-disabled, and cancels its own press.
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),

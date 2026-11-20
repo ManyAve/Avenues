@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.39.0 (2026-11-20)
+
+- **ui-sdk 0.1.0-beta.13** (AVE-164). Avenue now builds on `@ui-sdk/react` and `@ui-sdk/core` 0.1.0-beta.13, up from
+  beta.7. ui-sdk renamed no part, prop, callback or `data-slot` between the two, so there is no code to rename in the
+  apps, and no Avenue component looks different.
+- **Swap the ui-sdk patch.** In the app, delete `patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch`, copy
+  `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag, and list it under `patchedDependencies` as
+  `"@ui-sdk/core@0.1.0-beta.13"`; `avenue-check-patches` fails until you do. The new patch is smaller: ui-sdk now keeps
+  popups on whole pixels itself, so only the fix for the first click after a dialog closes remains (beta.13 still
+  swallows that click). An app that installs ui-sdk itself moves it to beta.13 too.
+
 ## v0.38.1 (2026-11-18)
 
 - **Selection bar reasons no longer print over each other** (AVE-162). When two neighbouring actions in the
