@@ -78,9 +78,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   dialog: { upstream: "dialog" },
   "alert-dialog": { upstream: "alert-dialog" },
   drawer: { upstream: "drawer", note: "The Drawer stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
-  sheet: { none: "AVE-144: the old path of Drawer, kept for one minor release; it only re-exports drawer.tsx, proven by the Drawer stories." },
   menu: { upstream: "trigger-menu" },
-  "dropdown-menu": { none: "AVE-144: the old path of Menu, kept for one minor release; it only re-exports menu.tsx, proven by the Menu stories." },
   popover: { upstream: "popover" },
   progress: {
     upstream: "progress",
@@ -92,7 +90,6 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   switch: { upstream: "switch" },
   toggle: { upstream: "toggle" },
   "toggle-group": { upstream: "segmented-control", note: "UX Engineer, AVE-17: the radio-group pattern." },
-  disclosure: { upstream: "collapsible" },
   "collapsible-section": {
     upstream: "collapsible",
     note: "AVE-121: the Collapsible section stories press each variant's trigger by keyboard and check aria-expanded, aria-controls and focus returning from a closed panel.",

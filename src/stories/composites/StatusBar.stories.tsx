@@ -19,19 +19,18 @@ function Bar({ totals = true, theme = "light" }: { totals?: boolean; theme?: unk
   const [choice, setChoice] = useState<ThemeChoice>(theme === "dark" ? "dark" : "light");
   return (
     <div className="flex min-h-40 flex-col justify-end bg-background">
-      <StatusBar
-        count="24 households"
-        hint={totals ? "Select a cell to view details" : undefined}
-        totals={
-          totals
-            ? [
-                { label: "Outstanding", cents: 51_000 },
-                { label: "Credit", cents: 2_000 },
-              ]
-            : undefined
-        }
-      >
+      <StatusBar>
         <ModeToggle dev={false} value={choice} onValueChange={setChoice} />
+        <StatusBarCount>24 households</StatusBarCount>
+        {totals && <StatusBarHint>Select a cell to view details</StatusBarHint>}
+        {totals && (
+          <StatusBarTotals
+            items={[
+              { label: "Outstanding", cents: 51_000 },
+              { label: "Credit", cents: 2_000 },
+            ]}
+          />
+        )}
       </StatusBar>
     </div>
   );

@@ -25,7 +25,7 @@ import { defined, type Loose } from "#avenue/lib/props";
  * panel shows a focus ring when it takes focus; the app's had none.
  *
  * Horizontal only. The parts take ui-sdk's names (Tabs, TabsList, TabsTab, TabsPanel) and its data-slot names (tabs,
- * tabs-list, tabs-tab, tabs-panel); TabsTrigger and TabsContent stay as deprecated aliases (AVE-144).
+ * tabs-list, tabs-tab, tabs-panel).
  */
 function Tabs({ className, ...props }: Loose<Omit<ComponentProps<typeof TabsPrimitive>, "orientation">>) {
   return <TabsPrimitive className={cn("flex flex-col gap-2", className)} {...defined(props)} />;
@@ -71,10 +71,5 @@ function TabsPanel({ className, ...props }: Loose<ComponentProps<typeof TabsPane
   );
 }
 
-/** @deprecated Use TabsTab. */
-const TabsTrigger = TabsTab;
-/** @deprecated Use TabsPanel. */
-const TabsContent = TabsPanel;
-
 export { Tabs, TabsList, TabsPanel, TabsTab };
-export { TabsContent, TabsTrigger };
+;

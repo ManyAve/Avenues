@@ -4,7 +4,7 @@
  * content). It runs in `bun run typecheck`: a component that stops taking one of these fails to compile here.
  * `Foundations/Pass-through` in Storybook proves they reach the element at run time.
  */
-import type * as disclosure from "#avenue/components/disclosure";
+import type * as collapsibleSection from "#avenue/components/collapsible-section";
 import type * as displayOptions from "#avenue/components/display-options";
 import type * as fileField from "#avenue/components/file-field";
 import type * as inlineMessage from "#avenue/components/inline-message";
@@ -24,7 +24,7 @@ type Root = "ref" | "id" | "aria-describedby" | "aria-label" | "className";
 declare function takesAll<_T extends true>(): void;
 
 takesAll<Takes<typeof inlineMessage.InlineMessage, Root | "render">>();
-takesAll<Takes<typeof disclosure.Disclosure, Root>>();
+takesAll<Takes<typeof collapsibleSection.CollapsibleSection, Root>>();
 takesAll<Takes<typeof displayOptions.DisplayOptions, Root>>();
 takesAll<Takes<typeof displayOptions.DisplayOptionsSection, Root | "render">>();
 takesAll<Takes<typeof displayOptions.DisplayOptionsDensity, "ref" | "id" | "aria-describedby" | "className">>();

@@ -7,7 +7,7 @@ import {
 } from "@ui-sdk/react/progress";
 import { Children, createContext, isValidElement, useContext, type ComponentProps } from "react";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
-import { scaleStep, type WithDefault } from "#avenue/lib/control";
+import { scaleStep } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -36,16 +36,11 @@ const sizes = {
   xs: "h-1 rounded-none",
 } as const;
 
-/** `md` (the default, 6px) or `xs` (4px). `"default"` is deprecated: use md (AVE-152). */
-type ProgressSize = WithDefault<keyof typeof sizes>;
+/** `md` (the default, 6px) or `xs` (4px). */
+type ProgressSize = keyof typeof sizes;
 
 type ProgressProps = NodeChildren<Loose<ComponentProps<typeof ProgressPrimitive>>> & {
   size?: ProgressSize | undefined;
-  /**
-   * Class for the track, e.g. to lay an xs bar along an edge.
-   * @deprecated Write the track: `<ProgressTrack className="…"><ProgressIndicator /></ProgressTrack>` (AVE-149).
-   */
-  trackClassName?: string | undefined;
 };
 
 const SizeContext = createContext<keyof typeof sizes>("md");
@@ -62,7 +57,7 @@ const SizeContext = createContext<keyof typeof sizes>("md");
  * Write the track yourself to style it (lay an xs bar along an edge); leave it out and Progress draws it after its
  * other children. It looks for a `ProgressTrack` among its own children, not deeper.
  */
-function Progress({ className, children, size: given, trackClassName, ...props }: ProgressProps) {
+function Progress({ className, children, size: given, ...props }: ProgressProps) {
   const size = scaleStep(given);
   const ownTrack = Children.toArray(children).some((child) => isValidElement(child) && child.type === ProgressTrack);
   return (
@@ -74,7 +69,7 @@ function Progress({ className, children, size: given, trackClassName, ...props }
       >
         {children}
         {!ownTrack && (
-          <ProgressTrack className={trackClassName}>
+          <ProgressTrack>
             <ProgressIndicator />
           </ProgressTrack>
         )}

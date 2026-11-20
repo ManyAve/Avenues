@@ -17,16 +17,7 @@ import { buttonVariants } from "#avenue/components/button";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
-/** A day's dot: a background class (`bg-info`), or a tint (`teal`) whose `--tint-fg` colours it. */
-export type CalendarMark = { className?: string | undefined; tint?: string | undefined };
-
-export type CalendarProps = NodeChildren<Loose<ComponentProps<typeof CalendarRoot>>> & {
-  /**
-   * A dot under the day, for days that hold something. Decoration: say what it means beside the calendar.
-   * @deprecated Write the days: `<CalendarDay value={cell.date}><CalendarDayMark /></CalendarDay>` (AVE-149).
-   */
-  mark?: ((date: string) => CalendarMark | undefined) | undefined;
-};
+export type CalendarProps = NodeChildren<Loose<ComponentProps<typeof CalendarRoot>>>;
 
 /**
  * A month to pick a day from (AVE-121), as the board's small month under the Activity title, which jumps to any day.
@@ -50,7 +41,7 @@ export type CalendarProps = NodeChildren<Loose<ComponentProps<typeof CalendarRoo
  *       ├── CalendarWeekdays → CalendarWeekday
  *       └── CalendarWeeks    → CalendarDay (children: what sits in the round, such as a CalendarDayMark)
  */
-export function Calendar({ className, mark, children, weekdayFormat = "narrow", fixedWeeks = true, ...props }: CalendarProps) {
+export function Calendar({ className, children, weekdayFormat = "narrow", fixedWeeks = true, ...props }: CalendarProps) {
   return (
     <CalendarRoot
       weekdayFormat={weekdayFormat}
@@ -69,12 +60,7 @@ export function Calendar({ className, mark, children, weekdayFormat = "narrow", 
             <CalendarWeekdays>{(index) => <CalendarWeekday index={index} />}</CalendarWeekdays>
             <CalendarWeeks>
               {(cell) => (
-                <CalendarDay value={cell.date}>
-                  {(day) => {
-                    const dot = day.today ? undefined : mark?.(day.date);
-                    return dot && <CalendarDayMark tint={dot.tint} className={dot.className} />;
-                  }}
-                </CalendarDay>
+                <CalendarDay value={cell.date} />
               )}
             </CalendarWeeks>
           </CalendarGrid>

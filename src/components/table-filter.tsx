@@ -57,12 +57,10 @@ export type FilterField = {
   kind: FilterKind;
   /** A `choice` field's values, in ui-sdk's item shape: `{ value, label }`. */
   items?: readonly { value: string; label: string }[] | undefined;
-  /** @deprecated Use `items`, which takes the same `{ value, label }` entries (AVE-146). */
-  options?: readonly { value: string; label: string }[] | undefined;
 };
 
-/** A choice field's values, under either name. */
-const choicesOf = (field: FilterField) => field.items ?? field.options ?? [];
+/** A choice field's values. */
+const choicesOf = (field: FilterField) => field.items ?? [];
 
 const emptyValue = (kind: FilterKind): string | string[] => (kind === "choice" ? [] : "");
 
@@ -352,15 +350,13 @@ function SearchablePill({
  *
  * State follows ui-sdk's names (AVE-145): `value` / `defaultValue` / `onValueChange`, whose second argument is the
  * change's details (`TableFiltersChangeDetails`): its reason, event and source, and `cancel()`, which keeps the old
- * filters when TableFilters holds them itself. `filters` and `onChange` are the old names, deprecated.
+ * filters when TableFilters holds them itself.
  */
 export function TableFilters({
   fields,
   value,
   defaultValue,
   onValueChange,
-  filters: filtersProp,
-  onChange,
   presentation = "auto",
   className,
 }: {
@@ -369,10 +365,6 @@ export function TableFilters({
   value?: readonly TableFilter[] | undefined;
   defaultValue?: readonly TableFilter[] | undefined;
   onValueChange?: ((value: TableFilter[], details: TableFiltersChangeDetails) => void) | undefined;
-  /** @deprecated Use `value` (AVE-145). */
-  filters?: readonly TableFilter[] | undefined;
-  /** @deprecated Use `onValueChange` (AVE-145). */
-  onChange?: ((value: TableFilter[], details: TableFiltersChangeDetails) => void) | undefined;
   /**
    * How a long list's editor opens (AVE-157). "auto" (default) opens a bottom sheet on a small touch screen and a
    * popover elsewhere, as Select and Combobox do; "sheet" or "popover" always. A short list's editor is always a popover.
@@ -381,14 +373,13 @@ export function TableFilters({
   className?: string | undefined;
 }) {
   const [ownFilters, setOwnFilters] = useState<readonly TableFilter[]>(defaultValue ?? []);
-  const filters = value ?? filtersProp ?? ownFilters;
+  const filters = value ?? ownFilters;
   const [editing, setEditing] = useState<string>();
   const own = useRef<HTMLSpanElement>(null);
   const added = useRef<string>(undefined);
   // The app hears every change first, as ui-sdk's callbacks do; one it cancels leaves TableFilters' own state alone.
   const change = (next: TableFilter[], details: TableFiltersChangeDetails) => {
     onValueChange?.(next, details);
-    onChange?.(next, details);
     if (details.canceled) return false;
     setOwnFilters(next);
     return true;

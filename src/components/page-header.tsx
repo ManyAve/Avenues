@@ -1,5 +1,5 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { TitleCount } from "#avenue/components/status";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
@@ -28,54 +28,17 @@ import { cn } from "#avenue/lib/utils";
  *
  * The header doesn't pad itself: put it inside the page's frame (px-page, max-w-reading or max-w-layout), so the title
  * and the content under it share an edge.
+ *
+ * No `title`: it was the slot prop for the title part (AVE-149), and an HTML tooltip in its place would hide a
+ * stale call.
  */
-function PageHeader({
-  eyebrow,
-  title,
-  count,
-  countLabel,
-  description,
-  actions,
-  children,
-  className,
-  render,
-  ...props
-}: Omit<OwnPartProps<"header">, "title"> & {
-  /** @deprecated Use `<PageHeaderEyebrow>` (AVE-149). */
-  eyebrow?: ReactNode;
-  /** @deprecated Use `<PageHeaderTitle>` inside `PageHeaderContent` (AVE-149). */
-  title?: string | undefined;
-  /** @deprecated Use `<PageHeaderCount value={…}>` inside the title (AVE-149). */
-  count?: ReactNode;
-  /** @deprecated Use PageHeaderCount's `label` (AVE-149). */
-  countLabel?: string | undefined;
-  /** @deprecated Use `<PageHeaderDescription>` (AVE-149). */
-  description?: ReactNode;
-  /** @deprecated Use `<PageHeaderActions>` (AVE-149). */
-  actions?: ReactNode;
-}) {
+function PageHeader({ className, render, ...props }: Omit<OwnPartProps<"header">, "title">) {
   return renderElement(
     "header",
     mergeProps(
       {
         "data-slot": "page-header",
         className: cn("flex flex-wrap items-end justify-between gap-x-group gap-y-row-y", className),
-        children: (
-          <>
-            {title !== undefined && (
-              <PageHeaderContent>
-                {eyebrow && <PageHeaderEyebrow>{eyebrow}</PageHeaderEyebrow>}
-                <PageHeaderTitle>
-                  {title}
-                  {count !== undefined && <PageHeaderCount value={count} label={countLabel} />}
-                </PageHeaderTitle>
-                {description && <PageHeaderDescription>{description}</PageHeaderDescription>}
-              </PageHeaderContent>
-            )}
-            {actions && <PageHeaderActions>{actions}</PageHeaderActions>}
-            {children}
-          </>
-        ),
       },
       defined(props),
     ),

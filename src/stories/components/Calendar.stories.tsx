@@ -26,6 +26,30 @@ const marked: Record<string, { className?: string; tint?: string }> = {
   "2026-11-24": { className: "bg-warning" },
 };
 
+/** The board's month: every part, with a dot under each marked day except today (the old `mark`, written out). */
+const markedMonth = (
+  <>
+    <CalendarHeader>
+      <CalendarHeading />
+      <CalendarPrevious />
+      <CalendarNext />
+    </CalendarHeader>
+    <CalendarGrid>
+      <CalendarWeekdays>{(index) => <CalendarWeekday index={index} />}</CalendarWeekdays>
+      <CalendarWeeks>
+        {(cell) => (
+          <CalendarDay value={cell.date}>
+            {(day) => {
+              const dot = day.today ? undefined : marked[day.date];
+              return dot && <CalendarDayMark tint={dot.tint} className={dot.className} />;
+            }}
+          </CalendarDay>
+        )}
+      </CalendarWeeks>
+    </CalendarGrid>
+  </>
+);
+
 const meta = {
   title: "Components/Calendar",
   component: Calendar,
@@ -34,7 +58,7 @@ const meta = {
     today: "2026-11-12",
     defaultMonth: "2026-11",
     locale: "en-US",
-    mark: (date: string) => marked[date],
+    children: markedMonth,
     onValueChange: fn(),
   },
   render: (args) => (
@@ -152,7 +176,7 @@ export const Agent: Story = {
 
 /**
  * The parts (AVE-149), as ui-sdk's Calendar composes them: each day is a CalendarDay, and a CalendarDayMark inside
- * draws its dot. Today's dot is hidden by the mark itself. With children, `mark` is unused.
+ * draws its dot. Today's dot is hidden by the mark itself.
  */
 export const Parts: Story = {
   render: (args) => (

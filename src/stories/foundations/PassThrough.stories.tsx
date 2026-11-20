@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
-import { Disclosure } from "#avenue/components/disclosure";
+import {
+  CollapsibleSection,
+  CollapsibleSectionPanel,
+  CollapsibleSectionTrigger,
+} from "#avenue/components/collapsible-section";
 import { DisplayOptions, DisplayOptionsDensity, DisplayOptionsSection } from "#avenue/components/display-options";
 import { FileField } from "#avenue/components/file-field";
 import { InlineMessage } from "#avenue/components/inline-message";
@@ -65,15 +69,16 @@ function Roots() {
       >
         Dues for 12 Birch Lane are two months late.
       </InlineMessage>
-      <Disclosure
+      <CollapsibleSection
+        variant="disclosure"
         ref={refFor("disclosure")}
         id="advanced"
         data-testid="disclosure"
         aria-describedby="pass-through-note"
-        summary="Advanced"
       >
-        Only admins see these settings.
-      </Disclosure>
+        <CollapsibleSectionTrigger>Advanced</CollapsibleSectionTrigger>
+        <CollapsibleSectionPanel>Only admins see these settings.</CollapsibleSectionPanel>
+      </CollapsibleSection>
       <FileField
         ref={refFor("file-field")}
         id="rules"

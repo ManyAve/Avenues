@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { CircleHelp } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 import { expect, fn, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -30,14 +31,28 @@ const mark =
   "data:image/svg+xml," +
   encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="22"><rect width="24" height="22" rx="6" fill="#5b4b8a"/></svg>');
 
+/** The trailing action in these stories: a Help button. */
+const help = (
+  <TopBarActions>
+    <Button variant="ghost" size="icon-sm" aria-label="Help">
+      <CircleHelp aria-hidden />
+    </Button>
+  </TopBarActions>
+);
+
 function Bar({ current = "Households" }: { current?: string }) {
   return (
-    <TopBar logo={<img src={mark} alt="" width={24} height={22} />} org="LCHOA">
-      {sections.map((s) => (
-        <NavTab key={s.label} href={`#${s.label.toLowerCase()}`} current={s.label === current} count={s.count}>
-          {s.label}
-        </NavTab>
-      ))}
+    <TopBar>
+      <TopBarHome logo={<img src={mark} alt="" width={24} height={22} />} />
+      <TopBarOrg>LCHOA</TopBarOrg>
+      <TopBarNav>
+        {sections.map((s) => (
+          <NavTab key={s.label} href={`#${s.label.toLowerCase()}`} current={s.label === current} count={s.count}>
+            {s.label}
+          </NavTab>
+        ))}
+      </TopBarNav>
+      {help}
     </TopBar>
   );
 }
@@ -102,12 +117,17 @@ function LongPage() {
   const [count, setCount] = useState(24);
   return (
     <div>
-      <TopBar org="LCHOA">
-        {sections.map((s) => (
-          <NavTab key={s.label} href={`#${s.label.toLowerCase()}`} current={s.label === "Households"} count={s.label === "Households" ? count : s.count}>
-            {s.label}
-          </NavTab>
-        ))}
+      <TopBar>
+        <TopBarHome />
+        <TopBarOrg>LCHOA</TopBarOrg>
+        <TopBarNav>
+          {sections.map((s) => (
+            <NavTab key={s.label} href={`#${s.label.toLowerCase()}`} current={s.label === "Households"} count={s.label === "Households" ? count : s.count}>
+              {s.label}
+            </NavTab>
+          ))}
+        </TopBarNav>
+        {help}
       </TopBar>
       <div className="h-[2400px]" />
       <div className="px-page pb-inset">
@@ -147,10 +167,15 @@ export const HomeHandledByTheApp: StoryObj<{ onHome: () => void }> = {
   globals: wide,
   args: { onHome: fn() },
   render: (args) => (
-    <TopBar homeHref="#home" onHome={args.onHome} org="LCHOA">
-      <NavTab href="#households" current>
-        Households
-      </NavTab>
+    <TopBar>
+      <TopBarHome href="#home" onHome={args.onHome} />
+      <TopBarOrg>LCHOA</TopBarOrg>
+      <TopBarNav>
+        <NavTab href="#households" current>
+          Households
+        </NavTab>
+      </TopBarNav>
+      {help}
     </TopBar>
   ),
   play: async ({ args, canvas, canvasElement }) => {
@@ -212,10 +237,15 @@ export const HomeAsARouterLink: StoryObj<{ onNavigate: (to: string) => void }> =
   globals: wide,
   args: { onNavigate: fn() },
   render: (args) => (
-    <TopBar homeRender={<RouterLink to="/" onNavigate={args.onNavigate} />} org="LCHOA">
-      <NavTab href="#households" current>
-        Households
-      </NavTab>
+    <TopBar>
+      <TopBarHome render={<RouterLink to="/" onNavigate={args.onNavigate} />} />
+      <TopBarOrg>LCHOA</TopBarOrg>
+      <TopBarNav>
+        <NavTab href="#households" current>
+          Households
+        </NavTab>
+      </TopBarNav>
+      {help}
     </TopBar>
   ),
   play: async ({ args, canvas }) => {
@@ -236,11 +266,16 @@ export const HomeAsARouterLink: StoryObj<{ onNavigate: (to: string) => void }> =
 export const WindowDragArea: Story = {
   globals: wide,
   render: () => (
-    <TopBar windowDrag org="LCHOA">
-      <NavTab href="#households" current>
-        Households
-      </NavTab>
-      <NavTab href="#dues">Dues</NavTab>
+    <TopBar windowDrag>
+      <TopBarHome />
+      <TopBarOrg>LCHOA</TopBarOrg>
+      <TopBarNav>
+        <NavTab href="#households" current>
+          Households
+        </NavTab>
+        <NavTab href="#dues">Dues</NavTab>
+      </TopBarNav>
+      {help}
     </TopBar>
   ),
   play: async ({ canvas, canvasElement }) => {

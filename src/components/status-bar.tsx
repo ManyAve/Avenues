@@ -1,5 +1,5 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
-import { Fragment, type ReactNode } from "react";
+import { Fragment } from "react";
 import { Money } from "#avenue/components/money";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
@@ -7,31 +7,16 @@ import { cn } from "#avenue/lib/utils";
 export type StatusTotal = { label: string; cents: number };
 
 /**
- * ManyAve's bottom status bar (the app's app/ui/components/StatusBar.tsx at e01cc90): the mode toggle as
- * `children`, the record count, a hint, and money totals at the end. Below 900px the hint gives way, so the totals
- * are never cut.
+ * ManyAve's bottom status bar (the app's app/ui/components/StatusBar.tsx at e01cc90): the mode toggle, the
+ * record count (`StatusBarCount`), a hint (`StatusBarHint`), and money totals (`StatusBarTotals`) at the end.
+ * Below 900px the hint gives way, so the totals are never cut.
  *
- * Changes from the app: the totals are a list (`totals`) instead of fixed Outstanding and Credit props, so other
- * screens can show their own (`StatusBarTotals items`); the dots between them are aria-hidden. AVE-2: the totals' off-grid 6px gap becomes
+ * Changes from the app: the totals are a list (`StatusBarTotals items`) instead of fixed Outstanding and Credit props, so other
+ * screens can show their own; the dots between them are aria-hidden. AVE-2: the totals' off-grid 6px gap becomes
  * 8px. On a phone, where the toggle, count and totals can't share one line, the totals wrap onto a second line
  * instead of running off the screen. Otherwise the app's sizes: 44px tall, 16px sides.
  */
-function StatusBar({
-  count,
-  hint,
-  totals,
-  children,
-  className,
-  render,
-  ...props
-}: OwnPartProps<"footer"> & {
-  /** @deprecated Use `<StatusBarCount>` (AVE-149). */
-  count?: ReactNode;
-  /** @deprecated Use `<StatusBarHint>` (AVE-149). */
-  hint?: ReactNode;
-  /** @deprecated Use `<StatusBarTotals items={…}>` (AVE-149). */
-  totals?: readonly StatusTotal[] | undefined;
-}) {
+function StatusBar({ className, render, ...props }: OwnPartProps<"footer">) {
   return renderElement(
     "footer",
     mergeProps(
@@ -40,14 +25,6 @@ function StatusBar({
         className: cn(
           "group/status-bar flex min-h-11 flex-wrap items-center gap-4 border-t bg-background px-4 text-meta max-sm:py-2 whitespace-nowrap text-muted-foreground",
           className,
-        ),
-        children: (
-          <>
-            {children}
-            {count !== undefined && <StatusBarCount>{count}</StatusBarCount>}
-            {hint ? <StatusBarHint>{hint}</StatusBarHint> : null}
-            {totals?.length ? <StatusBarTotals items={totals} /> : null}
-          </>
         ),
       },
       defined(props),

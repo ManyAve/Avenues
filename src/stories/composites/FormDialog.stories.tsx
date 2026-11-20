@@ -3,7 +3,7 @@ import { FileTextIcon, ReceiptIcon, TriangleAlertIcon, UsersIcon } from "lucide-
 import { useState } from "react";
 import { expect, fn, screen, spyOn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { Callout } from "#avenue/components/callout";
+import { Callout, CalloutContent, CalloutIcon } from "#avenue/components/callout";
 import { Field, FieldDescription, FieldLabel } from "#avenue/components/field";
 import {
   FormDialog,
@@ -21,7 +21,7 @@ import {
   FormDialogTrigger,
 } from "#avenue/components/form-dialog";
 import { Input } from "#avenue/components/input";
-import { Select, type SelectOption } from "#avenue/components/select";
+import { Select, type ListItem } from "#avenue/components/select";
 import { Textarea } from "#avenue/components/textarea";
 import { DEVELOPMENT } from "#avenue/lib/dev";
 import { listenForAnnouncements } from "../components/announce-kit";
@@ -29,13 +29,13 @@ import { listenForAnnouncements } from "../components/announce-kit";
 // AVE-9, composite 1. Every form dialog in ManyAve: icon title, fields, error slot, Cancel and submit, and the
 // discard guard. All names, addresses and amounts are fictional.
 
-const categories: SelectOption[] = [
+const categories: ListItem[] = [
   { value: "governance", label: "Governance" },
   { value: "financial", label: "Financial" },
   { value: "meetings", label: "Meeting minutes" },
   { value: "other", label: "Other" },
 ];
-const visibility: SelectOption[] = [
+const visibility: ListItem[] = [
   { value: "board", label: "Board only" },
   { value: "members", label: "All members" },
 ];
@@ -104,11 +104,11 @@ function AddDocument({
       <div className="grid grid-cols-2 gap-3">
         <Field>
           <FieldLabel>Category</FieldLabel>
-          <Select options={categories} defaultValue="governance" />
+          <Select items={categories} defaultValue="governance" />
         </Field>
         <Field>
           <FieldLabel>Visibility</FieldLabel>
-          <Select options={visibility} defaultValue="members" />
+          <Select items={visibility} defaultValue="members" />
         </Field>
       </div>
       <Field>
@@ -440,8 +440,11 @@ export const WithCallouts: Story = {
         <FieldLabel>Amount</FieldLabel>
         <Input inputMode="decimal" autoComplete="off" defaultValue="240.00" />
       </Field>
-      <Callout tone="warning" icon={TriangleAlertIcon}>
-        3 households have payments recorded for 2027. Their balances change with the new amount.
+      <Callout tone="warning">
+        <CalloutIcon>
+          <TriangleAlertIcon aria-hidden />
+        </CalloutIcon>
+        <CalloutContent>3 households have payments recorded for 2027. Their balances change with the new amount.</CalloutContent>
       </Callout>
     </FormDialog>
   ),

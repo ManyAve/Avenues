@@ -15,7 +15,14 @@ import {
   ListItemTitle,
   ListItemTrailing,
 } from "#avenue/components/detail-list";
-import { SectionEmpty } from "#avenue/components/empty-state";
+import {
+  SectionEmpty,
+  SectionEmptyAction,
+  SectionEmptyContent,
+  SectionEmptyDescription,
+  SectionEmptyIcon,
+  SectionEmptyTitle,
+} from "#avenue/components/empty-state";
 import { Money } from "#avenue/components/money";
 import { SectionCard, SectionCardCount, SectionCardTitle } from "#avenue/components/section-card";
 import { Select } from "#avenue/components/select";
@@ -34,47 +41,101 @@ const years = ["2027", "2026", "2025"].map((y) => ({ value: y, label: y }));
 function HouseholdSections() {
   return (
     <div className="mx-auto grid max-w-layout gap-inset px-page py-section lg:grid-cols-2">
-      <SectionCard
-        title="Dues"
-        action={<Select size="sm" aria-label="Dues year" items={years} defaultValue="2026" />}
-      >
-        <div className="grid gap-1">
-          <ListItem title="Annual assessment" meta="Due Jan 31, 2026" trailing={<Money cents={36000} />} />
-          <ListItem title="Payment, check 1043" meta="Received Jan 12, 2026" trailing={<Money cents={-36000} signed />} />
-        </div>
+      <SectionCard>
+        <CardHeader>
+          <SectionCardTitle>Dues</SectionCardTitle>
+          <CardAction>
+            <Select size="sm" aria-label="Dues year" items={years} defaultValue="2026" />
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-1">
+            <ListItem>
+              <ListItemContent>
+                <ListItemTitle>Annual assessment</ListItemTitle>
+                <ListItemMeta>Due Jan 31, 2026</ListItemMeta>
+              </ListItemContent>
+              <Money cents={36000} />
+            </ListItem>
+            <ListItem>
+              <ListItemContent>
+                <ListItemTitle>Payment, check 1043</ListItemTitle>
+                <ListItemMeta>Received Jan 12, 2026</ListItemMeta>
+              </ListItemContent>
+              <Money cents={-36000} signed />
+            </ListItem>
+          </div>
+        </CardContent>
       </SectionCard>
-      <SectionCard
-        title="People"
-        count={2}
-        action={
-          <Button variant="ghost" size="sm">
-            <PlusIcon aria-hidden /> Add person
-          </Button>
-        }
-      >
-        <DetailList
-          items={[
-            { label: "Owner", value: "Dana Whitfield" },
-            { label: "Mailing address", value: "14 Larkspur Lane\nMaple Glen, OR 97000" },
-            { label: "Email", value: "dana.whitfield.longname@example.com" },
-          ]}
-        />
+      <SectionCard>
+        <CardHeader>
+          <SectionCardTitle>
+            People
+            <SectionCardCount value={2} />
+          </SectionCardTitle>
+          <CardAction>
+            <Button variant="ghost" size="sm">
+              <PlusIcon aria-hidden /> Add person
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <DetailList
+            items={[
+              { label: "Owner", value: "Dana Whitfield" },
+              { label: "Mailing address", value: "14 Larkspur Lane\nMaple Glen, OR 97000" },
+              { label: "Email", value: "dana.whitfield.longname@example.com" },
+            ]}
+          />
+        </CardContent>
       </SectionCard>
-      <SectionCard title="Documents" count={3} countLabel="shared">
-        <ListItem title="Fence approval, 2025" meta="Architectural review · PDF" note="Board only" />
-        <ListItem title="Welcome packet" meta="Governance · PDF" />
-        <ListItem
-          title="Architectural review request for exterior paint colour, fence height and front-yard landscaping"
-          meta="Architectural review · Word"
-        />
+      <SectionCard>
+        <CardHeader>
+          <SectionCardTitle>
+            Documents
+            <SectionCardCount value={3} label="shared" />
+          </SectionCardTitle>
+        </CardHeader>
+        <CardContent>
+          <ListItem>
+            <ListItemContent>
+              <ListItemTitle>Fence approval, 2025</ListItemTitle>
+              <ListItemMeta>Architectural review · PDF</ListItemMeta>
+              <ListItemNote>Board only</ListItemNote>
+            </ListItemContent>
+          </ListItem>
+          <ListItem>
+            <ListItemContent>
+              <ListItemTitle>Welcome packet</ListItemTitle>
+              <ListItemMeta>Governance · PDF</ListItemMeta>
+            </ListItemContent>
+          </ListItem>
+          <ListItem>
+            <ListItemContent>
+              <ListItemTitle>Architectural review request for exterior paint colour, fence height and front-yard landscaping</ListItemTitle>
+              <ListItemMeta>Architectural review · Word</ListItemMeta>
+            </ListItemContent>
+          </ListItem>
+        </CardContent>
       </SectionCard>
-      <SectionCard title="Complaints">
-        <SectionEmpty
-          icon={FileTextIcon}
-          title="No complaints"
-          line="Complaints filed about this household show here."
-          action={{ label: "New complaint", icon: PlusIcon, onClick: () => {} }}
-        />
+      <SectionCard>
+        <CardHeader>
+          <SectionCardTitle>Complaints</SectionCardTitle>
+        </CardHeader>
+        <CardContent>
+          <SectionEmpty>
+            <SectionEmptyIcon>
+              <FileTextIcon />
+            </SectionEmptyIcon>
+            <SectionEmptyContent>
+              <SectionEmptyTitle>No complaints</SectionEmptyTitle>
+              <SectionEmptyDescription>Complaints filed about this household show here.</SectionEmptyDescription>
+            </SectionEmptyContent>
+            <SectionEmptyAction onClick={() => {}}>
+              <PlusIcon aria-hidden /> New complaint
+            </SectionEmptyAction>
+          </SectionEmpty>
+        </CardContent>
       </SectionCard>
     </div>
   );

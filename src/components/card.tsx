@@ -1,6 +1,6 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
-import { scaleStep, type WithDefault } from "#avenue/lib/control";
+import { scaleStep } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -20,8 +20,8 @@ function Card({
   render,
   ...props
 }: OwnPartProps<"div"> & {
-  /** `md` (the default, 16px inset) or `sm` (12px). `"default"` is deprecated: use md (AVE-152). */
-  size?: WithDefault<"sm" | "md"> | undefined;
+  /** `md` (the default, 16px inset) or `sm` (12px). */
+  size?: "sm" | "md" | undefined;
 }) {
   return renderElement(
     "div",

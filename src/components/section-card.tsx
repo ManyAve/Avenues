@@ -1,5 +1,5 @@
-import type { ComponentProps, ReactNode } from "react";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
+import type { ComponentProps } from "react";
+import { Card, CardTitle } from "#avenue/components/card";
 import { TitleCount } from "#avenue/components/status";
 import { defined, type Loose } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
@@ -22,46 +22,17 @@ import { cn } from "#avenue/lib/utils";
  * edges, sm size (28px, 8px corner), never a pill. The title is a level-2 heading under the page's h1.
  *
  * The outline is the app's border colour (`ring-border`, AVE-70), not Card's 10% foreground ring.
+ *
+ * No `title`: it was the slot prop for the title part (AVE-149), and an HTML tooltip in its place would hide a
+ * stale call.
  */
-function SectionCard({
-  title,
-  count,
-  countLabel,
-  action,
-  children,
-  className,
-  ...props
-}: Omit<Loose<ComponentProps<typeof Card>>, "title"> & {
-  /** @deprecated Use `<CardHeader><SectionCardTitle>` (AVE-149). */
-  title?: string | undefined;
-  /** @deprecated Use `<SectionCardCount value={…}>` inside the title (AVE-149). */
-  count?: ReactNode;
-  /** @deprecated Use SectionCardCount's `label` (AVE-149). */
-  countLabel?: string | undefined;
-  /** @deprecated Use `<CardAction>` in the CardHeader (AVE-149). */
-  action?: ReactNode;
-}) {
+function SectionCard({ className, ...props }: Omit<Loose<ComponentProps<typeof Card>>, "title">) {
   return (
     <Card
       data-section=""
       className={cn("shadow-card ring-border *:data-[slot=card-content]:text-compact", className)}
       {...defined(props)}
-    >
-      {title !== undefined ? (
-        <>
-          <CardHeader>
-            <SectionCardTitle>
-              {title}
-              {count !== undefined && <SectionCardCount value={count} label={countLabel} />}
-            </SectionCardTitle>
-            {action && <CardAction>{action}</CardAction>}
-          </CardHeader>
-          <CardContent>{children}</CardContent>
-        </>
-      ) : (
-        children
-      )}
-    </Card>
+    />
   );
 }
 

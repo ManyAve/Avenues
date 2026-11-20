@@ -1,7 +1,6 @@
 import type { ComponentProps } from "react";
 import { Avatar, AvatarFallback } from "#avenue/components/avatar";
 import { initials, tintFor } from "#avenue/lib/format";
-import { type WithDefault } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -26,8 +25,8 @@ function InitialsAvatar({
   name: string;
   tintKey?: string | undefined;
   decorative?: boolean | undefined;
-  /** `sm` 28 (the default here) or `md` 32. `"default"` is deprecated: use md (AVE-152). */
-  size?: WithDefault<"sm" | "md"> | undefined;
+  /** `sm` 28 (the default here) or `md` 32. */
+  size?: "sm" | "md" | undefined;
 }) {
   return (
     <Avatar

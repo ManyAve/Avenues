@@ -11,8 +11,8 @@ import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 /**
  * Ported from the app's app/ui/components/ui/toggle-group.tsx (e01cc90). `spacing` is in 4px steps (default 2,
  * 8px); `spacing={0}` joins the items into one segmented control whose outer corners follow the size (md for sm, lg
- * otherwise). Both kinds have one Tab stop. Sizes are Toggle's: sm, md (the default) and lg; `"default"` is deprecated
- * (use md), and `data-size` always carries the step's name.
+ * otherwise). Both kinds have one Tab stop. Sizes are Toggle's: sm, md (the default) and lg, and
+ * `data-size` always carries the step's name.
  *
  * A single-choice group (the default) is a radio group, ui-sdk's SegmentedControl: `value` is one string, the
  * arrow keys move and select together, and Tab lands on the chosen item. Pass `multiple` for independent on/off

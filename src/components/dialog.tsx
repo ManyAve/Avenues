@@ -172,7 +172,4 @@ export {
   DialogTrigger,
 };
 
-/** @deprecated Use DialogBackdrop. */
-const DialogOverlay = DialogBackdrop;
-
-export { DialogOverlay };
+;

@@ -14,7 +14,7 @@ export const Sizes: Story = {
   render: (_, { globals }) => (
     <SideBySide slug="initials-avatar-sizes" title="Initials avatar sizes" theme={globals["theme"]}>
       <div className="flex flex-col gap-controls">
-        {(["sm", "default"] as const).map((size) => (
+        {(["sm", "md"] as const).map((size) => (
           <div key={size} className="flex gap-group">
             {names.map((name) => (
               <InitialsAvatar key={name} name={name} size={size} />

@@ -2,7 +2,7 @@ import * as React from "react"
 import * as AvatarPrimitive from "@ui-sdk/react/avatar"
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive"
 import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
-import { scaleStep, type WithDefault } from "#avenue/lib/control";
+import { scaleStep } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -16,8 +16,8 @@ function Avatar({
   size,
   ...props
 }: Loose<React.ComponentProps<typeof AvatarPrimitive.Avatar>> & {
-  /** `sm` 24, `md` 32 (the default) or `lg` 40. `"default"` is deprecated: use md (AVE-152). */
-  size?: WithDefault<"sm" | "md" | "lg"> | undefined
+  /** `sm` 24, `md` 32 (the default) or `lg` 40. */
+  size?: "sm" | "md" | "lg" | undefined
 }) {
   return (
     <AvatarPrimitive.Avatar

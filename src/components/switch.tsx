@@ -1,6 +1,6 @@
 import { Switch as SwitchPrimitive, SwitchThumb } from "@ui-sdk/react/switch";
 import type { ComponentProps } from "react";
-import { scaleStep, type WithDefault } from "#avenue/lib/control";
+import { scaleStep } from "#avenue/lib/control";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose } from "#avenue/lib/props";
 
@@ -16,8 +16,8 @@ function Switch({
   size,
   ...props
 }: Loose<ComponentProps<typeof SwitchPrimitive>> & {
-  /** `md` (the default) or `sm`. `"default"` is deprecated: use md (AVE-152). */
-  size?: WithDefault<"sm" | "md"> | undefined;
+  /** `md` (the default) or `sm`. */
+  size?: "sm" | "md" | undefined;
 }) {
   return (
     <SwitchPrimitive
