@@ -86,6 +86,25 @@ function Pairs({ items }: { items: readonly (readonly [string, string, string])[
   );
 }
 
+const text = [
+  ["foreground", "text-foreground", "Typed text and body copy"],
+  ["muted-foreground", "text-muted-foreground", "Secondary text: hints, meta, captions"],
+  ["placeholder", "text-placeholder", "A field's placeholder, at least 2:1 from typed text (AVE-186)"],
+] as const;
+
+function TextColors() {
+  return (
+    <div className="flex flex-col gap-group rounded-xl border bg-card p-3 shadow-card">
+      {text.map(([name, cls, use]) => (
+        <div key={name} className="flex flex-wrap items-baseline gap-group">
+          <Code className="w-40 text-foreground">{name}</Code>
+          <span className={cn("text-compact", cls)}>{use}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SemanticColors() {
   return (
     <Page title="Semantic colours">
@@ -97,6 +116,9 @@ function SemanticColors() {
       </Section>
       <Section title="Surfaces">
         <Pairs items={surfaces} />
+      </Section>
+      <Section title="Text" note="On a card. Each reaches 4.5:1 on the page, card and muted fill in both themes.">
+        <TextColors />
       </Section>
     </Page>
   );

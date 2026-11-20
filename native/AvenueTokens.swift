@@ -20,6 +20,7 @@ public enum AvenueTokens {
         public let secondaryForeground: UInt32
         public let muted: UInt32
         public let mutedForeground: UInt32
+        public let placeholder: UInt32
         public let accent: UInt32
         public let accentForeground: UInt32
         public let success: UInt32
@@ -77,6 +78,7 @@ public enum AvenueTokens {
         secondaryForeground: 0x141419,
         muted: 0xF7F7F7,
         mutedForeground: 0x45464D,
+        placeholder: 0x45464D,
         accent: 0xF3F3F3,
         accentForeground: 0x141419,
         success: 0x36763D,
@@ -134,6 +136,7 @@ public enum AvenueTokens {
         secondaryForeground: 0xE5E5EA,
         muted: 0x1E1F25,
         mutedForeground: 0xAFB0B7,
+        placeholder: 0x93959D,
         accent: 0x2B2C33,
         accentForeground: 0xE5E5EA,
         success: 0x57985D,
@@ -193,6 +196,7 @@ public enum AvenueTokens {
         secondaryForeground: 0x141419,
         muted: 0xE5E5EA,
         mutedForeground: 0x45464D,
+        placeholder: 0x45464D,
         accent: 0xE5E5EA,
         accentForeground: 0x141419,
         success: 0x36763D,
@@ -250,6 +254,7 @@ public enum AvenueTokens {
         secondaryForeground: 0xE5E5EA,
         muted: 0x2B2C33,
         mutedForeground: 0xAFB0B7,
+        placeholder: 0x93959D,
         accent: 0x2B2C33,
         accentForeground: 0xE5E5EA,
         success: 0x57985D,

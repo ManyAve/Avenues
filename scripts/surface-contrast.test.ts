@@ -16,6 +16,8 @@ const SURFACE = 3;
 const REGION = 2;
 const LIFT = 1.5;
 const BODY = 4.5;
+/** NEI-103's "visibly lighter than typed text": a placeholder at least 2:1 from foreground, so it can't pass for a value. */
+const HINT = 2;
 
 type Pair = [kind: "distinct" | "contrast", fg: string, bg: string, floor: number, why: string];
 
@@ -33,6 +35,10 @@ const PAIRS: Pair[] = [
   ["contrast", "muted-foreground", "card", BODY, "secondary text on a card"],
   ["contrast", "muted-foreground", "muted", BODY, "secondary text and a placeholder on a muted fill"],
   ["contrast", "accent-foreground", "accent", BODY, "text on a hovered row"],
+  ["contrast", "placeholder", "foreground", HINT, "a placeholder reads dimmer than typed text (AVE-186)"],
+  ["contrast", "placeholder", "muted", BODY, "a placeholder on a muted fill"],
+  ["contrast", "placeholder", "card", BODY, "a placeholder in a field on a card"],
+  ["contrast", "placeholder", "background", BODY, "a placeholder in a field on the page"],
 ];
 
 const tokens = readDeclarations(await Bun.file("src/styles/tokens.css").text());
@@ -71,5 +77,21 @@ describe("lifted surfaces (AVE-115)", () => {
     expect(below(THEME_SCOPES.dark)).toEqual([
       "muted on card 0 < 3: a field's fill and an inset fill are seen on a card",
     ]);
+  });
+});
+
+describe("placeholder (AVE-186)", () => {
+  const placeholderMisses = (scopes: readonly string[]) => below(scopes).filter((miss) => miss.startsWith("placeholder "));
+
+  for (const [theme, scopes] of Object.entries(THEME_SCOPES)) {
+    test(`${theme}: a placeholder is 2:1 from typed text and 4.5:1 on muted, card and page`, () => {
+      expect(placeholderMisses(scopes)).toEqual([]);
+    });
+  }
+
+  test("dark muted-foreground would miss, so the placeholder needs its own colour there", () => {
+    const vars = merge(tokens, [...THEME_SCOPES.dark]);
+    const ratio = wcagContrast(parse(substitute("var(--muted-foreground)", vars))!, parse(substitute("var(--foreground)", vars))!);
+    expect(ratio).toBeLessThan(HINT);
   });
 });

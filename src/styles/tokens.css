@@ -131,6 +131,10 @@
   --muted: var(--color-onyx-100);
 
   --muted-foreground: var(--color-onyx-700);
+  /* An empty field's hint text (AVE-186): every field's placeholder reads it (Input, Textarea, Search input, Select,
+     Combobox). Its own job, not secondary text, though light shares its grey: at least 2:1 from typed text and 4.5:1 on
+     the field, page and card, in light, dark and lifted (scripts/surface-contrast.test.ts). */
+  --placeholder: var(--color-onyx-700);
   --accent: var(--color-onyx-100);
   --accent-foreground: var(--color-onyx-900);
 
@@ -211,6 +215,8 @@
   --secondary-foreground: var(--color-onyx-100);
   --muted: var(--color-onyx-800);
   --muted-foreground: var(--color-onyx-300);
+  /* AVE-186: muted-foreground is only 1.72:1 from typed text here, so an example could pass for a value. */
+  --placeholder: var(--color-onyx-400);
   --accent: var(--color-onyx-750);
   --accent-foreground: var(--color-onyx-100);
 

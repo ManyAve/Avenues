@@ -17,8 +17,8 @@ export function measureFieldContrast(field: HTMLInputElement | HTMLTextAreaEleme
 
 /**
  * The rule's thresholds. "At least 4.5:1" is WCAG's AA minimum for text. "Visibly lighter" is held to a number so a
- * test can fail it: the placeholder has at most 70% of typed text's contrast. Today it has about half (0.47 light,
- * 0.58 dark).
+ * test can fail it: the placeholder has at most 70% of typed text's contrast. Light has about half (0.47), dark 0.42
+ * since AVE-186's placeholder token (0.58 before, when it was muted-foreground).
  */
 export const PLACEHOLDER_MIN_CONTRAST = 4.5;
 export const PLACEHOLDER_MAX_SHARE_OF_TYPED = 0.7;
