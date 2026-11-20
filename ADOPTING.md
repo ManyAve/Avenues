@@ -183,7 +183,7 @@ Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-s
 ## Context menus
 
 Avenue has no `ContextMenu*` family: a context menu is a Menu opened from a `MenuContextTrigger` area, ui-sdk's part
-(AVE-153, v0.39.0). It opens at the pointer on right-click, on a long press on touch, and from Shift+F10 or the
+(AVE-153, v0.40.0). It opens at the pointer on right-click, on a long press on touch, and from Shift+F10 or the
 context-menu key when the area has focus, and it stays a popover on phones. To replace shadcn's or Radix's:
 
 | shadcn / Radix | Avenue (`components/menu`) |

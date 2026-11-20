@@ -1,6 +1,6 @@
 {
   "name": "@manyave/avenue",
-  "version": "0.39.0",
+  "version": "0.40.0",
   "private": true,
   "description": "Avenue, ManyAve's design system: tokens, foundations, components and composites, shown in Storybook.",
   "type": "module",
@@ -59,8 +59,8 @@
     "tailwindcss": "^4.3.0"
   },
   "dependencies": {
-    "@ui-sdk/core": "0.1.0-beta.7",
-    "@ui-sdk/react": "0.1.0-beta.7",
+    "@ui-sdk/core": "0.1.0-beta.13",
+    "@ui-sdk/react": "0.1.0-beta.13",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "lucide-react": "^1.77.0",
@@ -100,6 +100,6 @@
   },
   "packageManager": "bun@1.4.5",
   "patchedDependencies": {
-    "@ui-sdk/core@0.1.0-beta.7": "patches/@ui-sdk%2Fcore@0.1.0-beta.7.patch"
+    "@ui-sdk/core@0.1.0-beta.13": "patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch"
   }
 }
