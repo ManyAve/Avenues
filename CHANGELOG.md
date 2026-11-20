@@ -4,6 +4,19 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.41.0 (2026-11-20)
+
+- **Avenue's class rules run inside oxlint** (AVE-171). The `avenue-check-classes` command is gone; the same rules
+  now come from oxlint-tailwindcss, which reads the app's real Tailwind build. Apps add `@manyave/avenue/oxlint` to
+  their oxlint config's `extends` and name their own CSS entry (ADOPTING.md, "Class rules"). What fails:
+  - any class that makes no CSS under the theme, with the near name it meant: Avenue's retired corners
+    (`rounded-2xl` → "Did you mean rounded-xl?"), typos and missing tokens, which the old command never caught;
+  - off-grid spacing (`gap-1.5`, `py-1.25`) and literal breakpoints (`max-[700px]:`), each with its fix;
+  - `hit-area` beside an `after:` class in one string (Avenue's own small rule, `avenue/hit-area-after`).
+  The rules show as editor squiggles where the oxc extension runs. Nothing to change in a screen that passed the old
+  command. No pixel moves: Avenue's four `break-words` became `wrap-break-word`, which makes the same CSS
+  (`overflow-wrap: break-word`).
+
 ## v0.40.3 (2026-11-20)
 
 - **A toast stays above an open bottom sheet in Chromium 159** (AVE-169). In Chromium 159 (Chrome's next release), a

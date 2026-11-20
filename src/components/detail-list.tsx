@@ -71,7 +71,7 @@ function DetailListDetail({ className, render, ...props }: OwnPartProps<"dd">) {
     mergeProps(
       {
         "data-slot": "detail-list-detail",
-        className: cn("break-words whitespace-pre-line text-muted-foreground select-text", className),
+        className: cn("wrap-break-word whitespace-pre-line text-muted-foreground select-text", className),
       },
       defined(props),
     ),
@@ -153,7 +153,7 @@ function ListItemContent({ className, render, ...props }: OwnPartProps<"div">) {
 function ListItemTitle({ className, render, ...props }: OwnPartProps<"p">) {
   return renderElement(
     "p",
-    mergeProps({ "data-slot": "list-item-title", className: cn("font-[550] break-words", className) }, defined(props)),
+    mergeProps({ "data-slot": "list-item-title", className: cn("font-[550] wrap-break-word", className) }, defined(props)),
     render,
   );
 }

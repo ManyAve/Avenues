@@ -24,11 +24,14 @@ test("cn knows every Avenue text size", () => {
 });
 
 test("conflicts resolve with Avenue's names", () => {
+  // The web-* sizes are :root variables (tokens.css), not @theme, so `text-web-card` makes no CSS in Avenue itself; this
+  // line only tests that cn reads it as a font size, for an app whose theme defines it.
+  // oxlint-disable-next-line tailwindcss/no-unknown-classes
   expect(cn("text-web-card", "text-muted-foreground")).toBe("text-web-card text-muted-foreground");
   expect(cn("text-meta", "text-muted-foreground")).toBe("text-meta text-muted-foreground");
   expect(cn("h-control-sm", "h-8")).toBe("h-8");
   // AVE-45: every control height and the controls gap give way to a class passed in.
-  for (const size of ["xs", "sm", "md", "lg"]) expect(cn(`h-control-${size}`, "h-8")).toBe("h-8");
+  for (const height of ["h-control-xs", "h-control-sm", "h-control-md", "h-control-lg"]) expect(cn(height, "h-8")).toBe("h-8");
   expect(cn("gap-controls", "gap-2")).toBe("gap-2");
   expect(cn("-mx-inset -mb-inset", "-mx-2")).toBe("-mb-inset -mx-2");
   expect(cn("p-inset", "p-0")).toBe("p-0");

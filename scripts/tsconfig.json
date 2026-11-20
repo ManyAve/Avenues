@@ -1,5 +1,5 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": { "types": ["bun"] },
-  "include": [".", "../vitest.config.ts"]
+  "compilerOptions": { "types": ["bun"], "allowJs": true, "checkJs": true },
+  "include": [".", "../vitest.config.ts", "../oxlint.config.ts", "../lint"]
 }

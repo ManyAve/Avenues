@@ -344,14 +344,14 @@ export const BesideManagement: Story = {
               <span className="block size-7 rounded-full bg-accent" />
             </span>
             <div className="flex min-w-0 max-w-[82%] flex-col items-start gap-0.5">
-              <p className="min-w-0 max-w-full rounded-[1rem] bg-foreground/10 px-3 py-[6px] text-control break-words whitespace-pre-wrap text-foreground">
+              <p className="min-w-0 max-w-full rounded-[1rem] bg-foreground/10 px-3 py-[6px] text-control wrap-break-word whitespace-pre-wrap text-foreground">
                 {dmThread.messages[0]!.body}
               </p>
             </div>
           </div>
           <div className="flex flex-row-reverse items-end gap-[6px]">
             <div className="flex min-w-0 max-w-[82%] flex-col items-end gap-0.5">
-              <p className="min-w-0 max-w-full rounded-[1rem] bg-primary px-3 py-[6px] text-control break-words whitespace-pre-wrap text-primary-foreground">
+              <p className="min-w-0 max-w-full rounded-[1rem] bg-primary px-3 py-[6px] text-control wrap-break-word whitespace-pre-wrap text-primary-foreground">
                 {dmThread.messages[3]!.body}
               </p>
             </div>

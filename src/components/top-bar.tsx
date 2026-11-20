@@ -189,7 +189,7 @@ function TopBarOrg({ className, render, ...props }: OwnPartProps<"span">) {
     mergeProps(
       {
         "data-slot": "top-bar-org",
-        className: cn("min-w-0 max-w-fit flex-1 break-words px-1 text-muted-foreground uppercase", className),
+        className: cn("min-w-0 max-w-fit flex-1 wrap-break-word px-1 text-muted-foreground uppercase", className),
       },
       defined(props),
     ),
