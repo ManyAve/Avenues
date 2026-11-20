@@ -4,6 +4,13 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.40.1 (2026-11-20)
+
+- **Avenue type-checks with TypeScript 7.1's beta** (AVE-168). The native compiler Avenue checks its own code with
+  moves from 7.0.2 to 7.1.0-beta. It found nothing new to fix, and the full local check passes on it. Only Avenue's
+  own type check changes: no component, prop, token or story moves, and the published types are the same. Nothing to
+  change in the apps.
+
 ## v0.40.0 (2026-11-20)
 
 - **Context menus** (AVE-153). `MenuContextTrigger`, ui-sdk's part, turns an area into a context menu: it opens the
