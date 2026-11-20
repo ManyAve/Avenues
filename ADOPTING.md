@@ -180,6 +180,28 @@ Menu items and toasts take ui-sdk's names (AVE-151, v0.31.0); the old ones still
 
 Button's `variant="destructive"` stays: it picks one of Button's looks, and ui-sdk has no look props.
 
+## Context menus
+
+Avenue has no `ContextMenu*` family: a context menu is a Menu opened from a `MenuContextTrigger` area, ui-sdk's part
+(AVE-153, v0.39.0). It opens at the pointer on right-click, on a long press on touch, and from Shift+F10 or the
+context-menu key when the area has focus, and it stays a popover on phones. To replace shadcn's or Radix's:
+
+| shadcn / Radix | Avenue (`components/menu`) |
+| --- | --- |
+| `ContextMenu` | `Menu` |
+| `ContextMenuTrigger` (`asChild`) | `MenuContextTrigger`, with `tabIndex={0}` and a name (`render` replaces `asChild`) |
+| `ContextMenuContent` | `MenuContent` |
+| `ContextMenuItem`, `…CheckboxItem`, `…RadioGroup`, `…RadioItem` | `MenuItem`, `MenuCheckboxItem`, `MenuRadioGroup`, `MenuRadioItem` |
+| `ContextMenuLabel`, `ContextMenuGroup`, `ContextMenuSeparator`, `ContextMenuShortcut` | `MenuGroupLabel`, `MenuGroup`, `MenuSeparator`, `MenuShortcut` |
+| `ContextMenuSub`, `…SubTrigger`, `…SubContent` | `MenuSub`, `MenuSubTrigger`, `MenuSubContent` |
+| `onSelect` on an item | `onSelect` (or `value` and the Menu's `onAction`) |
+| `variant="destructive"` on an item | `destructive`, plus `data-agent-confirm="<what it does>"` |
+
+Give each row its own `Menu` with its area named for the row, like the row's own words: the open menu takes its name
+from the area, which is how an agent and a screen reader tell one row's menu from another's. Put `MenuContent` beside
+the area, never inside it: a right-click inside the open menu would move it. In a table, where the area is the row
+(`render={<TableRow />}`), pass `container={document.body}` to `MenuContent`, since a `tbody` takes only rows. See Components / Menu / Context Menu and Context Menu In A Table.
+
 ## One size scale
 
 Every control that comes in steps takes xs / sm / md / lg, the steps of the `h-control-*` tokens, with md the default
