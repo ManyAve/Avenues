@@ -19,6 +19,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   popups on whole pixels itself, so only the fix for the first click after a dialog closes remains (beta.13 still
   swallows that click). An app that installs ui-sdk itself moves it to beta.13 too.
 
+## v0.38.4 (2026-11-20)
+
+- **Routine tool releases** (AVE-165). lucide-react moves to 1.77 (Avenue now asks for `^1.77.0`), and Avenue's own
+  tools move to Bun 1.4.5, oxlint 1.94 and Vitest 5.1.1. No component changes and no story looks different. Nothing
+  to change in the apps; an app that pins an older lucide-react gets 1.77 the next time it installs Avenue.
+
 ## v0.38.3 (2026-11-20)
 
 - **AvenueUI builds in Swift 6 language mode** (AVE-174). `Package.swift` declares `swift-tools-version: 6.0`, so the
