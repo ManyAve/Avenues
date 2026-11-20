@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 // Avenue's SwiftUI components for the ManyAve iPhone apps (README, "Native apps"). The web components can't run on a
 // phone (ui-sdk is web only), so these are SwiftUI views with the web components' names, options and look, built on
 // the generated tokens in native/AvenueTokens.swift. Add this repository as a Swift package and `import AvenueUI`.

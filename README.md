@@ -304,7 +304,11 @@ is built on the Material 3 control (its ripple, focus, TalkBack role and 48dp to
   no slot for.
 - The source compiles with the older of the two apps' toolchains (Kotlin 2.0, AGP 8.9, Compose BOM 2024.12), so an
   app copies `native/android/avenue/src/main/kotlin/com/manyave/avenue/` and `native/AvenueTokens.kt` into its own
-  source from the tag it installs, with a script, as with the tokens. It needs `material3`, nothing else.
+  source from the tag it installs, with a script, as with the tokens. It needs `material3`, nothing else. The module
+  itself builds with the newest tools (Gradle, AGP, the Kotlin compiler, Paparazzi) and holds that floor with Kotlin's
+  language and API level pinned to 2.0 and the BOM held at 2024.12.01, so source that needs anything newer fails here
+  first (`native/android/build.gradle.kts` says why). Kotlin 2.5 can't compile at level 2.0, so the compiler stays on
+  2.4 until Neighbors raises its own.
 - `bun run native:android` builds the module, runs its unit tests (tint and initials match the web's) and records
   each component with Paparazzi in light and dark on a 393dp phone, writing
   `native/screenshots/android/<slug>-<light|dark>.png` for the side-by-side stories. `bun run native:android:check`
@@ -334,7 +338,9 @@ module is `AvenueUI`, not `Avenue`, because the Neighbors app already has a type
 rebuild is here; everything else stays the platform's own control (the `Foundations/Native` table).
 
 An app adds the repository as a Swift package at the tag it uses, the same tag as its web install
-(`.package(url: "https://github.com/ManyAve/Avenues", exact: "<version>")`).
+(`.package(url: "https://github.com/ManyAve/Avenues", exact: "<version>")`). The package builds in Swift 6 language mode,
+with its data-race checks (`swift-tools-version: 6.0`, AVE-174), so the app needs Xcode 16 or later to read it; the
+app's own code keeps whatever language mode it sets.
 
 **Seeing them.** `AvenueCatalog` shows every component in each of its states with fictional data, for an Xcode
 preview or a debug screen. `bun run native:ios` (`scripts/native-ios.ts`, a Mac with Xcode only; `check` doesn't run

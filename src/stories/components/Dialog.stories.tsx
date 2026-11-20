@@ -57,6 +57,10 @@ export const Open: Story = {
     const dialog = await screen.findByRole("dialog", { name: "Record payment" });
     await expect(dialog).toHaveAttribute("aria-modal", "true");
     const close = screen.getByRole("button", { name: "Close" });
+    // Measure the settled dialog, not its opening zoom: under load it was still at scale 0.95 (data-starting-style),
+    // and the close button measured 15px from the corner (AVE-175).
+    await waitFor(() => expect(dialog).not.toHaveAttribute("data-starting-style"));
+    await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
     const box = dialog.getBoundingClientRect();
     const button = close.getBoundingClientRect();
     await expect(Math.round(box.right - button.right)).toBe(16);
