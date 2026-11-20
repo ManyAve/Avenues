@@ -1343,6 +1343,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-display-options--open": [{ label: "display options", app: "primitives-displayoptions--default", appCrop: "[data-slot=popover-content]", avenueCrop: "[data-slot=popover-content]", allow: DISPLAY_OPTIONS }],
   "composites-display-options--keyboard-flow": { none: BEHAVIOUR("Display options / Open") },
   "composites-display-options--nothing-to-export": { none: STATE_ONLY("Export unavailable with its reason", "Display options / Open") },
+  "composites-display-options--on-a-phone": { none: "Display options / Open on a 390px phone, where Row height's three heights share the full-width popover's row (AVE-176; the app's popover spills them past its edge); compared through Display options / Open." },
 
   // ---- Composites (AVE-9)
   "composites-form-dialog--open": [

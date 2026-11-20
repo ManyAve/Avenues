@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.40.2 (2026-11-20)
+
+- **Display options fits a phone** (AVE-176). At 390px the Row height buttons ran about 25px past the popover's right
+  edge, because their three equal columns are wider than a phone. Under 640px the popover now takes the screen's full
+  width and the three heights share its row, each at least as wide as its label and check; on a 320px phone,
+  Comfortable wraps to a second line rather than spill. Nothing moves from 640px up. Nothing to change in the apps.
+  See Composites / Display options / On a phone.
+
 ## v0.40.1 (2026-11-20)
 
 - **Avenue type-checks with TypeScript 7.1's beta** (AVE-168). The native compiler Avenue checks its own code with
