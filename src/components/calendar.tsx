@@ -118,7 +118,7 @@ export function CalendarGrid({ className, ...props }: Loose<ComponentProps<typeo
 export function CalendarWeekday({ className, ...props }: Loose<ComponentProps<typeof CalendarWeekdayPrimitive>>) {
   return (
     <CalendarWeekdayPrimitive
-      className={cn("py-1 text-[11px] font-emphasis text-muted-foreground", className)}
+      className={cn("py-1 text-meta font-emphasis text-muted-foreground", className)}
       {...defined(props)}
     />
   );

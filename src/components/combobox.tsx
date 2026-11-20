@@ -579,7 +579,7 @@ function ComboboxItem<T = string>({ value, className, children, label, meta, ...
         // and ui-sdk sets it empty.
         <span
           aria-hidden
-          className="col-start-1 flex size-4 shrink-0 items-center justify-center rounded-xs border border-muted-foreground transition-colors group-data-[selected]/combobox-item:border-primary group-data-[selected]/combobox-item:bg-primary group-data-[selected]/combobox-item:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/combobox-item:bg-primary"
+          className="col-start-1 flex size-4 shrink-0 items-center justify-center rounded-xs border border-control-outline transition-colors group-data-[selected]/combobox-item:border-primary group-data-[selected]/combobox-item:bg-primary group-data-[selected]/combobox-item:text-primary-foreground dark:bg-input/30 dark:group-data-[selected]/combobox-item:bg-primary"
         >
           <Ui.ComboboxItemIndicator className="grid place-content-center [&>svg]:size-3.5">
             <CheckIcon aria-hidden />

@@ -65,7 +65,7 @@ export const GroupOnACard: Story = {
     <Rows>
       {(["sm", "md", "lg"] as const).map((size) => (
         <Row key={size} label={size}>
-          <div className="rounded-xl bg-card p-inset ring-1 ring-foreground/10">
+          <div className="rounded-xl bg-card p-inset ring-1 ring-border">
             <AvatarGroup data-testid={`group-${size}`} aria-label="Committee">
               {["RA", "SO", "LM", "DK"].map((initials) => (
                 <Avatar key={initials} size={size}>

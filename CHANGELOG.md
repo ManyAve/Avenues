@@ -4,6 +4,26 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.45.0 (2026-11-20)
+
+- **Components follow Avenue's own elevation, type and motion rules** (AVE-183). These move pixels on purpose:
+  - Popover, Menu and its submenus, HoverCard, the Select and Combobox popup, the typing bubble and Dock cast
+    `shadow-popover`, the shadow ui-sdk's parts already cast, in place of Tailwind's `shadow-md` and `shadow-lg`.
+  - One edge colour for a surface: Card, the popups and the modal surface draw `ring-border`, as SectionCard and
+    Toast already did, in place of `ring-foreground/10` (the same in light; a little quieter in dark). Tabs keeps its
+    underline as an inset shadow in `border`, because a scrolling list clips a real border.
+  - Calendar's weekday letters and MonthGrid's weekday names are `text-meta`, not `text-[11px]`: nothing in Avenue is
+    under the 14px floor. MonthGrid's names drop their capitals and letter spacing.
+  - Progress fills in `duration-slow` (200ms), not 300ms.
+  - Button's outline variant fills with shadcn's `bg-input/30` in dark, not the card's surface.
+- **New colour: `control-outline`** (`border-control-outline`), the outline of an unchecked Checkbox, Radio, Switch
+  and the Combobox's check box. It holds 3:1 on the page, a card, a popover and a muted fill in every theme and
+  surface (`scripts/surface-contrast.test.ts`), and ui-sdk's `--ui-input` reads it. It is the same onyx step as
+  `muted-foreground` today, so nothing moves, but it is no longer tied to text: a change to `muted-foreground` leaves
+  outlines alone. Exported to native as `control-outline`. To change in the apps: an outline drawn with
+  `border-muted-foreground` on a control becomes `border-control-outline`.
+- Button's secondary hover stays a commented `color-mix` literal: one use, so not a token (docs/tokens.md).
+
 ## v0.44.1 (2026-11-20)
 
 - **A field's placeholder has its own token, and reads dimmer than typed text in dark** (AVE-186). Input, Textarea,

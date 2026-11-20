@@ -9,7 +9,7 @@
   --ui-muted: var(--muted);
   --ui-muted-foreground: var(--muted-foreground);
   --ui-border: var(--border);
-  --ui-input: var(--input);
+  --ui-input: var(--control-outline); /* ui-sdk asks --ui-input to reach 3:1 on --ui-background (styles.md); input doesn't */
   --ui-primary: var(--primary);
   --ui-primary-foreground: var(--primary-foreground);
   --ui-destructive: var(--destructive);

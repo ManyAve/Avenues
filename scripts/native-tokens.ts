@@ -64,6 +64,7 @@ export const COLOR_ROLES = [
   "slate-subtle-foreground",
   "border",
   "input",
+  "control-outline",
   "ring",
   "chart-1",
   "chart-2",

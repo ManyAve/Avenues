@@ -62,7 +62,7 @@ const meta = {
     onValueChange: fn(),
   },
   render: (args) => (
-    <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-md pointer-coarse:w-auto">
+    <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-popover pointer-coarse:w-auto">
       <Calendar {...args} />
     </div>
   ),
@@ -145,7 +145,7 @@ export const Controlled: Story = {
     const [picked, setPicked] = useState<string | null>(null);
     return (
       <div className="grid gap-3">
-        <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-md pointer-coarse:w-auto">
+        <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-popover pointer-coarse:w-auto">
           <Calendar {...args} value={picked} onValueChange={(value) => setPicked(typeof value === "string" ? value : null)} />
         </div>
         <p className="text-meta text-muted-foreground" aria-live="polite">
@@ -180,7 +180,7 @@ export const Agent: Story = {
  */
 export const Parts: Story = {
   render: (args) => (
-    <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-md pointer-coarse:w-auto">
+    <div className="w-[248px] rounded-xl border bg-popover p-3 text-popover-foreground shadow-popover pointer-coarse:w-auto">
       <Calendar {...args}>
         <CalendarHeader>
           <CalendarHeading />

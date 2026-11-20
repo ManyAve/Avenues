@@ -29,10 +29,13 @@ const buttonVariants = cva({
     variant: {
       default: "bg-primary text-primary-foreground hover:bg-primary/80",
       // Dark (AVE-99): the page is darker than a card, so a `bg-background` fill read as a hole on every card. The fill
-      // is the card's own surface (one step lighter than the page), and hover goes one step lighter again, because
-      // `muted` is the card's colour in dark and would show no change.
+      // is shadcn's own `bg-input/30`, which lifts a little off both the page and a card (AVE-183: not `bg-card`, which
+      // is the card's surface, not a button's), and hover goes to `accent`, because `muted` is the card's colour in
+      // dark and would show no change.
       outline:
-        "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-card dark:hover:bg-accent dark:aria-expanded:bg-accent",
+        "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-input/30 dark:hover:bg-accent dark:aria-expanded:bg-accent",
+      // Hover darkens the fill by 5% of the foreground. One use, so a commented literal, not a token (docs/tokens.md):
+      // shadcn's `secondary/80` lightens it toward the card in light mode, where it would show less, not more.
       secondary:
         "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
       ghost:

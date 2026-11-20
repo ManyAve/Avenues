@@ -43,6 +43,7 @@ public enum AvenueTokens {
         public let slateSubtleForeground: UInt32
         public let border: UInt32
         public let input: UInt32
+        public let controlOutline: UInt32
         public let ring: UInt32
         public let chart1: UInt32
         public let chart2: UInt32
@@ -101,6 +102,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0x3F4F60,
         border: 0xE4E4E4,
         input: 0xD4D4D4,
+        controlOutline: 0x45464D,
         ring: 0x7359A6,
         chart1: 0x7359A6,
         chart2: 0x5B715B,
@@ -159,6 +161,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0xABC0D7,
         border: 0x2B2C33,
         input: 0x36373E,
+        controlOutline: 0xAFB0B7,
         ring: 0x8F7AB8,
         chart1: 0x8F7AB8,
         chart2: 0x718E71,
@@ -219,6 +222,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0x3F4F60,
         border: 0xE4E4E4,
         input: 0xD4D4D4,
+        controlOutline: 0x45464D,
         ring: 0x7359A6,
         chart1: 0x7359A6,
         chart2: 0x5B715B,
@@ -277,6 +281,7 @@ public enum AvenueTokens {
         slateSubtleForeground: 0xABC0D7,
         border: 0x2B2C33,
         input: 0x36373E,
+        controlOutline: 0xAFB0B7,
         ring: 0x8F7AB8,
         chart1: 0x8F7AB8,
         chart2: 0x718E71,
