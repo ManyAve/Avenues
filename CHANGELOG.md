@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.42.0 (2026-11-20)
+
+- **A tap on a sheet as it fades in no longer closes it** (AVE-180). With reduced motion asked for, a sheet (a phone's
+  Select, Combobox or long-list Table filter) opens in place and fades in. A mouse or pen press in its first 150ms was
+  read by ui-sdk as grabbing a sheet still rising from the bottom, and closed the sheet as a swipe. A new hunk in
+  Avenue's ui-sdk patch lands the sheet where it is drawn when a press arrives during that fade. It is why the Table
+  filter's "Long list, sheet open" story sometimes captured with its sheet closed. Nothing looks different.
+- **Swap the ui-sdk patch.** In the app, copy `patches/@ui-sdk%2Fcore@0.1.0-beta.13.patch` from the tag over the
+  app's copy; `avenue-check-patches` fails until you do.
+
 ## v0.41.7 (2026-11-20)
 
 - **`@manyave/avenue/oxlint` ships its types** (AVE-181). `lint/classes.d.mts` types `avenueClasses()` (returns

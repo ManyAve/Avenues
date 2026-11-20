@@ -122,3 +122,38 @@ index a615ec6776ed11da0c1a3426e1ad5d347aa80beb..c88fd91f0adb77469d6b745bd5feaed1
        }
      },
      { capture: true }
+diff --git a/dist/foundation/popups/sheet-pointer.js b/dist/foundation/popups/sheet-pointer.js
+index 9dab30cf6441fc7d455ba968de555126791ec268..879225b4b06409d539259b76e3a3100c0942a423 100644
+--- a/dist/foundation/popups/sheet-pointer.js
++++ b/dist/foundation/popups/sheet-pointer.js
+@@ -258,6 +258,14 @@ function createPointerDriver(options) {
+       schedule();
+     }
+   }
++  // Avenue patch (AVE-180): with reduced motion a sheet opens in place and fades in, but its state still rises from
++  // closed along a spring, so a press during the 150ms fade caught it as if grabbed near the bottom and the release
++  // closed it as a swipe. A press during the opening fade lands the sheet where it is drawn first.
++  function landFade() {
++    if (fade && !closing && state.phase === "settling" && state.targetIndex >= 0) {
++      finishSettle();
++    }
++  }
+   function isIgnored(target) {
+     return target instanceof Element && target.closest(ignoredTargets) !== null;
+   }
+@@ -275,6 +283,7 @@ function createPointerDriver(options) {
+     if (!options.owns(event.target) || isIgnored(event.target)) {
+       return;
+     }
++    landFade();
+     const first = event.changedTouches[0];
+     touch = {
+       id: first.identifier,
+@@ -380,6 +389,7 @@ function createPointerDriver(options) {
+     if (!options.owns(target) || isIgnored(target) || !(target instanceof Element) || !options.canMouseDrag(target)) {
+       return;
+     }
++    landFade();
+     pointerId = event.pointerId;
+     mouseDragged = false;
+     caught = state.phase === "settling" && state.targetIndex >= 0 ? targetId : null;
