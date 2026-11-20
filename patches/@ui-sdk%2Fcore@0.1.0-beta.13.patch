@@ -1,5 +1,88 @@
+diff --git a/dist/components/checkbox/checkbox.js b/dist/components/checkbox/checkbox.js
+index c8f66b9edea92525448d4a50df038343b6ab2a68..9040129b5ed9214eee14568f03fbd9e09d9aa57c 100644
+--- a/dist/components/checkbox/checkbox.js
++++ b/dist/components/checkbox/checkbox.js
+@@ -1,5 +1,5 @@
+ // src/components/checkbox/checkbox.ts
+-import { animateIn, animateOut } from "../../foundation/motion/presence.js";
++import { animateInTogether as animateIn, animateOut } from "../../foundation/motion/presence.js";
+ import { createController } from "../../foundation/kernel/controller.js";
+ import { deriveFromOptions } from "../../foundation/kernel/derive.js";
+ import { definePrimitive } from "../../foundation/kernel/primitive.js";
+diff --git a/dist/foundation/motion/presence.js b/dist/foundation/motion/presence.js
+index e0e85c2ce4ab28b98d7823a40bbd95c6d30c1473..f0cfa59d85c48fe8265b8e9112303c6bfdf2eb7e 100644
+--- a/dist/foundation/motion/presence.js
++++ b/dist/foundation/motion/presence.js
+@@ -4,10 +4,57 @@ var pendingResets = /* @__PURE__ */ new WeakMap();
+ function animateIn(el, done) {
+   pendingResets.get(el)?.();
+   const running = el.getAnimations?.({ subtree: true }).filter(isTransition);
+-  const settled = running?.every((animation) => targetOf(animation) !== el);
+   el.setAttribute("data-starting-style", "");
++  return startedIn(el, done, running);
++}
++// Avenue patch (MANA-1235): animateIn asks the box for its animations before and after it writes
++// data-starting-style, and each ask makes the browser bring the page's styles and animation list up to date. Checking
++// 500 boxes in one render (a "Confirm all") asked 1,000 times, each time over every animation the earlier boxes had
++// started: 25 seconds. animateInTogether gathers the checkbox indicators that enter in one render into a microtask
++// (still before paint) and asks the document once before all the writes and once after. Drop this patch once ui-sdk
++// batches upstream.
++var entering = [];
++function animateInTogether(el, done) {
++  pendingResets.get(el)?.();
++  const entry = { el, done, dropped: false, stop: void 0 };
++  if (entering.push(entry) === 1) {
++    queueMicrotask(enterTogether);
++  }
++  return () => {
++    entry.dropped = true;
++    entry.stop?.();
++  };
++}
++function enterTogether() {
++  const batch = entering.filter((entry) => !entry.dropped);
++  entering = [];
++  const running = transitionsWithin(batch);
++  for (const { el } of batch) {
++    el.setAttribute("data-starting-style", "");
++  }
++  const started = transitionsWithin(batch);
++  batch.forEach((entry, i) => {
++    entry.stop = startedIn(entry.el, entry.done, running[i], started[i]);
++  });
++}
++function transitionsWithin(batch) {
++  const doc = batch[0]?.el.ownerDocument;
++  if (!doc?.getAnimations) {
++    return batch.map(() => void 0);
++  }
++  const byTarget = /* @__PURE__ */ new Map();
++  for (const animation of doc.getAnimations()) {
++    const target = targetOf(animation);
++    if (target && isTransition(animation)) {
++      byTarget.set(target, [...byTarget.get(target) ?? [], animation]);
++    }
++  }
++  return batch.map(({ el }) => [el, ...el.querySelectorAll("*")].flatMap((node) => byTarget.get(node) ?? []));
++}
++function startedIn(el, done, running, started) {
++  const settled = running?.every((animation) => targetOf(animation) !== el);
+   if (running && settled) {
+-    for (const animation of el.getAnimations({ subtree: true })) {
++    for (const animation of started ?? el.getAnimations({ subtree: true })) {
+       if (isTransition(animation) && !running.some((moving) => continues(animation, moving))) {
+         animation.finish();
+       }
+@@ -145,6 +192,7 @@ function animateOut(el, done) {
+ }
+ export {
+   animateIn,
++  animateInTogether,
+   animateOut,
+   writeOpen
+ };
 diff --git a/dist/foundation/platform/layers.js b/dist/foundation/platform/layers.js
-index 0a5024561ec68097c6885e44c11131584ab1248b..25054c1096c5a2701fe79a8947c18c589a3a8390 100644
+index a615ec6776ed11da0c1a3426e1ad5d347aa80beb..c88fd91f0adb77469d6b745bd5feaed17330c7a4 100644
 --- a/dist/foundation/platform/layers.js
 +++ b/dist/foundation/platform/layers.js
 @@ -142,7 +142,10 @@ function listen(doc, win) {
