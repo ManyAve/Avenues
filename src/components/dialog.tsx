@@ -72,6 +72,9 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           modalSurface,
+          // A content with a DialogBody is a column, so the body shrinks and scrolls between the header and footer
+          // (AVE-190); without one it stays a grid that scrolls whole, as before.
+          "has-data-[slot=dialog-body]:flex has-data-[slot=dialog-body]:flex-col has-data-[slot=dialog-body]:overflow-hidden",
           "fixed top-1/2 right-auto bottom-auto left-1/2 z-overlay grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-fast backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
@@ -102,6 +105,25 @@ function DialogHeader({ className, render, ...props }: OwnPartProps<"div">) {
       {
         "data-slot": "dialog-header",
         className: cn("flex flex-col gap-2 pe-8", className),
+      },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+/**
+ * The part that scrolls when the content is taller than the screen, so the title and the footer's actions stay in
+ * view (AVE-190). Put everything between DialogHeader and DialogFooter in it. It reaches the dialog's edges, so focus
+ * rings aren't clipped.
+ */
+function DialogBody({ className, render, ...props }: OwnPartProps<"div">) {
+  return renderElement(
+    "div",
+    mergeProps(
+      {
+        "data-slot": "dialog-body",
+        className: cn("-mx-inset -my-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-inset py-1", className),
       },
       defined(props),
     ),
@@ -162,6 +184,7 @@ function DialogDescription({ className, ...props }: Loose<ComponentProps<typeof 
 
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,

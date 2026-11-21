@@ -1023,6 +1023,12 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: NEW_IN_AVENUE("The Drawer for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
     ]),
   ),
+  ...Object.fromEntries(
+    ["resting-heights", "page-usable-at-peek"].map((story) => [
+      `components-drawer--${story}`,
+      { none: NEW_IN_AVENUE("A bottom sheet with peek, half and full resting heights (AVE-191)", "Drawer / Bottom on phone (the same sheet and handle)") },
+    ]),
+  ),
 
   // ---- Tabs (AVE-117): the sent announcement dialog's line tabs
   "components-tabs--default": [
@@ -1101,6 +1107,12 @@ export const PAIRS: Record<string, PairEntry> = {
     ["phone-long-error", "phone-action-and-close", "phone-above-sheet-footer"].map((story) => [
       `components-toast--${story}`,
       { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
+    ]),
+  ),
+  ...Object.fromEntries(
+    ["swipe-follows", "swipe-away"].map((story) => [
+      `components-toast--${story}`,
+      { none: "A swipe (AVE-192): the app's toast doesn't move with a swipe, and these stories end at rest or with the toast gone, so there is nothing new to compare." },
     ]),
   ),
   "components-toast--without-a-provider": {

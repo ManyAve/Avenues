@@ -4,6 +4,8 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.52.0 (2026-11-21)
+
 - **The theme choice is remembered, with no flash** (AVE-193). New `@manyave/avenue/components/preferences`:
   `createColorScheme()` (ui-sdk's color scheme on `<html>`, saved in local storage under `avenue-color-scheme`),
   `Preferences` (ui-sdk's, which now also puts Avenue's `.dark` on `<html>` and follows the computer under System),
@@ -11,6 +13,34 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   importable from a build config as `@manyave/avenue/preferences-script`. `ModeToggle` takes `colorScheme` to show and
   set it; `value`, `defaultValue` and `onValueChange` work as before. ADOPTING.md, "Remember the theme", has the
   steps. Nothing changes for an app until it adopts it; no pixel changes.
+
+## v0.51.0 (2026-11-21)
+
+- **A dialog's middle can scroll on its own, keeping the title and the actions in view** (AVE-190). New part
+  `DialogBody`: put everything between `DialogHeader` and `DialogFooter` in it, and when the content is taller than the
+  screen only the body scrolls, so the title stays at the top and the footer's Save stays at the bottom. Before, the
+  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. Management's
+  `DetailDialog` (the board's new-event dialog, MANA-1271) wraps its children in `DialogBody`. `FormDialog` and
+  `Drawer` already did this with `FormDialogBody` and `DrawerBody`.
+
+## v0.50.1 (2026-11-21)
+
+- **A swiped toast follows the finger** (AVE-192). ui-sdk already let a toast be swiped down to dismiss it, but
+  Avenue's toast sat still under the finger and then vanished. Now it moves with a finger, mouse or pen drag, eases
+  back if it's let go short of dismissing, and carries on down as it fades when the swipe dismisses it. Under reduced
+  motion it still follows the drag and leaves without the slide. Its text can no longer be selected, so a mouse drag
+  that starts on the message swipes instead of selecting. Nothing changes at rest, and apps change nothing.
+
+## v0.50.0 (2026-11-21)
+
+- **A bottom sheet can rest at peek, half and full** (AVE-191). Pass ui-sdk's `snapPoints` to `Drawer`, like
+  `[0.25, 0.5, 1]`, with `defaultSnapPoint` for where it opens; give `DrawerContent` a height (`h-[85dvh]`) when full
+  should mean the sheet's whole limit. With more than one snap point the handle is ui-sdk's `DrawerHandle`, a button
+  named "Resize": a press moves to the next height, the arrow keys step, Home and End go to the ends, and screen
+  readers on phones adjust it like a slider. `modalAbove` leaves the page behind usable and undimmed while the sheet
+  rests at or below that point. A sheet with one height (every sheet today) keeps the decorative bar, as ui-sdk
+  advises, so nothing changes for the apps until they pass `snapPoints`. Stories: Drawer › Resting heights, Page
+  usable at peek.
 
 ## v0.49.0 (2026-11-21)
 
