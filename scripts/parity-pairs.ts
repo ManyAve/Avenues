@@ -547,6 +547,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-dialog--escape-blocked-while-pending": { none: BEHAVIOUR("Dialog / Open") },
   "components-dialog--click-right-after-close": { none: BEHAVIOUR("Dialog / Open") },
+  "components-dialog--long-content-scrolls-in-body": { none: "AVE-190: DialogBody, a part the app has no counterpart for yet; the dialog's own look is compared through Dialog / Open." },
 
   // ---- Disclosure (AVE-7): CollapsibleSection's disclosure variant since AVE-154 removed Disclosure; its story ends closed.
   "components-collapsible-section--disclosure": [
@@ -1144,6 +1145,9 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-modetoggle--without-dev": { none: "The mode toggle without the Dev segment; the app's stories always show it. The segments are compared through ModeToggle / Default." },
   "components-modetoggle--by-keyboard": { none: BEHAVIOUR("ModeToggle / Default") },
+  "components-preferences--remembers-the-choice": { none: BEHAVIOUR("ModeToggle / Default") },
+  "components-preferences--follows-the-computer": { none: BEHAVIOUR("ModeToggle / Default") },
+  "components-preferences--controlled-wins": { none: BEHAVIOUR("ModeToggle / Default") },
   "components-modetoggle--refuses-a-change": { none: BEHAVIOUR("ModeToggle / Default") },
   "components-navtab--default": [{ label: "nav tab", app: "primitives-navtab--default", allow: NAV_TAB }],
   "components-navtab--current": [{ label: "current nav tab", app: "primitives-navtab--current", allow: NAV_TAB }],

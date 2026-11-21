@@ -437,6 +437,36 @@ that use it, rather than adding a one-off.
 In plain CSS the same values are `var(--font-weight-emphasis)`, `var(--transition-duration-fast)`,
 `var(--z-index-overlay)` and `var(--overlay)`.
 
+## Remember the theme (AVE-193)
+
+Avenue saves the theme choice and puts it on the page before the first paint, with ui-sdk's Preferences, so an app no
+longer stores the theme or toggles `.dark` itself. Three pieces, all from `@manyave/avenue/components/preferences`:
+
+1. **One color scheme for the page**, in a module of its own: `export const colorScheme = createColorScheme()`. It is
+   ui-sdk's `createColorScheme` on `<html>`, kept in local storage under `avenue-color-scheme`; System (the default)
+   follows the computer. Pass `storage` to keep an existing key, like `createLocalStorage("theme")`.
+2. **`<Preferences preferences={[colorScheme]}>` around the app.** It puts `data-color-scheme` and Avenue's `.dark` on
+   `<html>` and keeps them current, under System too. `<ModeToggle colorScheme={colorScheme} />` shows and sets the
+   choice; `value` and `onValueChange` still work, and `details.cancel()` keeps the old choice. Read the choice
+   elsewhere with `usePreference(colorScheme)` (`value`, plus `resolved`, the theme on screen).
+3. **The first-paint script in `index.html`**, so a saved Dark never flashes light. Avenue's apps render in the
+   browser, so it goes in from the build config, which imports the plain-JavaScript half of the same module:
+
+```ts
+// vite.config.ts
+import { colorSchemeScript } from "@manyave/avenue/preferences-script";
+
+const avenueTheme = {
+  name: "avenue-theme",
+  transformIndexHtml: () => [{ tag: "script", children: colorSchemeScript(), injectTo: "head-prepend" as const }],
+};
+// plugins: [avenueTheme, ...]
+```
+
+Give `colorSchemeScript` the same `storage` as the app's scheme. With other page-wide preferences, use
+`preferencesScript([colorScheme, ...])` instead. A Content Security Policy that blocks inline scripts needs the
+script's hash or a nonce.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

@@ -36,6 +36,7 @@ import type * as input from "#avenue/components/input";
 import type * as menu from "#avenue/components/menu";
 import type * as messageList from "#avenue/components/message-list";
 import type * as modeToggle from "#avenue/components/mode-toggle";
+import type * as preferences from "#avenue/components/preferences";
 import type * as message from "#avenue/components/message";
 import type * as money from "#avenue/components/money";
 import type * as monthGrid from "#avenue/components/month-grid";
@@ -98,6 +99,7 @@ export type Modules = {
   "menu": typeof menu;
   "message-list": typeof messageList;
   "mode-toggle": typeof modeToggle;
+  "preferences": typeof preferences;
   "message": typeof message;
   "money": typeof money;
   "month-grid": typeof monthGrid;
