@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.56.0 (2026-11-21)
+
+- **Menus and tooltips write a shortcut the way each computer does** (AVE-194). `MenuItem` takes ui-sdk's `shortcut`
+  (`"mod+d"`): the row ends in ⌘D on a Mac and Ctrl+D elsewhere, hidden from screen readers, and the item gets
+  `aria-keyshortcuts` (Meta+D or Control+D), which they hear instead. New `TooltipShortcut` does the same inside a
+  tooltip from the Tooltip's `shortcut`, with `aria-keyshortcuts` on the trigger. Both only show the keys: bind them
+  where the action lives with ui-sdk's `useShortcut` (`@ui-sdk/react/shortcuts`). `MenuShortcut` with text you write
+  yourself is unchanged, so no existing pixels move; to move to the new form, replace `<MenuShortcut>⌘E</MenuShortcut>`
+  with `shortcut="mod+e"` on the item. `CommandShortcut` already used ui-sdk's formatting and is unchanged. New stories:
+  Menu / Shortcuts on a Mac, Menu / Shortcuts elsewhere, Tooltip / With a shortcut.
+
 ## v0.55.0 (2026-11-21)
 
 - **New component: Command, and the ⌘K command palette** (AVE-197). `@manyave/avenue/components/command` is ui-sdk's

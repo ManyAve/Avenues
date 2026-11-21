@@ -682,6 +682,8 @@ export const PAIRS: Record<string, PairEntry> = {
     none: "AVE-112: the app has no story of a fixed-width menu on a 320px phone; this story proves the menu stays on screen.",
   },
   "components-menu--open-by-click": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--shortcuts-on-a-mac": { none: BEHAVIOUR("Menu / Open") },
+  "components-menu--shortcuts-elsewhere": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--action-from-keyboard": { none: BEHAVIOUR("Menu / Open") },
   "components-menu--context-menu": {
     none: "AVE-153: Management draws no context menu; Neighbors' is Radix (NEI-213) until it moves to this one. Items and surface are Menu / Open's.",
@@ -897,6 +899,7 @@ export const PAIRS: Record<string, PairEntry> = {
     },
   ],
   "components-tooltip--on-focus": { none: BEHAVIOUR("Tooltip / Open") },
+  "components-tooltip--with-a-shortcut": { none: BEHAVIOUR("Tooltip / Open") },
   "components-tooltip--help-on-a-label": {
     none: "The help icon beside a label is an Avenue pattern; the app's tooltips sit on toolbar buttons. The tooltip panel is compared through Tooltip / Open.",
   },
