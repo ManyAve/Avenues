@@ -1122,7 +1122,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- Toast (AVE-8)
   ...Object.fromEntries(
-    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current", "action-gets-ten-seconds", "error-not-hidden-by-success", "empty-region", "progress", "focuses-action", "keeps-focus-without-focus-option", "lifted-above-bar"].map((story) => [
+    ["success", "success-with-action", "action-runs", "action-keeps-it-while-focused", "error-shown", "error-stays", "new-replaces-current", "action-gets-ten-seconds", "error-not-hidden-by-success", "empty-region", "progress", "focuses-action", "focused-toast-escape", "keyboard-close-returns-focus", "keeps-focus-without-focus-option", "lifted-above-bar"].map((story) => [
       `components-toast--${story}`,
       {
         none: "The app's Toast stories raise a toast only inside their play function and it has left by the time the story reports rendered, so there is no resting toast to capture. Compared by eye when AVE-8 ported it.",
@@ -1292,6 +1292,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-register--row-action-clicked-dialog-then-tab": { none: BEHAVIOUR("Register / Wide and Alert dialog / Open") },
   "composites-register--click-moves-the-stop": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--rows-go-away": { none: BEHAVIOUR("Register / Wide") },
+  "composites-register--remove-row-by-keyboard": { none: BEHAVIOUR("Register / Wide") },
   "composites-register--field-keeps-its-keys": { none: BEHAVIOUR("Register / Wide and Input / Default") },
   "composites-register--combobox-in-cell": { none: BEHAVIOUR("Register / Wide and Combobox / Households") },
 

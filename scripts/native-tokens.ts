@@ -9,11 +9,11 @@
  * Colours resolve the cascade the way a browser does (light = :root then :root:not(.dark); dark = :root, .dark, then
  * :root.dark) and convert OKLCH to sRGB with culori, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
  * which are points on iOS and dp (sp for text) on Android. Spacing takes the phone (coarse pointer) and narrow-screen
- * values, since that's where the apps run. Shadows, the modal overlay and the colour-mix colours are left out:
+ * values, since that's where the apps run. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
  * phones draw elevation and selection with the platform's own.
  */
 import { resolve } from "node:path";
-import { formatHex, parse } from "culori";
+import { formatHex, interpolate, parse, type Color } from "culori";
 import { readDeclarations, type Declaration } from "./css-tokens";
 
 export const root = resolve(import.meta.dir, "..");
@@ -23,7 +23,7 @@ export const OUTPUTS = {
   json: "native/tokens.json",
 } as const;
 
-type Vars = Map<string, string>;
+export type Vars = Map<string, string>;
 
 /** Semantic colour roles, by their web names. The palette ramps and the desktop sidebar stay web only. */
 export const COLOR_ROLES = [
@@ -151,11 +151,44 @@ export function substitute(value: string, vars: Vars, seen: Set<string> = new Se
   });
 }
 
-/** A CSS colour (here `oklch(...)`) to sRGB `#rrggbb`, clipping each channel to the sRGB gamut as a browser does. */
-export function toHex(value: string): string {
+/** Splits a CSS function's arguments on its top-level commas, so `oklch(...)` arguments stay whole. */
+function splitArgs(args: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "(") depth++;
+    else if (args[i] === ")") depth--;
+    else if (args[i] === "," && depth === 0) {
+      parts.push(args.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(args.slice(start).trim());
+  return parts;
+}
+
+/**
+ * A resolved CSS colour as culori's colour: a plain colour, or `color-mix(in oklab, <a> <p>%, <b>)` (accent mixes primary
+ * into the popover, AVE-215), mixed in OKLab the way the browser mixes it. Only the one-percentage form Avenue writes.
+ */
+export function toColour(value: string): Color {
+  const mix = /^color-mix\(\s*in oklab\s*,(.*)\)$/s.exec(value.trim());
+  if (mix?.[1]) {
+    const [first, second] = splitArgs(mix[1]);
+    const weighted = first && /^(.*\S)\s+([\d.]+)%$/s.exec(first);
+    if (!weighted?.[1] || !weighted[2] || !second) throw new Error(`Unsupported color-mix: ${value}`);
+    const share = Number.parseFloat(weighted[2]) / 100;
+    return interpolate([toColour(weighted[1]), toColour(second)], "oklab")(1 - share);
+  }
   const color = parse(value);
   if (!color) throw new Error(`Not a colour: ${value}`);
-  return formatHex(color);
+  return color;
+}
+
+/** A CSS colour (`oklch(...)` or Avenue's `color-mix`) to sRGB `#rrggbb`, clipping each channel to the sRGB gamut as a browser does. */
+export function toHex(value: string): string {
+  return formatHex(toColour(value));
 }
 
 /** A length in rem or px, or `calc(<length> * <n>)`, in CSS pixels. */

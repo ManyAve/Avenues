@@ -75,7 +75,9 @@ async function archive(notice: Notice) {
 - **Show an error when Undo fails**, as for any failed step: `toast("Couldn't restore the notice. Try again.",
   { type: "error" })`.
 - **`focus: true`** only when the control the person used is gone (the row they archived from vanished), so focus
-  lands on Undo instead of falling to the page. Otherwise focus stays where it is and F6 reaches the toast.
+  lands on Undo instead of falling to the page. Give `returnFocus` with it, for where focus goes once the toast closes:
+  the row Undo brought back, or the nearest row left (AVE-196). Otherwise focus stays where it is and F6 reaches the
+  toast.
 
 Undo is reachable by keyboard (F6, then Enter), by pointer, and by an agent: ui-sdk's bridge lists the toast by its
 title with Undo among its buttons (`act({ steps: [{ ref: "Notice archived", action: "press", args: ["Undo"] }] })`).

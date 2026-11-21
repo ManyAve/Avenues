@@ -14,7 +14,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
+import { floatingEdge, popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 
@@ -81,8 +81,7 @@ function MenuContextTrigger({ className, id, ...props }: Loose<ComponentProps<ty
   );
 }
 
-const menuSurface =
-  "max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-popover ring-1 ring-border outline-none";
+const menuSurface = `max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-popover outline-none ${floatingEdge}`;
 
 function MenuContent({
   align = "start",
