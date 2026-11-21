@@ -575,6 +575,57 @@ button and the status line follow it:
   loading.
 - Not yet checked on a device: an iPhone and an Android phone with the app installed (AVE-200).
 
+## Frame a photo before saving it (AVE-206)
+
+`@manyave/avenue/components/image-cropper` lets someone frame a photo before it's saved: a profile photo in a round
+frame, a logo in a square one. It's ui-sdk's ImageCropper, in frame mode by default, and Save writes the file with
+ui-sdk's `cropImage`. Open it in a Dialog when FileField hands you a photo:
+
+```tsx
+<FileField id="profile-photo" label="Profile photo" kind="image" file={saved} onFileChange={(file) => openCropper(file)} />
+<Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent finalFocus="#profile-photo [data-slot=file-input-trigger]">
+    <DialogHeader>
+      <DialogTitle>Frame your photo</DialogTitle>
+      <DialogDescription>Drag it or use the arrow keys to move it, and plus and minus to zoom.</DialogDescription>
+    </DialogHeader>
+    <ImageCropper
+      aria-label="Profile photo"
+      src={pickedUrl}
+      shape="circle"
+      maxZoom={4}
+      onCrop={(file) => upload(file)}
+      onUseOriginal={() => upload(picked)}
+      className="max-w-none"
+    >
+      <ImageCropperViewport>
+        <ImageCropperImage alt={photoAlt} />
+        <ImageCropperSelection>
+          <ImageCropperGrid />
+        </ImageCropperSelection>
+      </ImageCropperViewport>
+      <ImageCropperZoom />
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+        <ImageCropperUseOriginal />
+        <ImageCropperSave options={{ width: 256 }} />
+      </DialogFooter>
+    </ImageCropper>
+  </DialogContent>
+</Dialog>
+```
+
+- **Cropping is optional**: always show ImageCropperUseOriginal ("Use photo as is") beside ImageCropperSave. The frame
+  starts centred.
+- **Send focus back to the field's button** with `finalFocus`, as above, so the person lands where they started, and
+  give FileField the cropped file's object URL so its thumbnail shows the crop.
+- `onCrop` gets the file and the crop; return the upload's Promise and Save stays pending until it settles. A round
+  frame writes a round PNG (transparent corners), so keep PNG or WebP for it.
+- Give `aria-label` to the cropper ("Profile photo"): the frame is named after it and its shape ("Profile photo, round
+  frame"). Give ImageCropperImage the photo's own `alt`.
+- Arrows pan, plus and minus zoom and R turns the photo, and each is said politely ("Zoom 150%", "Moved left").
+- Not yet checked on a device: pinch to zoom on an iPhone and an Android phone (AVE-206).
+
 ## Dates and times (AVE-202)
 
 Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a
