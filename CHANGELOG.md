@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+- **The theme choice is remembered, with no flash** (AVE-193). New `@manyave/avenue/components/preferences`:
+  `createColorScheme()` (ui-sdk's color scheme on `<html>`, saved in local storage under `avenue-color-scheme`),
+  `Preferences` (ui-sdk's, which now also puts Avenue's `.dark` on `<html>` and follows the computer under System),
+  `usePreference`, and `preferencesScript` / `colorSchemeScript` for the first-paint script in `index.html`, also
+  importable from a build config as `@manyave/avenue/preferences-script`. `ModeToggle` takes `colorScheme` to show and
+  set it; `value`, `defaultValue` and `onValueChange` work as before. ADOPTING.md, "Remember the theme", has the
+  steps. Nothing changes for an app until it adopts it; no pixel changes.
+
 ## v0.49.0 (2026-11-21)
 
 - **An agent's changes can be undone as a whole** (AVE-214). An app that turns on ui-sdk's agent bridge and

@@ -16,6 +16,10 @@
     "./utils": "./src/lib/utils.ts",
     "./format": "./src/lib/format.ts",
     "./table-filters": "./src/lib/table-filters.ts",
+    "./preferences-script": {
+      "types": "./src/lib/preferences-script.d.mts",
+      "default": "./src/lib/preferences-script.mjs"
+    },
     "./checks/*": "./src/checks/*.ts",
     "./oxlint": {
       "types": "./lint/classes.d.mts",
@@ -30,6 +34,7 @@
       "development": "./src/lib/dev.ts",
       "default": "./src/lib/dev-stub.ts"
     },
+    "#avenue/lib/preferences-script": "./src/lib/preferences-script.mjs",
     "#avenue/lib/*": "./src/lib/*.ts",
     "#avenue/hooks/*": "./src/hooks/*.ts",
     "#avenue/components/*": "./src/components/*.tsx",

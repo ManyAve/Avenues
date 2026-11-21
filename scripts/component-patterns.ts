@@ -138,6 +138,9 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     upstream: "menu",
     note: "AVE-123: ui-sdk's menu, popover, select, checkbox and input in the toolbar's focus order, wired without changing their keys; a long choice list is ui-sdk's combobox with `multiple`, its input in the popup (AVE-155). The Table filter stories add, edit and remove filters by keyboard; Table filter / Agent and Long list agent are its agent tests.",
   },
+  preferences: {
+    none: "No control of its own: ui-sdk's Preferences, plus Avenue's `.dark` on <html>. ModeToggle is the control; the Preferences stories test the saved choice by keyboard, the first-paint script and System following the computer.",
+  },
   "mode-toggle": { upstream: "segmented-control", note: "Dev is a ui-sdk toggle; the theme is Avenue's single-choice ToggleGroup (the radio-group pattern, AVE-17)." },
   "search-input": {
     upstream: "input",

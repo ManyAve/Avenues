@@ -3,6 +3,7 @@ import type { SegmentedControlValueChangeReason } from "@ui-sdk/react/segmented-
 import type { TogglePressedChangeReason } from "@ui-sdk/react/toggle";
 import { Code, Monitor, Moon, Sun } from "lucide-react";
 import { useState } from "react";
+import { type ColorScheme, usePreference } from "#avenue/components/preferences";
 import { Toggle } from "#avenue/components/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#avenue/components/toggle-group";
 import type { ChangeDetails } from "#avenue/lib/change";
@@ -34,6 +35,11 @@ const themeItems = [
  * `on<Key>Change` pattern. Each callback gets ui-sdk's details second; `details.cancel()` keeps the old state when
  * the toggle holds it itself.
  *
+ * `colorScheme` (AVE-193) lets the toggle drive a color scheme from `createColorScheme`: it shows the scheme's choice
+ * and the theme on screen, and sets the scheme on a change, which saves it and, through `Preferences`, puts `.dark` on
+ * the page. `value` still wins when given, and `onValueChange` still hears the change first, so `details.cancel()`
+ * keeps the old choice in the scheme too.
+ *
  * Behavior from ui-sdk: Dev is a single Toggle (pressed or not; a group of one would be announced as a group), and
  * the theme, through Avenue's ToggleGroup, is a single choice (ui-sdk's SegmentedControl, a radio group: one Tab stop, the arrow keys choose).
  *
@@ -51,6 +57,7 @@ function ModeToggle({
   value,
   defaultValue,
   onValueChange,
+  colorScheme,
   className,
   render,
   ...props
@@ -65,10 +72,14 @@ function ModeToggle({
   value?: ThemeChoice | undefined;
   defaultValue?: ThemeChoice | undefined;
   onValueChange?: ((value: ThemeChoice, details: ThemeChangeDetails) => void) | undefined;
+  /** A color scheme from `createColorScheme` to show and set, which remembers the choice (AVE-193). */
+  colorScheme?: ColorScheme | undefined;
 }) {
   const [ownTheme, setOwnTheme] = useState(defaultValue);
   const [ownDev, setOwnDev] = useState(defaultDev);
-  const selected = value ?? ownTheme ?? theme ?? "light";
+  const scheme = useColorScheme(colorScheme);
+  const onScreen = scheme?.resolved === "unknown" ? undefined : scheme?.resolved;
+  const selected = value ?? scheme?.value ?? ownTheme ?? theme ?? onScreen ?? "light";
   const devOn = dev ?? ownDev;
   return renderElement(
     "span",
@@ -101,7 +112,9 @@ function ModeToggle({
               const item = themeItems.find((i) => i.value === next);
               if (!item) return;
               onValueChange?.(item.value, details);
-              if (!details.canceled) setOwnTheme(item.value);
+              if (details.canceled) return;
+              setOwnTheme(item.value);
+              colorScheme?.set(item.value, details.event ? { reason: details.reason, event: details.event } : { reason: details.reason });
             }}
             aria-label="Theme"
             className="text-meta"
@@ -118,6 +131,12 @@ function ModeToggle({
     }),
     render,
   );
+}
+
+/** A color scheme's state, or nothing without one; `usePreference` is a hook, so it reads a stand-in that never changes. */
+const noScheme = { get: () => undefined, initialState: undefined, subscribe: () => () => {} };
+function useColorScheme(colorScheme: ColorScheme | undefined) {
+  return usePreference<ReturnType<ColorScheme["get"]> | undefined>(colorScheme ?? noScheme);
 }
 
 export { ModeToggle };
