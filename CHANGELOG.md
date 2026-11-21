@@ -4,6 +4,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.63.0 (2026-11-21)
+
+- **New component: Pull to refresh** (AVE-200). `@manyave/avenue/components/pull-to-refresh`: pull a list down from its
+  top to reload it, for apps installed on a phone's home screen, where the browser's own pull to refresh is gone. Built
+  on ui-sdk core's `bindDrag`, `rubberBand` and `solveSpring` as the `pull-to-refresh` primitive. `PullToRefresh` is the
+  root and takes `onRefresh`, which returns a Promise that drives the progress (AVE-150); its parts are
+  `PullToRefreshContent` (the list a finger pulls, with its indicator), `PullToRefreshTrigger` (the Refresh button) and
+  `PullToRefreshStatus` (the polite status line: "Refreshing…", "Updated", or the rejection's sentence, "Couldn't
+  refresh. Try again." by default). `usePullToRefresh()` gives the same refresh to a control of the app's own, like a
+  menu item. Only a finger pulls, and only from the top; under reduced motion the list doesn't move and a plain line
+  shows the pull and the loading. Nothing existing changes.
+
 ## v0.62.0 (2026-11-21)
 
 - **New component: Stat** (AVE-210), for the key number that leads a page or a card: "$4,280 collected", "34 of 52
