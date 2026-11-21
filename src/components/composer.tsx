@@ -46,7 +46,7 @@ import { cn } from "#avenue/lib/utils";
  * theme retired, so its field draws square corners; at one line (32px) 14px reads as the pill both apps meant. The
  * field is 32px at one line, Send's height, and field and Send sit gap-controls apart. On a phone both are 44px tall,
  * and the field's text is 16px so iOS doesn't zoom on focus (AVE-29).
- * The banner is `bg-accent` in dark (the app's `bg-muted`), because dark muted is the chat window's own colour and the
+ * The banner is `bg-fill` in dark (the app's `bg-muted`), because dark muted is the chat window's own colour and the
  * banner vanished into it, as the skeleton's did (AVE-128).
  */
 
@@ -223,7 +223,7 @@ function ComposerContext({
         "data-slot": "composer-context",
         "data-kind": kind,
         className: cn(
-          "col-span-full flex min-w-0 items-center gap-2 rounded-lg bg-muted px-2 py-1 text-meta text-foreground dark:bg-accent",
+          "col-span-full flex min-w-0 items-center gap-2 rounded-lg bg-muted px-2 py-1 text-meta text-foreground dark:bg-fill",
           className,
         ),
         children: (

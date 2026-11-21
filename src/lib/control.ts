@@ -8,11 +8,15 @@ import { cva, type VariantProps } from "#avenue/lib/cva";
  * Text (AVE-29): 16px below 768px so iOS doesn't zoom on focus, then `text-control` (14px on both scales) so a field
  * shares one text size with the buttons and chips in its row. The app's `md:text-sm` gave 16px on the web scale.
  *
+ * Focus (AVE-209): the primary border is the indicator (3:1 on every surface), with a soft 20% glow around it, down from
+ * shadcn's 50%. Forced colours drop the glow and repaint the border in the system colour, so focus also draws a 2px
+ * outline there, which forced colours keep.
+ *
  * Invalid styling keys off aria-invalid, which ui-sdk's Field sets on its control, so a screen never
  * styles an error by hand.
  */
 export const controlSurface =
-  "w-full min-w-0 border border-input bg-transparent text-base transition-colors outline-none placeholder:text-placeholder focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:bg-input/50 data-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-control dark:bg-input/30 dark:disabled:bg-input/80 dark:data-disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40";
+  "w-full min-w-0 border border-input bg-transparent text-base transition-colors outline-none placeholder:text-placeholder focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-solid disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:bg-input/50 data-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-control dark:bg-input/30 dark:disabled:bg-input/80 dark:data-disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40";
 
 /**
  * AVE-2 section 2: a control's height decides its corner. xs and sm (24, 28) take the md corner (8px); md and lg

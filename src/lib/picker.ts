@@ -26,7 +26,8 @@ export function fieldControl({ size = "md" }: { size?: PickerSize | null | undef
     // the Combobox's up-down chevron and a leading icon all take it, so Select and Combobox can't drift apart.
     size === "sm" ? "[&_svg:not([class*='size-'])]:size-3.5" : "[&_svg:not([class*='size-'])]:size-4",
     "data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 dark:data-invalid:border-destructive/50 dark:data-invalid:ring-destructive/40",
-    "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50",
+    "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/20",
+    "forced-colors:has-[input:focus-visible]:outline-2 forced-colors:has-[input:focus-visible]:outline-offset-2 forced-colors:has-[input:focus-visible]:outline-solid",
     "has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40",
   );
 }

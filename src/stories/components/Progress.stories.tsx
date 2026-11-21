@@ -32,7 +32,7 @@ async function expectBars() {
   for (const bar of bars()) {
     await expect(bar).toHaveRole("progressbar");
     await expect(bar).toHaveAccessibleName();
-    // Seen on the page or a card, light or dark: muted is the dark card's own colour, so the track is accent.
+    // Seen on the page or a card, light or dark: muted is the dark card's own colour, so the track is fill.
     await expect(getComputedStyle(track(bar)).backgroundColor).not.toBe(surfaceUnder(track(bar)));
     const now = bar.getAttribute("aria-valuenow");
     if (now !== null) {
@@ -272,7 +272,7 @@ export const Phone: Story = {
 
 /**
  * Avenue's bar beside Management's hand-written one (`app/ui/components/activity.tsx`, 8cdf8843, its markup copied
- * here, no import): the same height, corners and fill. The one change is the track, accent not muted, because a
+ * here, no import): the same height, corners and fill. The one change is the track, fill not muted, because a
  * muted track is the dark card's own colour.
  */
 export const BesideManagement: Story = {

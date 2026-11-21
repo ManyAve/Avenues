@@ -15,9 +15,9 @@ import { cn } from "#avenue/lib/utils";
  * its range and value, and the indeterminate state (leave out `value`, or pass `null`); Avenue draws it.
  *
  * Look: Management's activity-card bar (`app/ui/components/activity.tsx`, 8cdf8843): a 6px pill, `bg-primary` fill.
- * The track is `bg-accent`, not Management's `bg-muted`: on the default dark surfaces muted is the card's own colour
+ * The track is `bg-fill`, not Management's `bg-muted`: on the default dark surfaces muted is the card's own colour
  * (onyx-850), so the empty part of a bar inside a dark card vanished and 40% read as a short line, not 40 of 100.
- * Accent is a step off the page and the card in light, dark and lifted surfaces (as Skeleton, AVE-128). The stories
+ * Fill is a step off the page and the card in light, dark and lifted surfaces (as Skeleton, AVE-128). The stories
  * fail if the track matches the surface under it.
  *
  * `size="xs"` is a 4px bar with square ends, laid along an edge (the bottom of a photo while it uploads).
@@ -89,7 +89,7 @@ function ProgressTrack({
   return (
     <ProgressTrackPrimitive
       data-size={size}
-      className={cn("relative w-full basis-full overflow-hidden bg-accent", sizes[size], className)}
+      className={cn("relative w-full basis-full overflow-hidden bg-fill", sizes[size], className)}
       {...defined(props)}
     />
   );

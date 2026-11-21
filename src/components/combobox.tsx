@@ -210,7 +210,7 @@ function PopupInput({ size, icon: _icon, invalid, triggerLabel: _trigger, clearL
 
 // In a sheet, ui-sdk moves the field's input into the sheet's header, where it is a 44px search field of its own.
 const sheetSearch =
-  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/50 dark:sheet:bg-input/30";
+  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/20 forced-colors:sheet:focus-visible:outline-2 forced-colors:sheet:focus-visible:outline-offset-2 forced-colors:sheet:focus-visible:outline-solid dark:sheet:bg-input/30";
 
 function FieldInput({
   size,

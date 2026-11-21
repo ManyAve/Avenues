@@ -16,8 +16,8 @@ function BorderlessCard() {
         Field fill on a card
       </div>
       <div className="flex flex-col gap-2" aria-hidden="true">
-        <div className="h-3 w-2/3 rounded-sm bg-accent" />
-        <div className="h-3 w-1/2 rounded-sm bg-accent" />
+        <div className="h-3 w-2/3 rounded-sm bg-fill" />
+        <div className="h-3 w-1/2 rounded-sm bg-fill" />
       </div>
       <div className="flex items-center justify-between rounded-lg bg-accent px-2 py-1 text-meta text-accent-foreground">
         <span>{second.address}</span>
@@ -57,7 +57,7 @@ function Surfaces() {
       <Section title="What lifted changes">
         <ul className="flex max-w-prose list-disc flex-col gap-1 pl-5 text-meta">
           <li>
-            Light: <Code>background</Code> steps to onyx-50 under white cards; <Code>muted</Code> and <Code>accent</Code>{" "}
+            Light: <Code>background</Code> steps to onyx-50 under white cards; <Code>muted</Code> and <Code>fill</Code>{" "}
             step to onyx-100.
           </li>
           <li>

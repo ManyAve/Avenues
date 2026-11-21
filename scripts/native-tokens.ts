@@ -44,6 +44,7 @@ export const COLOR_ROLES = [
   "placeholder",
   "accent",
   "accent-foreground",
+  "fill",
   "success",
   "success-foreground",
   "success-subtle",

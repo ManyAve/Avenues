@@ -123,8 +123,15 @@
      Combobox). Its own job, not secondary text, though light shares its grey: at least 2:1 from typed text and 4.5:1 on
      the field, page and card, in light, dark and lifted (scripts/surface-contrast.test.ts). */
   --placeholder: var(--color-onyx-700);
-  --accent: var(--color-onyx-100);
+  /* The highlighted or hovered item in a list (AVE-209): Menu, Select, Combobox and Calendar's days. Primary mixed 7% into
+     the popover in oklab, so the one colour in a list means "you're here"; its text stays neutral ink. Clearly lighter
+     than primary-subtle, the chosen look (AVE-50), which it must never pass for (ΔE 7.0 apart in light, 8.1 in dark). */
+  --accent: oklch(0.961 0.007 297.84);
   --accent-foreground: var(--color-onyx-900);
+  /* A quiet neutral shape a step off its surface (AVE-209): a skeleton, a progress track, a quoted reply, the composer's
+     reply banner and an outline button's dark hover. accent's grey until AVE-209 tinted accent; these stay neutral.
+     No -foreground of its own: text on it is the surface's (foreground, muted-foreground), held in surface-contrast. */
+  --fill: var(--color-onyx-100);
 
   /* The four states (success, info, warning, destructive), each a fill, a subtle fill and their text, as one set:
      a state Avenue's own components draw once or not at all is still one an app shows (Status, Badge, Callout).
@@ -218,8 +225,10 @@
   --muted-foreground: var(--color-onyx-300);
   /* AVE-186: muted-foreground is only 1.72:1 from typed text here, so an example could pass for a value. */
   --placeholder: var(--color-onyx-400);
-  --accent: var(--color-onyx-750);
+  /* 10% in dark, not 7%: at 7% the tint sat closer to the popover (ΔE 3.2) than the grey it replaces (4.2). */
+  --accent: oklch(0.268 0.022 289.71);
   --accent-foreground: var(--color-onyx-100);
+  --fill: var(--color-onyx-750);
 
   --success: oklch(0.62 0.11 146);
   --success-foreground: oklch(0.18 0.03 146);
@@ -288,7 +297,7 @@
   --sidebar: var(--surface-white);
   --primary-foreground: var(--surface-white);
   --muted: oklch(0.977 0 0);
-  --accent: oklch(0.965 0 0);
+  --fill: oklch(0.965 0 0);
   --border: oklch(0.919 0 0);
   --input: oklch(0.87 0 0);
   --shadow-control: 0 1px 1px 0 rgb(0 0 0 / 0.045);
@@ -300,7 +309,7 @@
 :root.dark {
   color-scheme: dark;
   --muted: var(--color-onyx-850);
-  --accent: var(--color-onyx-800);
+  --fill: var(--color-onyx-800);
   --border: var(--color-onyx-800);
   --input: var(--color-onyx-750);
   --shadow-control: 0 1px 1px rgb(0 0 0 / 0.25);
@@ -310,15 +319,15 @@
 
 /* Lifted surfaces (AVE-115), opt in with `data-surface="lifted"` on <html>, or on any element that paints its own
    bg-background. For an app whose cards carry no border: the page steps down to onyx-50 so a white card lifts off it,
-   and the quiet fills (muted, accent: a field's fill, a skeleton, a hover) step down far enough to be seen on a card.
+   and the quiet fills (muted, fill: a field's fill, a skeleton, a progress track) step down far enough to be seen on a card.
    In dark only muted moves, one step up, because the default muted is the card's own colour.
-   Floors (CIEDE2000, scripts/surface-contrast.test.ts): card on page 1.5, muted on page 2, muted, accent, secondary
+   Floors (CIEDE2000, scripts/surface-contrast.test.ts): card on page 1.5, muted on page 2, muted, fill, accent, secondary
    and border on card 3, border on page 3. Without the attribute nothing changes. */
 :root[data-surface="lifted"]:not(.dark),
 :root:not(.dark) [data-surface="lifted"] {
   --background: var(--color-onyx-50);
   --muted: var(--color-onyx-100);
-  --accent: var(--color-onyx-100);
+  --fill: var(--color-onyx-100);
 }
 
 :root.dark[data-surface="lifted"],
