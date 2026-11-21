@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.55.1 (2026-11-21)
+
+- **The highlight is mixed into the popover an app sets, not into white** (AVE-215). `accent` is now
+  `color-mix(in oklab, var(--primary) …, var(--popover))` (7.2% in light, 10% in dark), so on an off-white popover the
+  highlighted row keeps its distance from the surface: on Neighbors' onyx-25 popovers v0.53.0's white-based tint sat 2.9
+  ΔE off the card, under the 3.0 floor; it is now 3.9, as on Avenue's white ones. Avenue's own popovers don't move a
+  pixel (7.2% draws exactly what v0.53.0's rounded literal drew). `scripts/surface-contrast.test.ts` now checks the
+  highlight against `popover` in light, dark and lifted and on an off-white popover. An app that sets `--popover` should
+  set it where `--accent` is declared (`:root`, or the `.dark` element). **Neighbors:** its local `--accent` override in
+  `apps/web/src/styles.css` (NEI-346) can be deleted once it moves to this release; Avenue now makes the same mix from its popover.
+
 ## v0.55.0 (2026-11-21)
 
 - **New component: Command, and the ⌘K command palette** (AVE-197). `@manyave/avenue/components/command` is ui-sdk's
