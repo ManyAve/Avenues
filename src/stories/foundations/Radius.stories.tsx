@@ -146,7 +146,10 @@ function CornerUse() {
         <Rules>
           <Rule why="When an inner curve is rounder than the one it sits in, or closer to it than its own curve, the two fight and the inner element looks jammed in.">
             Concentric when tight: if the gap to the container's edge is smaller than the container's corner, the
-            inner corner is the outer corner minus the gap, rounded down to a step (never below xs).
+            inner corner is the outer corner minus the gap, rounded down to a step (never below xs). Card, Dialog,
+            Alert dialog, Drawer and Popover work it out for you: a part inside them takes{" "}
+            <Code>rounded-nested-lg</Code> (its own corner, lg here), which never draws rounder than the container
+            allows. A Well does this: lg in a card, xs in a small card.
           </Rule>
           <Rule>
             Never rounder than the container. Nothing inside a card is a pill unless it is at least 16px from every

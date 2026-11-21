@@ -76,6 +76,7 @@ import type * as toolbarButton from "#avenue/components/toolbar-button";
 import type * as toolbar from "#avenue/components/toolbar";
 import type * as tooltip from "#avenue/components/tooltip";
 import type * as topBar from "#avenue/components/top-bar";
+import type * as well from "#avenue/components/well";
 
 export type Modules = {
   "alert-dialog": typeof alertDialog;
@@ -149,6 +150,7 @@ export type Modules = {
   "toolbar": typeof toolbar;
   "tooltip": typeof tooltip;
   "top-bar": typeof topBar;
+  "well": typeof well;
 };
 
 /** The keys of P that may be left out. */
