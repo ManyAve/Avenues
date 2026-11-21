@@ -282,3 +282,127 @@ export const UnsavedChanges: Story = {
     await expect(trigger).toHaveFocus();
   },
 };
+
+const nearby = [
+  { name: "Ladder to lend", detail: "Tools · Birch Lane" },
+  { name: "Tomato seedlings", detail: "Free · Alder Court" },
+  { name: "Kids' bike", detail: "For sale · Maple Way" },
+  { name: "Dog walker", detail: "Services · Cedar Row" },
+  { name: "Lost cat, grey", detail: "Lost and found · Elm Street" },
+  { name: "Block party", detail: "Events · Oak Circle" },
+  { name: "Lawn mower", detail: "Wanted · Pine Hollow" },
+  { name: "Bookshelf", detail: "Free · Willow Bend" },
+  { name: "Snow shovel", detail: "For sale · Spruce Way" },
+  { name: "Piano lessons", detail: "Services · Hazel Lane" },
+];
+
+/** Peek, half and full: a quarter of the screen, half, and the sheet's own limit (85% of it). */
+const heights = [0.25, 0.5, 1];
+
+function NearbyListings({ modalAbove }: { modalAbove?: number | undefined }) {
+  const [picked, setPicked] = useState(nearby[0]!.name);
+  return (
+    <div className="flex flex-col gap-4">
+      <ul aria-label="Map pins" className="flex flex-wrap gap-controls">
+        {nearby.slice(0, 4).map((item) => (
+          <li key={item.name}>
+            <Button variant="outline" aria-pressed={picked === item.name} onClick={() => setPicked(item.name)}>
+              {item.name}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <Drawer defaultOpen snapPoints={heights} defaultSnapPoint={0.5} modalAbove={modalAbove}>
+        <DrawerTrigger render={<Button variant="outline" />}>Nearby listings</DrawerTrigger>
+        <DrawerContent className="h-[85dvh]">
+          <DrawerHeader>
+            <DrawerTitle>Nearby listings</DrawerTitle>
+            <DrawerDescription>Showing {picked} first.</DrawerDescription>
+          </DrawerHeader>
+          <DrawerBody>
+            <ul className="flex flex-col gap-3">
+              {nearby.map((item) => (
+                <li key={item.name} className="flex flex-col">
+                  <span className="font-emphasis">{item.name}</span>
+                  <span className="text-meta text-muted-foreground">{item.detail}</span>
+                </li>
+              ))}
+            </ul>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+}
+
+/** Waits for the sheet to settle on a resting height, as written in `snapPoints`. */
+async function expectRestingAt(sheet: HTMLElement, snapPoint: number) {
+  await waitFor(() => expect(sheet).toHaveAttribute("data-snap-point", String(snapPoint)));
+  await waitFor(() => {
+    const top = sheet.getBoundingClientRect().top;
+    const expected = innerHeight - Math.min(snapPoint * innerHeight, sheet.offsetHeight);
+    expect(Math.abs(top - expected)).toBeLessThanOrEqual(1);
+  });
+}
+
+/**
+ * Resting heights (AVE-191): the sheet rests at peek, half or full and opens at half. Its handle is a button named
+ * "Resize": Enter moves to the next height and wraps from full to peek, the arrow keys step one height without
+ * wrapping, Home and End go to peek and full. Dragging or flinging the sheet lands on the same heights.
+ */
+export const RestingHeights: Story = {
+  tags: ["agent"],
+  globals: phone,
+  render: () => <NearbyListings />,
+  play: async () => {
+    const sheet = await screen.findByRole("dialog", { name: "Nearby listings" });
+    await expectRestingAt(sheet, 0.5);
+    const handle = screen.getByRole("button", { name: "Resize" });
+    await expect([handle.getBoundingClientRect().width, handle.getBoundingClientRect().height]).toEqual([36, 4]);
+    handle.focus();
+    await userEvent.keyboard("{ArrowUp}");
+    await expectRestingAt(sheet, 1);
+    await userEvent.keyboard("{ArrowUp}");
+    await expectRestingAt(sheet, 1);
+    await userEvent.keyboard("{Enter}");
+    await expectRestingAt(sheet, 0.25);
+    await userEvent.keyboard("{End}");
+    await expectRestingAt(sheet, 1);
+    await userEvent.keyboard("{Home}");
+    await expectRestingAt(sheet, 0.25);
+    await userEvent.keyboard("{ArrowDown}");
+    await expectRestingAt(sheet, 0.25);
+    await userEvent.keyboard("{ArrowUp}");
+    await expectRestingAt(sheet, 0.5);
+    await expect(handle).toHaveFocus();
+  },
+};
+
+/**
+ * The page stays usable below half: at peek the page behind is undimmed and can be pressed, like a map under a sheet of
+ * results. From half up the sheet is modal again, and back at peek the page is usable again.
+ */
+export const PageUsableAtPeek: Story = {
+  tags: ["agent"],
+  globals: phone,
+  render: () => <NearbyListings modalAbove={0.25} />,
+  play: async ({ canvas }) => {
+    const sheet = await screen.findByRole("dialog", { name: "Nearby listings" });
+    await expectRestingAt(sheet, 0.5);
+    await expect(sheet).toHaveAttribute("aria-modal", "true");
+    const handle = screen.getByRole("button", { name: "Resize" });
+    handle.focus();
+    await userEvent.keyboard("{Home}");
+    await expectRestingAt(sheet, 0.25);
+    await waitFor(() => expect(sheet).toHaveAttribute("data-interactive"));
+    await expect(sheet).not.toHaveAttribute("aria-modal", "true");
+    const pin = canvas.getByRole("button", { name: "Tomato seedlings" });
+    await userEvent.click(pin);
+    await expect(pin).toHaveAttribute("aria-pressed", "true");
+    await expect(sheet).toHaveTextContent("Showing Tomato seedlings first.");
+    handle.focus();
+    await userEvent.keyboard("{ArrowUp}");
+    await expectRestingAt(sheet, 0.5);
+    await waitFor(() => expect(sheet).toHaveAttribute("aria-modal", "true"));
+  },
+};

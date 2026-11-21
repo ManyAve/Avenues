@@ -1023,6 +1023,12 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: NEW_IN_AVENUE("The Drawer for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
     ]),
   ),
+  ...Object.fromEntries(
+    ["resting-heights", "page-usable-at-peek"].map((story) => [
+      `components-drawer--${story}`,
+      { none: NEW_IN_AVENUE("A bottom sheet with peek, half and full resting heights (AVE-191)", "Drawer / Bottom on phone (the same sheet and handle)") },
+    ]),
+  ),
 
   // ---- Tabs (AVE-117): the sent announcement dialog's line tabs
   "components-tabs--default": [
