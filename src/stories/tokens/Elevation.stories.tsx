@@ -22,6 +22,7 @@ const levels = [
 const layers = [
   ["sticky-group", "z-sticky-group", "5", "A sticky group or day bar, which scrolls under the column header"],
   ["sticky", "z-sticky", "10", "A sticky column header"],
+  ["sticky-bar", "z-sticky-bar", "20", "A toolbar, tab bar or page header stuck to the top, above the sticky column headers"],
   ["dock", "z-dock", "40", "The docked windows along the bottom edge"],
   ["overlay", "z-overlay", "50", "Dialogs, alert dialogs, drawers and their backdrop"],
   ["toast", "z-toast", "70", "Toasts, above an open dialog"],

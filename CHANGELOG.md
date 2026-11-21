@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.47.0 (2026-11-21)
+
+- **A layer for a sticky toolbar, tab bar or page header** (AVE-187, AVE-188). New utility `z-sticky-bar` (20),
+  between `z-sticky` (10) and `z-dock` (40): a toolbar, tab bar or page header stuck to the top, which the sticky
+  column headers slide under. Management draws three (the short-screen toolbar, the mobile page header, the
+  announcement reader's tabs) at a hand-written `z-20`; write `z-sticky-bar` there instead (MANA-1241). Neighbors'
+  hub and marketing site headers (`z-40`, `z-50`) take it too. `cn` knows it, and Tokens/Elevation "Layers" shows it.
+  No Avenue component changes.
+
 ## v0.46.0 (2026-11-20)
 
 - **The class rules reject raw values where Avenue has a name** (AVE-184; ADOPTING.md, "Raw values and tokens"). An app

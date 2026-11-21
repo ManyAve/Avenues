@@ -405,6 +405,7 @@ number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn`
 | `duration-slow` | the longest anything moves: a toast (200ms) | `duration-200`, and anything longer |
 | `z-sticky-group` | a sticky group or day bar under the column header (5) | `z-[5]` |
 | `z-sticky` | a sticky column header (10) | `z-10` on a sticky header |
+| `z-sticky-bar` | a toolbar, tab bar or page header stuck to the top, above the sticky column headers (20) | `z-20` on a sticky bar, a sticky page header's `z-40` or `z-50` |
 | `z-dock` | a bar or dock fixed to the bottom edge (40) | `z-40` |
 | `z-overlay` | a dialog, drawer or sheet and its backdrop (50) | `z-50` |
 | `z-toast` | toasts and notices above an open dialog (70) | `z-[60]`, `z-[70]` |
