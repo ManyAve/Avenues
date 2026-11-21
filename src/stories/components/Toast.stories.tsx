@@ -456,3 +456,104 @@ export const WithoutAProvider: Story = {
     }
   },
 };
+
+/**
+ * Drags the toast from the middle of its message with a mouse (pointer events, as ui-sdk reads them): down, `steps`
+ * moves of `step` px each, then up unless `release` is false. Returns the release, for a drag held open.
+ */
+async function drag(toast: HTMLElement, { step, steps, release = true }: { step: number; steps: number; release?: boolean }) {
+  const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+  const title = toast.querySelector<HTMLElement>("[data-slot=toast-title]")!.getBoundingClientRect();
+  const x = title.left + title.width / 2;
+  let y = title.top + title.height / 2;
+  const fire = (type: string, buttons: number) =>
+    toast.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        pointerId: 1,
+        pointerType: "mouse",
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        button: 0,
+        buttons,
+      }),
+    );
+  fire("pointerdown", 1);
+  for (let i = 0; i < steps; i += 1) {
+    y += step;
+    fire("pointermove", 1);
+    await frame();
+  }
+  const up = () => fire("pointerup", 0);
+  if (release) up();
+  return up;
+}
+
+/** The toast, once it has finished entering (its first frame starts 8px low). */
+async function settled() {
+  const toast = await findToast();
+  await waitFor(() => expect(toast).not.toHaveAttribute("data-starting-style"));
+  return toast;
+}
+
+const offset = (toast: HTMLElement) => {
+  const [x = "0px", y = "0px"] = getComputedStyle(toast).translate.split(" ");
+  return { x: Number.parseFloat(x) || 0, y: Number.parseFloat(y) || 0 };
+};
+
+/**
+ * A toast follows a swipe (AVE-192): dragged 30px down from its text, it moves 30px with no transition, and the text
+ * isn't selected. Let go short of dismissing, it settles back where it was and stays.
+ */
+export const SwipeFollows: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    const toast = await settled();
+    await expect(getComputedStyle(toast).userSelect).toBe("none");
+    await expect(offset(toast)).toEqual({ x: 0, y: 0 });
+    const release = await drag(toast, { step: 2, steps: 15, release: false });
+    await expect(toast).toHaveAttribute("data-swiping");
+    await expect(getComputedStyle(toast).transitionDuration).toBe("0s");
+    await expect(offset(toast)).toEqual({ x: 0, y: 30 });
+    await expect(document.getSelection()?.toString() ?? "").toBe("");
+    release();
+    await waitFor(() => expect(toast).not.toHaveAttribute("data-swiping"));
+    await expect(offset(toast)).toEqual({ x: 0, y: 0 });
+    await expect(toastEl()).toBe(toast);
+  },
+};
+
+/**
+ * Swiped down past the threshold, a toast is dismissed and carries on down, past where the finger let go, as it
+ * fades (AVE-192). An upward drag only stretches a little (ui-sdk resists it) and never dismisses.
+ */
+export const SwipeAway: Story = {
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    const toast = await settled();
+    const releaseUp = await drag(toast, { step: -5, steps: 10, release: false });
+    await expect(offset(toast).y).toBeLessThan(0);
+    await expect(offset(toast).y).toBeGreaterThan(-20);
+    releaseUp();
+    await waitFor(() => expect(toast).not.toHaveAttribute("data-swiping"));
+    await expect(toastEl()).toBe(toast);
+
+    // The preview turns transitions off under test, and a toast with nothing to animate unmounts at once. Slow its
+    // transitions as it's let go, so it stays to be measured, and read where its slide ends.
+    const releaseDown = await drag(toast, { step: 10, steps: 6, release: false });
+    toast.style.setProperty("transition-duration", "30s", "important");
+    releaseDown();
+    await expect(toast).toHaveAttribute("data-swipe-direction", "down");
+    const slide = toast
+      .getAnimations()
+      .find((animation) => animation instanceof CSSTransition && animation.transitionProperty === "translate");
+    const end = slide?.effect instanceof KeyframeEffect ? slide.effect.getKeyframes().at(-1) : undefined;
+    // From where it was let go (60px down) to its own height further on.
+    await expect(end?.["translate"]).toBe("0px calc(100% + 60px)");
+    for (const animation of toast.getAnimations()) animation.finish();
+    await gone(2000);
+  },
+};
