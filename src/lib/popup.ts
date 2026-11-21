@@ -15,11 +15,18 @@ export const popupMotion =
 export const popupMaxWidth = "max-w-(--available-width)";
 
 /**
+ * The faint edge of everything that floats (AVE-208): Popover, Hover card, Menu, Select and Combobox lists, Dialog,
+ * AlertDialog and Drawer. A 1px ring of `border-floating`, which melts into `shadow-popover`. Shadows and rings are
+ * dropped in forced-colours mode, so there the surface draws a real 1px border in the system's colour instead.
+ */
+export const floatingEdge = "ring-1 ring-border-floating forced-colors:border";
+
+/**
  * Shared by Dialog, Drawer (AVE-32) and AlertDialog (AVE-45): the modal surface, its title and its description, so a form that is a centred
  * dialog on a wide screen and a sheet on a phone reads as the same thing. Sizing, corners and position stay with each
  * component.
  */
-export const modalSurface = "bg-popover p-inset text-sm text-popover-foreground ring-1 ring-border outline-none";
+export const modalSurface = `bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-none ${floatingEdge}`;
 /** Line height is the close button's 24px, so the title and the button share a centre line. */
 /**
  * text-compact, as the app's dialogs set their titles (dues.tsx, dialogs.tsx): 16px on web, 14px at desktop scale

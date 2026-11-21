@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.57.0 (2026-11-21)
+## v0.58.0 (2026-11-21)
 
 - **New component: Swipe list** (AVE-199). `@manyave/avenue/components/swipe-list`: rows that slide aside on a phone to
   show their actions, one row open at a time, built on ui-sdk core's `createSwipeActions` as the `swipe-list` primitive.
@@ -13,6 +13,35 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   `undo` (done at once, then the Undo toast), `confirm` (asks first in an AlertDialog whose answer carries
   `data-agent-confirm`), or neither; a long swipe runs a side's first item only when it is `undo`. Only a finger swipes;
   every row's menu has the same actions for a mouse, a keyboard, a screen reader and an agent. Nothing existing changes.
+
+## v0.57.0 (2026-11-21)
+
+- **Popups and raised cards float with a soft, deep shadow and a faint edge** (AVE-208), after the ui-sdk sink.
+  `shadow-popover` and `shadow-card` are now two layers tinted with the onyx ink: a tight contact shade and a long soft
+  one pulled in under the surface, so the shade sits below it, not around it. A card's throw is shorter than a popup's.
+  Dark mode uses black at a higher strength, so it keeps its depth on near-black. The values change; the names don't.
+- **New token `border-floating`** (`ring-border-floating`, `border-border-floating`): the faint edge of anything that
+  floats, about 11% ink in light and 10% white in dark, the same in lifted. Popover, Hover card, Menu, the Select and
+  Combobox lists, Dialog, AlertDialog, Drawer, Toast, Dock, Selection bar and SectionCard move onto it; flat cards and
+  fields keep `border`. Apps that draw their own popup beside `shadow-popover` should swap the colour, keeping the
+  width: `ring-1 ring-border` becomes `ring-1 ring-border-floating`, and `border` becomes `border
+  border-border-floating`. It is translucent, so it isn't in the native tokens (phones draw elevation their own
+  way).
+- **Dialog, AlertDialog and Drawer now carry `shadow-popover`**; they had only a ring before.
+- **Floating surfaces keep a real 1px border in forced-colours mode**, where browsers drop shadows and rings.
+  `floatingEdge` in `#avenue/lib/popup` is the shared class string.
+
+## v0.56.0 (2026-11-21)
+
+- **Focus stays in place when the focused thing is removed** (AVE-196), with ui-sdk's focus recovery. Removing a
+  table filter by keyboard now lands focus on the filter that takes its place, or the one before it when it was the
+  last, and on the Filter button when none is left; it used to jump back to the Filter button every time. Removing a
+  Register row keeps focus in the same column of the row that takes its place, or the row before (as before, now
+  done by ui-sdk instead of Avenue's own watcher). Toasts gain `returnFocus` (on `toast()` and `toast.undo()`): where
+  focus goes when a toast closes with focus in it and the control focus came from is gone. A toast shown with
+  `focus: true` needs it: after Undo it puts focus on the control that came back, after Escape on the nearest one left;
+  without it focus fell to the page, and in development Avenue now says so. Combobox chips and toasts reached by F6
+  already did this through ui-sdk; their stories now prove it. No pixels change.
 
 ## v0.55.1 (2026-11-21)
 
@@ -83,9 +112,10 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 - **A dialog's middle can scroll on its own, keeping the title and the actions in view** (AVE-190). New part
   `DialogBody`: put everything between `DialogHeader` and `DialogFooter` in it, and when the content is taller than the
   screen only the body scrolls, so the title stays at the top and the footer's Save stays at the bottom. Before, the
-  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. Management's
-  `DetailDialog` (the board's new-event dialog, MANA-1271) wraps its children in `DialogBody`. `FormDialog` and
-  `Drawer` already did this with `FormDialogBody` and `DrawerBody`.
+  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. `FormDialog` and
+  `Drawer` already did this with `FormDialogBody` and `DrawerBody`. (Corrected: this entry first said Management's
+  `DetailDialog` wraps its children in `DialogBody`. It doesn't: it keeps its own scrolling body, which already holds
+  the title and footer in view, and swapping it in moved the dues reminder dialogs by half a pixel, MANA-1275.)
 
 ## v0.50.1 (2026-11-21)
 

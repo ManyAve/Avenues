@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import { Card, CardTitle } from "#avenue/components/card";
 import { TitleCount } from "#avenue/components/status";
 import { defined, type Loose } from "#avenue/lib/props";
+import { floatingEdge } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -21,7 +22,8 @@ import { cn } from "#avenue/lib/utils";
  * The action follows AVE-2's corner rule through Card: on the title's line, a full 16px from the top and right
  * edges, sm size (28px, 8px corner), never a pill. The title is a level-2 heading under the page's h1.
  *
- * The outline is the app's border colour (`ring-border`, AVE-70), which Card itself draws since AVE-183.
+ * It is a raised card (AVE-208): `shadow-card` and the floating edge (`ring-border-floating`, real 1px border in forced
+ * colours), where a flat Card keeps `ring-border`.
  *
  * No `title`: it was the slot prop for the title part (AVE-149), and an HTML tooltip in its place would hide a
  * stale call.
@@ -30,7 +32,7 @@ function SectionCard({ className, ...props }: Omit<Loose<ComponentProps<typeof C
   return (
     <Card
       data-section=""
-      className={cn("shadow-card *:data-[slot=card-content]:text-compact", className)}
+      className={cn("shadow-card *:data-[slot=card-content]:text-compact", floatingEdge, className)}
       {...defined(props)}
     />
   );

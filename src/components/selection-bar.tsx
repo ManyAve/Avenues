@@ -85,7 +85,7 @@ function SelectionBar({
         <ToolbarPrimitive
           aria-label="Selection actions"
           className={cn(
-            "absolute bottom-12 start-1/2 z-10 grid -translate-x-1/2 items-start gap-x-controls gap-y-1 rounded-lg border bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
+            "absolute bottom-12 start-1/2 z-10 grid -translate-x-1/2 items-start gap-x-controls gap-y-1 rounded-lg border border-border-floating bg-popover p-2 text-control whitespace-nowrap text-popover-foreground shadow-popover rtl:translate-x-1/2",
             className,
           )}
           {...defined(props)}

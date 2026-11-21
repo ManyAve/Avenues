@@ -14,6 +14,7 @@ import { CheckIcon, CircleAlertIcon, SendIcon, XIcon } from "lucide-react";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
 import { buttonVariants } from "#avenue/components/button";
 import { devError } from "#avenue/lib/dev";
+import { useFocusRecovery } from "#avenue/lib/focus-recovery";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -69,9 +70,16 @@ type ToastOptions = {
   /**
    * Move focus to the action as the toast shows. Only for when the control the person just used is gone, such as a
    * removed section's Undo, so focus lands on the way back instead of falling to the page (AVE-118). Otherwise
-   * leave focus where it is; F6 reaches the toast.
+   * leave focus where it is; F6 reaches the toast. Give `returnFocus` with it.
    */
   focus?: boolean | undefined;
+  /**
+   * Where focus goes when the toast closes with focus in it and the control focus came from is gone (AVE-196): after
+   * Undo, the control that came back; after Escape or a timeout, the nearest one that is left. It is read once the
+   * toast has closed and the page has rendered. A toast that takes focus (`focus`) needs it, or focus falls to the page;
+   * in development that says so. Without `focus`, focus goes back where it was before F6, as ui-sdk does.
+   */
+  returnFocus?: (() => HTMLElement | null | undefined) | undefined;
 };
 
 /** What `toast.undo()` takes (AVE-198). */
@@ -101,6 +109,8 @@ type UndoToastOptions = {
   label?: string | undefined;
   /** As `ToastOptions.focus`: move focus to Undo, only when the control the person used is gone. */
   focus?: boolean | undefined;
+  /** As `ToastOptions.returnFocus`: where focus goes once the toast has closed, such as the control Undo brought back. */
+  returnFocus?: (() => HTMLElement | null | undefined) | undefined;
 };
 
 type ShowToast = ((text: string, options?: ToastOptions) => void) & {
@@ -122,8 +132,12 @@ type Shown = {
   action?: ToastOptions["action"];
   description?: string | undefined;
   focus: boolean;
+  returnFocus?: ToastOptions["returnFocus"];
   onDismiss?: (() => void) | undefined;
 };
+
+/** What a toast carries in ui-sdk's `data` for the region: whether it takes focus, and where focus goes after. */
+type FocusData = { focusAction?: true; returnFocus?: () => HTMLElement | null | undefined };
 
 const SUCCESS_MS = 4200;
 /** A success with an action: long enough to reach the action by F6, a switch or voice (AVE-41). */
@@ -143,11 +157,15 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
     next();
   });
 
-  const optionsOf = ({ action, description, focus, onDismiss }: Omit<Shown, "title">) => ({
-    ...(action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {}),
-    ...(description === undefined ? {} : { description }),
-    ...(onDismiss ? { onDismiss } : {}),
-  });
+  const optionsOf = ({ action, description, focus, returnFocus, onDismiss }: Omit<Shown, "title">) => {
+    const data: FocusData = { ...(action && focus ? { focusAction: true } : {}), ...(returnFocus ? { returnFocus } : {}) };
+    return {
+      ...(action ? { action } : {}),
+      ...(data.focusAction || data.returnFocus ? { data } : {}),
+      ...(description === undefined ? {} : { description }),
+      ...(onDismiss ? { onDismiss } : {}),
+    };
+  };
 
   /** Shows a success or info toast now, or behind an error. `shown` is read when it shows, so a waiting run counts on. */
   const present = (type: "success" | "info", shown: () => Shown, onShow?: (id: string) => void) => {
@@ -166,20 +184,20 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
 
   // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
   // contextual type into the destructured default (MANA-1118, TS7031 in Management).
-  const show = (text: string, { action, type = "success", focus = false }: ToastOptions = {}) => {
+  const show = (text: string, { action, type = "success", focus = false, returnFocus }: ToastOptions = {}) => {
     if (type === "error") {
       // A success waiting behind the old error keeps waiting behind the new one.
       replacingError = true;
       toaster.dismiss();
-      toaster.error(text, { ...optionsOf({ action, focus }), duration: Infinity });
+      toaster.error(text, { ...optionsOf({ action, focus, returnFocus }), duration: Infinity });
       replacingError = false;
       return;
     }
     run = undefined;
-    present(type, () => ({ title: text, action, focus }));
+    present(type, () => ({ title: text, action, focus, returnFocus }));
   };
 
-  const undo = ({ title, onUndo, elsewhere, id, label = "Undo", focus = false }: UndoToastOptions) => {
+  const undo = ({ title, onUndo, elsewhere, id, label = "Undo", focus = false, returnFocus }: UndoToastOptions) => {
     const titleOf = (count: number) => (typeof title === "function" ? title(count) : title);
     const elsewhereOf = (count: number) => (typeof elsewhere === "function" ? elsewhere(count) : elsewhere);
     if (id !== undefined && run?.id === id) {
@@ -210,6 +228,7 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
         description: elsewhereOf(mine.count),
         action: { label, onAction: takeBack },
         focus,
+        returnFocus,
         onDismiss: () => {
           if (run === mine) run = undefined;
         },
@@ -227,8 +246,25 @@ function focusOnMount(element: HTMLElement | null) {
   element?.focus();
 }
 
-function focusesAction(data: unknown) {
-  return typeof data === "object" && data !== null && "focusAction" in data && data.focusAction === true;
+function focusDataOf(data: unknown): FocusData {
+  return typeof data === "object" && data !== null ? (data as FocusData) : {};
+}
+
+/**
+ * Focus that leaves with a toast, or falls to the page from it as it closes, goes to its `returnFocus` (AVE-196). ui-sdk
+ * already returns focus to where it was before F6; this is for when that place is gone, as it is for a toast that took
+ * focus because the control the person used was removed.
+ */
+function useToastFocusRecovery() {
+  return useFocusRecovery<FocusData>(({ props }) => {
+    const target = props.returnFocus?.();
+    if (target) return target;
+    if (props.focusAction)
+      devError(
+        "Avenue: a toast that took focus (`focus: true`) closed with focus in it and no `returnFocus` saying where it goes, so focus fell to the page.",
+      );
+    return undefined;
+  });
 }
 
 /** The toast with no ToastProvider above it: it shows nothing, and in development says so (AVE-140). */
@@ -255,6 +291,7 @@ function useToast() {
 
 /** The region where toasts show, for a `toaster` you created yourself. Place it once. */
 function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
+  const recover = useToastFocusRecovery();
   return (
     // ui-sdk centres a region with translate: -50% outside any layer, so only an important utility undoes it.
     // 24px above the bottom edge plus the home-indicator safe area, or 8px above --avenue-toast-bottom where a page sets
@@ -275,9 +312,10 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
     >
       {(item) => (
         <ToastPart
+          ref={recover(item.id, focusDataOf(item.data))}
           data-slot="toast"
           className={cn(
-            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
+            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border border-border-floating bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
             // A swipe moves the toast with the finger, mouse or pen (AVE-192). ui-sdk sets data-swiping and
             // --toast-swipe-x/y while it's dragged; letting go short of dismissing removes both, and the toast eases back.
             // The region sits at the bottom centre, so ui-sdk dismisses only a swipe down (an up or sideways drag only
@@ -309,7 +347,7 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
           {item.action && (
             <ToastAction
               // `focus: true` only: the control the person used is gone, so focus would fall to the page (AVE-118).
-              ref={focusesAction(item.data) ? focusOnMount : undefined}
+              ref={focusDataOf(item.data).focusAction ? focusOnMount : undefined}
               className="relative cursor-pointer rounded-xs font-medium text-foreground underline underline-offset-3 outline-none hit-area [--hit-area-x:--spacing(2)] [--hit-area-y:--spacing(2)] focus-visible:ring-3 focus-visible:ring-ring/50" />
           )}
           {item.type === "error" && (
