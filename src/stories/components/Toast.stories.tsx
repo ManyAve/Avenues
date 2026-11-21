@@ -354,14 +354,27 @@ const restore = fn();
 function RemoveSection() {
   const toast = useToast();
   const [removed, setRemoved] = useState(false);
+  const removeButton = useRef<HTMLButtonElement>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
   return removed ? (
-    <p>No sections.</p>
+    <div className="flex items-center gap-controls">
+      <p>No sections.</p>
+      <Button ref={addButton} variant="outline">
+        Add section
+      </Button>
+    </div>
   ) : (
     <Button
+      ref={removeButton}
       variant="outline"
       onClick={() => {
         setRemoved(true);
-        toast("Section removed", { action: { label: "Undo", onAction: () => { restore(); setRemoved(false); } }, focus: true });
+        toast("Section removed", {
+          action: { label: "Undo", onAction: () => { restore(); setRemoved(false); } },
+          focus: true,
+          // After Undo the section's button is back; dismissed, the nearest control left is Add section.
+          returnFocus: () => removeButton.current ?? addButton.current,
+        });
       }}
     >
       Remove section
@@ -369,15 +382,20 @@ function RemoveSection() {
   );
 }
 
-/** `focus`: the button the person pressed is gone, so focus goes to Undo instead of falling to the page. */
+const sectionDemo = () => (
+  <ToastProvider>
+    <Rows>
+      <RemoveSection />
+    </Rows>
+  </ToastProvider>
+);
+
+/**
+ * `focus`: the button the person pressed is gone, so focus goes to Undo instead of falling to the page. Undo brings
+ * the section back, and `returnFocus` puts focus on its button again (AVE-196).
+ */
 export const FocusesAction: Story = {
-  render: () => (
-    <ToastProvider>
-      <Rows>
-        <RemoveSection />
-      </Rows>
-    </ToastProvider>
-  ),
+  render: sectionDemo,
   play: async ({ canvas }) => {
     restore.mockClear();
     canvas.getByRole("button", { name: "Remove section" }).focus();
@@ -387,7 +405,66 @@ export const FocusesAction: Story = {
     await waitFor(() => expect(action).toHaveFocus());
     await userEvent.keyboard("{Enter}");
     await expect(restore).toHaveBeenCalledOnce();
-    await expect(await canvas.findByRole("button", { name: "Remove section" })).toBeVisible();
+    const back = await canvas.findByRole("button", { name: "Remove section" });
+    await expect(back).toBeVisible();
+    await waitFor(() => expect(back).toHaveFocus());
+  },
+};
+
+/** Escape closes a toast that took focus, and `returnFocus` lands it on the nearest control left, not the page (AVE-196). */
+export const FocusedToastEscape: Story = {
+  render: sectionDemo,
+  play: async ({ canvas }) => {
+    restore.mockClear();
+    canvas.getByRole("button", { name: "Remove section" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus());
+    await userEvent.keyboard("{Escape}");
+    await gone(2000);
+    await expect(restore).not.toHaveBeenCalled();
+    await waitFor(() => expect(canvas.getByRole("button", { name: "Add section" })).toHaveFocus());
+  },
+};
+
+/**
+ * A toast reached by F6 and closed by keyboard gives focus back to where it was (AVE-196): Escape, Dismiss and the
+ * action each return it to the button that showed the toast. ui-sdk does this itself; Avenue adds nothing.
+ */
+export const KeyboardCloseReturnsFocus: Story = {
+  play: async ({ canvas, step }) => {
+    const send = canvas.getByRole("button", { name: "Send reminder" });
+    const archive = canvas.getByRole("button", { name: "Archive notice" });
+    await step("Escape", async () => {
+      send.focus();
+      await userEvent.keyboard("{Enter}");
+      await findToast();
+      await userEvent.keyboard("{F6}");
+      await waitFor(() => expect(toastEl()?.contains(document.activeElement)).toBe(true));
+      await userEvent.keyboard("{Escape}");
+      await gone(2000);
+      await expect(send).toHaveFocus();
+    });
+    await step("Dismiss", async () => {
+      await userEvent.keyboard("{Enter}");
+      await findToast();
+      await userEvent.keyboard("{F6}");
+      screen.getByRole("button", { name: "Dismiss" }).focus();
+      await userEvent.keyboard("{Enter}");
+      await gone(2000);
+      await expect(send).toHaveFocus();
+    });
+    await step("the action", async () => {
+      undo.mockClear();
+      archive.focus();
+      await userEvent.keyboard("{Enter}");
+      await findToast();
+      await userEvent.keyboard("{F6}");
+      screen.getByRole("button", { name: "Undo" }).focus();
+      await userEvent.keyboard("{Enter}");
+      await expect(undo).toHaveBeenCalledOnce();
+      await gone(2000);
+      await expect(archive).toHaveFocus();
+    });
   },
 };
 

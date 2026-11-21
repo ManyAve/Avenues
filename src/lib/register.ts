@@ -1,4 +1,4 @@
-import { byCell, createGridFocus, definePrimitive, selects, type GridCell } from "@ui-sdk/core";
+import { byCell, createFocusRecovery, createGridFocus, definePrimitive, selects, type GridCell } from "@ui-sdk/core";
 
 /**
  * The Register's behavior (AVE-9): a data grid built from ui-sdk's grid focus, because ui-sdk 0.1 ships no data
@@ -9,7 +9,8 @@ import { byCell, createGridFocus, definePrimitive, selects, type GridCell } from
  * The rules the UX Engineer and Architect set on AVE-9:
  * - The stop follows focus from anywhere: a click, a dialog returning focus to its trigger, a popover closing.
  * - Never zero stops: when rows go away (deleted, filtered, collapsed), the stop moves to the nearest cell left,
- *   and focus that was on a removed row moves there too.
+ *   and focus that was on a removed row moves there too: to the same column of the row that takes its place, or of
+ *   the row before when it was the last (ui-sdk's focus recovery, AVE-196).
  * - A text field keeps its own keys while you type in it; a control whose popup is open keeps them too.
  *
  * Leaving and re-entering a text field (AVE-80, UX Engineer, after the WAI-ARIA APG grid's editing keys):
@@ -96,8 +97,20 @@ export const register = definePrimitive({
       const active = context.store.get().active;
       if (active && !exists(options, active)) context.store.set({ active: nearestCell(options, active) });
     });
+    // Focus that leaves with a removed row (or a cell filtered or collapsed away) lands on the cell that takes its
+    // place, in the same column: the next row's, or the row before when it was the last (AVE-196). ui-sdk's focus
+    // recovery runs once the render is done, so the options and the cells are the ones left.
+    const recovery = createFocusRecovery<CellProps>({
+      fallback: (lost) => {
+        const cell = nearestCell(context.options(), { row: lost.props.row, col: lost.props.col });
+        if (!cell) return null;
+        const el = context.element("cell", `${cell.row}:${cell.col}`) ?? context.element("columnheader", `${cell.row}:${cell.col}`);
+        return el ? (controls.get(el) ?? el) : null;
+      },
+    });
     return {
       grid,
+      recovery,
       /** Focus arrived on a cell by any route: it becomes the stop, without moving focus again. */
       follow(cell: GridCell) {
         const active = context.store.get().active;
@@ -141,16 +154,28 @@ export const register = definePrimitive({
         }
         grid.keydown(event);
       },
-      /** Puts focus back in the grid when the focused row was removed, so the table is never left behind. */
-      recover() {
-        const active = context.store.get().active;
-        if (active) grid.focus(active, { reason: "imperative" });
-      },
     };
   },
   slots: (slot) => {
     // A cell or column header: the cell takes focus itself, or passes it to its control.
-    const cellBind = (el: HTMLElement, part: { api: { grid: { bind: (el: HTMLElement, cell: GridCell) => () => void; tabIndex: (state: State, cell: GridCell) => "0" | "-1" } }; props: CellProps; store: { get: () => State; subscribe: (listener: () => void) => () => void } }) => {
+    type CellPart = {
+      key: string;
+      api: {
+        grid: { bind: (el: HTMLElement, cell: GridCell) => () => void; tabIndex: (state: State, cell: GridCell) => "0" | "-1" };
+        recovery: { bind: (el: HTMLElement, part: { key: string; props: CellProps }) => () => void };
+      };
+      props: CellProps;
+      store: { get: () => State; subscribe: (listener: () => void) => () => void };
+    };
+    const cellBind = (el: HTMLElement, part: CellPart) => {
+      const unbindFocus = focusBind(el, part);
+      const unbindRecovery = part.api.recovery.bind(el, part);
+      return () => {
+        unbindFocus();
+        unbindRecovery();
+      };
+    };
+    const focusBind = (el: HTMLElement, part: CellPart) => {
       const cell = { row: part.props.row, col: part.props.col };
       const control = part.props.control ? el.querySelector<HTMLElement>(controlSelector) : null;
       if (!control) return part.api.grid.bind(el, cell);
@@ -175,24 +200,6 @@ export const register = definePrimitive({
       root: slot({
         role: "grid",
         keys: { none: "Focus stays on a cell or its control, whose keydown handles them." },
-        bind: (el, { api }) => {
-          let last: Element | null = null;
-          const track = (event: FocusEvent) => {
-            last = event.target as Element;
-          };
-          el.addEventListener("focusin", track);
-          const observer = new MutationObserver(() => {
-            if (last && !last.isConnected && (document.activeElement === document.body || document.activeElement === null)) {
-              last = null;
-              api.recover();
-            }
-          });
-          observer.observe(el, { childList: true, subtree: true });
-          return () => {
-            el.removeEventListener("focusin", track);
-            observer.disconnect();
-          };
-        },
       }),
       row: slot<{ id?: string | undefined; row: number }>({
         role: "row",

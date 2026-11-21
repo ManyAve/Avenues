@@ -4,6 +4,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.56.0 (2026-11-21)
+
+- **Focus stays in place when the focused thing is removed** (AVE-196), with ui-sdk's focus recovery. Removing a
+  table filter by keyboard now lands focus on the filter that takes its place, or the one before it when it was the
+  last, and on the Filter button when none is left; it used to jump back to the Filter button every time. Removing a
+  Register row keeps focus in the same column of the row that takes its place, or the row before (as before, now
+  done by ui-sdk instead of Avenue's own watcher). Toasts gain `returnFocus` (on `toast()` and `toast.undo()`): where
+  focus goes when a toast closes with focus in it and the control focus came from is gone. A toast shown with
+  `focus: true` needs it: after Undo it puts focus on the control that came back, after Escape on the nearest one left;
+  without it focus fell to the page, and in development Avenue now says so. Combobox chips and toasts reached by F6
+  already did this through ui-sdk; their stories now prove it. No pixels change.
+
 ## v0.55.1 (2026-11-21)
 
 - **The highlight is mixed into the popover an app sets, not into white** (AVE-215). `accent` is now

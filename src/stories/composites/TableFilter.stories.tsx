@@ -237,22 +237,38 @@ export const EditorOpen: Story = {
   },
 };
 
-/** × removes its filter, and focus moves to the Add filter button instead of falling to the page. */
+/**
+ * × removes its filter, and focus lands on a neighbour instead of falling to the page (AVE-196): the pill that takes
+ * its place, the one before it when it was the last, and the Filter button when none is left.
+ */
 export const RemoveByKeyboard: Story = {
   globals: desktop,
   render: () => <Households initial={someFilters} />,
-  play: async ({ canvas }) => {
-    const remove = canvas.getByRole("button", { name: "Remove filter: Balance is at least $50" });
-    remove.focus();
-    await userEvent.keyboard("{Enter}");
-    await expect(canvas.queryByRole("button", { name: /Balance is at least/ })).toBeNull();
-    await expect(count()).toHaveTextContent("3 of 6 households");
-    await expect(canvas.getByRole("button", { name: "Add filter" })).toHaveFocus();
-    // The toolbar's arrows run Filter, then each pill and its ×.
-    await userEvent.keyboard("{ArrowRight}");
-    await expect(canvas.getByRole("button", { name: "Filter: Dues status is any of Owing, Partial" })).toHaveFocus();
-    await userEvent.keyboard("{ArrowRight}");
-    await expect(canvas.getByRole("button", { name: "Remove filter: Dues status is any of Owing, Partial" })).toHaveFocus();
+  play: async ({ canvas, step }) => {
+    await step("the middle filter's × moves focus to the pill that takes its place", async () => {
+      canvas.getByRole("button", { name: "Remove filter: Balance is at least $50" }).focus();
+      await userEvent.keyboard("{Enter}");
+      await expect(canvas.queryByRole("button", { name: /Balance is at least/ })).toBeNull();
+      await expect(count()).toHaveTextContent("3 of 6 households");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Filter: Neighbor contains" })).toHaveFocus());
+    });
+    await step("the last filter's × moves focus to the pill before it", async () => {
+      await userEvent.keyboard("{ArrowRight}");
+      await expect(canvas.getByRole("button", { name: "Remove filter: Neighbor contains" })).toHaveFocus();
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Filter: Dues status is any of Owing, Partial" })).toHaveFocus());
+    });
+    await step("the only filter's × moves focus to the Filter button, and the toolbar's arrows go on from there", async () => {
+      await userEvent.keyboard("{ArrowRight}");
+      await expect(canvas.getByRole("button", { name: "Remove filter: Dues status is any of Owing, Partial" })).toHaveFocus();
+      await userEvent.keyboard("{Enter}");
+      await expect(count()).toHaveTextContent("6 of 6 households");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Filter" })).toHaveFocus());
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: "Property" })).toHaveFocus());
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Filter" })).toHaveFocus());
+    });
   },
 };
 
