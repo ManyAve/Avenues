@@ -112,6 +112,10 @@ export const STYLE_PROPS = [
   "font-style",
   "text-decoration-line",
   "text-transform",
+  // Lined-up digits (tabular-nums) change a number's width without changing its size (AVE-216).
+  "font-variant-numeric",
+  // Read from a field's ::placeholder, not getPropertyValue; empty on anything that isn't a field (AVE-216).
+  "placeholder-color",
   "box-shadow",
   "outline-style",
   "outline-width",
@@ -132,6 +136,7 @@ const TYPE_PROPS = new Set([
   "font-style",
   "text-decoration-line",
   "text-transform",
+  "font-variant-numeric",
 ]);
 const BORDER_WIDTHS = ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width"];
 
@@ -198,6 +203,8 @@ const multiLine = (p: Part) => p.height > 1.6 * (Number.parseFloat(p.style["line
 /** Whether `prop` affects how this pair of parts looks, so a difference in it is worth reporting. */
 function matters(prop: string, a: Part, b: Part): boolean {
   if (prop === "display") return false;
+  // Only two fields that both show a placeholder have one to compare (AVE-216).
+  if (prop === "placeholder-color") return !!a.placeholder && !!b.placeholder;
   if (prop === "column-gap" || prop === "row-gap") return flexOrGrid(a) || flexOrGrid(b);
   if (prop === "border-top-color") return bordered(a) || bordered(b);
   if (prop === "outline-width") return [a, b].some((p) => (p.style["outline-style"] ?? "none") !== "none");
@@ -383,7 +390,7 @@ function covers(allowance: Allowance, d: Difference): boolean {
 }
 
 export function isAgreedFix(because: string): boolean {
-  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|50|58|70|72|78|84|89|99|117|120|130):/.test(because);
+  return /^AVE-2 §\d/.test(because) || /^AVE-(8|13|29|50|58|70|72|78|84|89|99|117|120|130|162|183|186|208|210):/.test(because);
 }
 
 export function isAppLocal(because: string): boolean {
