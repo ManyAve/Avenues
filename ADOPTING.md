@@ -545,6 +545,59 @@ behind the row and the row's menu:
   item only when it is `undo`; Delete and sends never run on a swipe. Items sit on the `end` side unless `side: "start"`.
 - Needs a `ToastProvider` above it. Set the rows' surface with `contentClassName` (`bg-card` inside a card).
 - Not yet checked on a device: whether VoiceOver's own swipes and the row's get in each other's way (AVE-199).
+## Dates and times (AVE-202)
+
+Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a
+`Field`, looks like `Input`, posts the same string the native input did (`2026-11-21`, `14:30`, `2026-11-21T14:30`)
+under the Field's `name`, and uses the phone's own picker on touch-first devices (`native="auto"`, as `Select` does).
+
+| Field | Use it for |
+| --- | --- |
+| `DatePicker` | A date picked from a month or typed: due dates, meeting dates, assessment dates. `mode="range"` for two. |
+| `DateInput` | A date people know by heart, typed part by part: a move-in date. `granularity="minute"` adds the time. |
+| `TimeInput` | A time of day: when a meeting starts. |
+
+```tsx
+<Field name="due">
+  <FieldLabel>Due date</FieldLabel>
+  <DatePicker required />
+  <DatePickerError missing="Choose a due date." />
+</Field>
+```
+
+Typing follows the locale's order (the page's `lang`, or `locale`), and the error on submit says it: "Enter a date
+like 31/12/2026" in British English. A field with `min`, `max` or `unavailable` days gives `DatePickerError` (or
+`DateInputError`, `TimeInputError`) its rule as children. Built from parts, a DatePicker is `DatePickerGroup` holding
+`DatePickerInput`, `DatePickerClear` and `DatePickerTrigger`, then `DatePickerHint` and `DatePickerContent` (Avenue's
+Calendar parts, and `DatePickerPreset`s).
+## Search as you type (AVE-207)
+
+For a list too long to hold (a household directory, an address search), load results as people type with ui-sdk's
+`useAsyncOptions` (`@ui-sdk/react/async-options`) and hand them to Combobox, or to the new Autocomplete when any text
+is a valid value:
+
+```tsx
+const households = useAsyncOptions(searchHouseholds, { debounce: 200 }); // (query, { signal, page }) => items
+<Combobox
+  items={households.items}
+  status={households.status}
+  onQueryChange={households.setQuery}
+  onLoadMore={households.loadMore}
+  value={id}
+  onValueChange={setId}
+  emptyMessage={(q) => `No households match “${q}”.`}
+/>
+```
+
+- With `status`, the list says "Searching…" while results load (never "no results"), "Couldn't search. Try again."
+  after a failure, and the count once they arrive, read politely to screen readers. Built from parts, put a
+  `ComboboxStatus` (or `AutocompleteStatus`) in the content in place of the empty part.
+- Your source keeps its own order: `filter` defaults to `false` with `status`. A source that doesn't rank can use
+  `fuzzyScore` from `@ui-sdk/core/text-match`; Mapbox and the like keep theirs.
+- Pass `signal` on to `fetch`, so a newer search cancels the old one. A value chosen before any search needs
+  `itemToLabel` (or object values) for its label; one picked from the results keeps it on its own.
+- Every Combobox and Autocomplete now marks the typed words in its results, heavier, for the eye only; built from
+  parts, an item with more than plain text marks its label with `ComboboxItemText`.
 
 ## For the Avenue team
 

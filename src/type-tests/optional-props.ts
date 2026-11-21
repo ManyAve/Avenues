@@ -7,6 +7,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import type * as alertDialog from "#avenue/components/alert-dialog";
 import type * as askAdmin from "#avenue/components/ask-admin";
+import type * as autocomplete from "#avenue/components/autocomplete";
 import type * as avatar from "#avenue/components/avatar";
 import type * as badge from "#avenue/components/badge";
 import type * as button from "#avenue/components/button";
@@ -20,6 +21,8 @@ import type * as collapsibleSection from "#avenue/components/collapsible-section
 import type * as combobox from "#avenue/components/combobox";
 import type * as command from "#avenue/components/command";
 import type * as composer from "#avenue/components/composer";
+import type * as dateInput from "#avenue/components/date-input";
+import type * as datePicker from "#avenue/components/date-picker";
 import type * as detailList from "#avenue/components/detail-list";
 import type * as dialog from "#avenue/components/dialog";
 import type * as displayOptions from "#avenue/components/display-options";
@@ -61,6 +64,7 @@ import type * as table from "#avenue/components/table";
 import type * as tableFilter from "#avenue/components/table-filter";
 import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
+import type * as timeInput from "#avenue/components/time-input";
 import type * as toast from "#avenue/components/toast";
 import type * as toggleGroup from "#avenue/components/toggle-group";
 import type * as toggle from "#avenue/components/toggle";
@@ -72,6 +76,7 @@ import type * as topBar from "#avenue/components/top-bar";
 export type Modules = {
   "alert-dialog": typeof alertDialog;
   "ask-admin": typeof askAdmin;
+  "autocomplete": typeof autocomplete;
   "avatar": typeof avatar;
   "badge": typeof badge;
   "button": typeof button;
@@ -85,6 +90,8 @@ export type Modules = {
   "combobox": typeof combobox;
   "command": typeof command;
   "composer": typeof composer;
+  "date-input": typeof dateInput;
+  "date-picker": typeof datePicker;
   "detail-list": typeof detailList;
   "dialog": typeof dialog;
   "display-options": typeof displayOptions;
@@ -126,6 +133,7 @@ export type Modules = {
   "table-filter": typeof tableFilter;
   "tabs": typeof tabs;
   "textarea": typeof textarea;
+  "time-input": typeof timeInput;
   "toast": typeof toast;
   "toggle-group": typeof toggleGroup;
   "toggle": typeof toggle;

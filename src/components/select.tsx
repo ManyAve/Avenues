@@ -2,7 +2,7 @@ import { FieldControl } from "@ui-sdk/react/field";
 import * as Ui from "@ui-sdk/react/select";
 import type { SelectValueChangeReason } from "@ui-sdk/react/select";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { useState, useSyncExternalStore, type ChangeEvent, type ComponentProps, type ReactNode } from "react";
+import { useState, type ChangeEvent, type ComponentProps, type ReactNode } from "react";
 import { report, type ChangeDetails } from "#avenue/lib/change";
 import {
   fieldControl,
@@ -27,6 +27,7 @@ import {
   type Presentation,
 } from "#avenue/lib/picker";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { useCoarsePointer } from "#avenue/lib/pointer";
 import { cn } from "#avenue/lib/utils";
 
 export type { ListData, ListGroup, ListItem, ListSeparator };
@@ -36,20 +37,6 @@ type Native = "auto" | "always" | "never";
 /** What `onValueChange` gets after the value: ui-sdk Select's own details (reason, event, source, `cancel()`). */
 export type SelectValueChangeDetails = ChangeDetails<SelectValueChangeReason>;
 
-const coarse = "(pointer: coarse)";
-function subscribe(onChange: () => void) {
-  const query = window.matchMedia(coarse);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-/** True on touch-first devices (phones, tablets), where the OS picker is the better list. */
-function useCoarsePointer() {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(coarse).matches,
-    () => false,
-  );
-}
 
 const chevron = <ChevronDownIcon aria-hidden className="shrink-0 text-muted-foreground" />;
 

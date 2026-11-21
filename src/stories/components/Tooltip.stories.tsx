@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Settings2Icon } from "lucide-react";
+import { SaveIcon, Settings2Icon } from "lucide-react";
+import { useState } from "react";
+import { ariaKeyshortcuts, formatShortcut, useShortcut } from "@ui-sdk/react/shortcuts";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { Badge } from "#avenue/components/badge";
 import { Button } from "#avenue/components/button";
-import { InfoTip, Tooltip, TooltipContent, TooltipTrigger } from "#avenue/components/tooltip";
+import { InfoTip, Tooltip, TooltipContent, TooltipShortcut, TooltipTrigger } from "#avenue/components/tooltip";
 
 // ui-sdk keeps the tooltip in the page while closed, hidden, so "open" means present and not hidden.
 const queryTip = () => document.querySelector<HTMLElement>("[data-slot=tooltip-content]:not([hidden])");
@@ -48,6 +50,52 @@ export const OnFocus: Story = {
     await expect(await findTip()).toHaveTextContent("Display options");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(queryTip()).toBeNull());
+  },
+};
+
+function SaveWithHint() {
+  const [saved, setSaved] = useState(0);
+  const save = () => setSaved((count) => count + 1);
+  useShortcut("mod+s", save, { description: "Save the notice" });
+  return (
+    <div className="flex flex-col items-center gap-group">
+      <Tooltip shortcut="mod+s">
+        <TooltipTrigger render={<Button variant="outline" size="icon-md" aria-label="Save notice" />} onClick={save}>
+          <SaveIcon aria-hidden />
+        </TooltipTrigger>
+        <TooltipContent>
+          Save notice
+          <TooltipShortcut />
+        </TooltipContent>
+      </Tooltip>
+      <output className="block text-meta text-muted-foreground">{saved > 0 ? `Saved ${saved}×` : "Not saved yet"}</output>
+    </div>
+  );
+}
+
+/**
+ * The tooltip teaches the keys (AVE-194): `shortcut="mod+s"` shows ⌘S on a Mac and Ctrl+S elsewhere,
+ * hidden from screen readers, which hear the button's `aria-keyshortcuts`. The keys do what the button does. Menu /
+ * Shortcuts on a Mac shows the Mac spelling.
+ */
+export const WithAShortcut: Story = {
+  tags: ["agent"],
+  render: () => <SaveWithHint />,
+  play: async ({ canvas }) => {
+    const save = canvas.getByRole("button", { name: "Save notice" });
+    await userEvent.tab();
+    await expect(save).toHaveFocus();
+    const apple = ariaKeyshortcuts("mod+s").startsWith("Meta");
+    await expect(save).toHaveAttribute("aria-keyshortcuts", apple ? "Meta+S" : "Control+S");
+    const tip = await findTip();
+    const keys = tip.querySelector("[data-slot=tooltip-shortcut]");
+    await expect(keys).toHaveTextContent(formatShortcut("mod+s"));
+    await expect(formatShortcut("mod+s")).toContain(apple ? "⌘S" : "Ctrl+S");
+    await expect(keys).toHaveAttribute("aria-hidden", "true");
+    await userEvent.keyboard(apple ? "{Meta>}s{/Meta}" : "{Control>}s{/Control}");
+    await expect(canvas.getByRole("status")).toHaveTextContent("Saved 1×");
+    await userEvent.keyboard("{Enter}");
+    await expect(canvas.getByRole("status")).toHaveTextContent("Saved 2×");
   },
 };
 

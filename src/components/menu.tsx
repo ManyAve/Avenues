@@ -1,5 +1,6 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as MenuPrimitive from "@ui-sdk/react/menu";
+import { useShortcutHint } from "@ui-sdk/react/shortcuts";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import {
   createContext,
@@ -140,6 +141,18 @@ function runSelect(onSelect: SelectHandler | undefined, onClick: SelectHandler |
   };
 }
 
+type MenuItemProps = NodeChildren<Omit<Loose<ComponentProps<typeof MenuPrimitive.MenuItem>>, "onClick">> & {
+  inset?: boolean | undefined;
+  /** Styles the item as dangerous, like Delete. ui-sdk's prop; sets `data-destructive`. */
+  destructive?: boolean | undefined;
+  /** Why a disabled item is unavailable: one muted line under the label, read with the item. */
+  disabledReason?: ReactNode | undefined;
+  /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
+  onClick?: SelectHandler | undefined;
+};
+
+type Hint = ReturnType<typeof useShortcutHint>;
+
 /**
  * A menu action. `destructive` for delete and similar: ui-sdk's prop, which sets `data-destructive` (AVE-151). A
  * disabled item can carry `disabledReason`, as Button, Composer and FileField do: one muted line under the label,
@@ -149,8 +162,22 @@ function runSelect(onSelect: SelectHandler | undefined, onClick: SelectHandler |
  * the same action under the name shadcn and Base UI items use (AVE-111): ui-sdk's own `onClick` fires for a pointer
  * click only, so an item wired to it did nothing from the keyboard. Here it is routed through `onSelect`, gets the
  * DOM event that selected the item (a `MouseEvent`, a `KeyboardEvent`, or a plain `select` Event), and runs once.
+ *
+ * `shortcut` (`"mod+d"`, ui-sdk's name) writes the keys at the end of the row the way the computer does, ⌘D on a Mac
+ * and Ctrl+D elsewhere, hidden from screen readers, which hear the item's `aria-keyshortcuts` instead (AVE-194). It
+ * only shows the keys, as ui-sdk's markup items do: bind them where the action lives, with ui-sdk's `useShortcut`.
+ * Avenue draws the keys itself, from ui-sdk's `useShortcutHint`, because the hint ui-sdk 0.1 appends to an item takes
+ * no class, so it couldn't wear Avenue's look.
  */
-function MenuItem({
+function MenuItem({ shortcut, ...props }: MenuItemProps) {
+  return shortcut ? <ItemWithShortcut shortcut={shortcut} {...props} /> : <Item {...props} />;
+}
+
+function ItemWithShortcut({ shortcut, ...props }: Omit<MenuItemProps, "shortcut"> & { shortcut: string }) {
+  return <Item {...props} hint={useShortcutHint(shortcut)} />;
+}
+
+function Item({
   className,
   inset,
   destructive,
@@ -158,16 +185,9 @@ function MenuItem({
   children,
   onSelect,
   onClick,
+  hint,
   ...props
-}: NodeChildren<Omit<Loose<ComponentProps<typeof MenuPrimitive.MenuItem>>, "onClick">> & {
-  inset?: boolean | undefined;
-  /** Styles the item as dangerous, like Delete. ui-sdk's prop; sets `data-destructive`. */
-  destructive?: boolean | undefined;
-  /** Why a disabled item is unavailable: one muted line under the label, read with the item. */
-  disabledReason?: ReactNode | undefined;
-  /** The item's action, by pointer, keyboard or agent: the same as `onSelect`, which runs first when both are set. */
-  onClick?: SelectHandler | undefined;
-}) {
+}: Omit<MenuItemProps, "shortcut"> & { hint?: Hint }) {
   const reasonId = useId();
   const select = runSelect(onSelect, onClick);
   return (
@@ -176,6 +196,7 @@ function MenuItem({
       data-inset={inset}
       destructive={destructive ?? false}
       aria-describedby={disabledReason ? reasonId : undefined}
+      aria-keyshortcuts={hint?.ariaKeyshortcuts}
       className={cn(
         "group/dropdown-menu-item",
         itemClass,
@@ -186,6 +207,11 @@ function MenuItem({
       {...defined(props)}
     >
       {children}
+      {hint && (
+        <span aria-hidden translate="no" className={shortcutClass}>
+          {hint.text}
+        </span>
+      )}
       {disabledReason && (
         <span
           id={reasonId}
@@ -296,20 +322,14 @@ function MenuSeparator({ className, ...props }: Loose<ComponentProps<typeof Menu
   );
 }
 
+const shortcutClass =
+  "ml-auto text-xs tracking-widest text-muted-foreground group-data-highlighted/dropdown-menu-item:text-accent-foreground";
+
+/**
+ * Keys written out by hand at the end of an item, read with its name. For a shortcut, give the item `shortcut` instead.
+ */
 function MenuShortcut({ className, render, ...props }: OwnPartProps<"span">) {
-  return renderElement(
-    "span",
-    mergeProps(
-      {
-        className: cn(
-          "ml-auto text-xs tracking-widest text-muted-foreground group-data-highlighted/dropdown-menu-item:text-accent-foreground",
-          className,
-        ),
-      },
-      defined(props),
-    ),
-    render,
-  );
+  return renderElement("span", mergeProps({ className: cn(shortcutClass, className) }, defined(props)), render);
 }
 
 export {

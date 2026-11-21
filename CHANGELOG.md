@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.58.0 (2026-11-21)
+## v0.61.0 (2026-11-21)
 
 - **New component: Swipe list** (AVE-199). `@manyave/avenue/components/swipe-list`: rows that slide aside on a phone to
   show their actions, one row open at a time, built on ui-sdk core's `createSwipeActions` as the `swipe-list` primitive.
@@ -13,6 +13,53 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   `undo` (done at once, then the Undo toast), `confirm` (asks first in an AlertDialog whose answer carries
   `data-agent-confirm`), or neither; a long swipe runs a side's first item only when it is `undo`. Only a finger swipes;
   every row's menu has the same actions for a mouse, a keyboard, a screen reader and an agent. Nothing existing changes.
+## v0.60.0 (2026-11-21)
+
+- **Combobox searches results loaded as you type** (AVE-207), through ui-sdk's `useAsyncOptions`: pass its `items`,
+  `status`, `setQuery` (as `onQueryChange`) and `loadMore` (as `onLoadMore`). Typing waits for a pause, a newer search
+  drops a stale answer, and the next page loads when scrolling or the arrow keys reach the last result. With `status`,
+  the list says "Searching…" while results load and never that nothing matched, "Couldn't search. Try again." after a
+  failure, and the count once they arrive, all read politely; `filter` defaults to `false`, so the source's own
+  ranking stands; and the choice stays chosen, with its label, when a later search no longer finds it. New parts:
+  `ComboboxStatus` (the state line, in place of `ComboboxEmpty` beside loaded results) and `ComboboxItemText`.
+- **New component: Autocomplete** (`@manyave/avenue/components/autocomplete`), ui-sdk's Autocomplete in Avenue's
+  field: a text field that suggests as you type where any text is a valid value (a search box, an address, a name).
+  Its suggestions come from the app or load the same way. Parts: `Autocomplete`, `AutocompleteInput` (optional
+  `icon`), `AutocompleteContent`, `AutocompleteStatus`, `AutocompleteEmpty`, `AutocompleteList`, `AutocompleteItem`
+  (optional `meta`), `AutocompleteItemText`, `AutocompleteGroup`, `AutocompleteGroupLabel`, `AutocompleteSeparator`
+  and `AutocompleteLabel`. On a phone it opens as the sheet with the field in its header, with the phone's Clear.
+- **The typed words are marked in every Combobox and Autocomplete result**, in semibold, wherever each word appears
+  and in any order ("court 3" marks both in "3 Quill Court"). For the eye only: the marks are plain spans, not
+  `<mark>`, so each option's name is still its plain text. A list that hasn't been searched looks as before; a
+  searched one now shows the marks, in Combobox, the one-tag multi-pick and TableFilters' long lists.
+## v0.59.0 (2026-11-21)
+
+- **Menus and tooltips write a shortcut the way each computer does** (AVE-194). `MenuItem` takes ui-sdk's `shortcut`
+  (`"mod+d"`): the row ends in ⌘D on a Mac and Ctrl+D elsewhere, hidden from screen readers, and the item gets
+  `aria-keyshortcuts` (Meta+D or Control+D), which they hear instead. New `TooltipShortcut` does the same inside a
+  tooltip from the Tooltip's `shortcut`, with `aria-keyshortcuts` on the trigger. Both only show the keys: bind them
+  where the action lives with ui-sdk's `useShortcut` (`@ui-sdk/react/shortcuts`). `MenuShortcut` with text you write
+  yourself is unchanged, so no existing pixels move; to move to the new form, replace `<MenuShortcut>⌘E</MenuShortcut>`
+  with `shortcut="mod+e"` on the item. `CommandShortcut` already used ui-sdk's formatting and is unchanged. New stories:
+  Menu / Shortcuts on a Mac, Menu / Shortcuts elsewhere, Tooltip / With a shortcut.
+
+## v0.58.0 (2026-11-21)
+
+- **New components: DatePicker, DateInput and TimeInput** (AVE-202), on ui-sdk's date-picker, date-input and
+  time-input, in Input's look and inside a Field. `@manyave/avenue/components/date-picker` is a date typed in the
+  locale's order (paste works, Enter or leaving the field reads it) with Avenue's Calendar on demand, by the button or
+  Alt+Down; one tag, or ui-sdk's parts: `DatePickerGroup` (Avenue's field box, which never shrinks below a whole date,
+  so a row wraps before a date is cut off), `DatePickerInput`, `DatePickerClear`, `DatePickerTrigger` (named after its
+  field and the date, "Choose due date, Saturday, November 21, 2026"), `DatePickerHint`, `DatePickerContent` (a popover,
+  a bottom sheet on a small touch screen) and `DatePickerPreset`, with `mode="range"` for two dates.
+  `@manyave/avenue/components/date-input` and `/time-input` type a date or time one part at a time, each part a
+  spinbutton named by its part ("month") that reads its value ("11"); `DateInputSegment` and `TimeInputSegment` are
+  their parts. All three take `native` ("auto" by default): on touch-first devices the one-tag form is the phone's
+  own date or time picker. All three post the native input's string under their Field's name. `DatePickerError`,
+  `DateInputError` and `TimeInputError` are the field's one error line: on submit, an empty required field says
+  `missing`, and anything else refused asks for the locale's format ("Enter a date like 31/12/2026"). ADOPTING.md,
+  "Dates and times", has the swap from `type="date"`. `src/checks/touch-targets` now treats an open DatePicker sheet's
+  viewport as the modal layer it is, as it does Select's and Combobox's. No existing pixels change; the calendar's popup takes AVE-208's floating edge and shadow.
 
 ## v0.57.0 (2026-11-21)
 

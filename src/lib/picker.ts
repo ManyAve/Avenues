@@ -50,7 +50,7 @@ export const listPopup = cn(
  * sheet slides itself, so the popover's scale and fade are off. The list inside scrolls; the handle stays put. 8px at
  * the sides puts each row's check on the page's 16px line.
  */
-function listSheet() {
+export function listSheet() {
   return "sheet:sheet-bottom sheet:relative sheet:flex sheet:flex-col sheet:gap-2 sheet:overflow-hidden sheet:px-2 sheet:pt-inset sheet:shadow-none sheet:[--sheet-backdrop:rgb(0_0_0/0.1)] sheet:transition-none sheet:data-starting-style:scale-100 sheet:data-starting-style:opacity-100 sheet:data-ending-style:scale-100 sheet:data-ending-style:opacity-100";
 }
 
@@ -62,6 +62,11 @@ export const listScroll = "sheet:min-h-0 sheet:flex-1 sheet:overflow-y-auto shee
  * into the sheet ahead of it.
  */
 export const listSheetHandle = cn(sheetHandle, "hidden sheet:order-first sheet:block");
+
+// In a sheet, ui-sdk moves a Combobox's or Autocomplete's input into the sheet's header, where it is a 44px search field
+// of its own.
+export const sheetSearch =
+  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/20 forced-colors:sheet:focus-visible:outline-2 forced-colors:sheet:focus-visible:outline-offset-2 forced-colors:sheet:focus-visible:outline-solid dark:sheet:bg-input/30";
 
 /**
  * One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). 44px tall on phones (AVE-22), and

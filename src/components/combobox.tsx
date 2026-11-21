@@ -5,7 +5,9 @@ import type {
   ComboboxQueryChangeReason,
   ComboboxValueChangeReason,
 } from "@ui-sdk/react/combobox";
+import type { AsyncOptionsStatus } from "@ui-sdk/react/async-options";
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
+import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import {
   createContext,
   use,
@@ -31,6 +33,7 @@ import {
   listScroll,
   listSeparator,
   listSheetHandle,
+  sheetSearch,
   entryKeys,
   toItem,
   valueKey,
@@ -41,7 +44,17 @@ import {
   type PickerSize,
   type Presentation,
 } from "#avenue/lib/picker";
-import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
+import {
+  defaultSearchEmpty,
+  markWords,
+  MarkedText,
+  matchWords,
+  SearchContext,
+  searchMessage,
+  searchMessageShows,
+  type SearchState,
+} from "#avenue/lib/search";
 import { cn } from "#avenue/lib/utils";
 
 export type { ListData, ListGroup, ListItem, ListSeparator };
@@ -65,17 +78,6 @@ type None = typeof NONE;
 
 /** "" is the old "nothing chosen" (AVE-137); it still reads as null until both apps have moved off it. */
 const chosen = <T,>(value: T | null | undefined): T | null => (value === "" || value === undefined ? null : value);
-
-const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-
-/** Default search: every word typed appears in the label or a keyword (case- and accent-insensitive). */
-function matchWords(item: ListItem<unknown>, query: string): boolean {
-  const text = fold([item.label, ...(item.keywords ?? [])].join(" "));
-  return fold(query)
-    .split(/\s+/)
-    .filter(Boolean)
-    .every((w) => text.includes(w));
-}
 
 /** What `onValueChange` gets after the value: ui-sdk Combobox's own details (reason, event, source, `cancel()`). */
 export type ComboboxValueChangeDetails = ChangeDetails<ComboboxValueChangeReason>;
@@ -104,6 +106,9 @@ const InContentContext = createContext(false);
 /** True inside `ComboboxChips`: a `ComboboxInput` there is the search after the chips, in the field `ComboboxChips` draws. */
 const ChipsContext = createContext(false);
 
+/** The label of the `ComboboxItem` a `ComboboxItemText` sits in, for the text it marks. */
+const ItemLabelContext = createContext<string | undefined>(undefined);
+
 /** The value of the `ComboboxChip` a `ComboboxChipRemove` sits in, so the button can name itself after the chip. */
 const ChipContext = createContext<{ value: unknown } | null>(null);
 
@@ -128,10 +133,12 @@ type RootProps<V> = {
   onOpenChangeComplete?: ((open: boolean) => void) | undefined;
   controller?: ComboboxController<V, boolean> | undefined;
   onQueryChange?: ((query: string, details: ComboboxQueryChangeDetails) => void) | undefined;
-  filter?: ((item: ListItem<V>, query: string) => boolean | number) | undefined;
+  filter?: ((item: ListItem<V>, query: string) => boolean | number) | false | undefined;
   itemToValue?: ((value: V) => string) | undefined;
   itemToLabel?: ((value: V) => string) | undefined;
   isItemEqualToValue?: ((itemValue: V, value: V) => boolean) | undefined;
+  status?: AsyncOptionsStatus | undefined;
+  onLoadMore?: (() => void) | undefined;
   name?: string | undefined;
   form?: string | undefined;
   required?: boolean | undefined;
@@ -141,24 +148,48 @@ type RootProps<V> = {
 };
 
 /** The root and its shared state, for both forms. */
-function ComboboxRoot<V>({ disabled, presentation = "auto", filter, multiple, children, ...props }: RootProps<V>) {
+function ComboboxRoot<V>({
+  disabled,
+  presentation = "auto",
+  filter,
+  multiple,
+  status,
+  onQueryChange,
+  children,
+  ...props
+}: RootProps<V>) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const shared = useMemo(
     () => ({ anchor, setAnchor, disabled: !!disabled, multiple: !!multiple }),
     [anchor, disabled, multiple],
   );
+  // The text typed, for the item text to mark, and the results' status, for the status and empty parts (AVE-207).
+  // ui-sdk's own item text marks only for its named filters, never for a filter function (Avenue's word search) or
+  // `false` (a source's results), so Avenue's marks every typed word itself.
+  const [query, setQuery] = useState("");
+  const search = useMemo(() => ({ query, status }), [query, status]);
   // ui-sdk types the value by `Multiple`; the public props below already tie `multiple` to a list value and callback,
   // so the root hands them on as one shape.
   const options = {
-    ...defined({ disabled, multiple }),
-    ...(filter ? { filter: filter as (item: Ui.ListItem<V>, query: string) => boolean | number } : {}),
+    ...defined({ disabled, multiple, status }),
+    ...(filter !== undefined ? { filter: filter as Ui.ComboboxProps<V, boolean>["filter"] } : {}),
     ...defined(props),
   } as Ui.ComboboxProps<V, boolean>;
   return (
     <SharedContext value={shared}>
-      <Ui.Combobox<V, boolean> autoHighlight presentation={presentation} {...options}>
-        {children}
-      </Ui.Combobox>
+      <SearchContext value={search}>
+        <Ui.Combobox<V, boolean>
+          autoHighlight
+          presentation={presentation}
+          {...options}
+          onQueryChange={(next: string, details: ComboboxQueryChangeDetails) => {
+            onQueryChange?.(next, details);
+            if (!details.canceled) setQuery(next);
+          }}
+        >
+          {children}
+        </Ui.Combobox>
+      </SearchContext>
     </SharedContext>
   );
 }
@@ -208,9 +239,6 @@ function PopupInput({ size, icon: _icon, invalid, triggerLabel: _trigger, clearL
   );
 }
 
-// In a sheet, ui-sdk moves the field's input into the sheet's header, where it is a 44px search field of its own.
-const sheetSearch =
-  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/20 forced-colors:sheet:focus-visible:outline-2 forced-colors:sheet:focus-visible:outline-offset-2 forced-colors:sheet:focus-visible:outline-solid dark:sheet:bg-input/30";
 
 function FieldInput({
   size,
@@ -537,13 +565,54 @@ function ComboboxContent({
   );
 }
 
-/** What the list says while nothing matches. Hidden otherwise. */
+/**
+ * What the list says while nothing matches. Hidden otherwise, and while results load or after a failed search: a list
+ * that is empty because it is still loading never says nothing matched (UX Engineer, AVE-207).
+ */
 function ComboboxEmpty({ className, ...props }: Loose<ComponentProps<typeof Ui.ComboboxEmpty>>) {
+  const { status } = use(SearchContext);
   return (
     <Ui.ComboboxEmpty
-      className={cn("px-3 py-2 text-sm text-muted-foreground not-data-empty:hidden", className)}
+      className={cn(
+        "px-3 py-2 text-sm text-muted-foreground not-data-empty:hidden data-loading:hidden",
+        status === "error" && "hidden",
+        className,
+      )}
       {...defined(props)}
     />
+  );
+}
+
+type StatusProps = Omit<Loose<ComponentProps<typeof Ui.ComboboxStatus>>, "children" | "className"> & {
+  /** The words for each state. By default Avenue's (below); gets ui-sdk's status, the count shown and the text typed. */
+  children?: ReactNode | ((state: SearchState) => ReactNode) | undefined;
+  /** What it says when nothing matched, from the trimmed text typed. By default "Nothing matches “smi”." */
+  emptyMessage?: ((query: string) => ReactNode) | undefined;
+  className?: string | undefined;
+};
+
+/**
+ * The state of a search whose results load as you type (`status` on the Combobox, from ui-sdk's `useAsyncOptions`),
+ * read politely to screen readers: "Searching…", "Nothing matches “smi”." and "Couldn't search. Try again.", or the
+ * count once results arrive (UX Engineer, AVE-207). It shows in the list while it is all the list has to say (nothing
+ * loaded yet, nothing matched, a failure); a count, or "Searching…" over the last results, is only heard, so the
+ * results don't move under the pointer. It says when nothing matched itself, so leave `ComboboxEmpty` out beside it.
+ */
+function ComboboxStatus({ children, emptyMessage, className, ...props }: StatusProps) {
+  const { query } = use(SearchContext);
+  return (
+    <Ui.ComboboxStatus
+      {...defined(props)}
+      className={(state) =>
+        cn(searchMessageShows(state) ? "block px-2 py-1 text-sm text-muted-foreground" : "sr-only", className)
+      }
+    >
+      {(state) => {
+        const search = { status: state.status, loading: state.loading, count: state.count, query: query.trim() };
+        if (typeof children === "function") return children(search);
+        return children ?? searchMessage(search, emptyMessage);
+      }}
+    </Ui.ComboboxStatus>
   );
 }
 
@@ -567,7 +636,10 @@ type ComboboxItemProps<T> = NodeChildren<Loose<ComponentProps<typeof Ui.Combobox
 function ComboboxItem<T = string>({ value, className, children, label, meta, ...props }: ComboboxItemProps<T>) {
   const { multiple } = useShared("ComboboxItem");
   const text = label ?? (typeof children === "string" ? children : undefined);
+  // Plain text marks what was typed in it (AVE-207); richer children mark themselves with a `ComboboxItemText`.
+  const content = typeof children === "string" ? <ComboboxItemText>{children}</ComboboxItemText> : children;
   return (
+    <ItemLabelContext value={text}>
     <Ui.ComboboxItem<T>
       value={value}
       className={cn(listItem, multiple && "group/combobox-item", meta != null && "grid-cols-[1rem_1fr_auto]", className)}
@@ -590,9 +662,48 @@ function ComboboxItem<T = string>({ value, className, children, label, meta, ...
           <CheckIcon aria-hidden className="size-3.5" />
         </Ui.ComboboxItemIndicator>
       )}
-      <span className="col-start-2 min-w-0">{children}</span>
+      <span className="col-start-2 min-w-0">{content}</span>
       {meta != null && <span className="col-start-3 ps-3 text-control text-muted-foreground tabular-nums">{meta}</span>}
     </Ui.ComboboxItem>
+    </ItemLabelContext>
+  );
+}
+
+/**
+ * An item's text with each typed word marked, heavier, wherever it appears, ignoring case and accents (AVE-207). The
+ * text is its children, or its item's `label`. Marked for the eye only: the option's name is its plain text, with no
+ * `<mark>` for a screen reader to read out (UX Engineer). A `ComboboxItem` with plain text marks it already; use this
+ * for an item with more in it, like a second line:
+ *
+ * ```tsx
+ * <ComboboxItem value={h.id} label={h.address}>
+ *   <ComboboxItemText />
+ *   <span className="block text-meta text-muted-foreground">{h.owner}</span>
+ * </ComboboxItem>
+ * ```
+ *
+ * ui-sdk's own `ComboboxItemText` marks only under its named filters ("contains", "startsWith", "fuzzy"), never under
+ * a filter function (Avenue's word search) or `filter={false}` (results from a source), so Avenue draws its own.
+ */
+function ComboboxItemText({ children, className, render, ...props }: Omit<OwnPartProps<"span">, "children"> & {
+  children?: string | undefined;
+}) {
+  const label = use(ItemLabelContext);
+  const { query } = use(SearchContext);
+  const text = children ?? label ?? "";
+  const marked = query.trim() !== "" && markWords(text, query).some((segment) => segment.match);
+  return renderElement(
+    "span",
+    mergeProps(
+      {
+        "data-slot": "combobox-item-label",
+        "data-matched": marked ? "" : undefined,
+        className,
+        children: <MarkedText text={text} query={query} />,
+      },
+      defined(props),
+    ),
+    render,
   );
 }
 
@@ -628,9 +739,29 @@ interface ComboboxSharedProps<T, Item extends ComboboxItemData<T>> {
   onValueChange?: ((value: T | null, details: ComboboxValueChangeDetails) => void) | undefined;
   /**
    * Replaces the default word search (every word in the label or a keyword). True keeps an item; a number keeps it
-   * and ranks it (higher first), e.g. the household matcher that puts an exact spreadsheet ID first.
+   * and ranks it (higher first), e.g. the household matcher that puts an exact spreadsheet ID first. `false` keeps
+   * every item in the order given: results a source already matched and ranked, as with `status`, where it is the
+   * default.
    */
-  filter?: ((item: Item, query: string) => boolean | number) | undefined;
+  filter?: ((item: Item, query: string) => boolean | number) | false | undefined;
+  /**
+   * For results loaded as you type (AVE-207): ui-sdk's `useAsyncOptions` status, `"loading"`, `"error"` or `"idle"`.
+   * With it, the list says "Searching…" while results load (never "nothing matches"), "Couldn't search. Try again."
+   * after a failure, and the count once they arrive, read politely to screen readers; `filter` defaults to `false`,
+   * so the source's own order stands; and a choice stays chosen when later results no longer hold it.
+   *
+   * ```tsx
+   * const households = useAsyncOptions(searchHouseholds, { debounce: 200 });
+   * <Combobox items={households.items} status={households.status} onQueryChange={households.setQuery}
+   *   onLoadMore={households.loadMore} value={id} onValueChange={setId} />
+   * ```
+   *
+   * Rank in the source: `fuzzyScore` from `@ui-sdk/core/text-match` is a good default for one that doesn't rank its
+   * own (a fake directory), and a source that does (Mapbox) keeps its order.
+   */
+  status?: AsyncOptionsStatus | undefined;
+  /** Runs when scrolling or the arrow keys reach the last item, for the next page: `useAsyncOptions`' `loadMore`. */
+  onLoadMore?: (() => void) | undefined;
   /** For object values: the string a value is known and posted by. Strings are themselves, objects their `value` or `id`. */
   itemToValue?: ((value: T) => string) | undefined;
   /** For object values: the text a value shows in the field. */
@@ -719,6 +850,8 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
     noneLabel?: string | undefined;
     /** What the list says when nothing matches. Gets the trimmed query. */
     emptyMessage?: ((query: string) => ReactNode) | undefined;
+    /** Gets the search text as it changes, and ui-sdk's details: `useAsyncOptions`' `setQuery`, with `status`. */
+    onQueryChange?: ((query: string, details: ComboboxQueryChangeDetails) => void) | undefined;
     multiple?: undefined;
     keepQuery?: undefined;
     maxSelected?: undefined;
@@ -731,7 +864,7 @@ type ComboboxWrapperProps<T, Item extends ComboboxItemData<T>> = ComboboxSharedP
 type ComboboxWrapperMultipleProps<T, Item extends ComboboxItemData<T>> = ComboboxMultipleValueProps<T, Item> &
   Pick<InputProps, "id" | "aria-label" | "aria-describedby" | "invalid" | "placeholder"> &
   Pick<ChipsProps, "size" | "triggerLabel" | "className"> &
-  Pick<ComboboxWrapperProps<T, Item>, "items" | "emptyMessage"> & {
+  Pick<ComboboxWrapperProps<T, Item>, "items" | "emptyMessage" | "onQueryChange"> & {
     children?: undefined;
     /** No "none" option: an empty list is none. */
     noneLabel?: undefined;
@@ -818,11 +951,7 @@ export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, 
   if (props.multiple) {
     const { children, filter, keepQuery = true, ...rest } = props;
     return (
-      <ComboboxRoot<T>
-        keepQuery={keepQuery}
-        {...(filter ? { filter: (item: ListItem<T>, query: string) => filter(item as Item, query) } : {})}
-        {...rest}
-      >
+      <ComboboxRoot<T> keepQuery={keepQuery} {...rootFilter(filter, rest.status)} {...rest}>
         {children}
       </ComboboxRoot>
     );
@@ -834,7 +963,7 @@ export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, 
         {...(value !== undefined ? { value: chosen(value) } : {})}
         {...(defaultValue !== undefined ? { defaultValue: chosen(defaultValue) } : {})}
         {...(onValueChange ? { onValueChange } : {})}
-        {...(filter ? { filter: (item: ListItem<T>, query: string) => filter(item as Item, query) } : {})}
+        {...rootFilter(filter, rest.status)}
         {...rest}
       >
         {children}
@@ -842,6 +971,18 @@ export function Combobox<Item extends ComboboxItemData<any> = ComboboxItemData, 
     );
   }
   return <ComboboxFromItems<T, Item> {...(props as ComboboxWrapperProps<T, Item>)} />;
+}
+
+/**
+ * The parts form's filter for the root: the app's, or `false` for loaded results (they come matched and ranked), or
+ * nothing for ui-sdk's default.
+ */
+function rootFilter<T, Item extends ComboboxItemData<T>>(
+  filter: ((item: Item, query: string) => boolean | number) | false | undefined,
+  status: AsyncOptionsStatus | undefined,
+): { filter?: ((item: ListItem<T>, query: string) => boolean | number) | false } {
+  if (filter === false || (filter === undefined && status !== undefined)) return { filter: false };
+  return filter ? { filter: (item: ListItem<T>, query: string) => filter(item as Item, query) } : {};
 }
 
 /** The list's rows from `items`, for both one-tag forms: groups and their labels, separators, and each item. */
@@ -856,7 +997,7 @@ function rowsFrom<T, Item extends ComboboxItemData<T>>(items: ListData<T, Item>,
         meta={option.meta}
         {...defined({ keywords: option.keywords, disabled: option.disabled || undefined })}
       >
-        <span>{option.label}</span>
+        <ComboboxItemText>{option.label}</ComboboxItemText>
         {option.hint && <span className="text-muted-foreground"> · {option.hint}</span>}
       </ComboboxItem>
     );
@@ -890,8 +1031,11 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   required,
   noneLabel,
   placeholder,
-  emptyMessage = defaultEmptyMessage,
-  filter = matchWords,
+  status,
+  onLoadMore,
+  onQueryChange,
+  emptyMessage = status !== undefined ? defaultSearchEmpty : defaultEmptyMessage,
+  filter = status !== undefined ? false : matchWords,
   itemToValue,
   itemToLabel,
   isItemEqualToValue,
@@ -900,20 +1044,31 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   ...input
 }: ComboboxWrapperProps<T, Item>) {
   const items: ListData<T, Item> = itemsProp ?? NO_ITEMS;
+  const loaded = status !== undefined;
   const keyOf = useMemo(() => valueKey(itemToValue), [itemToValue]);
   const byKey = useMemo(() => new Map(flatItems(items).map((o) => [keyOf(o.value), o])), [items, keyOf]);
   // Uncontrolled, the field still tracks its value, for the form reset below.
   const [own, setOwn] = useState(() => chosen(defaultValue));
   const current = value !== undefined ? chosen(value) : own;
-  // ui-sdk is always handed the value, with Avenue's "none" option in place of null where there is one.
+  // Loaded results change with every search, so the item last chosen is kept for its label once they no longer hold
+  // it (AVE-207). A value set before any search needs `itemToLabel`, or object values that carry their label.
+  const [picked, setPicked] = useState<Item | undefined>(() => (current !== null ? byKey.get(keyOf(current)) : undefined));
+  // ui-sdk is always handed the value, with Avenue's "none" option in place of null where there is one. A value that
+  // isn't among the items is dropped, unless the items are loaded results, which hold only what the last search found.
   const toRoot = (v: T | null): T | None | null =>
-    v !== null ? (byKey.has(keyOf(v)) ? v : null) : noneLabel ? NONE : null;
+    v !== null ? (loaded || byKey.has(keyOf(v)) ? v : null) : noneLabel ? NONE : null;
   const selected = toRoot(current);
   // The app hears it first, as ui-sdk's callbacks do; a canceled change leaves the field's own value alone. ui-sdk is
   // always handed the value, so it can't drop a canceled change itself.
   const change = (next: T | null, details: ComboboxValueChangeDetails) => {
     onValueChange?.(next, details);
-    if (!details.canceled) setOwn(next);
+    if (details.canceled) return;
+    setOwn(next);
+    setPicked(next !== null ? byKey.get(keyOf(next)) : undefined);
+  };
+  const labelOfLoaded = (v: T): string => {
+    const key = keyOf(v);
+    return byKey.get(key)?.label ?? (picked && keyOf(picked.value) === key ? picked.label : String(v));
   };
   const [query, setQuery] = useState("");
   // Finds the form the field posts with, for its reset.
@@ -937,9 +1092,10 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
   }, [form]);
 
   // The "none" option's private value passes through the app's own object-value functions untouched.
+  const toLabel = itemToLabel ?? (loaded ? labelOfLoaded : undefined);
   const objectProps = defined({
     itemToValue: itemToValue && ((v: T | None) => (v === NONE ? NONE : itemToValue(v as T))),
-    itemToLabel: itemToLabel && ((v: T | None) => (v === NONE ? (noneLabel ?? "") : itemToLabel(v as T))),
+    itemToLabel: toLabel && ((v: T | None) => (v === NONE ? (noneLabel ?? "") : toLabel(v as T))),
     isItemEqualToValue:
       isItemEqualToValue &&
       ((a: T | None, b: T | None) => (a === NONE || b === NONE ? a === b : isItemEqualToValue(a as T, b as T))),
@@ -957,18 +1113,24 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
         else if (details.reason === "clear-press") change(null, details);
         else details.cancel();
       }}
-      onQueryChange={(next: string, details: { reason: string; cancel: () => void }) => {
+      onQueryChange={(next: string, details: ComboboxQueryChangeDetails) => {
         // ui-sdk empties the text on a form reset, as it would return to its own empty default; the reset listener
         // above has put the field's default value back, and with it its label, so the text stays.
-        if (details.reason === "reset") details.cancel();
-        else setQuery(next);
+        if (details.reason === "reset") return details.cancel();
+        onQueryChange?.(next, details);
+        setQuery(next);
       }}
-      filter={(entry: ListItem<T | None>, text: string) => {
-        if (entry.value === NONE) return text.trim() === "";
-        const option = byKey.get(keyOf(entry.value as T));
-        return option ? filter(option, text) : false;
-      }}
+      filter={
+        filter === false
+          ? false
+          : (entry: ListItem<T | None>, text: string) => {
+              if (entry.value === NONE) return text.trim() === "";
+              const option = byKey.get(keyOf(entry.value as T));
+              return option ? filter(option, text) : false;
+            }
+      }
       presentation={presentation}
+      {...defined({ status, onLoadMore })}
       // While the none option is chosen, ui-sdk would post its private value, so it gets no name and the hidden input
       // below posts "" in its place.
       {...defined({ disabled, name: selected === NONE ? undefined : name, form, required })}
@@ -980,7 +1142,11 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
       )}
       <ComboboxInput placeholder={placeholder} {...input} />
       <ComboboxContent>
-        <ComboboxEmpty>{emptyMessage(query.trim())}</ComboboxEmpty>
+        {loaded ? (
+          <ComboboxStatus emptyMessage={emptyMessage} />
+        ) : (
+          <ComboboxEmpty>{emptyMessage(query.trim())}</ComboboxEmpty>
+        )}
         <ComboboxList>
           {noneLabel && (
             <ComboboxItem<T | None> value={NONE} label={noneLabel}>
@@ -1005,8 +1171,11 @@ function ComboboxFromItems<T, Item extends ComboboxItemData<T>>({
  */
 function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
   items: itemsProp,
-  emptyMessage = defaultEmptyMessage,
-  filter = matchWords,
+  status,
+  onQueryChange,
+  onValueChange,
+  emptyMessage = status !== undefined ? defaultSearchEmpty : defaultEmptyMessage,
+  filter = status !== undefined ? false : matchWords,
   itemToValue,
   itemToLabel,
   keepQuery = true,
@@ -1031,9 +1200,11 @@ function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
   const items: ListData<T, Item> = itemsProp ?? NO_ITEMS;
   const keyOf = useMemo(() => valueKey(itemToValue), [itemToValue]);
   const byKey = useMemo(() => new Map(flatItems(items).map((o) => [keyOf(o.value), o])), [items, keyOf]);
+  // Loaded results change with every search, so the chips keep the labels of the items chosen from them (AVE-207).
+  const [picked, setPicked] = useState<ReadonlyMap<string, string>>(() => new Map());
   const labelFor = useMemo(
-    () => itemToLabel ?? ((v: T) => byKey.get(keyOf(v))?.label ?? String(v)),
-    [itemToLabel, byKey, keyOf],
+    () => itemToLabel ?? ((v: T) => byKey.get(keyOf(v))?.label ?? picked.get(keyOf(v)) ?? String(v)),
+    [itemToLabel, byKey, keyOf, picked],
   );
   const [query, setQuery] = useState("");
   const rows = rowsFrom(items, keyOf);
@@ -1043,12 +1214,24 @@ function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
       keepQuery={keepQuery}
       presentation={presentation}
       itemToLabel={labelFor}
-      onQueryChange={(next: string) => setQuery(next)}
-      filter={(entry: ListItem<T>, text: string) => {
-        const option = byKey.get(keyOf(entry.value));
-        return option ? filter(option, text) : false;
+      onQueryChange={(next: string, details: ComboboxQueryChangeDetails) => {
+        onQueryChange?.(next, details);
+        setQuery(next);
       }}
-      {...defined({ itemToValue })}
+      onValueChange={(next: T[], details: ComboboxValueChangeDetails) => {
+        onValueChange?.(next, details);
+        if (details.canceled || status === undefined) return;
+        setPicked(new Map(next.map((v) => [keyOf(v), labelFor(v)])));
+      }}
+      filter={
+        filter === false
+          ? false
+          : (entry: ListItem<T>, text: string) => {
+              const option = byKey.get(keyOf(entry.value));
+              return option ? filter(option, text) : false;
+            }
+      }
+      {...defined({ itemToValue, status })}
       {...props}
     >
       <ComboboxChips {...defined({ size, triggerLabel, className })}>
@@ -1060,7 +1243,11 @@ function ComboboxFromItemsMultiple<T, Item extends ComboboxItemData<T>>({
         />
       </ComboboxChips>
       <ComboboxContent>
-        <ComboboxEmpty>{emptyMessage(query.trim())}</ComboboxEmpty>
+        {status !== undefined ? (
+          <ComboboxStatus emptyMessage={emptyMessage} />
+        ) : (
+          <ComboboxEmpty>{emptyMessage(query.trim())}</ComboboxEmpty>
+        )}
         <ComboboxList>{rows}</ComboboxList>
       </ComboboxContent>
     </ComboboxRoot>
@@ -1077,8 +1264,10 @@ export {
   ComboboxGroupLabel,
   ComboboxInput,
   ComboboxItem,
+  ComboboxItemText,
   ComboboxList,
   ComboboxSeparator,
+  ComboboxStatus,
   ComboboxTrigger,
   ComboboxValue,
 };
