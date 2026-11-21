@@ -9,7 +9,8 @@ import { defined, type Loose } from "#avenue/lib/props";
  * 8px (AVE-2: off-grid steps inside a control take 8). md (32px, 10px corner) is the default; a smaller control
  * sits in a card or dialog header (sm), a larger one in a mobile primary row (lg).
  * Inside a Field it is the field's control: labelled, described and marked invalid by the Field.
- * For a date or a time use DatePicker, DateInput or TimeInput (AVE-202), not type="date".
+ * For a date or a time use DatePicker, DateInput or TimeInput (AVE-202), not type="date"; for a small count, NumberInput
+ * (AVE-204), not type="number".
  * A placeholder is a hint in the placeholder token (AVE-186), never the label, the only instructions or an example value (AVE-25).
  */
 function Input({

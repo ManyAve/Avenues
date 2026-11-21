@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.61.0 (2026-11-21)
+
+- **New component: NumberInput** (`@manyave/avenue/components/number-input`, AVE-204), ui-sdk's NumberInput in
+  Input's look and inside a Field, for small counts typed or stepped: guests, copies, units. Minus and plus buttons sit
+  `gap-controls` apart and are 44px on phones; a held button repeats after a pause; at the minimum or maximum that
+  button is disabled and a muted line says why ("At most 10 guests"); a screen reader hears the new count once, when
+  the button is let go. `noun` names the buttons ("Increase guests"). It posts the plain number. Not for money, years,
+  IDs or phone numbers, which stay text fields. Parts: `NumberInput`, `NumberInputGroup`, `NumberInputDecrement`,
+  `NumberInputControl`, `NumberInputIncrement` and `NumberInputBound`. No existing component changes.
+
 ## v0.60.0 (2026-11-21)
 
 - **Combobox searches results loaded as you type** (AVE-207), through ui-sdk's `useAsyncOptions`: pass its `items`,
