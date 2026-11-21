@@ -4,6 +4,7 @@ import { expect, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -14,6 +15,7 @@ import {
 } from "#avenue/components/dialog";
 import { Field, FieldGroup, FieldLabel } from "#avenue/components/field";
 import { Input } from "#avenue/components/input";
+import { Textarea } from "#avenue/components/textarea";
 
 const meta = {
   title: "Components/Dialog",
@@ -195,6 +197,62 @@ export const ClickRightAfterClose: Story = {
     await userEvent.click(announcements);
     await expect(canvas.getByText("Households", { selector: "output" })).toBeInTheDocument();
     finishExit();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+  },
+};
+
+const longFields = ["Event name", "Location", "Organizer", "Contact email", "Contact phone", "Parking", "Food", "Volunteers", "Rain plan", "Notes for the board"];
+
+/**
+ * AVE-190: a form taller than the screen scrolls inside DialogBody, so the title and the footer's Save stay in view.
+ * Without DialogBody the whole dialog scrolls, and Save is off the bottom until you scroll to it.
+ */
+export const LongContentScrollsInBody: Story = {
+  render: () => (
+    <Dialog defaultOpen>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New event</DialogTitle>
+          <DialogDescription>Sunnydale HOA. Times are in Central time.</DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <FieldGroup className="gap-4">
+            {longFields.map((label) => (
+              <Field key={label}>
+                <FieldLabel>{label}</FieldLabel>
+                {label.startsWith("Notes") ? <Textarea rows={6} /> : <Input />}
+              </Field>
+            ))}
+          </FieldGroup>
+        </DialogBody>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button>Add event</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async () => {
+    const dialog = await screen.findByRole("dialog", { name: "New event" });
+    await waitFor(() => expect(dialog).not.toHaveAttribute("data-starting-style"));
+    const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]");
+    if (!body) throw new Error("no dialog body");
+    await expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+    await expect(dialog.scrollTop).toBe(0);
+    const inView = (element: HTMLElement) => {
+      const box = element.getBoundingClientRect();
+      const frame = dialog.getBoundingClientRect();
+      return box.top >= frame.top && box.bottom <= frame.bottom;
+    };
+    const save = screen.getByRole("button", { name: "Add event" });
+    const title = screen.getByText("New event", { selector: "[data-slot=dialog-title]" });
+    await expect(inView(save)).toBe(true);
+    await userEvent.click(screen.getByRole("textbox", { name: "Notes for the board" }));
+    await waitFor(() => expect(body.scrollTop).toBeGreaterThan(0));
+    await expect(dialog.scrollTop).toBe(0);
+    await expect(inView(save)).toBe(true);
+    await expect(inView(title)).toBe(true);
+    await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
   },
 };

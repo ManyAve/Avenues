@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.51.0 (2026-11-21)
+
+- **A dialog's middle can scroll on its own, keeping the title and the actions in view** (AVE-190). New part
+  `DialogBody`: put everything between `DialogHeader` and `DialogFooter` in it, and when the content is taller than the
+  screen only the body scrolls, so the title stays at the top and the footer's Save stays at the bottom. Before, the
+  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. Management's
+  `DetailDialog` (the board's new-event dialog, MANA-1271) wraps its children in `DialogBody`. `FormDialog` and
+  `Drawer` already did this with `FormDialogBody` and `DrawerBody`.
+
 ## v0.50.1 (2026-11-21)
 
 - **A swiped toast follows the finger** (AVE-192). ui-sdk already let a toast be swiped down to dismiss it, but
