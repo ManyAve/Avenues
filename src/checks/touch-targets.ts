@@ -95,13 +95,13 @@ function landsOn(hit: Element | null, control: HTMLElement): boolean {
 const POPUP = "[role=menu], [role=listbox], [role=dialog], [role=alertdialog], [role=tooltip], [data-slot$=-arrow]";
 /**
  * The layer a modal lays over the page: its backdrop, and the full-screen viewport around a sheet (the drawer's, and a
- * Select's or Combobox's presenting as a sheet, AVE-39). It covers
+ * Select's, Combobox's or DatePicker's presenting as a sheet, AVE-39, AVE-202). It covers
  * the controls behind the modal, so a point on it is not a miss for them, even before ui-sdk has made the page behind
  * inert (the Drawer's Bottom on desktop story flaked on that timing, AVE-67). For a control inside a dialog it is a
  * miss: the control's 44px area runs past the dialog's edge, where a tap closes the dialog (AVE-65).
  */
 const MODAL_LAYER =
-  "[data-slot$=-backdrop], [data-slot=drawer-viewport], [data-slot=select-viewport], [data-slot=combobox-viewport]";
+  "[data-slot$=-backdrop], [data-slot=drawer-viewport], [data-slot=select-viewport], [data-slot=combobox-viewport], [data-slot=date-picker-viewport]";
 const MODAL = "[role=dialog], [role=alertdialog]";
 function coveredByOtherPopup(hit: Element | null, control: HTMLElement): boolean {
   if (!hit) return false;

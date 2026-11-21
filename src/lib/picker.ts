@@ -49,7 +49,7 @@ export const listPopup = cn(
  * sheet slides itself, so the popover's scale and fade are off. The list inside scrolls; the handle stays put. 8px at
  * the sides puts each row's check on the page's 16px line.
  */
-function listSheet() {
+export function listSheet() {
   return "sheet:sheet-bottom sheet:relative sheet:flex sheet:flex-col sheet:gap-2 sheet:overflow-hidden sheet:px-2 sheet:pt-inset sheet:shadow-none sheet:[--sheet-backdrop:rgb(0_0_0/0.1)] sheet:transition-none sheet:data-starting-style:scale-100 sheet:data-starting-style:opacity-100 sheet:data-ending-style:scale-100 sheet:data-ending-style:opacity-100";
 }
 
