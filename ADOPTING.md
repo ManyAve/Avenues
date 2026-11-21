@@ -587,9 +587,9 @@ For a small count people type or step, such as guests at an event or copies of a
 
 - Typing always works. The minus and plus buttons are an extra; they stay out of the tab order, because the field's
   arrow keys (and Page Up, Page Down, Home and End) do the same. A held button repeats after a pause.
-- `noun` names the buttons ("Increase guests", "Decrease guests"), so two steppers on one screen never share a name,
-  and words the line that shows at a bound ("At most 10 guests") and what a screen reader hears when a button is let
-  go ("4 guests"). Pass it every time.
+- `noun` names the buttons ("Increase guests", "Decrease guests"), so give two steppers on one screen different nouns
+  ("adults" and "children"). It also words the line that shows at a bound ("At most 10 guests") and what a screen
+  reader hears when a button is let go ("4 guests"). Pass it every time.
 - It posts the plain number under the Field's `name`. Save on `onValueCommit`, which runs once a press, a typed
   number or a held button ends, not on `onValueChange`, which runs on every step.
 - **Not for money, years, IDs or phone numbers.** Those stay text fields (`Input` with `inputMode`), and money

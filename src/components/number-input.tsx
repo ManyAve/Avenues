@@ -2,7 +2,7 @@ import { announce } from "@ui-sdk/core";
 import * as Ui from "@ui-sdk/react/number-input";
 import type { NumberInputValueChangeReason } from "@ui-sdk/react/number-input";
 import { MinusIcon, PlusIcon } from "lucide-react";
-import { createContext, useContext, useId, useMemo, type ComponentProps, type ReactNode } from "react";
+import { createContext, useContext, useId, useMemo, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { buttonVariants } from "#avenue/components/button";
 import type { ChangeDetails } from "#avenue/lib/change";
 import { controlSize, controlSurface } from "#avenue/lib/control";
@@ -40,15 +40,39 @@ function useCounted(part: string) {
   return counted;
 }
 
-function localeOf(locale: string | undefined) {
-  if (locale) return locale;
-  if (typeof document !== "undefined" && document.documentElement.lang) return document.documentElement.lang;
-  return undefined;
+const noop = () => () => {};
+
+/**
+ * The locale the words use: `locale`, or the page's `lang` once the page is interactive. Server markup and the first
+ * client render use en-US, as ui-sdk's own formatting does, so hydration never disagrees.
+ */
+function useLocale(locale: string | undefined) {
+  const page = useSyncExternalStore(
+    noop,
+    () => document.documentElement.lang || navigator.language,
+    () => "en-US",
+  );
+  return locale ?? page;
+}
+
+/** The highest value a step can reach: `max`, or the last step below it when steps from `min` (or 0) miss it. */
+function reachableMax(min: number | undefined, max: number | undefined, step: number | undefined) {
+  if (max === undefined) return undefined;
+  const from = min ?? 0;
+  const size = step ?? 1;
+  if (!(size > 0) || max < from) return max;
+  const steps = Math.floor((max - from) / size + 1e-9);
+  return Math.min(max, Number((from + steps * size).toPrecision(12)));
+}
+
+/** A className that may be a function of the part's state, with Avenue's classes first. */
+function withClasses<S>(look: string, className: string | ((state: S) => string | undefined) | undefined) {
+  return typeof className === "function" ? (state: S) => cn(look, className(state)) : cn(look, className);
 }
 
 /** "3 guests": the value in the field's own format, with what it counts. */
 function countText({ noun, locale, format }: Pick<Counted, "noun" | "locale" | "format">, value: number) {
-  const where = localeOf(locale);
+  const where = locale;
   const number = new Intl.NumberFormat(where, format).format(value);
   if (noun === undefined) return number;
   if (typeof noun === "string") return `${number} ${noun}`;
@@ -60,7 +84,7 @@ function nounOther(noun: NumberInputNoun | undefined) {
   return noun === undefined ? undefined : typeof noun === "string" ? noun : noun.other;
 }
 
-/** Which bound the value sits at, if any. A field whose min and max are equal is at its max. */
+/** Which bound the value sits at, if any; `max` here is the reachable one. A field whose bounds meet is at its max. */
 function boundOf({ value, min, max }: Pick<Counted, "value" | "min" | "max">) {
   if (value === null) return undefined;
   if (max !== undefined && value >= max) return "max" as const;
@@ -71,7 +95,7 @@ function boundOf({ value, min, max }: Pick<Counted, "value" | "min" | "max">) {
 export type NumberInputProps = NodeChildren<UiProps> & {
   /**
    * What the field counts, as `{ one: "guest", other: "guests" }` (or one word for both). It names the buttons
-   * ("Increase guests", "Decrease guests"), so two steppers on a screen never share a name, and words the bound line
+   * ("Increase guests", "Decrease guests"), so give two steppers on one screen different nouns, and words the bound line
    * ("At most 10 guests") and what a screen reader hears when a button is let go ("4 guests").
    */
   noun?: NumberInputNoun | undefined;
@@ -106,7 +130,9 @@ export function NumberInput({
   ...props
 }: NumberInputProps) {
   const boundId = useId();
-  const { min, max, locale, format } = props;
+  const { min, step, format } = props;
+  const max = reachableMax(min, props.max, step);
+  const locale = useLocale(props.locale);
   const commit = (value: number | null, details: CommitDetails) => {
     onValueCommit?.(value, details);
     if (value !== null && (details.reason === "increment-press" || details.reason === "decrement-press")) {
@@ -116,7 +142,7 @@ export function NumberInput({
   return (
     <Ui.NumberInput
       data-size={size}
-      className={cn("flex flex-col items-start gap-1", className)}
+      className={withClasses("flex flex-col items-start gap-1", className)}
       onValueCommit={commit}
       {...defined(props)}
     >
@@ -142,7 +168,7 @@ export function NumberInput({
 export function NumberInputGroup({ className, ...props }: Loose<ComponentProps<typeof Ui.NumberInputGroup>>) {
   return (
     <Ui.NumberInputGroup
-      className={cn("flex items-center gap-controls", className)}
+      className={withClasses("flex items-center gap-controls", className)}
       {...defined(props)}
     />
   );
@@ -158,10 +184,8 @@ export function NumberInputControl({ className, ...props }: Loose<ComponentProps
     <Ui.NumberInputControl
       data-size={size}
       aria-invalid={invalid || undefined}
-      className={cn(
-        controlSurface,
-        controlSize({ size }),
-        "w-16 py-1 text-center tabular-nums pointer-coarse:min-h-11",
+      className={withClasses(
+        cn(controlSurface, controlSize({ size }), "w-16 py-1 text-center tabular-nums pointer-coarse:min-h-11"),
         className,
       )}
       {...defined(props)}
@@ -177,7 +201,7 @@ function stepButtonClass(size: PickerSize, className: StepProps["className"]) {
     buttonVariants({ variant: "outline", size: size === "sm" ? "icon-sm" : "icon-md" }),
     "motion-reduce:transition-none pointer-coarse:size-11",
   );
-  return typeof className === "function" ? (state: Ui.NumberInputButtonState) => cn(look, className(state)) : cn(look, className);
+  return withClasses(look, className);
 }
 
 function useStepButton(direction: "increase" | "decrease", props: StepProps) {
@@ -216,7 +240,7 @@ export function NumberInputBound({
   children,
   render,
   ...props
-}: Omit<OwnPartProps<"p">, "children"> & {
+}: Omit<OwnPartProps<"p">, "children" | "id"> & {
   children?: ((bound: "min" | "max") => ReactNode) | undefined;
 }) {
   const counted = useCounted("NumberInputBound");
@@ -232,13 +256,13 @@ export function NumberInputBound({
     "p",
     mergeProps(
       {
-        id: counted.boundId,
         "data-slot": "number-input-bound",
         "data-bound": bound,
         className: cn("text-meta text-muted-foreground", className),
         children: words,
       },
-      defined(props),
+      // The disabled button is described by this id, so the part keeps its own.
+      { ...defined(props), id: counted.boundId },
     ),
     render,
   );

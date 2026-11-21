@@ -1459,6 +1459,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-number-input--default": { none: NEW_IN_AVENUE("The count stepper (the apps type counts into a bare input)", "Input / Default (the same control surface, size and corner) and Button / Variants (the outline icon buttons)") },
   "components-number-input--at-the-maximum": { none: STATE_ONLY("a count at its maximum", "Number input / Default") },
   "components-number-input--at-the-minimum": { none: STATE_ONLY("a count at its minimum", "Number input / Default") },
+  "components-number-input--steps-that-miss-the-maximum": { none: STATE_ONLY("a count at the last step below its maximum", "Number input / Default") },
   "components-number-input--small": { none: STATE_ONLY("the sm size", "Number input / Default") },
   "components-number-input--disabled": { none: STATE_ONLY("a disabled count", "Number input / Default") },
   "components-number-input--invalid": { none: STATE_ONLY("an invalid count", "Number input / Default") },

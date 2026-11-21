@@ -86,6 +86,17 @@ export const AtTheMinimum: Story = {
   },
 };
 
+/** Steps of 2 from 1 never land on 10, so 9 is as high as it goes, and the line says so. */
+export const StepsMissTheMaximum: Story = {
+  name: "Steps that miss the maximum",
+  args: { step: 2, defaultValue: 9 },
+  play: async ({ canvas }) => {
+    const increase = canvas.getByRole("button", { name: "Increase guests" });
+    await expect(increase).toBeDisabled();
+    await expect(increase).toHaveAccessibleDescription("At most 9 guests");
+  },
+};
+
 export const Small: Story = {
   name: "Small (sm)",
   args: { size: "sm" },
@@ -168,14 +179,17 @@ export const HoldToRepeat: Story = {
       const announcements = listenForAnnouncements();
       // Dispatched by hand: user-event's release carries no pointerId, so ui-sdk's hold never sees the press end.
       const press = { bubbles: true, cancelable: true, composed: true, pointerId: 1, pointerType: "mouse", isPrimary: true };
+      const steps: number[] = [];
+      args.onValueChange?.mockImplementation(() => steps.push(performance.now()));
       increase.dispatchEvent(new PointerEvent("pointerdown", { ...press, button: 0, buttons: 1 }));
       await expect(field).toHaveValue("4");
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await expect(field).toHaveValue("4");
-      await new Promise((resolve) => setTimeout(resolve, 750));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       increase.dispatchEvent(new PointerEvent("pointerup", { ...press, button: 0, buttons: 0 }));
       const held = Number((field as HTMLInputElement).value);
       await expect(held).toBeGreaterThan(5);
+      // ui-sdk waits 400ms before the first repeat, then steps faster than that.
+      await expect(steps[1]! - steps[0]!).toBeGreaterThanOrEqual(350);
+      await expect(steps[2]! - steps[1]!).toBeLessThan(350);
       await waitFor(() =>
         expect(args.onValueCommit).toHaveBeenLastCalledWith(held, expect.objectContaining({ reason: "increment-press" })),
       );
