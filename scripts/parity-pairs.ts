@@ -1109,6 +1109,12 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: "The toast at phone width (AVE-40); the app's Toast stories are desktop only. The toast is compared by eye through the desktop stories above." },
     ]),
   ),
+  ...Object.fromEntries(
+    ["swipe-follows", "swipe-away"].map((story) => [
+      `components-toast--${story}`,
+      { none: "A swipe (AVE-192): the app's toast doesn't move with a swipe, and these stories end at rest or with the toast gone, so there is nothing new to compare." },
+    ]),
+  ),
   "components-toast--without-a-provider": {
     none: "A developer check, not a look (AVE-140): no toast shows without a ToastProvider, so there is nothing to compare.",
   },

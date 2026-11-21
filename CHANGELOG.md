@@ -13,6 +13,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   `DetailDialog` (the board's new-event dialog, MANA-1271) wraps its children in `DialogBody`. `FormDialog` and
   `Drawer` already did this with `FormDialogBody` and `DrawerBody`.
 
+## v0.50.1 (2026-11-21)
+
+- **A swiped toast follows the finger** (AVE-192). ui-sdk already let a toast be swiped down to dismiss it, but
+  Avenue's toast sat still under the finger and then vanished. Now it moves with a finger, mouse or pen drag, eases
+  back if it's let go short of dismissing, and carries on down as it fades when the swipe dismisses it. Under reduced
+  motion it still follows the drag and leaves without the slide. Its text can no longer be selected, so a mouse drag
+  that starts on the message swipes instead of selecting. Nothing changes at rest, and apps change nothing.
+
 ## v0.50.0 (2026-11-21)
 
 - **A bottom sheet can rest at peek, half and full** (AVE-191). Pass ui-sdk's `snapPoints` to `Drawer`, like

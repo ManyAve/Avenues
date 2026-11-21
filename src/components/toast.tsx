@@ -162,6 +162,14 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
           data-slot="toast"
           className={cn(
             "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
+            // A swipe moves the toast with the finger, mouse or pen (AVE-192). ui-sdk sets data-swiping and
+            // --toast-swipe-x/y while it's dragged; letting go short of dismissing removes both, and the toast eases back.
+            // The region sits at the bottom centre, so ui-sdk dismisses only a swipe down (an up or sideways drag only
+            // stretches a little); a dismissing swipe sets data-swipe-direction and the toast carries on down as it fades.
+            // select-none: a mouse drag that starts on the text swipes instead of selecting it, as ui-sdk's docs advise.
+            // Under reduced motion it still follows the drag, which is the person's own movement, and leaves at once.
+            "select-none data-swiping:translate-x-(--toast-swipe-x) data-swiping:translate-y-(--toast-swipe-y) data-swiping:transition-none",
+            "data-[swipe-direction=down]:translate-x-(--toast-swipe-x) data-[swipe-direction=down]:translate-y-[calc(var(--toast-swipe-y)+100%)]",
             "data-[type=error]:border-destructive/50 data-[type=error]:pr-2",
           )}
         >
