@@ -1,6 +1,6 @@
 {
   "name": "@manyave/avenue",
-  "version": "0.67.0",
+  "version": "0.68.0",
   "private": true,
   "description": "Avenue, ManyAve's design system: tokens, foundations, components and composites, shown in Storybook.",
   "type": "module",
@@ -12,6 +12,7 @@
     "./tokens.css": "./src/styles/tokens.css",
     "./desktop.css": "./src/styles/desktop.css",
     "./native/*": "./native/*",
+    "./art/*": "./art/*",
     "./components/*": "./src/components/*.tsx",
     "./utils": "./src/lib/utils.ts",
     "./format": "./src/lib/format.ts",
@@ -53,6 +54,7 @@
     "native:android": "bun scripts/native-android.ts",
     "native:android:check": "bun scripts/native-android.ts --check",
     "native:ios": "bun scripts/native-ios.ts",
+    "art:neighborhood": "bun scripts/neighborhood-art.ts",
     "visual:diff": "bun scripts/visual-diff.ts",
     "parity": "bun scripts/parity.ts",
     "ui-sdk:css": "bun scripts/ui-sdk-css.ts",
