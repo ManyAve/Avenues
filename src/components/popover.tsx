@@ -36,7 +36,7 @@ function PopoverContent({
       side={side}
       sideOffset={sideOffset}
       className={cn(
-        "flex w-72 flex-col gap-3 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-hidden",
+        "flex w-72 flex-col gap-3 rounded-lg [--nested-corner:var(--radius-lg)] bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-hidden",
         floatingEdge,
         popupMaxWidth,
         popupMotion,

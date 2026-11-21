@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { converter, differenceCiede2000, parse, wcagContrast, type Color } from "culori";
 import { readDeclarations } from "./css-tokens";
-import { merge, substitute, THEME_SCOPES, toColour, type Vars } from "./native-tokens";
+import { merge, over, substitute, THEME_SCOPES, toColour, type Vars } from "./native-tokens";
 
 /**
  * The lifted surfaces (AVE-115, `data-surface="lifted"` in tokens.css) exist to hold these floors, which an app whose
@@ -32,6 +32,10 @@ const PAIRS: Pair[] = [
   ["distinct", "secondary", "card", SURFACE, "a secondary badge is seen on a card"],
   ["distinct", "border", "card", SURFACE, "a line inside a card renders"],
   ["distinct", "border", "background", SURFACE, "a line on the page renders"],
+  ["distinct", "border", "popover", SURFACE, "a line in a menu or dialog renders"],
+  // REGION, not SURFACE: the well's own fill already groups its rows; the divider only splits them, as a grouped
+  // list's separator does.
+  ["distinct", "border", "fill", REGION, "a divider between a Well's rows renders (AVE-211)"],
   ["contrast", "foreground", "background", BODY, "page text"],
   ["contrast", "card-foreground", "card", BODY, "card text"],
   ["contrast", "muted-foreground", "background", BODY, "secondary text on the page"],
@@ -71,7 +75,10 @@ function measure(scopes: readonly string[], pairs: Pair[] = PAIRS, overrides: Re
   const vars = themeVars(scopes, overrides);
   const colour = (role: string): Color => toColour(substitute(`var(--${role})`, vars));
   return pairs.map(([kind, fg, bg, floor, why]) => {
-    const value = kind === "distinct" ? ciede(colour(fg), colour(bg)) : wcagContrast(colour(fg), colour(bg));
+    // A translucent colour (dark border and input, AVE-211) is measured as the browser paints it over that surface.
+    const [top, under] = [colour(fg), colour(bg)];
+    const drawn = over(top, under);
+    const value = kind === "distinct" ? ciede(drawn, under) : wcagContrast(drawn, under);
     return { pair: `${fg} on ${bg}`, value: Math.round(value * 100) / 100, floor, why };
   });
 }
@@ -196,17 +203,13 @@ describe("highlighted is never chosen (AVE-209)", () => {
  * where the menu ends). Composited the way a browser does, in sRGB.
  */
 const FLOATING_UNDER = ["popover", "card", "background", "muted"] as const;
-const toRgb = converter("rgb");
 
 function floatingEdgeOver(vars: Map<string, string>, under: string) {
   const value = substitute("var(--border-floating)", vars);
-  const mix = /^color-mix\(in oklab,\s*(.+?)\s+([\d.]+)%,\s*transparent\)$/.exec(value);
-  if (!mix) throw new Error(`--border-floating is not a translucent colour-mix: ${value}`);
-  const ink = toRgb(parse(mix[1]!))!;
-  const base = toRgb(parse(substitute(`var(--${under})`, vars)))!;
-  const a = Number(mix[2]) / 100;
-  const over = (k: "r" | "g" | "b") => a * ink[k] + (1 - a) * base[k];
-  return { edge: { mode: "rgb", r: over("r"), g: over("g"), b: over("b") } as Color, base };
+  if (!/^color-mix\(in oklab,\s*.+?\s+[\d.]+%,\s*transparent\)$/.test(value))
+    throw new Error(`--border-floating is not a translucent colour-mix: ${value}`);
+  const base = toColour(substitute(`var(--${under})`, vars));
+  return { edge: over(toColour(value), base), base };
 }
 
 describe("floating edge (AVE-208)", () => {
@@ -220,4 +223,44 @@ describe("floating edge (AVE-208)", () => {
       expect(misses).toEqual([]);
     });
   }
+});
+
+/**
+ * AVE-211: in dark, border and input are white laid over their surface, so a line reads the same on the page, a card, a
+ * popover and a fill, lifted or not. A text field's outline is the only sign it is a field (WCAG 1.4.11), so input
+ * keeps at least the contrast its old opaque onyx-750 had on every surface it sits on.
+ */
+describe("translucent dark border and input (AVE-211)", () => {
+  const UNDER = ["background", "card", "popover", "muted", "fill"] as const;
+  for (const theme of ["dark", "liftedDark"] as const) {
+    const vars = merge(tokens, [...THEME_SCOPES[theme]]);
+    const colour = (value: string) => toColour(substitute(value, vars));
+
+    test(`${theme}: input outlines a field at least as clearly as onyx-750 did, on every surface`, () => {
+      const misses = UNDER.map((under) => {
+        const base = colour(`var(--${under})`);
+        const now = wcagContrast(over(colour("var(--input)"), base), base);
+        const before = wcagContrast(colour("var(--color-onyx-750)"), base);
+        return { under, now: Math.round(now * 1000) / 1000, before: Math.round(before * 1000) / 1000 };
+      }).filter((r) => r.now < r.before);
+      expect(misses).toEqual([]);
+    });
+
+    test(`${theme}: a border line is the same step off every surface`, () => {
+      const steps = UNDER.map((under) => {
+        const base = colour(`var(--${under})`);
+        return ciede(over(colour("var(--border)"), base), base);
+      });
+      expect(Math.min(...steps)).toBeGreaterThanOrEqual(SURFACE);
+      // Within 1.5 of each other (onyx-800 ranged from 0 to 7.4).
+      expect(Math.max(...steps) - Math.min(...steps)).toBeLessThan(1.5);
+    });
+  }
+
+  test("border and input are translucent white in dark", () => {
+    for (const name of ["--border", "--input"]) {
+      const dark = tokens.find((d) => d.scope === ":root.dark" && d.name === name);
+      expect(dark?.value).toMatch(/^color-mix\(in oklab, white \d+%, transparent\)$/);
+    }
+  });
 });

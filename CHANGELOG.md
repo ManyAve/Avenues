@@ -4,6 +4,26 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.65.0 (2026-11-21)
+
+- **New component: Well** (AVE-211), `@manyave/avenue/components/well`: related settings grouped as rows on one soft
+  fill, split by dividers, with no outline, instead of in a bordered box. Each child is a row (a horizontal `Field`
+  with a `Switch`, a `ListItem`, a line of text), padded 16px across and 12px down. It sits in a SectionCard's content,
+  a Dialog or Drawer body, a Popover or on the page, and never inside another Well (a development error). The fill is
+  `fill`, not `muted`: on a default dark card `muted` is the card's own colour and a muted well would vanish.
+- **Nested corners have a helper** (AVE-2 section 4): Card, Dialog, Alert dialog, Drawer and Popover set
+  `--nested-corner`, the largest corner a part inside them may take, and `rounded-nested-<step>` draws a part's own
+  corner capped at it. Card and the modals allow up to xl, Popover lg, and an sm Card xs (its 12px inset leaves 2px of
+  a 14px corner). No corner step is added and nothing in Avenue draws differently; use `rounded-nested-*` for a
+  rounded part you put inside one of them (`src/lib/corners.ts` has the rule).
+- **Dark borders and field outlines are translucent white** (AVE-211): `border` is white at 10% and `input` white at
+  15%, laid over whatever is under them, so a line reads the same on the page, a card, a popover and a lifted surface
+  (onyx-800 was 7.4 off the page, 4.2 off a card and invisible on lifted muted). A field's outline keeps at least the
+  contrast it had on every surface (1.60:1 on a card, was 1.40). Dark lines and field outlines on cards and popovers
+  get a little lighter; on the page they stay as they were. Field fills (`bg-input/30`) and an off switch's track
+  step the same way. Phone tokens lay the two over the card, so `border` and `input` are a touch lighter there too.
+  Light mode doesn't change.
+
 ## v0.64.0 (2026-11-21)
 
 - **New component: NumberInput** (`@manyave/avenue/components/number-input`, AVE-204), ui-sdk's NumberInput in

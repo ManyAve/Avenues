@@ -24,9 +24,9 @@ export const floatingEdge = "ring-1 ring-border-floating forced-colors:border";
 /**
  * Shared by Dialog, Drawer (AVE-32) and AlertDialog (AVE-45): the modal surface, its title and its description, so a form that is a centred
  * dialog on a wide screen and a sheet on a phone reads as the same thing. Sizing, corners and position stay with each
- * component.
+ * component. Each is xl with a 16px inset, so a part inside may be xl at most (`--nested-corner`, AVE-211).
  */
-export const modalSurface = `bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-none ${floatingEdge}`;
+export const modalSurface = `[--nested-corner:var(--radius-xl)] bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-none ${floatingEdge}`;
 /** Line height is the close button's 24px, so the title and the button share a centre line. */
 /**
  * text-compact, as the app's dialogs set their titles (dues.tsx, dialogs.tsx): 16px on web, 14px at desktop scale
