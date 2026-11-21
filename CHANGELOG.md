@@ -4,6 +4,25 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.60.0 (2026-11-21)
+
+- **Combobox searches results loaded as you type** (AVE-207), through ui-sdk's `useAsyncOptions`: pass its `items`,
+  `status`, `setQuery` (as `onQueryChange`) and `loadMore` (as `onLoadMore`). Typing waits for a pause, a newer search
+  drops a stale answer, and the next page loads when scrolling or the arrow keys reach the last result. With `status`,
+  the list says "Searching…" while results load and never that nothing matched, "Couldn't search. Try again." after a
+  failure, and the count once they arrive, all read politely; `filter` defaults to `false`, so the source's own
+  ranking stands; and the choice stays chosen, with its label, when a later search no longer finds it. New parts:
+  `ComboboxStatus` (the state line, in place of `ComboboxEmpty` beside loaded results) and `ComboboxItemText`.
+- **New component: Autocomplete** (`@manyave/avenue/components/autocomplete`), ui-sdk's Autocomplete in Avenue's
+  field: a text field that suggests as you type where any text is a valid value (a search box, an address, a name).
+  Its suggestions come from the app or load the same way. Parts: `Autocomplete`, `AutocompleteInput` (optional
+  `icon`), `AutocompleteContent`, `AutocompleteStatus`, `AutocompleteEmpty`, `AutocompleteList`, `AutocompleteItem`
+  (optional `meta`), `AutocompleteItemText`, `AutocompleteGroup`, `AutocompleteGroupLabel`, `AutocompleteSeparator`
+  and `AutocompleteLabel`. On a phone it opens as the sheet with the field in its header, with the phone's Clear.
+- **The typed words are marked in every Combobox and Autocomplete result**, in semibold, wherever each word appears
+  and in any order ("court 3" marks both in "3 Quill Court"). For the eye only: the marks are plain spans, not
+  `<mark>`, so each option's name is still its plain text. A list that hasn't been searched looks as before; a
+  searched one now shows the marks, in Combobox, the one-tag multi-pick and TableFilters' long lists.
 ## v0.59.0 (2026-11-21)
 
 - **Menus and tooltips write a shortcut the way each computer does** (AVE-194). `MenuItem` takes ui-sdk's `shortcut`

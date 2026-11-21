@@ -544,6 +544,34 @@ like 31/12/2026" in British English. A field with `min`, `max` or `unavailable` 
 `DateInputError`, `TimeInputError`) its rule as children. Built from parts, a DatePicker is `DatePickerGroup` holding
 `DatePickerInput`, `DatePickerClear` and `DatePickerTrigger`, then `DatePickerHint` and `DatePickerContent` (Avenue's
 Calendar parts, and `DatePickerPreset`s).
+## Search as you type (AVE-207)
+
+For a list too long to hold (a household directory, an address search), load results as people type with ui-sdk's
+`useAsyncOptions` (`@ui-sdk/react/async-options`) and hand them to Combobox, or to the new Autocomplete when any text
+is a valid value:
+
+```tsx
+const households = useAsyncOptions(searchHouseholds, { debounce: 200 }); // (query, { signal, page }) => items
+<Combobox
+  items={households.items}
+  status={households.status}
+  onQueryChange={households.setQuery}
+  onLoadMore={households.loadMore}
+  value={id}
+  onValueChange={setId}
+  emptyMessage={(q) => `No households match “${q}”.`}
+/>
+```
+
+- With `status`, the list says "Searching…" while results load (never "no results"), "Couldn't search. Try again."
+  after a failure, and the count once they arrive, read politely to screen readers. Built from parts, put a
+  `ComboboxStatus` (or `AutocompleteStatus`) in the content in place of the empty part.
+- Your source keeps its own order: `filter` defaults to `false` with `status`. A source that doesn't rank can use
+  `fuzzyScore` from `@ui-sdk/core/text-match`; Mapbox and the like keep theirs.
+- Pass `signal` on to `fetch`, so a newer search cancels the old one. A value chosen before any search needs
+  `itemToLabel` (or object values) for its label; one picked from the results keeps it on its own.
+- Every Combobox and Autocomplete now marks the typed words in its results, heavier, for the eye only; built from
+  parts, an item with more than plain text marks its label with `ComboboxItemText`.
 
 ## For the Avenue team
 

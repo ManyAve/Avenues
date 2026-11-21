@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { GlobeIcon, HouseIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { useAsyncOptions } from "@ui-sdk/react/async-options";
 import { createComboboxController } from "@ui-sdk/react/combobox";
 import { Button } from "#avenue/components/button";
 import {
@@ -20,6 +21,7 @@ import {
   type ListData,
 } from "#avenue/components/combobox";
 import { Field, FieldError, FieldLabel } from "#avenue/components/field";
+import { failingSearch, PAGE, searchHouseholds } from "./directory-kit";
 import { expectListSheet, swipeDown, waitForClosed } from "./sheet-kit";
 
 // AVE-7. One Combobox for the household and time-zone pickers, which each build Base UI Combobox by hand today.
@@ -1198,5 +1200,175 @@ export const SeveralInOneTag: Story = {
       await expect(chosen).toHaveTextContent("Chosen: (none)");
       await expect(search()).toHaveFocus();
     });
+  },
+};
+
+// ---- Search as you type (AVE-207)
+
+/** A household picker whose results load from the fake slow directory as you type, through ui-sdk's useAsyncOptions. */
+function DirectoryPicker({
+  source = searchHouseholds,
+  presentation,
+}: {
+  source?: typeof searchHouseholds | typeof failingSearch;
+  presentation?: ComboboxProps["presentation"];
+}) {
+  const results = useAsyncOptions(source, { debounce: 200 });
+  const [value, setValue] = useState<string | null>(null);
+  return (
+    <Field className="w-80">
+      <FieldLabel>Household</FieldLabel>
+      <Combobox
+        items={results.items}
+        status={results.status}
+        onQueryChange={results.setQuery}
+        onLoadMore={results.loadMore}
+        value={value}
+        onValueChange={setValue}
+        icon={<HouseIcon />}
+        placeholder="Search 2,000 households"
+        triggerLabel="Show households"
+        emptyMessage={(q) => (q ? `No households match “${q}”.` : "Type an address, owner or ID.")}
+        presentation={presentation}
+      />
+      <output data-testid="value" className="text-meta text-muted-foreground">
+        Chosen: {value ?? "(none)"}
+      </output>
+    </Field>
+  );
+}
+
+const statusLine = () => document.querySelector<HTMLElement>("[data-slot=combobox-status]")!;
+const marks = (option: HTMLElement) => [...option.querySelectorAll("[data-match]")].map((m) => m.textContent);
+
+/**
+ * Results load as you type (AVE-207): the list says "Searching…" while they load and never that nothing matched; the
+ * source's own ranking stands (best match first, by `fuzzyScore` here); the typed words are marked in each result for
+ * the eye, while each option's name stays its plain text; the count is read politely once results arrive; and the
+ * choice stays chosen when the next search no longer finds it.
+ */
+export const SearchAsYouType: Story = {
+  name: "Search as you type",
+  render: () => <DirectoryPicker presentation="popover" />,
+  play: async ({ canvas, step }) => {
+    const input = canvas.getByRole<HTMLInputElement>("combobox", { name: "Household" });
+
+    await step("while the first results load, the list says Searching…, not that nothing matched", async () => {
+      await userEvent.click(input);
+      await userEvent.keyboard("smi");
+      await waitFor(() => expect(statusLine()).toHaveTextContent("Searching…"));
+      await expect(statusLine()).toHaveAttribute("role", "status");
+      await expect(statusLine()).toBeVisible();
+      await expect(screen.queryByText(/No households match/)).toBeNull();
+    });
+
+    await step("results arrive in the source's order, with the typed letters marked for the eye only", async () => {
+      await waitFor(() => expect(screen.getAllByRole("option").length).toBeGreaterThan(0));
+      const first = screen.getAllByRole("option")[0]!;
+      await expect(first).toHaveTextContent(/Smithfield/);
+      await expect(marks(first)).toEqual(["Smi"]);
+      await expect(first.querySelector("mark")).toBeNull();
+      await expect(first).toHaveAccessibleName(expect.stringMatching(/^\d+ [A-Za-z ]+ · \w+ Smithfield ID \d+$/));
+      // The count is heard, not shown: the results are what the list shows.
+      await waitFor(() => expect(statusLine()).toHaveTextContent(/^\d+ results$/));
+      await expect(statusLine()).toHaveClass("sr-only");
+    });
+
+    await step("a search that matches nothing says so once it has loaded", async () => {
+      await userEvent.keyboard("zzz");
+      await waitFor(() => expect(statusLine()).toHaveTextContent("No households match “smizzz”."));
+      await expect(statusLine()).toBeVisible();
+      await expect(screen.queryAllByRole("option")).toHaveLength(0);
+    });
+
+    await step("several words mark each word, wherever it appears", async () => {
+      await userEvent.clear(input);
+      await userEvent.keyboard("quill 11");
+      await waitFor(() => expect(screen.getAllByRole("option")[0]).toHaveTextContent(/^11 Quill Court/));
+      await expect(marks(screen.getAllByRole("option")[0]!)).toEqual(["11", "Quill"]);
+    });
+
+    await step("Enter chooses; a later search that misses it keeps the choice and its label", async () => {
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent(/Chosen: h\d+/));
+      const label = input.value;
+      await expect(label).toMatch(/^11 Quill Court · /);
+      await userEvent.clear(input);
+      await userEvent.keyboard("wren");
+      await waitFor(() => expect(screen.getAllByRole("option")[0]).toHaveTextContent(/Wren Terrace/));
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(input).toHaveValue(label));
+      await expect(canvas.getByTestId("value")).toHaveTextContent(/Chosen: h\d+/);
+    });
+  },
+};
+
+/** The next page loads when the arrow keys reach the last result (ui-sdk's `onLoadMore`, `useAsyncOptions`' loadMore). */
+export const LoadMore: Story = {
+  name: "Search as you type, load more",
+  render: () => <DirectoryPicker presentation="popover" />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Household" }));
+    await userEvent.keyboard("lantern");
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(PAGE));
+    for (let i = 0; i < PAGE; i++) await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(PAGE * 2));
+    await userEvent.keyboard("{Escape}");
+    await waitForClosed("combobox");
+  },
+};
+
+/** A source that fails: the list says so, politely, and never that nothing matched. */
+export const SearchFails: Story = {
+  name: "Search as you type, failing",
+  render: () => <DirectoryPicker source={failingSearch} presentation="popover" />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Household" }));
+    await userEvent.keyboard("oak");
+    await waitFor(() => expect(statusLine()).toHaveTextContent("Couldn't search. Try again."));
+    await expect(statusLine()).toBeVisible();
+    await expect(screen.queryByText(/No households match/)).toBeNull();
+  },
+};
+
+/**
+ * On a phone the loaded search opens as the sheet, with the search in its header (AVE-39), and the field keeps its
+ * Clear button (AVE-93).
+ */
+export const SearchAsYouTypeOnPhones: Story = {
+  name: "Search as you type on phones",
+  globals: phone,
+  render: () => <DirectoryPicker />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Show households" }));
+    await screen.findByRole("listbox");
+    await expect(content()).toHaveAttribute("data-presentation", coarse() ? "sheet" : "popover");
+    await expect(statusLine()).toHaveTextContent("Type an address, owner or ID.");
+    if (coarse()) await expect(content().contains(field())).toBe(true);
+    await userEvent.click(field());
+    await userEvent.keyboard("juniper");
+    await waitFor(() => expect(screen.getAllByRole("option").length).toBeGreaterThan(0));
+    await expect(marks(screen.getAllByRole("option")[0]!)).toEqual(["Juniper"]);
+    await userEvent.click(screen.getAllByRole("option")[0]!);
+    await waitForClosed("combobox");
+    await expect(canvas.getByTestId("value")).toHaveTextContent(/Chosen: h\d+/);
+    if (!coarse()) return;
+    await userEvent.click(canvas.getByRole("button", { name: "Clear household" }));
+    await waitFor(() => expect(field()).toHaveValue(""));
+    await expect(canvas.getByTestId("value")).toHaveTextContent("Chosen: (none)");
+  },
+};
+
+/** The marks on a list the app already holds: each typed word, in any order, with Avenue's word search (AVE-207). */
+export const MatchedLetters: Story = {
+  name: "Matched letters",
+  render: () => <Picker label="Household" items={households} icon={<HouseIcon />} presentation="popover" />,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Household" }));
+    await userEvent.keyboard("court 3");
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(1));
+    const option = screen.getByRole("option");
+    await expect(marks(option)).toEqual(["3", "Court"]);
+    await expect(option).toHaveAccessibleName("3 Quill Court · Cora Mendez ID 1101");
   },
 };

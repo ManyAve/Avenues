@@ -63,6 +63,6 @@ export async function swipeDown(content: HTMLElement) {
 }
 
 /** Waits until the list has gone, including a sheet sliding out. A closed list can stay in the page, hidden. */
-export async function waitForClosed(part: "select" | "combobox" | "date-picker") {
+export async function waitForClosed(part: "select" | "combobox" | "date-picker" | "autocomplete") {
   await waitFor(() => expect(document.querySelector(`[data-slot=${part}-content]:not([hidden])`)).toBeNull());
 }

@@ -7,6 +7,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import type * as alertDialog from "#avenue/components/alert-dialog";
 import type * as askAdmin from "#avenue/components/ask-admin";
+import type * as autocomplete from "#avenue/components/autocomplete";
 import type * as avatar from "#avenue/components/avatar";
 import type * as badge from "#avenue/components/badge";
 import type * as button from "#avenue/components/button";
@@ -74,6 +75,7 @@ import type * as topBar from "#avenue/components/top-bar";
 export type Modules = {
   "alert-dialog": typeof alertDialog;
   "ask-admin": typeof askAdmin;
+  "autocomplete": typeof autocomplete;
   "avatar": typeof avatar;
   "badge": typeof badge;
   "button": typeof button;

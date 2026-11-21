@@ -63,6 +63,11 @@ export const listScroll = "sheet:min-h-0 sheet:flex-1 sheet:overflow-y-auto shee
  */
 export const listSheetHandle = cn(sheetHandle, "hidden sheet:order-first sheet:block");
 
+// In a sheet, ui-sdk moves a Combobox's or Autocomplete's input into the sheet's header, where it is a 44px search field
+// of its own.
+export const sheetSearch =
+  "sheet:h-11 sheet:w-full sheet:rounded-lg sheet:border sheet:border-input sheet:px-3 sheet:text-base sheet:transition-colors sheet:focus-visible:border-ring sheet:focus-visible:ring-3 sheet:focus-visible:ring-ring/20 forced-colors:sheet:focus-visible:outline-2 forced-colors:sheet:focus-visible:outline-offset-2 forced-colors:sheet:focus-visible:outline-solid dark:sheet:bg-input/30";
+
 /**
  * One row in that list: sm corner, inset 4px inside the lg frame (AVE-2 section 4). 44px tall on phones (AVE-22), and
  * in a sheet whatever the pointer (AVE-39).
