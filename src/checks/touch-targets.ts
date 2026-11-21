@@ -64,6 +64,8 @@ function describe(el: Element): string {
 function isTappable(el: HTMLElement): boolean {
   if (el.matches(":disabled, [aria-disabled=true], [data-disabled]")) return false;
   if (el.closest("[inert], [aria-hidden=true]")) return false;
+  // A closed panel kept findable (`hidden="until-found"`, AVE-195) still lays out its children, but draws none of them.
+  if (el.closest("[hidden]")) return false;
   const style = getComputedStyle(el);
   if (style.visibility === "hidden" || style.display === "none" || style.pointerEvents === "none") return false;
   const rect = el.getBoundingClientRect();

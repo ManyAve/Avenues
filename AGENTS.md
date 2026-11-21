@@ -114,6 +114,12 @@ and is still needed. To change one, `bun patch <package>`, edit `node_modules`, 
   the sheet where it is drawn when a press arrives during the opening fade. `Table filter/Long list, sheet tapped as it
   fades in` fails in the four mouse projects if the patch stops applying (the `touch` project uses ui-sdk's
   scroll-snap driver, which this doesn't touch).
+- `@ui-sdk/core` 0.1.0-beta.13 (since v0.66.0), find in page on a controlled panel (AVE-195): a match fires
+  `beforematch`, then the browser removes `hidden`; a controlled Collapsible opens only once the app re-renders, so
+  `bindFindable`'s observer saw it still closed and put `hidden="until-found"` back, and the panel opened with its
+  content hidden. The patch leaves `hidden` alone for a frame after a match, and an opening panel removes `hidden`
+  itself. `Collapsible section/Opens when find in page matches` (a controlled section) fails if the patch stops
+  applying.
 
 Dropped: the toast patch (AVE-43, beta.1 to beta.2). beta.7 leaves an empty toast region out of the agent snapshot
 itself; `Toast/EmptyRegion` still guards it. The positioning patch (AVE-21, beta.1 to beta.7): beta.13 rounds a

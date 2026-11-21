@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
 import { useState } from "react";
-import { expect, userEvent } from "storybook/test";
+import { expect, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
   CollapsibleSection,
@@ -170,9 +170,9 @@ export const Keyboard: Story = {
   play: async ({ canvas, step }) => {
     const trigger = canvas.getByRole("button", { name: /Thursday, November 12/ });
 
-    await step("a real button, closed, with nothing under it", async () => {
+    await step("a real button, closed, with nothing showing under it", async () => {
       await expect(trigger).toHaveAttribute("aria-expanded", "false");
-      await expect(canvas.queryByText("Dues paid by 14 Elm Row")).not.toBeInTheDocument();
+      await expect(canvas.getByText("Dues paid by 14 Elm Row")).not.toBeVisible();
     });
 
     await step("Tab focuses it with a visible ring", async () => {
@@ -234,8 +234,86 @@ export const FoldAndMessageKeyboard: Story = {
       await userEvent.keyboard(" ");
       await expect(sam).toHaveAttribute("aria-expanded", "true");
       await expect(canvas.getByRole("button", { name: /^Robin Avery/ })).toHaveAttribute("aria-expanded", "false");
-      await expect(canvas.queryByRole("button", { name: "Reply to Robin Avery" })).not.toBeInTheDocument();
+      // Its actions stay in the page, hidden until found, so find in page can still reach the message.
+      await expect(canvas.getByText(/^Reply to\s+Robin Avery$/)).not.toBeVisible();
     });
+  },
+};
+
+/** A day header that says why it last opened or closed, for the find-in-page story. */
+function LoggedDayHeader({ hiddenUntilFound }: { hiddenUntilFound?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("none yet");
+  return (
+    <div className="grid w-160 max-w-full gap-2">
+      <CollapsibleSection
+        open={open}
+        onOpenChange={(next, details) => {
+          setOpen(next);
+          setReason(details.reason);
+        }}
+      >
+        <CollapsibleSectionHeader>
+          <CollapsibleSectionTrigger>
+            <span className="text-compact font-emphasis text-foreground">Friday, November 13</span>
+          </CollapsibleSectionTrigger>
+        </CollapsibleSectionHeader>
+        <CollapsibleSectionPanel hiddenUntilFound={hiddenUntilFound} className="grid gap-3 py-2">
+          <div className="rounded-lg border bg-card p-3 text-compact">Dues paid by 22 Cedar Way</div>
+        </CollapsibleSectionPanel>
+      </CollapsibleSection>
+      <p className="text-meta text-muted-foreground">Last change: {reason}</p>
+    </div>
+  );
+}
+
+/**
+ * Find in page (AVE-195): a closed section keeps its panel in the page as `hidden="until-found"`, so Ctrl+F or ⌘F
+ * matches "Cedar Way" and the section opens. The play function stands in for the browser's match the way the browser
+ * reveals one: it dispatches `beforematch` on the panel, then removes its `hidden` attribute.
+ */
+export const FindInPage: Story = {
+  name: "Opens when find in page matches",
+  render: () => <LoggedDayHeader />,
+  play: async ({ canvas, step }) => {
+    const trigger = canvas.getByRole("button", { name: /Friday, November 13/ });
+    const text = canvas.getByText("Dues paid by 22 Cedar Way");
+    const panel = text.closest<HTMLElement>("[hidden]");
+
+    await step("closed, its text hidden until found", async () => {
+      await expect(trigger).toHaveAttribute("aria-expanded", "false");
+      await expect(panel).not.toBeNull();
+      await expect(panel).toHaveAttribute("hidden", "until-found");
+      await expect(panel?.id).toBe(trigger.getAttribute("aria-controls"));
+      await expect(text).not.toBeVisible();
+    });
+
+    await step("a match opens it, at once, with the reason find-in-page", async () => {
+      // The browser's order (HTML's ancestor revealing algorithm): fire beforematch, then remove the hidden attribute.
+      panel!.dispatchEvent(new Event("beforematch", { bubbles: true }));
+      panel!.removeAttribute("hidden");
+      await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
+      await expect(canvas.getByText("Dues paid by 22 Cedar Way")).toBeVisible();
+      await expect(canvas.getByText("Dues paid by 22 Cedar Way").closest("[hidden]")).toBeNull();
+      await expect(canvas.getByText("Last change: find-in-page")).toBeInTheDocument();
+    });
+
+    await step("closed again by keyboard, it is findable again", async () => {
+      trigger.focus();
+      await userEvent.keyboard("{Enter}");
+      await expect(trigger).toHaveAttribute("aria-expanded", "false");
+      await expect(canvas.getByText("Dues paid by 22 Cedar Way").closest("[hidden]")).toHaveAttribute("hidden", "until-found");
+    });
+  },
+};
+
+/** `hiddenUntilFound={false}`: a closed panel leaves the page, so find in page can't reach it and nothing opens it. */
+export const NotFindable: Story = {
+  name: "Kept out of find in page",
+  render: () => <LoggedDayHeader hiddenUntilFound={false} />,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Friday, November 13/ })).toHaveAttribute("aria-expanded", "false");
+    await expect(canvas.queryByText("Dues paid by 22 Cedar Way")).not.toBeInTheDocument();
   },
 };
 

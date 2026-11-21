@@ -30,6 +30,11 @@ import { cn } from "#avenue/lib/utils";
  *   hover; the chevron stands in for the browser's marker and turns to show the state. The 4px side padding and xs
  *   corner give the focus ring room, and the -4px margin keeps the label where the app's sits.
  *
+ * Find in page (AVE-195): a closed panel stays in the page as `hidden="until-found"` (ui-sdk's `hiddenUntilFound`), so
+ * Ctrl+F or ⌘F matches its text and the section opens with the reason `find-in-page`; it opens at once, so the match
+ * shows. Where the browser has no `until-found` it is plain `hidden`, as unfindable as before. Pass
+ * `hiddenUntilFound={false}` to unmount a closed panel instead, for content that is costly to keep in the page.
+ *
  * A fold whose content shows elsewhere (the time grid draws the extra hours in its own rows) leaves the panel out;
  * the trigger still reports aria-expanded. The panel opens without a height animation, as the board's rows do, so
  * a long list under a sticky header doesn't move under the reader.
@@ -119,11 +124,22 @@ function CollapsibleSectionTrigger({ className, children, ...props }: Loose<Comp
   );
 }
 
-function CollapsibleSectionPanel({ className, ...props }: Loose<ComponentProps<typeof CollapsiblePanel>>) {
+function CollapsibleSectionPanel({
+  className,
+  hiddenUntilFound = true,
+  ...props
+}: Loose<ComponentProps<typeof CollapsiblePanel>>) {
   const variant = useContext(VariantContext);
   return (
     <CollapsiblePanel
-      className={cn(variant === "disclosure" ? "mt-2 grid gap-2 ps-5" : "min-w-0", className)}
+      hiddenUntilFound={hiddenUntilFound}
+      className={cn(
+        variant === "disclosure" ? "mt-2 grid gap-2 ps-5" : "min-w-0",
+        className,
+        // Closed but findable, the panel is laid out with no content: out of the flow with no padding or margin, so it
+        // takes no space and no gap in a grid or flex root, and the closed section draws as it did unmounted.
+        "[&[hidden]]:absolute [&[hidden]]:m-0 [&[hidden]]:p-0",
+      )}
       {...defined(props)}
     />
   );

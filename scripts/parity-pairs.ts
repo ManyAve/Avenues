@@ -649,6 +649,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-collapsible-section--keyboard": { none: BEHAVIOUR("Collapsible section / Day header") },
   "components-collapsible-section--fold-and-message-keyboard": { none: BEHAVIOUR("Collapsible section / Quiet hours fold") },
   "components-collapsible-section--agent": { none: BEHAVIOUR("Collapsible section / Day header") },
+  "components-collapsible-section--find-in-page": { none: BEHAVIOUR("Collapsible section / Day header") },
+  "components-collapsible-section--not-findable": { none: BEHAVIOUR("Collapsible section / Day header") },
   "components-calendar--default": { none: NEW_IN_AVENUE("The calendar", "the board's small month (MiniMonth in app/ui/components/activity-month.tsx), once the Activity screen moves") },
   "components-calendar--picked": { none: STATE_ONLY("a picked day (its small month jumps and closes)", "Calendar / Default") },
   "components-calendar--with-limits": { none: STATE_ONLY("unavailable or out-of-range days", "Calendar / Default") },
