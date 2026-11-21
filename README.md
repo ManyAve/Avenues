@@ -42,6 +42,7 @@ without it, the story step stops with Playwright's "install" message, which is n
 | `bun run visual:diff [ref]` | Builds Storybook at `ref` (default `main`; `origin/<ref>` when there is no local branch of that name) and from the working tree, captures every story in all four theme and type-scale combinations, and compares them pixel by pixel. Fails on any changed, missing or broken story; `--renamed old=new` (story id prefixes, repeatable) compares a story whose title the branch renamed under its new id. Captures and diffs go to `.visual-diff/report/`. Not part of `check`, because it builds twice. |
 | `bun run parity [--app <path>]` | Builds the ManyAve Management app's Storybook from a local checkout (default `../manyave-management`) and Avenue's, then captures every Avenue component and composite story beside the app story it was ported from, in all four combinations, and compares them. Fails on any difference without a recorded reason, or any story with no pair and no reason; the report goes to `.parity/report/index.html`. Not part of `check`, because it needs the app checked out (below). |
 | `bun run tokens:native`   | Regenerates `native/AvenueTokens.swift`, `native/AvenueTokens.kt` and `native/tokens.json` from the stylesheets (below, "Native apps"); `test:scripts` fails until you do after changing a token. |
+| `bun run art:neighborhood` | Redraws ManyAve's neighborhood illustration into `art/neighborhood/` from `scripts/neighborhood-art.ts`; with `--backdrops` it also renders the phone backdrops to `native/art/` in Chromium (below, "Neighborhood illustration"). `test:scripts` fails on stale SVGs until you do. |
 | `bun run native:android`  | Builds the Compose components in `native/android`, runs their unit tests and records their screenshots to `native/screenshots/android/` (below, "Android components"). Needs Java and the Android SDK, so not part of `check`; `native:android:check` fails on a stale screenshot. |
 | `bun run ui-sdk:css`      | Regenerates `src/styles/ui-sdk.css` from `@ui-sdk/core`'s `web.css` after an upgrade (`test:scripts` fails until you do). |
 | `bun run shadcn:css`      | Regenerates `src/styles/shadcn.css`, Avenue's copy of `shadcn/tailwind.css`, after a shadcn upgrade (`test:scripts` fails until you do). |
@@ -202,6 +203,7 @@ fictional data, so the whole Storybook is safe to publish; keep it that way.
 | `src/lib/format.ts`      | `formatMoney`, `tintFor` and `initials`, for amounts in text and tints outside an avatar (AVE-8). |
 | `src/lib/control.ts`     | The shared field look (`controlSurface`), the AVE-2 height-and-corner pairing (`controlShape`) Button and Toggle use, and control sizes (`controlSize`) for inputs, textareas and select triggers. |
 | `src/components/`        | One file per component: the shadcn primitives with ui-sdk behavior, styled to the app (AVE-6, AVE-17), and ManyAve's own components built on them (AVE-8: Status and Count, Money, InitialsAvatar, AskAdmin, EmptyState and SectionEmpty, Toast, Chip and ChipRow, ToolbarButton, NavTab, ModeToggle, SearchInput; AVE-117: Tabs; AVE-128: Skeleton and Loading; AVE-129: Progress; AVE-130: StatusDot; AVE-132: MessageList; AVE-133: Message and its parts; AVE-134: Composer; AVE-135: Dock; AVE-199: SwipeList; AVE-210: Stat and Kbd; AVE-200: PullToRefresh; AVE-206: ImageCropper). Stories in `src/stories/components/`. |
+| `art/neighborhood/`      | Generated: ManyAve's neighborhood illustration as SVGs, plus `sky.css`, the colours of the sky behind it (AVE-217). |
 | `src/stories/`           | Storybook sections: Tokens, Foundations, Components, Composites.|
 
 ## Tokens
@@ -359,6 +361,28 @@ it) builds the package for the first iPhone simulator, runs its tests, and rende
 component and the Android capture of the same slug, or "Not built yet" while one is missing. Commit the PNGs it
 changes. The captures use the simulator's own fonts, so compare them only across the same Xcode version.
 
+## Neighborhood illustration
+
+ManyAve's neighborhood illustration, the manyave.com hero scene, is Avenue's (AVE-217): a street of houses, neighbors
+and party lights under clouds, a balloon and a kite in light, lit windows, stars and fireflies at dusk in dark. It is
+drawn from code, `scripts/neighborhood-art.ts` (copied from Management's marketing scene generator and Neighbors'
+sign-in art script, which keep their copies until their next Avenue upgrade), and `Foundations/Neighborhood` in
+Storybook shows it the way the apps draw it.
+
+- `art/neighborhood/neighborhood-{light,dark}.svg`: the whole scene, 1600 × 1150, with the park in front.
+- `art/neighborhood/street-{light,dark}.svg`: its top 600 units, the street without the park, for a strip along the
+  bottom of a screen.
+- `art/neighborhood/sky-{light,dark}.svg`: the clouds, balloon, birds, moon and stars, transparent, 1600 × 900.
+- `art/neighborhood/sky.css`: the sky they sit on, as `--neighborhood-sky-*` (the wash), `--neighborhood-glow-*` (the
+  glow above the houses, placed by the page with a radial gradient) and `--neighborhood-ground-*` (the lawn below the
+  street), for `light` and `dark`. Art colours, not tokens: they draw this picture and nothing else.
+- `native/art/neighborhood-backdrop-{light,dark}.png`: the phone sign-in backdrop, the sky with the street pinned to
+  the bottom at 393 × 852 points and 3x (1179 × 2556). Fill the screen with it, bottom aligned.
+
+Every SVG stops moving under Reduce motion. An app copies the files from the tag it installs with a script, as with
+the native tokens. Change the picture in the script, then run `bun run art:neighborhood --backdrops` (it needs
+Playwright's Chromium, or `AVENUE_CHROMIUM`) and commit what it writes.
+
 ## Using Avenue from another package
 
 The package is source-shipped (no build step) and exposes:
@@ -367,7 +391,9 @@ The package is source-shipped (no build step) and exposes:
   covers the package's own files, so the consumer needs no extra content paths.
 - `@manyave/avenue/tokens.css`: the tokens alone.
 - `@manyave/avenue/desktop.css`: the desktop type scale; load it after `styles.css` on desktop surfaces.
-- `@manyave/avenue/native/*`: the tokens for the phone apps, as Swift, Kotlin and JSON (below, "Native apps").
+- `@manyave/avenue/native/*`: the tokens for the phone apps, as Swift, Kotlin and JSON (below, "Native apps"), and
+  the neighborhood illustration's phone backdrops under `native/art/`.
+- `@manyave/avenue/art/*`: ManyAve's artwork; today the neighborhood illustration (below).
 - `@manyave/avenue/components/*`: one entry per component.
 - `@manyave/avenue/utils`: `cn`.
 - `@manyave/avenue/format`: `formatMoney`, `tintFor`, `initials`.

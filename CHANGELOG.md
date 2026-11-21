@@ -4,6 +4,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.68.0 (2026-11-21)
+
+- **ManyAve's neighborhood illustration is Avenue's** (AVE-217). The manyave.com hero scene now ships with Avenue under
+  `@manyave/avenue/art/neighborhood/`: the scene (`neighborhood-{light,dark}.svg`), its street crop
+  (`street-{light,dark}.svg`), the sky art (`sky-{light,dark}.svg`) and `sky.css`, the sky's colours as
+  `--neighborhood-sky-*`, `--neighborhood-glow-*` and `--neighborhood-ground-*`. The phone sign-in backdrops are under
+  `@manyave/avenue/native/art/neighborhood-backdrop-{light,dark}.png` (1179 × 2556). `bun run art:neighborhood` draws
+  them from `scripts/neighborhood-art.ts`, copied from Management's marketing scene generator and Neighbors' sign-in
+  art script. The SVGs are byte for byte the ones both apps ship today, and the backdrops match Neighbors' with no
+  visible difference, so an app can switch to Avenue's files at its next upgrade and delete its own copy and script
+  with nothing on screen changing. New story: Foundations / Neighborhood. Nothing existing changes.
+
 ## v0.67.0 (2026-11-21)
 
 - **New component: Image cropper** (AVE-206). `@manyave/avenue/components/image-cropper`: frame a photo before it's
