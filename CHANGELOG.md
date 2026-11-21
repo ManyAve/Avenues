@@ -26,7 +26,6 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   menu item. Only a finger pulls, and only from the top; under reduced motion the list doesn't move and a plain line
   shows the pull and the loading. Nothing existing changes.
 
-
 ## v0.62.0 (2026-11-21)
 
 - **New component: Stat** (AVE-210), for the key number that leads a page or a card: "$4,280 collected", "34 of 52
