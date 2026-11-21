@@ -349,7 +349,17 @@ async function shoot(
         // A box that fills a flex column (the message list's log, AVE-132) keeps the size given here, not its share.
         rootBox.style.setProperty("flex", "none", "important");
       }
-      for (const { index, prop, value } of styles) part(index)?.style.setProperty(prop, value, "important");
+      for (const { index, prop, value } of styles) {
+        const node = part(index);
+        if (!node) continue;
+        if (prop === "placeholder-color") {
+          // Not a property of the element but of its ::placeholder (AVE-216), so it goes in a rule of its own.
+          node.setAttribute("data-parity-placeholder", "");
+          const rule = document.createElement("style");
+          rule.textContent = `[data-parity-placeholder]::placeholder { color: ${value} !important; }`;
+          document.head.append(rule);
+        } else node.style.setProperty(prop, value, "important");
+      }
       for (const { index, markup } of icons) {
         const svg = part(index);
         if (svg) svg.innerHTML = markup;
@@ -410,7 +420,12 @@ async function shoot(
             text: [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join("").trim(),
             width: e.getBoundingClientRect().width,
             height: e.getBoundingClientRect().height,
-            style: Object.fromEntries(props.map((p) => [p, s.getPropertyValue(p)])),
+            style: {
+              ...Object.fromEntries(props.map((p) => [p, s.getPropertyValue(p)])),
+              // A field's placeholder colour lives on its ::placeholder (AVE-216); anything else has none.
+              "placeholder-color":
+                e instanceof HTMLInputElement || e instanceof HTMLTextAreaElement ? getComputedStyle(e, "::placeholder").color : "",
+            },
             ...(e.tagName.toLowerCase() === "svg"
               ? {
                   // A lucide icon names itself in a class; any other is known by its shapes (AVE-77).

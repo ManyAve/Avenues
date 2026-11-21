@@ -303,6 +303,7 @@ const STATUS_TOTAL: Allowance[] = [
   { prop: "parts", app: "only here: span", avenue: "only here: money", because: "app: app/ui/components/StatusBar.tsx: the bar prints each amount in a styled span; Avenue uses its Money component, same font, weight and colour" },
 ];
 const SELECTION_BAR: Allowance[] = [
+  { prop: "row-gap", app: "8px", avenue: "4px", because: "AVE-162: the bar is a grid so each disabled reason hangs under its own button; its 4px row gap is between a button and its reason, a row the app's bar never had" },
   ...SIDE_10_TO_8,
   OUTLINE_DARK_FILL,
   { prop: "border-*-radius", app: "9px", avenue: "10px", because: "AVE-2 §3: the floating bar's 9px literal corner becomes lg, 10px" },
@@ -318,6 +319,43 @@ const DISPLAY_OPTIONS: Allowance[] = [
   { prop: "display", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
   { prop: "grid-*", because: "AVE-50: the chosen segment's group lays its items out as equal grid columns, so choosing never changes a width" },
 ];
+
+// AVE-183 (v0.45.0) and AVE-208 (v0.57.0): every floating surface (popup, dialog, dock window, selection bar) casts
+// shadow-popover and draws its edge in border-floating, and a raised card casts shadow-card. The app's surfaces cast
+// Tailwind's shadow-md and shadow-lg with a foreground/10 ring. Added to the pairs in FLOATING_PAIRS below (AVE-216).
+const FLOATING: Allowance[] = [
+  { prop: "box-shadow", because: "AVE-208: a floating surface casts Avenue's two-layer shadow-popover (a raised card shadow-card) with its faint border-floating edge, in place of Tailwind's shadow-md or shadow-lg and a foreground/10 ring" },
+  { prop: "border-top-color", because: "AVE-208: a floating surface's edge is border-floating, 11% onyx-950 in light and 10% white in dark" },
+];
+const FLOATING_PAIRS = new Set([
+  "confirm dialog frame",
+  "dialog frame",
+  "dock window frame",
+  "folded dock window",
+  "menu panel",
+  "popover panel",
+  "hover card panel",
+  "select list panel",
+  "display options",
+  "form dialog frame",
+  "section card frame",
+  "selection bar",
+]);
+
+// AVE-210 (v0.62.0): Table, Register, DetailList, Money, Status counts and Progress labels draw lined-up digits
+// (tabular-nums), so a column of amounts, dates or counts lines up; the app's cells used the font's proportional
+// digits. Added to the pairs of those components below (AVE-216).
+const DIGITS: Allowance = {
+  prop: "font-variant-numeric",
+  because: "AVE-210: tables, the register, detail lists, money, counts and progress labels draw lined-up digits (tabular-nums), so numbers in a column line up; the app's used proportional digits",
+};
+const DIGIT_STORIES = /^(components-(table|money|status|progress|detail-list)|composites-(register|section-card))--/;
+// AVE-186 (v0.44.1): a field's placeholder is the placeholder token, dimmer than typed text in dark (onyx-400, was
+// muted-foreground's onyx-300) and onyx-700 in light, where some of the app's form fields drew it in foreground.
+const PLACEHOLDER: Allowance = {
+  prop: "placeholder-color",
+  because: "AVE-186: a field's placeholder is the placeholder token, dimmer than typed text (2.39:1 in dark, where muted-foreground was 1.72:1), so an example never passes for a value",
+};
 
 export const PAIRS: Record<string, PairEntry> = {
   // ---- Alert dialog (AVE-9 composites' base)
@@ -623,6 +661,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-message-list--default": [
     {
       label: "message list frame",
+      at: APP_CHAT,
       app: "chat-board-chat--thread",
       appCrop: "div.overflow-y-auto.px-2\\.5",
       avenueCrop: "[role=log]",
@@ -1120,8 +1159,8 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-pull-to-refresh--agent": { none: "AVE-200: neither app has pull to refresh yet; Pull to refresh is new in Avenue, built on ui-sdk core's bindDrag, rubberBand and solveSpring, with Avenue's Button." },
   "components-switch--unchecked-outline": { none: OUTLINE("switch") },
   "components-switch--states": [
-    { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[aria-label='On, default']" },
-    { label: "switch off", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-unchecked] >> nth=0", avenueCrop: "[aria-label='Off, default']", allow: [OUTLINE_BORDER] },
+    { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[aria-label='On, md']" },
+    { label: "switch off", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-unchecked] >> nth=0", avenueCrop: "[aria-label='Off, md']", allow: [OUTLINE_BORDER] },
   ],
   "components-switch--settings-row": [
     { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[data-slot=switch]" },
@@ -1226,7 +1265,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-navtab--as-router-link": { none: BEHAVIOUR("NavTab / Default") },
   "components-searchinput--default": [{ label: "search input", app: "primitives-searchinput--default", allow: SEARCH }],
   "components-searchinput--with-shortcut": [
-    { label: "search input with shortcut", app: "primitives-searchinput--with-shortcut", avenueCrop: "[data-slot=search-input]", allow: SEARCH },
+    { label: "search input with shortcut", app: "primitives-searchinput--with-shortcut", avenueCrop: "[data-slot=search-input]", allow: [...SEARCH, { prop: "parts", because: "AVE-210: the shortcut is Avenue's Kbd, a named part (data-slot=kbd), where the app's is a plain kbd; the same key and box" }] },
   ],
   "components-searchinput--shortcut-skips-open-list": { none: BEHAVIOUR("SearchInput / With shortcut") },
   "components-searchinput--filled": { none: STATE_ONLY("a search input with text in it", "SearchInput / Default") },
@@ -1287,7 +1326,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-page-header--reading-width-long-title": { none: "A long title wrapping inside the 768px reading frame; the app has no such story. Compared through Page header / Desktop minimum." },
   "composites-section-card--desktop-minimum": [
     { label: "section card frame", app: "detail-pieces--people", appCrop: "[data-slot=card] >> nth=0", avenueCrop: "[data-slot=card] >> nth=0", frame: true },
-    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] h2 >> nth=0" },
+    { label: "section card title", app: "detail-pieces--people", appCrop: "[data-slot=card-title] >> nth=0", avenueCrop: "[data-slot=card-title] >> nth=0" },
   ],
   "composites-section-card--detail-list-story": [
     { label: "detail label", app: "detail-pieces--people", appCrop: "dl >> nth=0 >> dt >> nth=0", avenueCrop: "[data-slot=detail-list] dt >> nth=0" },
@@ -1530,3 +1569,16 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-time-input--native-on-phones": { none: BEHAVIOUR("Time input / Default") },
   "components-time-input--agent": { none: BEHAVIOUR("Time input / Default") },
 };
+
+// Shared allowances that apply by kind of pair rather than one pair at a time (AVE-216).
+for (const [story, entry] of Object.entries(PAIRS)) {
+  if (!Array.isArray(entry)) continue;
+  for (const pair of entry) {
+    const shared = [
+      ...(pair.label && FLOATING_PAIRS.has(pair.label) ? FLOATING : []),
+      ...(DIGIT_STORIES.test(story) ? [DIGITS] : []),
+      PLACEHOLDER,
+    ];
+    pair.allow = [...(pair.allow ?? []), ...shared];
+  }
+}
