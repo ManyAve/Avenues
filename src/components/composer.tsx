@@ -1,4 +1,5 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import { withSource } from "@ui-sdk/react/observe";
 import { createInputController } from "@ui-sdk/react/textarea";
 import { Check, CornerUpLeft, Pencil, X } from "lucide-react";
 import {
@@ -17,6 +18,7 @@ import {
 } from "react";
 import { Button } from "#avenue/components/button";
 import { Textarea } from "#avenue/components/textarea";
+import { sourceOf, type ChangeSource } from "#avenue/lib/change";
 import { isThenable, usePendingAnnouncement } from "#avenue/lib/pending";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
@@ -62,7 +64,8 @@ type ComposerState = {
   sending: boolean;
   disabled: boolean;
   reasonId: string | undefined;
-  send: () => void;
+  /** `source`: how the send was made, so emptying the field after the app's Promise keeps it (AVE-214). */
+  send: (source: ChangeSource) => void;
   context: ComposerContextEntry | undefined;
   setContext: (context: ComposerContextEntry | undefined) => void;
 };
@@ -106,7 +109,7 @@ function Composer({ onSend, pendingAnnouncement = "Sending", disabled, disabledR
   const [context, setContext] = useState<ComposerState["context"]>();
   const off = Boolean(disabled || disabledReason);
 
-  const send = useCallback(() => {
+  const send = useCallback((source: ChangeSource) => {
     const text = controller.getValue().trim();
     if (!text || sending || off) return;
     const result = onSend(text);
@@ -117,11 +120,14 @@ function Composer({ onSend, pendingAnnouncement = "Sending", disabled, disabledR
     if (isThenable(result)) {
       setSending(true);
       controller.focus();
+      // After the await, once the press is over: emptying the field runs with the send's source, so an agent's
+      // send empties it as the agent's (AVE-214).
       result.then(
-        () => {
-          clear();
-          done();
-        },
+        () =>
+          withSource(source, () => {
+            clear();
+            done();
+          }),
         done,
       );
       return;
@@ -159,9 +165,9 @@ function Composer({ onSend, pendingAnnouncement = "Sending", disabled, disabledR
             "data-disabled": off ? "" : undefined,
             noValidate: true,
             className: cn("grid grid-cols-[minmax(0,1fr)_auto] items-end gap-controls", className),
-            onSubmit: (event: { preventDefault: () => void }) => {
+            onSubmit: (event: { preventDefault: () => void; nativeEvent: Event }) => {
               event.preventDefault();
-              send();
+              send(sourceOf(event.nativeEvent));
             },
             children: (
               <>

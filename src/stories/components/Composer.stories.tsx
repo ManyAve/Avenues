@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { createAgent } from "@ui-sdk/react/agent";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -423,5 +424,70 @@ export const Phone: Story = {
     await userEvent.keyboard("{Enter}");
     await expect(box).toHaveValue("");
     await expect(box).toHaveFocus();
+  },
+};
+
+/**
+ * AVE-214: an agent's send stays the agent's after the await. The field empties once `onSend`'s Promise resolves,
+ * after the agent's press is over, and that change still reads source "agent", so `createHistory`'s
+ * `undoSource("agent")` takes it with the agent's typing. Here the app controls the text, so the emptying reaches its
+ * `onValueChange` with ui-sdk's details.
+ */
+export const AgentSendKeepsItsSource: Story = {
+  tags: ["agent"],
+  render: function Render() {
+    const [sent, setSent] = useState<string[]>([]);
+    const [text, setText] = useState("");
+    const [emptiedBy, setEmptiedBy] = useState("");
+    const answer = useRef<(() => void) | null>(null);
+    return (
+      <div className="flex flex-col gap-2">
+        <Footer sent={sent}>
+          <Composer
+            onSend={(message) =>
+              new Promise<void>((resolve) => {
+                answer.current = () => {
+                  setSent((list) => [...list, message]);
+                  resolve();
+                };
+              })
+            }
+          >
+            <ComposerField
+              aria-label={toBoard}
+              placeholder="Message"
+              value={text}
+              onValueChange={(next, details) => {
+                setText(next);
+                if (next === "") setEmptiedBy(details.source);
+              }}
+            />
+            <ComposerSend />
+          </Composer>
+        </Footer>
+        <output className="px-inset text-meta text-muted-foreground">{emptiedBy ? `Emptied by ${emptiedBy}` : ""}</output>
+        <div className="flex gap-controls px-inset">
+          <Button variant="outline" size="sm" onClick={() => answer.current?.()}>
+            Deliver it
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const agent = createAgent({ allow: () => true });
+    const box = field(canvas, toBoard);
+    const result = await agent.act({
+      steps: [
+        { ref: toBoard, action: "setValue", args: ["Can we add a bench by the mailboxes?"] },
+        { ref: "Send", action: "press" },
+      ],
+    });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await waitFor(() => expect(box).toHaveAttribute("readonly"));
+    await userEvent.click(canvas.getByRole("button", { name: "Deliver it" }));
+    await waitFor(() => expect(box).toHaveValue(""));
+    await expect(canvas.getAllByRole("listitem")).toHaveLength(1);
+    await expect(canvas.getByText("Emptied by agent")).toBeInTheDocument();
   },
 };

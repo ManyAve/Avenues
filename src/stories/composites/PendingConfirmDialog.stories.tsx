@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { createAgent } from "@ui-sdk/react/agent";
 import { useState } from "react";
 import { Button } from "#avenue/components/button";
 import { expect, screen, userEvent, waitFor } from "storybook/test";
@@ -35,11 +36,14 @@ function MarkAsMailed({
   phase,
   recovery = retry,
   onConfirm = () => {},
+  onClosed,
 }: {
   defaultOpen?: boolean;
   phase?: PendingConfirmPhase;
   recovery?: PendingConfirmRecovery;
   onConfirm?: () => void | PromiseLike<unknown>;
+  /** Hears how the dialog closed: its reason and source. */
+  onClosed?: (how: string) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -49,7 +53,10 @@ function MarkAsMailed({
     </Button>
     <PendingConfirmDialog
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(next, details) => {
+        setOpen(next);
+        if (!next) onClosed?.(`${details.reason}, ${details.source}`);
+      }}
       title="Mark as mailed"
       description="Confirm that you mailed this letter to the address shown. This records it as mailed and schedules follow-up; it does not confirm delivery."
       confirmLabel="Mark as mailed"
@@ -394,5 +401,46 @@ export const PartsUnknownCheckFirst: Story = {
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/**
+ * AVE-214: an agent's confirm stays the agent's after the await. The dialog closes once the step's Promise resolves,
+ * after the agent's press is over, and the close still reads source "agent", so `observe` and `createHistory` put it
+ * with the agent's other changes. A person's confirm keeps their press's source.
+ */
+export const AgentConfirmKeepsItsSource: Story = {
+  tags: ["agent"],
+  render: function AgentConfirm() {
+    const [closed, setClosed] = useState("");
+    return (
+      <>
+        <MarkAsMailed defaultOpen={false} onConfirm={send} onClosed={setClosed} />
+        <output className="block px-inset text-meta text-muted-foreground">{closed ? `Closed: ${closed}` : ""}</output>
+      </>
+    );
+  },
+  play: async ({ canvas }) => {
+    const agent = createAgent({ allow: () => true });
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as mailed…" }));
+    const dialog = await screen.findByRole("alertdialog", { name: "Mark as mailed" });
+    const result = await agent.act({ steps: [{ ref: "Mark as mailed", action: "press", args: ["Mark as mailed"] }] });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await screen.findByRole("button", { name: "Confirming…" });
+    reply?.resolve();
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await expect(canvas.getByText("Closed: action, agent")).toBeInTheDocument();
+
+    // A person's confirm keeps the press's own source, never the agent's. (ui-sdk reads a test's scripted key press as
+    // "programmatic", since the browser didn't make it, so the test checks only that it isn't the agent's.)
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as mailed…" }));
+    const again = await screen.findByRole("alertdialog", { name: "Mark as mailed" });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus());
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    await screen.findByRole("button", { name: "Confirming…" });
+    reply?.resolve();
+    await waitFor(() => expect(again).not.toBeInTheDocument());
+    await waitFor(() => expect(canvas.getByText(/^Closed: action, /)).not.toHaveTextContent("agent"));
   },
 };

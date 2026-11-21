@@ -1,4 +1,5 @@
-import { announce } from "@ui-sdk/core";
+import { announce, type ChangeSource } from "@ui-sdk/core";
+import { withSource } from "@ui-sdk/react/observe";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
@@ -37,6 +38,11 @@ type ActionState = { status: ActionStatus; error?: unknown };
  * `onResolve`) or `failed` with the rejection in `error`. A handler that returns anything else leaves it `idle`, so an
  * app that drives `pending` itself sees no change. Only the latest run counts.
  *
+ * `source`: how the press or submit that started the run was made (a Button's `details.source`, or `sourceOf` the
+ * submit event). `onResolve` runs after the await, once the press is over, so it runs inside `withSource(source, …)`:
+ * the changes it makes (a dialog closing) stay the agent's, or the person's, for `observe` and `createHistory`'s
+ * `undoSource` (AVE-214). Without it they would read "programmatic".
+ *
  * `open`: a failure is forgotten when it turns false, so a dialog opens clean again, as ui-sdk clears a Close part's
  * error when its dialog opens.
  */
@@ -49,7 +55,8 @@ export function useAction(open: boolean) {
     setWasOpen(open);
     if (!open && state.status === "failed") setState({ status: "idle" });
   }
-  const run = useCallback((handler: () => unknown, { onResolve }: { onResolve?: () => void } = {}) => {
+  const run = useCallback(
+    (handler: () => unknown, { onResolve, source }: { onResolve?: () => void; source?: ChangeSource | undefined } = {}) => {
     const result = handler();
     if (!isThenable(result)) return;
     const token = {};
@@ -59,13 +66,15 @@ export function useAction(open: boolean) {
       () => {
         if (current.current !== token) return;
         setState({ status: "idle" });
-        onResolve?.();
+        if (onResolve) withSource(source, onResolve);
       },
       (error: unknown) => {
         if (current.current === token) setState({ status: "failed", error });
       },
     );
-  }, []);
+    },
+    [],
+  );
   return { status: state.status, error: state.error, run };
 }
 

@@ -605,6 +605,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-message-list--empty": { none: STATE_ONLY("the list's empty line in Avenue's frame", "Message list / Default") },
   "components-message-list--phone": { none: BEHAVIOUR("Message list / Default") },
   "components-message-list--agent": { none: BEHAVIOUR("Message list / Default") },
+  "components-message-list--agent-only-when-it-matters": { none: BEHAVIOUR("Message list / Default") },
   // ---- Dock (AVE-135)
   "components-dock--default": [
     {
@@ -690,6 +691,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-message--agent": { none: MESSAGE_LOOK },
   "components-message--beside-management": { none: MESSAGE_LOOK },
   // ---- Composer (AVE-134). Management's chat window footer (Chat / Board chat / Thread) is the look.
+  "components-composer--agent-send-keeps-its-source": { none: BEHAVIOUR("Composer / Typing") },
   "components-composer--typing": [
     {
       label: "composer field",
@@ -1019,6 +1021,12 @@ export const PAIRS: Record<string, PairEntry> = {
     ["closed", "bottom-on-desktop", "bottom-on-phone", "side-on-desktop", "side-on-phone", "long-title", "unsaved-changes", "keyboard"].map((story) => [
       `components-drawer--${story}`,
       { none: NEW_IN_AVENUE("The Drawer for phone forms and filters (AVE-32)", "Dialog / Open (the same title, inset and buttons)") },
+    ]),
+  ),
+  ...Object.fromEntries(
+    ["resting-heights", "page-usable-at-peek"].map((story) => [
+      `components-drawer--${story}`,
+      { none: NEW_IN_AVENUE("A bottom sheet with peek, half and full resting heights (AVE-191)", "Drawer / Bottom on phone (the same sheet and handle)") },
     ]),
   ),
 
@@ -1352,6 +1360,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-form-dialog--escape-when-clean": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--keyboard-flow": { none: BEHAVIOUR("Form dialog / Open") },
   "composites-form-dialog--promise-resolves": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Pending") },
+  "composites-form-dialog--agent-save-keeps-its-source": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Pending") },
   "composites-form-dialog--promise-rejects": { none: BEHAVIOUR("Form dialog / Open and Form dialog / With error") },
   "composites-form-dialog--promise-slow": { none: BEHAVIOUR("Form dialog / Open and Form dialog / Slow save") },
   "composites-form-dialog--slow-save": { none: BEHAVIOUR("Form dialog / Open; the app's slow line needs 8 seconds of a real save, so it has no resting story") },
@@ -1374,6 +1383,7 @@ export const PAIRS: Record<string, PairEntry> = {
   "composites-pending-confirm-dialog--pending": { none: "Pending confirm dialog / Ready while the action runs; compared there." },
   "composites-pending-confirm-dialog--unknown-check-first": { none: "Pending confirm dialog / Ready with a couldn't-confirm note; compared there." },
   "composites-pending-confirm-dialog--promise-resolves": { none: BEHAVIOUR("Pending confirm dialog / Ready and Pending") },
+  "composites-pending-confirm-dialog--agent-confirm-keeps-its-source": { none: BEHAVIOUR("Pending confirm dialog / Ready and Pending") },
   "composites-pending-confirm-dialog--promise-rejects": { none: BEHAVIOUR("Pending confirm dialog / Ready and Keyboard flow") },
   "composites-pending-confirm-dialog--keyboard-flow": { none: BEHAVIOUR("Pending confirm dialog / Ready") },
   // AVE-149: the parts stories draw what the one-tag stories draw, written out; visual:diff proved the one-tag form
