@@ -76,7 +76,7 @@
   --text-display--line-height: 2.5rem;
   /* The one big line at the top of an expressive page (a hub's title, a profile's name, a marketing hero), from a
      tablet up; on a phone the same line takes display. Tighter than display: big type needs less leading (AVE-189). */
-  --text-hero: 3rem; /* kept: a step in the type scale, its top; Neighbors' heroes read it, Avenue's components don't */
+  --text-hero: 3rem; /* kept: a step in the type scale, its top; Neighbors' heroes and Avenue's Stat (size lg) read it */
   --text-hero--line-height: 3.5rem;
 
   /* Public-site preview (Georgia) keeps its own display scale; body and meta reuse the steps above.
