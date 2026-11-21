@@ -964,6 +964,7 @@ export const PAIRS: Record<string, PairEntry> = {
       ],
     ]),
   ),
+  "components-select--highlighted-and-chosen": { none: "AVE-209: an open list with one row chosen and another highlighted, to show the brand-tinted highlight never looks chosen. Neither app draws its own highlight beside a check; the list is compared through Select / Default." },
   "components-select--placeholder": { none: "Same trigger as Select / Default with placeholder text; compared there." },
   "components-select--disabled": { none: STATE_ONLY("a disabled select", "Select / Default, and disabled opacity through Button / Playground") },
   "components-select--disabled-option": [
