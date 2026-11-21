@@ -1091,6 +1091,15 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-tabs--controlled": { none: BEHAVIOUR("Tabs / Default") },
 
   // ---- Switch (AVE-6)
+  "components-swipe-list--default": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--swiped-open": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--full-swipe-archives": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--full-swipe-marks-read": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--delete-asks-first": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--mouse-does-not-swipe": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--menu-by-keyboard": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--full-swipe-never-deletes": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
+  "components-swipe-list--agent": { none: "AVE-199: neither app has rows that swipe aside yet; Swipe list is new in Avenue, built on ui-sdk core's createSwipeActions, with Avenue's Button, Menu and AlertDialog." },
   "components-switch--unchecked-outline": { none: OUTLINE("switch") },
   "components-switch--states": [
     { label: "switch on", app: "primitives-dialogs--automations-story", appCrop: "[data-slot=switch][data-checked] >> nth=0", avenueCrop: "[aria-label='On, default']" },

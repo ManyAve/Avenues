@@ -519,6 +519,33 @@ inline or as the ⌘K palette. Avenue supplies the component; each app wires its
   type ("dues" for Record payment). Async search: `useAsyncOptions` from `@ui-sdk/react/async-options`, `filter={false}`
   and a `CommandStatus` (Components / Command / Async results).
 
+## Swipe a row to its actions (AVE-199)
+
+`@manyave/avenue/components/swipe-list` is a list whose rows slide aside on a phone to show actions behind them, as in
+Mail, built on ui-sdk core's `createSwipeActions`. Each row's actions are data, and the same list draws the buttons
+behind the row and the row's menu:
+
+```tsx
+<SwipeList aria-label="Notices">
+  {notices.map((notice) => (
+    <SwipeRow key={notice.id} value={notice.id} label={notice.title} items={[
+      { value: "archive", label: "Archive", icon: <ArchiveIcon />, onAction: () => archive(notice), undo: { id: "archive-notice", title: "Notice archived", elsewhere: "You can also restore it from Archived.", onUndo: () => restore(notice) } },
+      { value: "delete", label: "Delete", icon: <TrashIcon />, destructive: true, onAction: () => remove(notice), confirm: { title: "Delete this notice?", action: "Delete forever", agent: `Deletes "${notice.title}" for everyone` } },
+    ]}>
+      {/* the row's own content */}
+    </SwipeRow>
+  ))}
+</SwipeList>
+```
+
+- **Only a finger swipes.** With a mouse or pen the row stays put; every row has a menu button ("Actions for <label>")
+  with the same actions, on phones too, for keyboards, screen readers and agents.
+- **An item is `undo`, `confirm`, or neither**, and the types allow nothing else. `undo` runs at once and shows the Undo
+  toast (AVE-198); `confirm` asks first, and its answer carries `data-agent-confirm`. A long swipe runs a side's first
+  item only when it is `undo`; Delete and sends never run on a swipe. Items sit on the `end` side unless `side: "start"`.
+- Needs a `ToastProvider` above it. Set the rows' surface with `contentClassName` (`bg-card` inside a card).
+- Not yet checked on a device: whether VoiceOver's own swipes and the row's get in each other's way (AVE-199).
+
 ## Dates and times (AVE-202)
 
 Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a

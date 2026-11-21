@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.61.0 (2026-11-21)
+## v0.62.0 (2026-11-21)
 
 - **New component: NumberInput** (`@manyave/avenue/components/number-input`, AVE-204), ui-sdk's NumberInput in
   Input's look and inside a Field, for small counts typed or stepped: guests, copies, units. Minus and plus buttons sit
@@ -13,6 +13,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   the button is let go. `noun` names the buttons ("Increase guests"). It posts the plain number. Not for money, years,
   IDs or phone numbers, which stay text fields. Parts: `NumberInput`, `NumberInputGroup`, `NumberInputDecrement`,
   `NumberInputControl`, `NumberInputIncrement` and `NumberInputBound`. No existing component changes.
+
+## v0.61.0 (2026-11-21)
+
+- **New component: Swipe list** (AVE-199). `@manyave/avenue/components/swipe-list`: rows that slide aside on a phone to
+  show their actions, one row open at a time, built on ui-sdk core's `createSwipeActions` as the `swipe-list` primitive.
+  `SwipeList` is the root (a named `ul`), `SwipeRow` the one-tag row (`value`, `label`, `items`, `contentClassName`),
+  built from `SwipeRowRoot`, `SwipeRowContent`, `SwipeRowActions`, `SwipeRowAction` and `SwipeRowMenu`. Each item is
+  `undo` (done at once, then the Undo toast), `confirm` (asks first in an AlertDialog whose answer carries
+  `data-agent-confirm`), or neither; a long swipe runs a side's first item only when it is `undo`. Only a finger swipes;
+  every row's menu has the same actions for a mouse, a keyboard, a screen reader and an agent. Nothing existing changes.
 
 ## v0.60.0 (2026-11-21)
 
