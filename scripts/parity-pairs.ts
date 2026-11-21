@@ -500,6 +500,27 @@ export const PAIRS: Record<string, PairEntry> = {
       ],
     ]),
   ),
+  "components-command--inline": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--no-matches": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--pages": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--palette": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--palette-open": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--pending-and-destructive": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
+  "components-command--async-results": {
+    none: "AVE-197: neither app has a command palette yet; Command is new in Avenue, built on ui-sdk's Command.",
+  },
   "components-combobox--small": {
     none: "The 28px combobox for card and dialog headers is new in Avenue (AVE-2 §2); the app's only combobox is the 32px time-zone picker, compared through Combobox / Time zone.",
   },
