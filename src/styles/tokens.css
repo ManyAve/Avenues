@@ -103,7 +103,20 @@
   --elevated-0: var(--color-onyx-100);
   --elevated-1: var(--color-onyx-50);
   --elevated-2: var(--color-onyx-25);
-  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.04);
+  /* AVE-208: two layers tinted with the onyx ink, after the ui-sdk sink. A tight contact shadow, then a long soft one
+     pulled in under the surface (the negative spread), so the shade sits below it, not around it. A card throws a
+     shorter shadow than a popup, so a grid of cards or a short menu never looks heavy. */
+  --shadow-card:
+    0 1px 2px color-mix(in oklab, var(--color-onyx-950) 6%, transparent),
+    0 4px 12px -8px color-mix(in oklab, var(--color-onyx-950) 16%, transparent);
+  --shadow-popover:
+    0 1px 2px color-mix(in oklab, var(--color-onyx-950) 6%, transparent),
+    0 8px 24px -12px color-mix(in oklab, var(--color-onyx-950) 18%, transparent);
+  /* The edge of a surface that floats (AVE-208): popover, menu, picker list, hover card, dialog, sheet, toast, dock,
+     selection bar and a raised SectionCard. Translucent ink, so it melts into the shadow; at least 3 CIEDE2000 from
+     the surface on both sides of it (scripts/surface-contrast.test.ts), because on a lifted page a white menu opens over
+     a white card and the edge is what shows where it ends. Flat cards and fields keep `border`. */
+  --border-floating: color-mix(in oklab, var(--color-onyx-950) 11%, transparent);
 
   --background: var(--elevated-1);
   --foreground: var(--color-onyx-950);
@@ -211,7 +224,11 @@
   --elevated-0: var(--color-onyx-950);
   --elevated-1: var(--color-onyx-900);
   --elevated-2: var(--color-onyx-850);
-  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 1px 3px 0 rgb(0 0 0 / 0.2);
+  /* On near-black the onyx ink is the page's own colour, so the shade is black and stronger; the edge does most of
+     the work here. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 12px -8px rgb(0 0 0 / 0.5);
+  --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --border-floating: color-mix(in oklab, white 10%, transparent);
 
   --background: var(--elevated-1);
   --foreground: var(--color-onyx-100);
@@ -291,7 +308,7 @@
   --sidebar-ring: var(--color-grape-400);
 }
 
-/* White surfaces; elevation comes from a close shadow, not a tinted canvas. */
+/* White surfaces; elevation comes from the shadows and the floating edge (:root above), not a tinted canvas. */
 :root:not(.dark) {
   color-scheme: light;
   --surface-white: oklch(1 0 0);
@@ -305,11 +322,9 @@
   --border: oklch(0.919 0 0);
   --input: oklch(0.87 0 0);
   --shadow-control: 0 1px 1px 0 rgb(0 0 0 / 0.045);
-  --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.12);
-  --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 3px -1px rgb(0 0 0 / 0.08);
 }
 
-/* Dark surfaces use the same close elevation, with quiet borders. */
+/* Dark surfaces take the shadows and floating edge of .dark above, with quiet borders. */
 :root.dark {
   color-scheme: dark;
   --muted: var(--color-onyx-850);
@@ -317,8 +332,6 @@
   --border: var(--color-onyx-800);
   --input: var(--color-onyx-750);
   --shadow-control: 0 1px 1px rgb(0 0 0 / 0.25);
-  --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.4);
-  --shadow-popover: 0 1px 2px rgb(0 0 0 / 0.25), 0 2px 3px -1px rgb(0 0 0 / 0.3);
 }
 
 /* Lifted surfaces (AVE-115), opt in with `data-surface="lifted"` on <html>, or on any element that paints its own

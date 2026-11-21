@@ -21,7 +21,7 @@ import { report, type ChangeDetails } from "#avenue/lib/change";
 import { exampleMessage, useFieldLocale, type DateFieldKind } from "#avenue/lib/date-field";
 import { fieldControl, listSheet, listSheetHandle, type PickerSize } from "#avenue/lib/picker";
 import { useNative, type Native } from "#avenue/lib/pointer";
-import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
+import { floatingEdge, popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
@@ -312,7 +312,8 @@ export function DatePickerContent({
       className={cn(
         popupMotion,
         popupMaxWidth,
-        "grid gap-2 rounded-lg bg-popover p-3 text-popover-foreground shadow-popover ring-1 ring-border outline-none",
+        "grid gap-2 rounded-lg bg-popover p-3 text-popover-foreground shadow-popover outline-none",
+        floatingEdge,
         listSheet(),
         "sheet:items-center sheet:px-inset sheet:pb-inset",
         className,

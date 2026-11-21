@@ -129,6 +129,7 @@ const lines = [
   ["border", "border-border"],
   ["input", "border-input"],
   ["control-outline", "border-control-outline"],
+  ["border-floating", "border-border-floating"],
   ["sidebar-border", "border-sidebar-border"],
 ] as const;
 

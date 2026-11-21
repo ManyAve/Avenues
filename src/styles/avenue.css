@@ -92,6 +92,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-control-outline: var(--control-outline);
+  --color-border-floating: var(--border-floating);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);

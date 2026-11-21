@@ -3,12 +3,13 @@ import { expect } from "storybook/test";
 import { cn } from "#avenue/lib/utils";
 import { Code, Page, Section, useComputed } from "./token-docs";
 
-// Shadows and surface levels. Light surfaces are white and lift with a close shadow; dark ones step up in onyx.
+// Shadows and surface levels. Light surfaces are white and lift with a two-layer ink shadow (AVE-208); dark ones also
+// step up in onyx.
 
 const shadows = [
   ["shadow-control", "shadow-control", "A raised part inside a control, such as a selected segment"],
-  ["shadow-card", "shadow-card", "Cards and table frames"],
-  ["shadow-popover", "shadow-popover", "Menus, popovers and dialogs"],
+  ["shadow-card", "shadow-card", "A raised card, such as a record page's section. A shorter throw than a popup's"],
+  ["shadow-popover", "shadow-popover", "Menus, popovers, dialogs and toasts, with the border-floating edge"],
 ] as const;
 
 const levels = [
