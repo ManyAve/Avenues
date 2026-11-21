@@ -497,6 +497,9 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-card--as-heading": {
     none: "AVE-136: the app's CardTitle is a div and can't take render; this story proves Card as an article and CardTitle as an h3 look exactly like Card / Default, which is the pair.",
   },
+  "components-card--as-a-link": {
+    none: "AVE-212: the app has no card that is one link; the story shows the `press` utility on Card, which looks like Card / Default at rest.",
+  },
   "components-card--small": {
     none: "The app's Card has the same sm size (12px spacing, ported unchanged), but no app screen or story uses it. The frame is compared through Card / Header with action and the title through Card / Default.",
   },

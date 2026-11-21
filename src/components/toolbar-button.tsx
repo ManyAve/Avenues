@@ -11,12 +11,15 @@ import { cn } from "#avenue/lib/utils";
  *
  * Icons stay the app's 14px (AVE-68): the app's toolbar button is an sm Button, whose icons are 14px. Only the
  * height is agreed to change, so the md Button's 16px icon size is overridden here.
+ *
+ * It doesn't press (AVE-212): a row of view controls that shrink as they are clicked reads as a jiggle, so it fades
+ * its colours only (`transition-colors` replaces Button's `press`).
  */
 function ToolbarButton({ className, ...props }: ComponentProps<typeof Button>) {
   return (
     <Button
       variant="outline"
-      className={cn("min-w-control-md gap-1 px-2 text-control text-muted-foreground shadow-control [&_svg:not([class*='size-'])]:size-3.5", className)}
+      className={cn("min-w-control-md gap-1 transition-colors px-2 text-control text-muted-foreground shadow-control [&_svg:not([class*='size-'])]:size-3.5", className)}
       {...props}
     />
   );

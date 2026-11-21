@@ -4,6 +4,25 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.69.0 (2026-11-21)
+
+- **Two easing tokens** (AVE-212): `ease-fade`, cubic-bezier(0.2, 0, 0, 1), for a colour, background, border or
+  opacity change, and `ease-move`, cubic-bezier(0.22, 1, 0.36, 1), for anything that moves or changes size (a
+  transform, slide, scale, width or shadow). `ease-fade` is now every transition's default, so `transition-colors`
+  and `transition-all` with no ease class fade on it instead of Tailwind's cubic-bezier(0.4, 0, 0.2, 1); Avenue's
+  popups, dialogs, toasts, switch thumbs, chevrons, swipe rows and progress bars move on `ease-move`. No new
+  durations. Phone apps get both, with the three durations, as `AvenueTokens.Motion` (Swift `Easing` plus
+  `Animation.avenue(_:duration:)`, Kotlin `CubicBezierEasing`).
+- **Buttons press** (AVE-212): a Button shrinks to 98% while pressed and its shadow settles flat, in place of the 1px
+  drop, through the new public `press` utility. ChoiceCard presses too, and a card that is one link can take `press`
+  (Components/Card, "As a link"). Menu items, chips, toggles, table rows and ToolbarButton don't press; neither does a
+  popup's trigger, the `text` variant, anything disabled, or anything under Reduce motion. Pass `transition-colors` to
+  a Button to turn its press off.
+- **The class rules flag a typed-in easing** (AVE-212): `ease-in`, `ease-out`, `ease-in-out`, `ease-linear` and
+  `ease-[…]` fail `tailwindcss/no-restricted-classes` with the two names in the message. Tailwind's curves stay
+  defined, so an app's existing classes still draw until it moves them (ADOPTING.md, "Weights, durations and layers").
+- Nothing changes at rest: visual:diff against main differs only on the two Motion docs pages and the new card story.
+
 ## v0.68.0 (2026-11-21)
 
 - **ManyAve's neighborhood illustration is Avenue's** (AVE-217). The manyave.com hero scene now ships with Avenue under

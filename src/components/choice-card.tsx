@@ -11,7 +11,7 @@ import { defined, type OwnPartProps } from "#avenue/lib/props";
  * card's 14), with 16px padding; put cards in a RadioGroup (one Tab stop, the arrows move and choose) or a
  * FieldGroup (each its own Tab stop). Chosen: the shared `chosen` border and fill (AVE-50), with the radio or
  * checkbox still drawn, so the state never rests on colour alone. The app has no choice cards, so this departs from
- * no screen.
+ * no screen. A press shrinks the card a touch (`press`, AVE-212), as a Button does.
  *
  * ```tsx
  * <ChoiceCard disabled={!canRent}>
@@ -38,7 +38,7 @@ function ChoiceCard({
     <ChoiceCardContext.Provider value={titleId}>
       <FieldLabel
         className={cn(
-          "has-data-checked:chosen has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
+          "press has-data-checked:chosen has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:not-has-data-checked:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
           "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
           // `chosen` (AVE-50) also sets the text colour, but a chosen card's text stays as it was (an invalid field keeps
           // its own): the radio or checkbox carries the state.

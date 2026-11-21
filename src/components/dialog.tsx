@@ -75,7 +75,7 @@ function DialogContent({
           // A content with a DialogBody is a column, so the body shrinks and scrolls between the header and footer
           // (AVE-190); without one it stays a grid that scrolls whole, as before.
           "has-data-[slot=dialog-body]:flex has-data-[slot=dialog-body]:flex-col has-data-[slot=dialog-body]:overflow-hidden",
-          "fixed top-1/2 right-auto bottom-auto left-1/2 z-overlay grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-fast backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
+          "fixed top-1/2 right-auto bottom-auto left-1/2 z-overlay grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl m-0 transition-[opacity,scale] duration-fast ease-move backdrop:bg-transparent sm:max-w-sm data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0 motion-reduce:transition-none",
           className,
         )}
         {...defined(props)}

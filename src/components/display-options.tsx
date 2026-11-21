@@ -153,8 +153,9 @@ function DisplayOptionsDensity({
   );
 }
 
+/** A full-width row in the panel, like a menu item, so it doesn't press (AVE-212): it fades its colours only. */
 function DisplayOptionsAction({ className, ...props }: ComponentProps<typeof Button>) {
-  return <Button variant="ghost" size="sm" className={cn("w-full justify-start pointer-coarse:h-11", className)} {...props} />;
+  return <Button variant="ghost" size="sm" className={cn("w-full justify-start transition-colors pointer-coarse:h-11", className)} {...props} />;
 }
 
 export { DisplayOptions, DisplayOptionsAction, DisplayOptionsCheckbox, DisplayOptionsDensity, DisplayOptionsSection };

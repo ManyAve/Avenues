@@ -3,6 +3,7 @@
 
 package com.manyave.avenue
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -355,4 +356,16 @@ object AvenueTokens {
 
     /** The smallest tap target. */
     val TouchMinimum: Dp = 44.dp
+
+    /**
+     * How things move (web: Foundations/Motion). Durations in milliseconds, for `tween(durationMillis = …)`. `EaseFade`
+     * is for a colour or alpha change, `EaseMove` for anything that moves or changes size; nothing runs longer than `SLOW`.
+     */
+    object Motion {
+        const val FAST: Int = 100
+        const val MODERATE: Int = 150
+        const val SLOW: Int = 200
+        val EaseFade = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+        val EaseMove = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
+    }
 }

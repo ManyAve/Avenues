@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { cn, DURATION_NAMES, FONT_WEIGHT_NAMES, SPACING_NAMES, TEXT_SIZE_NAMES, Z_INDEX_NAMES } from "../src/lib/utils";
+import { cn, DURATION_NAMES, EASE_NAMES, FONT_WEIGHT_NAMES, SPACING_NAMES, TEXT_SIZE_NAMES, Z_INDEX_NAMES } from "../src/lib/utils";
 
 // Every --spacing-* and --text-* token Avenue defines must be known to cn, or cn mis-resolves conflicts with it.
 const styles = join(import.meta.dir, "..", "src", "styles");
@@ -28,7 +28,19 @@ test("cn knows every Avenue weight, duration and layer", () => {
   expect(defined("font-weight").toSorted()).toEqual([...FONT_WEIGHT_NAMES].toSorted());
   expect(defined("transition-duration").toSorted()).toEqual([...DURATION_NAMES].toSorted());
   expect(defined("z-index").toSorted()).toEqual([...Z_INDEX_NAMES].toSorted());
+  expect(defined("ease").toSorted()).toEqual([...EASE_NAMES].toSorted());
 });
+
+// AVE-212: an easing gives way to another, and `press` is a transition, so a `transition-colors` passed in replaces it.
+/* oxlint-disable tailwindcss/no-restricted-classes */
+test("conflicts resolve with Avenue's easings and the press", () => {
+  expect(cn("ease-move", "ease-out")).toBe("ease-out");
+  expect(cn("ease-in", "ease-fade")).toBe("ease-fade");
+  expect(cn("press outline-none", "transition-colors")).toBe("outline-none transition-colors");
+  expect(cn("transition-all", "press")).toBe("press");
+  expect(cn("press", "scale-95")).toBe("press scale-95");
+});
+/* oxlint-enable tailwindcss/no-restricted-classes */
 
 // Tailwind's numbered durations and layers stand in for whatever an app passes; the lint flags them in a class string.
 /* oxlint-disable tailwindcss/no-restricted-classes */

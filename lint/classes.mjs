@@ -4,8 +4,8 @@
  *
  * - retired corners (rounded-2xl, rounded-3xl, rounded-4xl and their side forms), typos and missing tokens fail
  *   `tailwindcss/no-unknown-classes`: Avenue's theme clears them, so they make no CSS (AVE-2);
- * - off-grid spacing, literal breakpoints, and raw type sizes, weights, shadows, layers and durations fail
- *   `tailwindcss/no-restricted-classes`, with the fix in the message (AVE-2, AVE-79, AVE-85, AVE-184);
+ * - off-grid spacing, literal breakpoints, and raw type sizes, weights, shadows, layers, durations and easings fail
+ *   `tailwindcss/no-restricted-classes`, with the fix in the message (AVE-2, AVE-79, AVE-85, AVE-184, AVE-212);
  * - a colour typed into a class fails `tailwindcss/no-hardcoded-colors`; an arbitrary value a named class already
  *   draws fails `tailwindcss/no-unnecessary-arbitrary-value`; a literal equal to a theme token or a whole 4px step
  *   fails `tailwindcss/prefer-scale-token`; `bg-(--card)` where `bg-card` exists fails `tailwindcss/prefer-theme-tokens`
@@ -45,7 +45,8 @@ export const gridClassPatterns = [
 ];
 
 /**
- * Raw type sizes, weights, Tailwind's shadows, page layers and durations, where Avenue has a named step (AVE-184).
+ * Raw type sizes, weights, Tailwind's shadows, page layers, durations and easings, where Avenue has a named step
+ * (AVE-184, AVE-212).
  * An app that hasn't moved its screens yet can keep only `gridClassPatterns` for those folders (ADOPTING.md).
  * @type {{ pattern: string; message: string }[]}
  */
@@ -84,6 +85,12 @@ export const scaleClassPatterns = [
     pattern: "(?:^|:)duration-(?:\\d+|\\[[^\\]]+\\])!?$",
     message:
       "a literal duration. Use duration-fast (100ms, an overlay opening), duration-moderate (150ms, a change in place) or duration-slow (200ms, the ceiling) (Foundations/Motion, AVE-182, AVE-184).",
+  },
+  {
+    // Tailwind's stock curves and a typed-in one; ease-fade and ease-move pass, and so does ease-initial (a reset).
+    pattern: "(?:^|:)ease-(?:in|out|in-out|linear|\\[[^\\]]+\\]|\\([^)]+\\))!?$",
+    message:
+      "a typed-in easing. Use ease-fade (a colour, background, border or opacity change; every transition's default, so transition-colors needs none) or ease-move (anything that moves or changes size: a transform, scale, width or shadow) (Foundations/Motion, AVE-212).",
   },
 ];
 

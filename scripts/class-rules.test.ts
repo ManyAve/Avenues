@@ -118,6 +118,22 @@ test("flags typed-in type sizes, weights, Tailwind's shadows, page layers and du
   expect(found.find((f) => f.message.includes('"duration-300"'))?.message).toContain("duration-slow (200ms");
 });
 
+// AVE-212: Tailwind's stock curves and typed-in ones; the message names Avenue's two.
+test("flags a typed-in easing", () => {
+  // Planted on purpose: the rules must fire on these in the linted copy.
+  // oxlint-disable-next-line tailwindcss/no-restricted-classes
+  const found = lint([`"ease-in ease-out hover:ease-in-out ease-linear ease-[cubic-bezier(0.4,0,0.2,1)] ease-(--my-curve)"`]);
+  expect(named(found, "tailwindcss(no-restricted-classes)")).toEqual([
+    "ease-in",
+    "ease-out",
+    "hover:ease-in-out",
+    "ease-linear",
+    "ease-[cubic-bezier(0.4,0,0.2,1)]",
+    "ease-(--my-curve)",
+  ]);
+  expect(found.find((f) => f.message.includes('"ease-out"'))?.message).toContain("ease-move");
+});
+
 test("flags a typed-in colour, an arbitrary value a class already draws, and a literal equal to a token", () => {
   // Planted on purpose: the rules must fire on these in the linted copy.
   // oxlint-disable-next-line tailwindcss/no-hardcoded-colors
@@ -136,7 +152,7 @@ test("allows Avenue's named sizes, weights, shadows, layers and durations, and a
       `"text-meta text-control text-compact text-post text-title text-heading text-display sm:text-hero text-base md:text-field"`,
       `"font-normal font-quiet font-medium font-emphasis font-semibold font-heading"`,
       `"shadow-none shadow-control shadow-card shadow-popover z-sticky z-overlay z-toast z-1 -z-1 focus:z-10"`,
-      `"duration-fast duration-moderate duration-slow"`,
+      `"duration-fast duration-moderate duration-slow ease-fade ease-move press"`,
       // Whole 4px steps only: a phone's 390px stays a literal, not w-97.5.
       `"max-w-[390px] max-phone:mask-r-from-[calc(100%-28px)]"`,
     ]),

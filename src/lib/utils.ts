@@ -38,13 +38,15 @@ export const TEXT_SIZE_NAMES = [
 /** Avenue's font weights, durations and layers (avenue.css, AVE-182), beside Tailwind's own. */
 export const FONT_WEIGHT_NAMES = ["quiet", "emphasis", "heading"] as const;
 export const DURATION_NAMES = ["fast", "moderate", "slow"] as const;
+/** Avenue's two easings (avenue.css, AVE-212): ease-fade for colour, ease-move for movement. */
+export const EASE_NAMES = ["fade", "move"] as const;
 export const Z_INDEX_NAMES = ["sticky-group", "sticky", "sticky-bar", "dock", "overlay", "toast"] as const;
 
 /**
  * Joins class names and resolves Tailwind conflicts. It knows Avenue's text scale:
  * the text-* steps (meta … display, web-*) are font sizes, so they don't drop beside a text colour, and the spacing
  * aliases (inset, group, row-y, control-* …) are spacing, so `p-0` passed in replaces a part's own `p-inset` (AVE-9).
- * The weight, duration and layer names are those, so `font-emphasis` gives way to `font-medium`, not to `font-mono`.
+ * The weight, duration, easing and layer names are those, so `font-emphasis` gives way to `font-medium`, not to `font-mono`.
  */
 export const cn = createCn({
   extend: {
@@ -52,6 +54,10 @@ export const cn = createCn({
     classGroups: {
       "font-size": [{ text: [...TEXT_SIZE_NAMES] }],
       duration: [{ duration: [...DURATION_NAMES] }],
+      ease: [{ ease: [...EASE_NAMES] }],
+      // The `press` utility (avenue.css, AVE-212) is a control's transition, so a `transition-colors` passed in
+      // replaces it and turns the press off.
+      transition: ["press"],
       z: [{ z: [...Z_INDEX_NAMES] }],
       // The `chosen` utility (avenue.css, AVE-50) sets the border, fill and text colours, so a later `chosen`
       // replaces an earlier `bg-muted` under the same variant, as `bg-primary-subtle` did.

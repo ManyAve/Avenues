@@ -100,7 +100,7 @@ function ProgressIndicator({ className, ...props }: Loose<ComponentProps<typeof 
   return (
     <ProgressIndicatorPrimitive
       className={cn(
-        "h-full bg-primary transition-[width] duration-slow ease-out motion-reduce:transition-none",
+        "h-full bg-primary transition-[width] duration-slow ease-move motion-reduce:transition-none",
         "data-indeterminate:w-2/5 data-indeterminate:animate-progress-sweep",
         "motion-reduce:data-indeterminate:w-full motion-reduce:data-indeterminate:animate-none motion-reduce:data-indeterminate:opacity-40",
         className,

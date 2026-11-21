@@ -264,7 +264,7 @@ export function SwipeRowContent({ value, className, ...props }: SwipeRowContentP
     <parts.Content
       value={value}
       className={cn(
-        "relative flex translate-x-(--swipe-x) items-center gap-controls bg-background py-2 ps-4 pe-2 transition-[translate] duration-moderate ease-out select-none data-swiping:transition-none motion-reduce:transition-none",
+        "relative flex translate-x-(--swipe-x) items-center gap-controls bg-background py-2 ps-4 pe-2 transition-[translate] duration-moderate ease-move select-none data-swiping:transition-none motion-reduce:transition-none",
         className,
       )}
       {...defined(props)}
