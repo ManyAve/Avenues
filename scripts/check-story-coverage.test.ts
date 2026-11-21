@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { parityMapProblems, patternProblems, untestedStories } from "./check-story-coverage";
+import { linkedStoryIds, parityMapProblems, patternProblems, sceneLinkProblems, untestedStories } from "./check-story-coverage";
 
 test("lists stories without the test tag and ignores docs entries", () => {
   const index = {
@@ -72,4 +72,19 @@ test("AVE-77 QA: a glyph allowance that doesn't name both icons fails", () => {
   ]);
   const pinned = pair([{ prop: "glyph", app: "lucide-receipt", avenue: "lucide-download", because: "app: x.tsx: ..." }]);
   expect(parityMapProblems(index, pinned as never)).toEqual([]);
+});
+
+test("AVE-213: a Scenes part tag that names no story fails", () => {
+  const source = `parts={[part("Stat", "components-stat--default"), part(\n  "Well",\n  "components-well--gone"\n)]}`;
+  expect(linkedStoryIds(source)).toEqual(["components-stat--default", "components-well--gone"]);
+  const index = {
+    entries: {
+      "components-stat--default": { id: "components-stat--default", type: "story" },
+      "components-well--docs": { id: "components-well--docs", type: "docs" },
+    },
+  };
+  expect(sceneLinkProblems(source, index)).toEqual([
+    "components-well--gone  is linked from a Scenes tag (src/stories/Scenes.stories.tsx) but isn't a story",
+  ]);
+  expect(sceneLinkProblems("no tags here", index)).toHaveLength(1);
 });

@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.69.1 (2026-11-21)
+
+- **Scenes, Avenue in use** (AVE-213): a new Storybook page beside At a glance. Five finished board and neighbour
+  tasks from a fictional association (record a payment, choose your alerts, RSVP to the pool party, vote on a board
+  motion, send a request with a photo), each on a raised tile (`shadow-card`, the floating edge, xl corners) with its
+  title at `text-post`, one line at `text-compact`, and a Badge per part it uses that opens that part's stories.
+  "By keyboard" runs each scene to its end state. `check:story-coverage` now fails on a tag that names no story.
+  Storybook only: nothing changes for apps.
+
 ## v0.69.0 (2026-11-21)
 
 - **Two easing tokens** (AVE-212): `ease-fade`, cubic-bezier(0.2, 0, 0, 1), for a colour, background, border or
