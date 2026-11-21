@@ -4,6 +4,15 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.61.0 (2026-11-21)
+
+- **New component: Swipe list** (AVE-199). `@manyave/avenue/components/swipe-list`: rows that slide aside on a phone to
+  show their actions, one row open at a time, built on ui-sdk core's `createSwipeActions` as the `swipe-list` primitive.
+  `SwipeList` is the root (a named `ul`), `SwipeRow` the one-tag row (`value`, `label`, `items`, `contentClassName`),
+  built from `SwipeRowRoot`, `SwipeRowContent`, `SwipeRowActions`, `SwipeRowAction` and `SwipeRowMenu`. Each item is
+  `undo` (done at once, then the Undo toast), `confirm` (asks first in an AlertDialog whose answer carries
+  `data-agent-confirm`), or neither; a long swipe runs a side's first item only when it is `undo`. Only a finger swipes;
+  every row's menu has the same actions for a mouse, a keyboard, a screen reader and an agent. Nothing existing changes.
 ## v0.60.0 (2026-11-21)
 
 - **Combobox searches results loaded as you type** (AVE-207), through ui-sdk's `useAsyncOptions`: pass its `items`,

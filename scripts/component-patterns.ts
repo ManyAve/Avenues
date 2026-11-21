@@ -186,6 +186,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     none: "AVE-132: ui-sdk's kit has no log pattern, and the list changes no keys: the log is one Tab stop the browser scrolls, its buttons are ui-sdk Buttons. The Message list stories press Jump, Earlier messages and Try again by keyboard, check the log's role, name and aria-relevant, that focus stays in the log after a jump, and that the view holds while scrolled up and when history loads above; Message list / Agent is its agent test.",
   },
 
+  "swipe-list": {
+    none: "AVE-199: ui-sdk's kit has no pattern for rows that swipe aside, and the list changes no roles or keys: a list of listitems, its hidden actions inert, every action also in each row's ui-sdk Menu. The Swipe list stories swipe by finger (open, one row at a time, full swipe to Archive and Mark read, never to Delete), check a mouse doesn't swipe, and run every action from the menu by keyboard; Swipe list / Agent is its agent test, with Delete forever refused until the person allows it.",
+  },
+
   // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
