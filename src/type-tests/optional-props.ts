@@ -20,6 +20,8 @@ import type * as collapsibleSection from "#avenue/components/collapsible-section
 import type * as combobox from "#avenue/components/combobox";
 import type * as command from "#avenue/components/command";
 import type * as composer from "#avenue/components/composer";
+import type * as dateInput from "#avenue/components/date-input";
+import type * as datePicker from "#avenue/components/date-picker";
 import type * as detailList from "#avenue/components/detail-list";
 import type * as dialog from "#avenue/components/dialog";
 import type * as displayOptions from "#avenue/components/display-options";
@@ -60,6 +62,7 @@ import type * as table from "#avenue/components/table";
 import type * as tableFilter from "#avenue/components/table-filter";
 import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
+import type * as timeInput from "#avenue/components/time-input";
 import type * as toast from "#avenue/components/toast";
 import type * as toggleGroup from "#avenue/components/toggle-group";
 import type * as toggle from "#avenue/components/toggle";
@@ -84,6 +87,8 @@ export type Modules = {
   "combobox": typeof combobox;
   "command": typeof command;
   "composer": typeof composer;
+  "date-input": typeof dateInput;
+  "date-picker": typeof datePicker;
   "detail-list": typeof detailList;
   "dialog": typeof dialog;
   "display-options": typeof displayOptions;
@@ -124,6 +129,7 @@ export type Modules = {
   "table-filter": typeof tableFilter;
   "tabs": typeof tabs;
   "textarea": typeof textarea;
+  "time-input": typeof timeInput;
   "toast": typeof toast;
   "toggle-group": typeof toggleGroup;
   "toggle": typeof toggle;

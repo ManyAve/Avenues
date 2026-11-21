@@ -519,6 +519,32 @@ inline or as the ⌘K palette. Avenue supplies the component; each app wires its
   type ("dues" for Record payment). Async search: `useAsyncOptions` from `@ui-sdk/react/async-options`, `filter={false}`
   and a `CommandStatus` (Components / Command / Async results).
 
+## Dates and times (AVE-202)
+
+Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a
+`Field`, looks like `Input`, posts the same string the native input did (`2026-11-21`, `14:30`, `2026-11-21T14:30`)
+under the Field's `name`, and uses the phone's own picker on touch-first devices (`native="auto"`, as `Select` does).
+
+| Field | Use it for |
+| --- | --- |
+| `DatePicker` | A date picked from a month or typed: due dates, meeting dates, assessment dates. `mode="range"` for two. |
+| `DateInput` | A date people know by heart, typed part by part: a move-in date. `granularity="minute"` adds the time. |
+| `TimeInput` | A time of day: when a meeting starts. |
+
+```tsx
+<Field name="due">
+  <FieldLabel>Due date</FieldLabel>
+  <DatePicker required />
+  <DatePickerError missing="Choose a due date." />
+</Field>
+```
+
+Typing follows the locale's order (the page's `lang`, or `locale`), and the error on submit says it: "Enter a date
+like 31/12/2026" in British English. A field with `min`, `max` or `unavailable` days gives `DatePickerError` (or
+`DateInputError`, `TimeInputError`) its rule as children. Built from parts, a DatePicker is `DatePickerGroup` holding
+`DatePickerInput`, `DatePickerClear` and `DatePickerTrigger`, then `DatePickerHint` and `DatePickerContent` (Avenue's
+Calendar parts, and `DatePickerPreset`s).
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in
