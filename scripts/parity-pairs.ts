@@ -547,6 +547,7 @@ export const PAIRS: Record<string, PairEntry> = {
   ],
   "components-dialog--escape-blocked-while-pending": { none: BEHAVIOUR("Dialog / Open") },
   "components-dialog--click-right-after-close": { none: BEHAVIOUR("Dialog / Open") },
+  "components-dialog--long-content-scrolls-in-body": { none: "AVE-190: DialogBody, a part the app has no counterpart for yet; the dialog's own look is compared through Dialog / Open." },
 
   // ---- Disclosure (AVE-7): CollapsibleSection's disclosure variant since AVE-154 removed Disclosure; its story ends closed.
   "components-collapsible-section--disclosure": [
