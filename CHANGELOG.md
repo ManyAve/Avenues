@@ -4,6 +4,18 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.67.0 (2026-11-21)
+
+- **New component: Image cropper** (AVE-206). `@manyave/avenue/components/image-cropper`: frame a photo before it's
+  saved, a profile photo in a round frame or a logo in a square one. Built on ui-sdk's ImageCropper (in frame mode with a
+  square crop by default) and `cropImage`. `ImageCropper` is the root and takes `onCrop(file, crop)` and
+  `onUseOriginal()`; its parts are ui-sdk's (`ImageCropperViewport`, `ImageCropperImage`, `ImageCropperSelection`,
+  `ImageCropperGrid`, `ImageCropperHandle`, `ImageCropperZoom`, `ImageCropperRotate`, `ImageCropperFlip`), plus
+  `ImageCropperSave` ("Save photo", pending while `onCrop`'s Promise runs) and `ImageCropperUseOriginal` ("Use photo as
+  is"). The frame is named after the cropper and its shape ("Profile photo, round frame"), and keyboard changes are
+  announced politely ("Zoom 150%", "Moved left"). ADOPTING.md shows it with FileField in a Dialog. Nothing existing
+  changes.
+
 ## v0.66.0 (2026-11-21)
 
 - **Find in page opens a folded section** (AVE-195). A closed `CollapsibleSectionPanel` now stays in the page as

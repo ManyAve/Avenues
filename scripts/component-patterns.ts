@@ -194,6 +194,11 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     none: "AVE-199: ui-sdk's kit has no pattern for rows that swipe aside, and the list changes no roles or keys: a list of listitems, its hidden actions inert, every action also in each row's ui-sdk Menu. The Swipe list stories swipe by finger (open, one row at a time, full swipe to Archive and Mark read, never to Delete), check a mouse doesn't swipe, and run every action from the menu by keyboard; Swipe list / Agent is its agent test, with Delete forever refused until the person allows it.",
   },
 
+  "image-cropper": {
+    upstream: "image-cropper",
+    note: "AVE-206: ui-sdk's ImageCropper and cropImage, styled, with the frame named after the cropper and its shape and keyboard changes announced politely. The testing kit has no image-cropper pattern; the Image cropper stories pan and zoom by keyboard, check the announcements and the names, save a crop through File field with focus back on its button, and Image cropper / Agent is its agent test.",
+  },
+
   "pull-to-refresh": {
     none: "AVE-200: ui-sdk's kit has no pattern for a pull, and the pull adds no roles or keys: it is a finger gesture on plain markup, and the way for a keyboard, a screen reader and an agent is the Refresh button, a ui-sdk Button. The Pull to refresh stories pull by finger (past the point of release, short, scrolled down, by mouse), press Refresh by keyboard, check the status line says Refreshing, Updated and the failure, and the reduced-motion path; Pull to refresh / Agent is its agent test.",
   },

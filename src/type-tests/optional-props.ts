@@ -34,6 +34,7 @@ import type * as fileField from "#avenue/components/file-field";
 import type * as formDialog from "#avenue/components/form-dialog";
 import type * as hoverCard from "#avenue/components/hover-card";
 import type * as iconTile from "#avenue/components/icon-tile";
+import type * as imageCropper from "#avenue/components/image-cropper";
 import type * as initialsAvatar from "#avenue/components/initials-avatar";
 import type * as kbd from "#avenue/components/kbd";
 import type * as inlineMessage from "#avenue/components/inline-message";
@@ -108,6 +109,7 @@ export type Modules = {
   "form-dialog": typeof formDialog;
   "hover-card": typeof hoverCard;
   "icon-tile": typeof iconTile;
+  "image-cropper": typeof imageCropper;
   "initials-avatar": typeof initialsAvatar;
   "inline-message": typeof inlineMessage;
   "kbd": typeof kbd;
