@@ -76,6 +76,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "AVE-134: ui-sdk's Textarea (autoResize, submitShortcut enter) and Button, wired into a form. Its keys are ui-sdk's but Escape, which cancels a reply or edit banner only while one shows. The Composer stories send by Enter, by Tab and Enter on Send and by the pointer, and check focus stays in the field, a refused send keeps the text, and Escape; Composer / Typing is its agent test.",
   },
   dialog: { upstream: "dialog" },
+  command: {
+    upstream: "command",
+    note: "AVE-197: ui-sdk's Command, styled, and in CommandDialog its Dialog, which a command that runs closes (after its Promise resolves). The Command stories search, move, run, drill into a page and go back by keyboard, and open the palette with ⌘K; Command / Palette is its agent test.",
+  },
   "alert-dialog": { upstream: "alert-dialog" },
   drawer: { upstream: "drawer", note: "The Drawer stories test focus in and back, Tab staying inside, Esc, and the unsaved-changes hold." },
   menu: { upstream: "trigger-menu" },

@@ -18,6 +18,7 @@ import type * as chip from "#avenue/components/chip";
 import type * as choiceCard from "#avenue/components/choice-card";
 import type * as collapsibleSection from "#avenue/components/collapsible-section";
 import type * as combobox from "#avenue/components/combobox";
+import type * as command from "#avenue/components/command";
 import type * as composer from "#avenue/components/composer";
 import type * as detailList from "#avenue/components/detail-list";
 import type * as dialog from "#avenue/components/dialog";
@@ -81,6 +82,7 @@ export type Modules = {
   "choice-card": typeof choiceCard;
   "collapsible-section": typeof collapsibleSection;
   "combobox": typeof combobox;
+  "command": typeof command;
   "composer": typeof composer;
   "detail-list": typeof detailList;
   "dialog": typeof dialog;

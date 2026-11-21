@@ -486,6 +486,39 @@ toast.undo({
 Several in a row with the same `id` stay one counted toast whose Undo takes back all of them. A screen moves when its
 team gets to it; nothing changes until then.
 
+## Command palette (AVE-197)
+
+`@manyave/avenue/components/command` is ui-sdk's Command, in Avenue's look: a search field over a list of commands,
+inline or as the ⌘K palette. Avenue supplies the component; each app wires its own commands.
+
+```tsx
+<CommandDialog>
+  <CommandDialogTrigger render={<Button variant="outline" />}>
+    Search or jump to…
+    <CommandDialogShortcut />
+  </CommandDialogTrigger>
+  <CommandDialogContent>
+    <CommandDialogTitle>Command palette</CommandDialogTitle>
+    <Command onAction={(value) => run(value)}>
+      <CommandInput aria-label="Search commands" placeholder="Type a command or search…" />
+      <CommandEmpty>No commands match.</CommandEmpty>
+      <CommandList>{/* CommandGroup, CommandGroupLabel, CommandItem, CommandSeparator, CommandPage */}</CommandList>
+    </Command>
+  </CommandDialogContent>
+</CommandDialog>
+```
+
+- The trigger binds ⌘K (Ctrl+K off a Mac) with a mouse, and nothing on a touch-first device. Put it where people
+  look for search, such as the top bar.
+- A command that runs closes the palette; if `onAction` returns a Promise, the command shows a spinner and the palette
+  closes once it resolves. A command with `page` opens that `CommandPage` instead ("Assign to…").
+- **Never the only way.** Every command must also be reachable from the visible navigation or a menu.
+- **Sends, money and deletes ask first.** Their command opens the app's PendingConfirmDialog from `onAction` rather
+  than acting, and carries `data-agent-confirm="<what it does>"`; mark a delete `destructive`.
+- Give each command a label that is unique in the list by at least one word, and `keywords` for other words people
+  type ("dues" for Record payment). Async search: `useAsyncOptions` from `@ui-sdk/react/async-options`, `filter={false}`
+  and a `CommandStatus` (Components / Command / Async results).
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

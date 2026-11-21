@@ -4,6 +4,19 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.55.0 (2026-11-21)
+
+- **New component: Command, and the ⌘K command palette** (AVE-197). `@manyave/avenue/components/command` is ui-sdk's
+  Command in Avenue's look, as a root and ui-sdk's parts: `Command`, `CommandInput`, `CommandList`, `CommandEmpty`,
+  `CommandStatus`, `CommandPage`, `CommandGroup`, `CommandGroupLabel`, `CommandItem` (with Avenue's `destructive`),
+  `CommandItemIcon`, `CommandItemText` (marks the matched letters), `CommandShortcut` (⌘P on a Mac, Ctrl+P elsewhere)
+  and `CommandSeparator`. The palette is `CommandDialog` with `CommandDialogTrigger` (⌘K / Ctrl+K, not bound on
+  touch-first devices), `CommandDialogShortcut`, `CommandDialogContent` (near the top of the screen, no close button)
+  and `CommandDialogTitle` (for screen readers). A command that runs closes the palette, after its Promise resolves if
+  it returns one, with a spinner meanwhile. The highlighted command wears `bg-accent` (AVE-209). ADOPTING.md, "Command
+  palette", has the rules: never the only way to a command, and sends, money and deletes open a confirm dialog. New
+  stories under Components / Command; no existing pixels change.
+
 ## v0.54.0 (2026-11-21)
 
 - **Undo on a toast, instead of asking first** (AVE-198). `useToast()` gains `toast.undo({ title, onUndo, elsewhere,
