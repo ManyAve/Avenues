@@ -11,6 +11,12 @@ export interface RestrictedClassPattern {
 }
 
 /** Off-grid spacing and literal breakpoints, each with its fix in the message. */
+export declare const gridClassPatterns: RestrictedClassPattern[];
+
+/** Raw type sizes, weights, Tailwind's shadows, page layers and durations, each with its fix (AVE-184). */
+export declare const scaleClassPatterns: RestrictedClassPattern[];
+
+/** Every pattern Avenue's class rules reject: `gridClassPatterns` then `scaleClassPatterns`. */
 export declare const restrictedClassPatterns: RestrictedClassPattern[];
 
 /** Avenue's class rules: oxlint-tailwindcss plus Avenue's hit-area rule, for an app's `extends`. */

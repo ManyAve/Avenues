@@ -30,6 +30,8 @@ test("cn knows every Avenue weight, duration and layer", () => {
   expect(defined("z-index").toSorted()).toEqual([...Z_INDEX_NAMES].toSorted());
 });
 
+// Tailwind's numbered durations and layers stand in for whatever an app passes; the lint flags them in a class string.
+/* oxlint-disable tailwindcss/no-restricted-classes */
 test("conflicts resolve with Avenue's weights, durations and layers", () => {
   // A weight name is a weight: it gives way to another weight, and stays beside a font family.
   expect(cn("font-emphasis", "font-medium")).toBe("font-medium");
@@ -42,6 +44,7 @@ test("conflicts resolve with Avenue's weights, durations and layers", () => {
   expect(cn("z-10", "z-20")).toBe("z-20");
   expect(cn("bg-overlay", "bg-black/50")).toBe("bg-black/50");
 });
+/* oxlint-enable tailwindcss/no-restricted-classes */
 
 test("conflicts resolve with Avenue's names", () => {
   // The web-* sizes are :root variables (tokens.css), not @theme, so `text-web-card` makes no CSS in Avenue itself; this
@@ -58,6 +61,7 @@ test("conflicts resolve with Avenue's names", () => {
   expect(cn("gap-group", "gap-2")).toBe("gap-2");
   // AVE-53: a caller's text size replaces a field part's text-field whole, at every width.
   expect(cn("text-field text-muted-foreground", "text-meta")).toBe("text-muted-foreground text-meta");
-  // AVE-63: the filled field's tint replaces the field surface's backgrounds.
-  expect(cn("bg-transparent dark:bg-input/30", "bg-field-filled dark:bg-field-filled")).toBe("bg-field-filled dark:bg-field-filled");
+  // AVE-63: the filled field's tint replaces the field surface's backgrounds (a literal since AVE-184).
+  const filled = "bg-[color:color-mix(in_oklab,var(--foreground)_8%,var(--background))] dark:bg-[color:color-mix(in_oklab,var(--foreground)_8%,var(--background))]";
+  expect(cn("bg-transparent dark:bg-input/30", filled)).toBe(filled);
 });

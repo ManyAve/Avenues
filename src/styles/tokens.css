@@ -3,6 +3,7 @@
    Avenue owns this copy. `bun run tokens:compare` lists every difference from the app's files;
    the only intended ones are marked AVE-13 below. Spacing, control heights and corners live in avenue.css (AVE-2). */
 :root {
+  /* kept: a base scale. The semantic tier picks its steps, so a step no token reads today still belongs to it. */
   --color-onyx-25: oklch(98.8% 0.002 280);
   --color-onyx-50: oklch(96.4% 0.004 280);
   --color-onyx-100: oklch(92.4% 0.006 280);
@@ -12,13 +13,13 @@
   --color-onyx-500: oklch(58% 0.014 280);
   --color-onyx-600: oklch(49% 0.014 280);
   --color-onyx-700: oklch(39.5% 0.013 280);
-
   --color-onyx-750: oklch(34% 0.0125 280);
   --color-onyx-800: oklch(29.5% 0.012 280);
   --color-onyx-850: oklch(24% 0.011 280);
   --color-onyx-900: oklch(19.5% 0.01 280);
   --color-onyx-950: oklch(13% 0.008 280);
 
+  /* kept: a base scale, as above. */
   --color-teal-50: oklch(96.4% 0.005 145.54);
   --color-teal-100: oklch(92.58% 0.009 145.51);
   --color-teal-200: oklch(85.12% 0.021 145.39);
@@ -31,6 +32,7 @@
   --color-teal-900: oklch(21.93% 0.012 145.15);
   --color-teal-950: oklch(18.53% 0.01 145.15);
 
+  /* kept: a base scale, as above. */
   --color-slate-50: oklch(96.05% 0.005 258.32);
   --color-slate-100: oklch(91.98% 0.01 252.82);
   --color-slate-200: oklch(84.05% 0.018 248.04);
@@ -43,6 +45,7 @@
   --color-slate-900: oklch(21.1% 0.014 253.14);
   --color-slate-950: oklch(17.93% 0.009 240.46);
 
+  /* kept: a base scale, as above. */
   --color-grape-50: oklch(95.37% 0.011 303.11);
   --color-grape-100: oklch(90.89% 0.021 301.12);
   --color-grape-200: oklch(81.6% 0.043 300.64);
@@ -64,44 +67,25 @@
   --text-control: 0.875rem;
   --text-control--line-height: 1.25rem;
 
-  --text-post: 1.125rem;
+  --text-post: 1.125rem; /* kept: a step in the type scale */
   --text-post--line-height: 1.75rem;
 
-  --text-heading: 1.5rem;
+  --text-heading: 1.5rem; /* kept: a step in the type scale */
   --text-heading--line-height: 1.875rem;
-  --text-display: 2rem;
+  --text-display: 2rem; /* kept: a step in the type scale, its top */
   --text-display--line-height: 2.5rem;
 
-  /* Public-site preview (Georgia) keeps its own display scale; body and meta reuse the steps above. */
+  /* Public-site preview (Georgia) keeps its own display scale; body and meta reuse the steps above.
+     kept: deprecated (AVE-184). Only Management's public site draws these, so they belong there as its own site-* sizes
+     (docs/tokens.md, "An app-only copy"; MANA-1243); removed once both apps have moved off them. */
   --text-web-card: 1.0625rem;
   --text-web-section: 1.5rem;
   --text-web-hero: 2.375rem;
   --text-web-hero-narrow: 2.125rem;
   --text-web-glyph: 3.4375rem;
 
-  --text-title: 1.25rem;
+  --text-title: 1.25rem; /* kept: a step in the type scale */
   --text-title--line-height: 1.75rem;
-
-  --light-success: oklch(0.51 0.11 146);
-  --light-success-foreground: oklch(0.98 0.01 146);
-  --light-success-subtle: oklch(0.95 0.025 146);
-  --light-success-subtle-foreground: oklch(0.42 0.08 146);
-  --light-info: oklch(0.52 0.11 250);
-  --light-info-foreground: oklch(0.98 0.01 250);
-  --light-info-subtle: oklch(0.95 0.025 250);
-  --light-info-subtle-foreground: oklch(0.42 0.09 250);
-  --light-warning: oklch(0.74 0.12 78);
-  --light-warning-foreground: oklch(0.3 0.05 78);
-  --light-warning-subtle: oklch(0.95 0.035 80);
-  --light-warning-subtle-foreground: oklch(0.42 0.07 72);
-  --light-destructive: oklch(0.53 0.15 18);
-  --light-destructive-foreground: oklch(0.98 0.01 18);
-  --light-destructive-subtle: oklch(0.94 0.03 18);
-  --light-destructive-subtle-foreground: oklch(0.44 0.13 18);
-  --light-primary-subtle: oklch(0.95 0.028 298.85);
-  --light-primary-subtle-foreground: oklch(0.42 0.11 297.84);
-  --light-slate-subtle: oklch(0.95 0.012 250);
-  --light-slate-subtle-foreground: oklch(0.42 0.035 250);
 
   --radius: 0.625rem;
   --font-geist-sans:
@@ -138,34 +122,41 @@
   --accent: var(--color-onyx-100);
   --accent-foreground: var(--color-onyx-900);
 
-  --success: var(--light-success);
-  --success-foreground: var(--light-success-foreground);
-  --success-subtle: var(--light-success-subtle);
-  --success-subtle-foreground: var(--light-success-subtle-foreground);
+  /* The four states (success, info, warning, destructive), each a fill, a subtle fill and their text, as one set:
+     a state Avenue's own components draw once or not at all is still one an app shows (Status, Badge, Callout).
+     kept: a step in the set of states. */
+  --success: oklch(0.51 0.11 146);
+  --success-foreground: oklch(0.98 0.01 146);
+  --success-subtle: oklch(0.95 0.025 146);
+  --success-subtle-foreground: oklch(0.42 0.08 146);
 
-  --info: var(--light-info);
-  --info-foreground: var(--light-info-foreground);
-  --info-subtle: var(--light-info-subtle);
-  --info-subtle-foreground: var(--light-info-subtle-foreground);
+  /* kept: a step in the set of states, as above. */
+  --info: oklch(0.52 0.11 250);
+  --info-foreground: oklch(0.98 0.01 250);
+  --info-subtle: oklch(0.95 0.025 250);
+  --info-subtle-foreground: oklch(0.42 0.09 250);
 
-  --warning: var(--light-warning);
-  --warning-foreground: var(--light-warning-foreground);
-  --warning-subtle: var(--light-warning-subtle);
-  --warning-subtle-foreground: var(--light-warning-subtle-foreground);
+  /* kept: a step in the set of states, as above. */
+  --warning: oklch(0.74 0.12 78);
+  --warning-foreground: oklch(0.3 0.05 78);
+  --warning-subtle: oklch(0.95 0.035 80);
+  --warning-subtle-foreground: oklch(0.42 0.07 72);
 
-  --destructive: var(--light-destructive);
-  --destructive-foreground: var(--light-destructive-foreground);
-  --destructive-subtle: var(--light-destructive-subtle);
-  --destructive-subtle-foreground: var(--light-destructive-subtle-foreground);
+  /* kept: a step in the set of states, as above. */
+  --destructive: oklch(0.53 0.15 18);
+  --destructive-foreground: oklch(0.98 0.01 18);
+  --destructive-subtle: oklch(0.94 0.03 18);
+  --destructive-subtle-foreground: oklch(0.44 0.13 18);
 
-  --primary-subtle: var(--light-primary-subtle);
-  --primary-subtle-foreground: var(--light-primary-subtle-foreground);
+  --primary-subtle: oklch(0.95 0.028 298.85);
+  --primary-subtle-foreground: oklch(0.42 0.11 297.84);
 
-  --slate-subtle: var(--light-slate-subtle);
-  --slate-subtle-foreground: var(--light-slate-subtle-foreground);
+  --slate-subtle: oklch(0.95 0.012 250);
+  --slate-subtle-foreground: oklch(0.42 0.035 250);
 
   /* Decorative tints for avatars and street bars, hashed from a name (the app's tintFor).
-     Teal, plum, iris and stone carry no status meaning; green, amber and blue stay for paid, owing and processing. */
+     Teal, plum, iris and stone carry no status meaning; green, amber and blue stay for paid, owing and processing.
+     kept: the tint formula's lightness and chroma, set per theme here and read once by [data-tint] (avenue.css). */
   --tint-bg-l: 0.95;
   --tint-bg-c: 0.03;
   --tint-fg-l: 0.42;
@@ -184,12 +175,14 @@
   /* The modal overlay (AVE-182): the same 10% black dim in both themes, as the app's bg-black/10 was. */
   --overlay: rgb(0 0 0 / 0.1);
 
+  /* kept: shadcn's chart contract (its Chart reads chart-1 to chart-5). */
   --chart-1: var(--color-grape-500);
   --chart-2: var(--color-teal-600);
   --chart-3: var(--color-slate-500);
   --chart-4: var(--color-grape-300);
   --chart-5: var(--color-teal-400);
 
+  /* kept: shadcn's sidebar contract (its Sidebar reads every sidebar-* token). */
   --sidebar: var(--elevated-0);
   --sidebar-foreground: var(--color-onyx-900);
   --sidebar-primary: var(--color-grape-600);

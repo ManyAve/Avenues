@@ -154,14 +154,14 @@ function Households({
           Only balances due
         </Button>
       </div>
-      <div data-register-pane className="max-h-[520px] scroll-pt-21 overflow-auto pointer-coarse:scroll-pt-23">
+      <div data-register-pane className="max-h-130 scroll-pt-21 overflow-auto pointer-coarse:scroll-pt-23">
         <Register aria-label="Households" rowCount={rowCount} colCount={COLS} spanningRows={spanning} groupSelectRows={groupRows} density={density}>
           <colgroup>
             <RegisterSelectColumn />
             <col className="w-[205px]" />
             <col className="w-[215px]" />
-            <col className="w-[192px]" />
-            <col className="w-[184px]" />
+            <col className="w-48" />
+            <col className="w-46" />
           </colgroup>
           <RegisterHeader>
             <RegisterRow row={0}>
@@ -571,7 +571,7 @@ export const FieldKeepsItsKeys: Story = {
         "14 Birch Lane": "Dog in the yard",
       });
       return (
-        <Register aria-label="Notes" rowCount={3} colCount={2} className="w-[520px]">
+        <Register aria-label="Notes" rowCount={3} colCount={2} className="w-130">
           <RegisterHeader>
             <RegisterRow row={0}>
               <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
@@ -639,7 +639,7 @@ export const ComboboxInCell: Story = {
     function Owners() {
       const [owner, setOwner] = useState<string | null>("p1");
       return (
-        <Register aria-label="Owners" rowCount={2} colCount={2} className="w-[520px]">
+        <Register aria-label="Owners" rowCount={2} colCount={2} className="w-130">
           <RegisterHeader>
             <RegisterRow row={0}>
               <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
@@ -803,7 +803,7 @@ export const GroupSelectPhone: Story = {
   globals: { viewport: { value: "phone", isRotated: false } },
   render: () => (
     <div className="overflow-x-auto px-page py-section">
-      <div className="w-[700px]">
+      <div className="w-175">
         <Households groupSelect initialSelected={[]} density="compact" />
       </div>
     </div>

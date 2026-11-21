@@ -100,6 +100,7 @@ function TopBarHome({
         className: cn(
           // The wordmark's 650 is its own, used nowhere else in Avenue: a literal, not a weight token (docs/tokens.md,
           // "a value used in one place"). font-heading's 620 draws it a step lighter and 2px narrower (AVE-182).
+          // oxlint-disable-next-line tailwindcss/no-restricted-classes
           "relative hit-area flex shrink-0 items-center gap-2 rounded-md border-e pe-4 text-post font-[650] tracking-[-0.4px] text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-phone:border-0 max-phone:pe-0",
           noDrag,
           className,
@@ -173,7 +174,7 @@ function TopBarNav({ className, render, "aria-label": label, ...props }: OwnPart
         "aria-label": label ?? "Neighborhood sections",
         "data-fade": fade,
         className: cn(
-          "flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-wide:order-last max-wide:-mx-page max-wide:basis-full max-wide:scroll-px-page max-wide:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-phone:data-[fade=right]:[mask-image:linear-gradient(90deg,#000_calc(100%-28px),transparent)] max-phone:data-[fade=left]:[mask-image:linear-gradient(90deg,transparent,#000_28px)]",
+          "flex min-w-0 flex-1 snap-x snap-proximity gap-controls overflow-x-auto [scrollbar-width:none] max-wide:order-last max-wide:-mx-page max-wide:basis-full max-wide:scroll-px-page max-wide:px-page pointer-coarse:-my-2 pointer-coarse:py-2 max-phone:data-[fade=right]:mask-r-from-[calc(100%-28px)] max-phone:data-[fade=left]:mask-l-from-[calc(100%-28px)]",
           noDrag,
           className,
         ),

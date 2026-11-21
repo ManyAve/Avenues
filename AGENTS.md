@@ -184,6 +184,10 @@ Read `docs/tokens.md` before adding, renaming or using a token. In short:
   outline, `shadow-card` on an avatar, `destructive` on an unread count).
 - The PR that adds a token moves the places that do its job onto it, maps it for every theme, lists it in `cn`, shows
   it in Foundations, exports it to native if it is a colour or size, and says so in the CHANGELOG.
+- `scripts/token-use.test.ts` fails on a token with fewer than two users in Avenue's components and stylesheets, unless
+  a `kept:` comment beside its definition says why (AVE-184). The class rules (`lint/classes.mjs`) reject typed-in
+  colours, type sizes, weights, Tailwind's shadows, page layers and durations; a deliberate exception takes an
+  `oxlint-disable-next-line` with its reason.
 
 ## Touch targets
 

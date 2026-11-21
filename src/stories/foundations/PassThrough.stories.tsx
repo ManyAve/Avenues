@@ -117,7 +117,7 @@ function Roots() {
           />
         </ToolbarControls>
       </Toolbar>
-      <Register aria-label="Households" rowCount={4} colCount={1} spanningRows={[1, 3]} className="w-[420px]">
+      <Register aria-label="Households" rowCount={4} colCount={1} spanningRows={[1, 3]} className="w-105">
         <RegisterHeader>
           <RegisterRow row={0}>
             <RegisterColumnHeader col={0}>Property</RegisterColumnHeader>
@@ -252,7 +252,7 @@ export const PopoverContent: Story = {
   render: function Render() {
     const [density, setDensity] = useState<Density>("normal");
     return (
-      <div className="min-h-[360px] p-page">
+      <div className="min-h-90 p-page">
         <Toolbar aria-label="Households">
           <ToolbarControls>
             <DisplayOptions ref={refFor("display-options")} id="households-display" data-testid="display-options" aria-describedby="display-note">

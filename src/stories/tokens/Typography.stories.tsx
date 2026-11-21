@@ -106,7 +106,7 @@ function WeightScale() {
     <Page title="Font weight">
       <Section
         title="Six weights"
-        note="normal, medium and semibold are Tailwind's own. muted, emphasis and heading are the in-between weights the app draws, named for where they go. Use the name, never font-[550]."
+        note="normal, medium and semibold are Tailwind's own. quiet, emphasis and heading are the in-between weights the app draws, named for where they go. Use the name, never font-[550]."
       >
         {weights.map(([name, cls, , use]) => (
           <Weight key={name} name={name} cls={cls} use={use} />

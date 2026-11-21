@@ -22,6 +22,7 @@ function Menu({ heavy }: { heavy?: boolean }) {
         className={cn(
           "absolute top-12 right-4 flex w-44 flex-col rounded-lg bg-popover p-1",
           // The don't's shadow is deliberately a bespoke one, to show what not to invent.
+          // oxlint-disable-next-line tailwindcss/no-hardcoded-colors
           heavy ? "shadow-[0_24px_48px_-8px_rgb(0_0_0/0.45)]" : "border shadow-popover",
         )}
       >

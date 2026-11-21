@@ -49,7 +49,7 @@ type Canvas = Parameters<NonNullable<Story["play"]>>[0]["canvas"];
 
 /** The page under the dock: a board screen's height, as the app's own dock story draws it. */
 function Page({ children }: { children: ReactNode }) {
-  return <div className="h-[560px] bg-background p-inset text-compact text-muted-foreground">{children}</div>;
+  return <div className="h-140 bg-background p-inset text-compact text-muted-foreground">{children}</div>;
 }
 
 /** One message from the fixture in Avenue's bubbles (AVE-133), with its quote, state and time. */
@@ -70,7 +70,7 @@ function OneMessage({ thread, message, last }: { thread: ChatThread; message: Ch
         <MessageStatus>
           {delivery === "failed" && (
             <>
-              <Button variant="text" className="text-meta font-[600] text-current" aria-label="Retry sending">
+              <Button variant="text" className="text-meta font-semibold text-current" aria-label="Retry sending">
                 Retry
               </Button>
               <Button
@@ -186,7 +186,7 @@ function ListWindow({ width = "default", label = "Chat", defaultOpen }: { width?
               <Button variant="ghost" className="h-auto w-full justify-start gap-2 py-2 text-start">
                 <InitialsAvatar decorative name={thread.title} tintKey={thread.id} />
                 <span className="grid min-w-0">
-                  <span className="truncate font-[600]">{thread.title}</span>
+                  <span className="truncate font-semibold">{thread.title}</span>
                   <span className="truncate text-meta text-muted-foreground">{thread.messages.at(-1)?.body}</span>
                 </span>
               </Button>
