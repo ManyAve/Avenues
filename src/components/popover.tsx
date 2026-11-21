@@ -1,7 +1,7 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as PopoverPrimitive from "@ui-sdk/react/popover";
 import type { ComponentProps } from "react";
-import { popupMaxWidth, popupMotion } from "#avenue/lib/popup";
+import { floatingEdge, popupMaxWidth, popupMotion } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
 import { defined, type Loose, type OwnPartProps } from "#avenue/lib/props";
 
@@ -36,7 +36,8 @@ function PopoverContent({
       side={side}
       sideOffset={sideOffset}
       className={cn(
-        "flex w-72 flex-col gap-3 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-popover ring-1 ring-border outline-hidden",
+        "flex w-72 flex-col gap-3 rounded-lg bg-popover p-inset text-sm text-popover-foreground shadow-popover outline-hidden",
+        floatingEdge,
         popupMaxWidth,
         popupMotion,
         className,

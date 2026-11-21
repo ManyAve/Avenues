@@ -188,3 +188,36 @@ describe("highlighted is never chosen (AVE-209)", () => {
     });
   }
 });
+
+/**
+ * The floating edge (AVE-208) is translucent: `color-mix(in oklab, <ink> N%, transparent)`, a 1px ring the browser
+ * paints over whatever is under that pixel. It must still read on both sides of it: the popup's own fill, and the page,
+ * card or muted fill it opens over (on a lifted page a white menu opens over a white card, and the edge is what shows
+ * where the menu ends). Composited the way a browser does, in sRGB.
+ */
+const FLOATING_UNDER = ["popover", "card", "background", "muted"] as const;
+const toRgb = converter("rgb");
+
+function floatingEdgeOver(vars: Map<string, string>, under: string) {
+  const value = substitute("var(--border-floating)", vars);
+  const mix = /^color-mix\(in oklab,\s*(.+?)\s+([\d.]+)%,\s*transparent\)$/.exec(value);
+  if (!mix) throw new Error(`--border-floating is not a translucent colour-mix: ${value}`);
+  const ink = toRgb(parse(mix[1]!))!;
+  const base = toRgb(parse(substitute(`var(--${under})`, vars)))!;
+  const a = Number(mix[2]) / 100;
+  const over = (k: "r" | "g" | "b") => a * ink[k] + (1 - a) * base[k];
+  return { edge: { mode: "rgb", r: over("r"), g: over("g"), b: over("b") } as Color, base };
+}
+
+describe("floating edge (AVE-208)", () => {
+  for (const [theme, scopes] of Object.entries(THEME_SCOPES)) {
+    test(`${theme}: border-floating is ${SURFACE} from every surface a popup sits on or over`, () => {
+      const vars = merge(tokens, [...scopes]);
+      const misses = FLOATING_UNDER.map((under) => {
+        const { edge, base } = floatingEdgeOver(vars, under);
+        return { under, value: Math.round(ciede(edge, base) * 100) / 100 };
+      }).filter((r) => r.value < SURFACE);
+      expect(misses).toEqual([]);
+    });
+  }
+});
