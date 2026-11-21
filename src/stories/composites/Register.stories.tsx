@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CircleDollarSignIcon, HouseIcon, Trash2Icon, UsersIcon } from "lucide-react";
 import { createAgent } from "@ui-sdk/react/agent";
 import { Fragment, useState } from "react";
-import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -558,6 +558,45 @@ export const RowsGoAway: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /^Birch Lane/ }));
     await userEvent.click(canvas.getByRole("button", { name: /^Cedar Court/ }));
     await expect(stops()).toBe(1);
+  },
+};
+
+/**
+ * Removing a row by keyboard keeps your place (AVE-196, ui-sdk's focus recovery): focus lands on the same column of
+ * the row that takes its place, or of the row before when the removed one was the last.
+ */
+export const RemoveRowByKeyboard: Story = {
+  globals: desktop,
+  render: () => frame(<Households />),
+  play: async ({ canvas, step }) => {
+    const removeByKeyboard = async (address: string) => {
+      const action = canvas.getByRole("button", { name: `Remove ${address}` });
+      await expect(action).toHaveFocus();
+      await userEvent.keyboard("{Enter}");
+      const dialog = await screen.findByRole("alertdialog", { name: `Remove ${address}?` });
+      within(dialog).getByRole("button", { name: "Remove" }).focus();
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(canvas.queryByRole("link", { name: address })).toBeNull());
+    };
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Only balances due" }));
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{End}");
+    await step("a row in the middle: focus moves to the next row's same action", async () => {
+      await removeByKeyboard("14 Birch Lane");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Remove 17 Birch Lane" })).toHaveFocus());
+      await expect(stops()).toBe(1);
+    });
+    await step("the last row: focus moves to the row before it", async () => {
+      await userEvent.keyboard("{Control>}{End}{/Control}{ArrowUp}{End}");
+      await removeByKeyboard("8 Cedar Court");
+      await waitFor(() => expect(canvas.getByRole("button", { name: "Remove 5 Cedar Court" })).toHaveFocus());
+      await expect(stops()).toBe(1);
+    });
+    await step("the arrows go on from where focus landed", async () => {
+      await userEvent.keyboard("{Home}");
+      await expect(canvas.getByRole("checkbox", { name: "Select 5 Cedar Court" })).toHaveFocus();
+    });
   },
 };
 

@@ -7,7 +7,7 @@ import type { InputValueChangeReason } from "@ui-sdk/react/input";
 import type { PopoverOpenChangeReason } from "@ui-sdk/react/popover";
 import type { SelectValueChangeReason } from "@ui-sdk/react/select";
 import { ListFilterIcon, XIcon } from "lucide-react";
-import { useMemo, useRef, useState, type ReactElement, type ReactNode, type RefObject } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactElement, type ReactNode, type RefCallback, type RefObject } from "react";
 import { Checkbox } from "#avenue/components/checkbox";
 import {
   Combobox,
@@ -25,6 +25,7 @@ import { Select } from "#avenue/components/select";
 import { ToolbarItem } from "#avenue/components/toolbar";
 import { ToolbarButton } from "#avenue/components/toolbar-button";
 import { report, type ChangeDetails } from "#avenue/lib/change";
+import { useFocusRecovery } from "#avenue/lib/focus-recovery";
 import { filterOps, isComplete, opLabel, opNeedsValue, type FilterKind, type FilterOp, type TableFilter } from "#avenue/lib/table-filters";
 import type { Presentation } from "#avenue/lib/picker";
 import { cn } from "#avenue/lib/utils";
@@ -167,14 +168,23 @@ type PillProps = {
   onValueChange: (next: TableFilter, details: TableFiltersChangeDetails) => void;
   onRemove: (event: MouseEvent) => void;
   presentation: Presentation;
+  /** Binds the pill to TableFilters' focus recovery, so focus that leaves with it lands on a neighbour. */
+  recover: RefCallback<HTMLElement>;
 };
 
 /** A filter's pill: press it to change its operator or value; × removes it. Dashed while it has no value yet. */
 function FilterPill(props: PillProps) {
-  const { field, filter, repeat, onRemove } = props;
+  const { field, filter, repeat, onRemove, recover } = props;
   const complete = isComplete(field.kind, filter);
   const summary = filterSummary(field, filter) + (repeat ? ` (${repeat})` : "");
   const pill = useRef<HTMLSpanElement>(null);
+  const pillRef = useCallback(
+    (el: HTMLSpanElement | null) => {
+      pill.current = el;
+      return recover(el);
+    },
+    [recover],
+  );
   const button = (
     <ToolbarButton
       data-table-filter-pill=""
@@ -194,7 +204,7 @@ function FilterPill(props: PillProps) {
   );
   const searchable = field.kind === "choice" && choicesOf(field).length > SEARCH_AFTER;
   return (
-    <span ref={pill} data-slot="table-filter" className="inline-flex items-center">
+    <span ref={pillRef} data-slot="table-filter" className="inline-flex items-center">
       {searchable ? (
         <SearchablePill {...props} summary={summary} button={button} pill={pill}>
           {words}
@@ -377,6 +387,12 @@ export function TableFilters({
   const [editing, setEditing] = useState<string>();
   const own = useRef<HTMLSpanElement>(null);
   const added = useRef<string>(undefined);
+  // Focus that leaves with a pill (its × pressed, or the filter removed while focus was in it) lands on the pill that
+  // takes its place, or the one before it when it was the last, or the Filter button when none is left (AVE-196).
+  const recover = useFocusRecovery<{ index: number }>(({ props: { index } }) => {
+    const pills = [...(own.current?.querySelectorAll<HTMLElement>("[data-table-filter-pill]") ?? [])];
+    return pills[index] ?? pills.at(-1) ?? own.current?.querySelector<HTMLElement>("[data-table-filter-add]");
+  });
   // The app hears every change first, as ui-sdk's callbacks do; one it cancels leaves TableFilters' own state alone.
   const change = (next: TableFilter[], details: TableFiltersChangeDetails) => {
     onValueChange?.(next, details);
@@ -441,11 +457,8 @@ export function TableFilters({
             open={editing === filter.id}
             onOpenChange={(open) => setEditing(open ? filter.id : undefined)}
             onValueChange={(updated, details) => change(filters.map((f) => (f.id === filter.id ? updated : f)), details)}
-            onRemove={(event) => {
-              if (!report(change, filters.filter((f) => f.id !== filter.id), { reason: "remove-press", event })) return;
-              // The × goes with its pill, so focus moves to the Filter button rather than falling to the page.
-              own.current?.querySelector<HTMLElement>("[data-table-filter-add]")?.focus();
-            }}
+            onRemove={(event) => report(change, filters.filter((f) => f.id !== filter.id), { reason: "remove-press", event })}
+            recover={recover(filter.id, { index: i })}
           />
         );
       })}

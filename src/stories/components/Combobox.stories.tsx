@@ -1167,12 +1167,14 @@ export const SeveralInOneTag: Story = {
       await expect(search()).toHaveFocus();
     });
 
-    await step("the arrow keys reach a chip, and Backspace there removes it", async () => {
+    await step("the arrow keys reach a chip, and Backspace there removes it; focus moves to the chip before", async () => {
       await userEvent.keyboard("{ArrowLeft}");
       await expect(chip("Birch Street")).toHaveFocus();
       await userEvent.keyboard("{ArrowLeft}{Backspace}");
       await expect(chosen).toHaveTextContent("Chosen: elm, birch");
       await expect(remove("Oak Lane")).toBeNull();
+      // ui-sdk keeps focus on a neighbour itself; Avenue adds nothing (AVE-196).
+      await expect(chip("Elm Row")).toHaveFocus();
       await userEvent.keyboard("{ArrowRight}{ArrowRight}");
       await waitFor(() => expect(search()).toHaveFocus());
     });
@@ -1184,6 +1186,17 @@ export const SeveralInOneTag: Story = {
       await expect(screen.getByRole("option", { name: "Aspen Way" })).toHaveAttribute("aria-selected", "false");
       await userEvent.keyboard("{Escape}");
       await waitForClosed("combobox");
+    });
+
+    await step("Backspace on the first chip moves focus to the chip after it, and on the only chip to the search", async () => {
+      await userEvent.keyboard("{ArrowLeft}{ArrowLeft}");
+      await expect(chip("Elm Row")).toHaveFocus();
+      await userEvent.keyboard("{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: birch");
+      await expect(chip("Birch Street")).toHaveFocus();
+      await userEvent.keyboard("{Backspace}");
+      await expect(chosen).toHaveTextContent("Chosen: (none)");
+      await expect(search()).toHaveFocus();
     });
   },
 };
