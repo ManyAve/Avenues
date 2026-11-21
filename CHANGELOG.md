@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.66.0 (2026-11-21)
+
+- **Find in page opens a folded section** (AVE-195). A closed `CollapsibleSectionPanel` now stays in the page as
+  `hidden="until-found"` (ui-sdk's `hiddenUntilFound`, on by default), so Ctrl+F or ⌘F matches text inside a closed
+  day header, fold or message row, and the section opens at once with the reason `find-in-page`. Where the browser has
+  no `until-found` the panel is plain `hidden`, as unfindable as before. A closed panel's content is now mounted
+  (hidden) rather than unmounted: pass `hiddenUntilFound={false}` to unmount it as before. A Bun patch to
+  `@ui-sdk/core` makes this work for a controlled section (`open` / `onOpenChange`), which ui-sdk left open but hidden.
+  A closed panel sits out of the flow with no padding, so it takes no space or gap. `src/checks/touch-targets` skips
+  controls inside a `[hidden]` panel, which lay out but aren't drawn. No pixels change. New stories: Collapsible section / Opens when find in page matches, Kept out of find in page.
+
 ## v0.65.0 (2026-11-21)
 
 - **New component: Well** (AVE-211), `@manyave/avenue/components/well`: related settings grouped as rows on one soft

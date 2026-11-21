@@ -9,8 +9,61 @@ index c8f66b9edea92525448d4a50df038343b6ab2a68..9040129b5ed9214eee14568f03fbd9e0
  import { createController } from "../../foundation/kernel/controller.js";
  import { deriveFromOptions } from "../../foundation/kernel/derive.js";
  import { definePrimitive } from "../../foundation/kernel/primitive.js";
+diff --git a/dist/foundation/motion/panel.js b/dist/foundation/motion/panel.js
+index f45ee34af0c4a63a817d6f68d9e314ab98307126..c069cedeb58916a7d82f12d6b8791a0fefa56392 100644
+--- a/dist/foundation/motion/panel.js
++++ b/dist/foundation/motion/panel.js
+@@ -8,10 +8,25 @@ function supportsHiddenUntilFound() {
+   return typeof document !== "undefined" && "onbeforematch" in document.body;
+ }
+ function bindFindable(el, panel) {
++  // Avenue patch (AVE-195): a match fires beforematch, then the browser removes `hidden`. A controlled panel opens
++  // only once the app re-renders, so the observer below saw it still closed and put `hidden` back, and the panel
++  // opened hidden. Leave `hidden` alone while a reveal is pending, until the next frame.
++  let revealing = false;
++  const reveal = (event) => {
++    revealing = true;
++    panel.reveal(event);
++    requestAnimationFrame(() => {
++      revealing = false;
++      keep();
++    });
++  };
+   const keep = () => {
+     if (panel.shown()) {
+       return;
+     }
++    if (revealing) {
++      return;
++    }
+     const hidden = el.getAttribute("hidden");
+     if (panel.findable()) {
+       if (hidden !== "until-found") {
+@@ -24,11 +39,11 @@ function bindFindable(el, panel) {
+   keep();
+   const observer = typeof MutationObserver === "undefined" ? void 0 : new MutationObserver(keep);
+   observer?.observe(el, { attributes: true, attributeFilter: ["hidden"] });
+-  el.addEventListener("beforematch", panel.reveal);
++  el.addEventListener("beforematch", reveal);
+   return Object.assign(
+     () => {
+       observer?.disconnect();
+-      el.removeEventListener("beforematch", panel.reveal);
++      el.removeEventListener("beforematch", reveal);
+     },
+     // Call when the panel's state changes.
+     { check: keep }
+@@ -65,6 +80,8 @@ function bindPanel(el, panel) {
+         finish();
+       }
+       size("auto");
++      // Avenue patch (AVE-195): an open panel is never hidden, even if `hidden` came back before it opened.
++      el.removeAttribute("hidden");
+       if (how === "instant") {
+         panel.settled(true);
+       }
 diff --git a/dist/foundation/motion/presence.js b/dist/foundation/motion/presence.js
-index e0e85c2ce4ab28b98d7823a40bbd95c6d30c1473..f0cfa59d85c48fe8265b8e9112303c6bfdf2eb7e 100644
+index e0e85c2ce4ab28b98d7823a40bbd95c6d30c1473..47e6f37aec382a147d5aac9c8d883ec5713197a6 100644
 --- a/dist/foundation/motion/presence.js
 +++ b/dist/foundation/motion/presence.js
 @@ -4,10 +4,57 @@ var pendingResets = /* @__PURE__ */ new WeakMap();
