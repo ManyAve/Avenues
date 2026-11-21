@@ -1116,6 +1116,12 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: "A swipe (AVE-192): the app's toast doesn't move with a swipe, and these stories end at rest or with the toast gone, so there is nothing new to compare." },
     ]),
   ),
+  ...Object.fromEntries(
+    ["undo-one", "undo-counts-a-run", "undo-run-ends-on-another-toast", "undo-after-the-toast-is-gone", "undo-by-an-agent", "undo-fails-then-retries"].map((story) => [
+      `components-toast--${story}`,
+      { none: "Undo on a toast (AVE-198) is new in Avenue: the app has no undo toast with a second line or a counted run to compare against. Its look is the existing toast with an action plus a muted description line." },
+    ]),
+  ),
   "components-toast--without-a-provider": {
     none: "A developer check, not a look (AVE-140): no toast shows without a ToastProvider, so there is nothing to compare.",
   },

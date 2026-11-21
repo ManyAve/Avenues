@@ -467,6 +467,25 @@ Give `colorSchemeScript` the same `storage` as the app's scheme. With other page
 `preferencesScript([colorScheme, ...])` instead. A Content Security Policy that blocks inline scripts needs the
 script's hash or a nonce.
 
+## Undo instead of asking first (AVE-198)
+
+For something that can be taken back exactly, hasn't left the app and has a way back that outlives the toast (archive,
+mark read, remove a filter), do it at once and call `toast.undo()` instead of opening a confirm. Money, sends and
+anything that leaves the app keep their confirm. `docs/undo-or-confirm.md` has the rule, examples from both apps and
+the code:
+
+```tsx
+toast.undo({
+  id: "archive-notice",
+  title: (count) => (count === 1 ? "Notice archived" : `${count} notices archived`),
+  elsewhere: "You can also restore it from Archived.",
+  onUndo: () => restoreNotice(notice.id),
+});
+```
+
+Several in a row with the same `id` stay one counted toast whose Undo takes back all of them. A screen moves when its
+team gets to it; nothing changes until then.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

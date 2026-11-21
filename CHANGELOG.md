@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.54.0 (2026-11-21)
+
+- **Undo on a toast, instead of asking first** (AVE-198). `useToast()` gains `toast.undo({ title, onUndo, elsewhere,
+  id })`: the toast for something done at once that can be taken back. Undo runs `onUndo`, is reached by F6, pointer
+  and an agent, and stays 10 seconds like any toast action. Several in a row with the same `id` stay one toast that
+  counts them ("3 notices archived"), never a stack, and its Undo takes back all of them, newest first; a failed step
+  keeps the toast and Undo retries only what is left. `elsewhere` is a second line saying where to undo once the toast
+  has gone. New `docs/undo-or-confirm.md` says when to offer Undo and when to keep a confirm (money, sends, anything that
+  leaves the app, anything with no way back), with examples from Management and Neighbors. Existing toasts are
+  unchanged; apps change nothing until a screen adopts it.
+
 ## v0.52.0 (2026-11-21)
 
 - **The theme choice is remembered, with no flash** (AVE-193). New `@manyave/avenue/components/preferences`:
