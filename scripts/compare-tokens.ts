@@ -55,6 +55,7 @@ const intendedRemovals: Record<string, string> = {
 const intendedAdditions: Record<string, string> = {
   "@theme inline :: --radius-*": `${AVE2}: clears Tailwind's radius namespace so retired steps can't return`,
   "@theme inline :: --radius-xs": `${AVE2}: new 4px step (replaces Tailwind's 2px rounded-xs)`,
+  "@theme inline :: --color-fill": "AVE-209: a neutral fill for skeletons, progress tracks and quotes, which read accent before it was tinted",
   "@theme inline :: --spacing-inline": `${AVE2_SPACING}: 4px`,
   "@theme inline :: --spacing-group": `${AVE2_SPACING}: 8px`,
   "@theme inline :: --spacing-row-y": `${AVE2_SPACING}: 12px`,

@@ -333,6 +333,8 @@ export const HighlightedAndChosen: Story = {
     const surface = fill(popup);
     await waitFor(() => expect(fill(highlighted)).not.toBe(surface));
     await expect(fill(chosen)).not.toBe(fill(highlighted));
+    // The chosen row shows the popover itself (transparent over it): no fill of its own, so only its check marks it.
+    await expect(["rgba(0, 0, 0, 0)", surface]).toContain(fill(chosen));
   },
 };
 
