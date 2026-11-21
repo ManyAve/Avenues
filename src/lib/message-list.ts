@@ -23,7 +23,8 @@ export type MessageListOptions = {
   onLoadEarlier?: (() => void) | undefined;
 };
 
-type State = { atBottom: boolean; unseen: number };
+/** `earlier`: whether there are earlier messages to load, kept in state so the agent key's `shown` can read it. */
+type State = { atBottom: boolean; unseen: number; earlier: boolean };
 
 /** How close to the end still counts as at the end: half a bubble, so a part-hidden last line still follows. */
 export const FOLLOW_THRESHOLD = 48;
@@ -38,7 +39,7 @@ export const messageList = definePrimitive({
     loadingEarlier: "boolean",
     onLoadEarlier: "callback",
   },
-  state: (_options: MessageListOptions): State => ({ atBottom: true, unseen: 0 }),
+  state: (options: MessageListOptions): State => ({ atBottom: true, unseen: 0, earlier: Boolean(options.hasEarlier) }),
   api: (context) => {
     const stick = createStickToBottom({ threshold: FOLLOW_THRESHOLD });
     let log: HTMLElement | null = null;
@@ -51,6 +52,8 @@ export const messageList = definePrimitive({
     });
     // Runs before the stick measures the new rows, so `atBottom` is still where the reader was.
     context.onOptions((options) => {
+      const earlier = Boolean(options.hasEarlier);
+      if (context.store.get().earlier !== earlier) context.store.set({ earlier });
       const grew = options.count - count;
       if (options.newest !== newest && grew > 0) {
         if (options.newestMine) {
@@ -104,5 +107,8 @@ export const messageList = definePrimitive({
       state: (state) => ({ unseen: state.unseen }),
     }),
   }),
-  agent: { actions: ["jumpToLatest", "loadEarlier"] },
+  // The log is in an agent's snapshot only while one of its actions does something: scrolled up from the newest
+  // message (jumpToLatest), or with earlier messages to load (loadEarlier). At the end of a whole thread neither does,
+  // so it stays out of the agent's way (AVE-214, ui-sdk's "Show It When It Matters").
+  agent: { actions: ["jumpToLatest", "loadEarlier"], shown: (state: State) => !state.atBottom || state.earlier },
 });

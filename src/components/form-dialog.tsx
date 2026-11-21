@@ -36,7 +36,7 @@ import {
 } from "#avenue/components/dialog";
 import { FieldGroup, FieldSet } from "#avenue/components/field";
 import { InlineMessage } from "#avenue/components/inline-message";
-import { report, type ChangeDetails } from "#avenue/lib/change";
+import { report, sourceOf, type ChangeDetails, type ChangeSource } from "#avenue/lib/change";
 import { devError } from "#avenue/lib/dev";
 import { rejectionText, useAction, usePendingAnnouncement } from "#avenue/lib/pending";
 import { defined, type Loose } from "#avenue/lib/props";
@@ -121,8 +121,9 @@ type FormDialogState = {
   asking: boolean;
   setAsking: (asking: boolean) => void;
   setOpen: (open: boolean, details: FormDialogOpenChangeDetails) => void;
-  submit: () => void;
-  run: (handler: () => unknown) => void;
+  /** `source`: how the submit was made, so the close after a resolved save keeps it (AVE-214). */
+  submit: (source: ChangeSource) => void;
+  run: (handler: () => unknown, source: ChangeSource) => void;
   setSubmitDisabled: (disabled: boolean) => void;
   setErrorPlaced: (placed: boolean) => void;
   errorPlaced: boolean;
@@ -264,8 +265,9 @@ function FormDialogRoot({
   const close = () => {
     report<boolean, FormDialogOpenChangeDetails["reason"]>(setOpen, false, { reason: "action" });
   };
-  const run = (handler: () => unknown) => {
-    if (!submitOff) action.run(handler, { onResolve: close });
+  // The close comes after the save's await, so it runs with the submit's source: an agent's save closes as the agent's.
+  const run = (handler: () => unknown, source: ChangeSource) => {
+    if (!submitOff) action.run(handler, { onResolve: close, source });
   };
   const state: FormDialogState = {
     inRoot: true,
@@ -281,8 +283,8 @@ function FormDialogRoot({
     asking,
     setAsking,
     setOpen,
-    submit: () => {
-      if (onSubmit) run(onSubmit);
+    submit: (source) => {
+      if (onSubmit) run(onSubmit, source);
     },
     run,
     setSubmitDisabled,
@@ -343,7 +345,7 @@ function FormDialogContent({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          submit();
+          submit(sourceOf(event.nativeEvent));
         }}
       >
         {children}
@@ -531,7 +533,7 @@ function FormDialogAlternate({
       {...defined(props)}
       type="button"
       disabled={submitOff}
-      onClick={() => run(onClick)}
+      onClick={(_event, { source }) => run(onClick, source)}
     />
   );
 }

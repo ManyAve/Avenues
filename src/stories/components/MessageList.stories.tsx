@@ -360,3 +360,27 @@ export const Agent: Story = {
     await waitFor(() => expect(log.querySelector(`[data-message="${dmThread.id}-earlier-13"]`)).not.toBeNull());
   },
 };
+
+/**
+ * The log is in an agent's snapshot only while it has something to do (AVE-214): at the end of a thread with nothing
+ * earlier to load it stays out, and once the reader scrolls up its jumpToLatest shows it again.
+ */
+export const AgentOnlyWhenItMatters: Story = {
+  args: { count: 0 },
+  tags: ["agent"],
+  render: () => <Thread />,
+  play: async ({ canvas }) => {
+    const log = logOf(canvas);
+    await waitFor(() => atEnd(log));
+    const agent = createAgent();
+    const listed = () => agent.snapshot().some((e) => !e.offPage && e.component === "message-list");
+    await expect(listed(), JSON.stringify(agent.snapshot())).toBe(false);
+    await scrollUp(log);
+    await waitFor(() => expect(listed()).toBe(true));
+    const entry = agent.snapshot().find((e) => !e.offPage && e.component === "message-list");
+    const result = await agent.act({ steps: [{ ref: entry!.ref, action: "jumpToLatest", args: [] }] });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await waitFor(() => atEnd(log));
+    await waitFor(() => expect(listed()).toBe(false));
+  },
+};

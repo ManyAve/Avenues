@@ -167,7 +167,9 @@ After changing a patch or editing `node_modules/@ui-sdk` to try one, delete both
    must not see or touch carries `data-agent-hidden`; an own primitive that only matters in some states says so with
    the agent key's `shown` (a field wrapper only while it has errors); and a part whose handler awaits before changing
    state wraps that change in `withSource(source, …)` from `@ui-sdk/react/observe`, so the change stays the agent's
-   (or the person's) and `createHistory`'s `undoSource("agent")` can take it back. `Foundations/Agents` in Storybook is the worked example and its play function
+   (or the person's) and `createHistory`'s `undoSource("agent")` can take it back (a Button's `onClick` gets the source as
+   `details.source`; a native form's submit reads it with `sourceOf(event)` from `#avenue/lib/change`; `useAction`'s
+   `run` takes it as `source` and wraps `onResolve` itself, AVE-214). `Foundations/Agents` in Storybook is the worked example and its play function
    is the agent test to copy. Avenue never creates the bridge itself (oxlint fails `@ui-sdk/react/agent` in
    `src/components`, `src/lib` and `src/hooks`); turning `createAgent` on in the ManyAve app is a later
    decision.

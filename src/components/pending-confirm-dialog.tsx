@@ -23,7 +23,7 @@ import {
 } from "#avenue/components/alert-dialog";
 import { TriangleAlertIcon } from "lucide-react";
 import { Button } from "#avenue/components/button";
-import type { ChangeDetails } from "#avenue/lib/change";
+import type { ChangeDetails, ChangeSource } from "#avenue/lib/change";
 import { devError } from "#avenue/lib/dev";
 import { useAction } from "#avenue/lib/pending";
 import { defined, type Loose } from "#avenue/lib/props";
@@ -91,7 +91,8 @@ type PendingConfirmState = {
   reasonId: string;
   status: RefObject<HTMLOutputElement | null>;
   recover: RefObject<HTMLButtonElement | null>;
-  confirm: () => void;
+  /** `source`: how Confirm was pressed, so the close after the step keeps it (AVE-214). */
+  confirm: (source: ChangeSource) => void;
 };
 
 const NO_ROOT: PendingConfirmState = {
@@ -199,10 +200,12 @@ function PendingConfirmDialogRoot<Payload = unknown>({
     reasonId,
     status,
     recover,
-    confirm: () => {
+    confirm: (source) => {
       if (pending) return;
       // Resolved, the step is done: close rather than return to "ready" and ask again for a step that happened.
       action.run(() => onConfirm(payload), {
+        // After the step's await: the close runs with the press's source, so an agent's confirm closes as the agent's.
+        source,
         onResolve: () => {
           settled.current = true;
           controller.close({ reason: "action", returnValue: "confirm" });
@@ -362,7 +365,7 @@ function PendingConfirmDialogConfirm({
       disabled={pending}
       focusableWhenDisabled
       aria-describedby={unknown ? reasonId : undefined}
-      onClick={confirm}
+      onClick={(_event, { source }) => confirm(source)}
     >
       {pending ? pendingLabel : unknown ? "Try again" : children}
     </Button>
