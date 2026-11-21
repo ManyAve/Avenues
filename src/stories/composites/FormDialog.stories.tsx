@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { FileTextIcon, ReceiptIcon, TriangleAlertIcon, UsersIcon } from "lucide-react";
+import { createAgent } from "@ui-sdk/react/agent";
 import { useState } from "react";
 import { expect, fn, screen, spyOn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
@@ -57,6 +58,7 @@ function AddDocument({
   submitDisabled,
   alternate,
   onSubmit = () => {},
+  onClosed,
 }: {
   defaultOpen?: boolean;
   pending?: boolean;
@@ -70,6 +72,8 @@ function AddDocument({
   submitDisabled?: boolean;
   alternate?: { label: string; onSubmit: () => void | PromiseLike<unknown> };
   onSubmit?: (title: string) => void | PromiseLike<unknown>;
+  /** Hears how the dialog closed: its reason and source. */
+  onClosed?: (how: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -94,6 +98,9 @@ function AddDocument({
       askAdmin={askAdmin}
       width="lg"
       onSubmit={() => onSubmit(title)}
+      onOpenChange={(open, details) => {
+        if (!open) onClosed?.(`${details.reason}, ${details.source}`);
+      }}
     >
       <Field>
         <FieldLabel>Title</FieldLabel>
@@ -870,5 +877,46 @@ export const PartsSubmitOutsideRoot: Story = {
       Reflect.set(globalThis, "__UI_SDK_STRICT__", strict);
       error.mockRestore();
     }
+  },
+};
+
+/**
+ * AVE-214: an agent's save stays the agent's after the await. The dialog closes once `onSubmit`'s Promise resolves,
+ * after the agent's press is over, and the close still reads source "agent" (and the alternate save's too), so
+ * `observe` and `createHistory` put it with the agent's other changes. A person's Enter reads their own source.
+ */
+export const AgentSaveKeepsItsSource: Story = {
+  tags: ["agent"],
+  render: function AgentSave() {
+    const [closed, setClosed] = useState("");
+    return (
+      <div className="flex flex-col items-start gap-2 p-inset">
+        <AddDocument onSubmit={save} alternate={{ label: "Save & share", onSubmit: save }} onClosed={setClosed} />
+        <output className="text-meta text-muted-foreground">{closed ? `Closed: ${closed}` : ""}</output>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const agent = createAgent({ allow: () => true });
+    const trigger = canvas.getByRole("button", { name: "Add document" });
+    const closedBy = async (how: string) => {
+      await screen.findByRole("button", { name: "Saving…" });
+      reply?.resolve();
+      await waitFor(() => expect(screen.queryByRole("dialog", { name: "Add document" })).not.toBeInTheDocument());
+      await expect(canvas.getByText(`Closed: ${how}`)).toBeInTheDocument();
+    };
+
+    for (const button of ["Save document", "Save & share"]) {
+      await userEvent.click(trigger);
+      await screen.findByRole("dialog", { name: "Add document" });
+      const result = await agent.act({ steps: [{ ref: button, action: "press" }] });
+      await expect(result.ok, result.error?.message).toBe(true);
+      await closedBy("action, agent");
+    }
+
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Title" })).toHaveFocus());
+    await userEvent.keyboard("Pool rules{Enter}");
+    await closedBy("action, keyboard");
   },
 };

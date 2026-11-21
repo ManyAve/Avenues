@@ -1,6 +1,6 @@
-import { dispatch, type ChangeDetails } from "@ui-sdk/core";
+import { dispatch, type ChangeDetails, type ChangeSource } from "@ui-sdk/core";
 
-export type { ChangeDetails };
+export type { ChangeDetails, ChangeSource };
 
 /**
  * The `details` a ui-sdk callback takes: the second parameter of a part's `on<Key>Change`, like
@@ -23,4 +23,20 @@ export function report<V, R extends string>(
   if (!callback) return true;
   const { reason, event } = given;
   return !dispatch({ options: () => ({ onChange: callback }) }, "onChange", value, event ? { reason, event } : { reason });
+}
+
+/**
+ * How the interaction being handled now was made, as ui-sdk's change details would say it: `"agent"` inside an
+ * agent's step, `"keyboard"` for Enter in a field, `"mouse"` for a click. Read it while the event runs (a form's
+ * submit) and pass it to `withSource` around what changes after an await, which runs once the interaction is over
+ * and would otherwise read `"programmatic"` (AVE-214). A ui-sdk Button's `onClick` gets it as `details.source`; this
+ * is for the events that don't come with it, like a native form's submit.
+ */
+export function sourceOf(event?: Event): ChangeSource {
+  let source: ChangeSource = "programmatic";
+  const read = (_value: undefined, details: ChangeDetails) => {
+    source = details.source;
+  };
+  dispatch({ options: () => ({ onRead: read }) }, "onRead", undefined, event ? { reason: "submit", event } : { reason: "submit" });
+  return source;
 }

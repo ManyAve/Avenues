@@ -5,6 +5,7 @@ import {
   ToastClose,
   ToastRegion as ToastRegionPrimitive,
   ToastTitle,
+  type ToastActionDetails,
   type Toaster as ToasterStore,
   type ToastType as ToastTypeName,
 } from "@ui-sdk/react/toast";
@@ -44,7 +45,13 @@ type ToastType = Extract<ToastTypeName, "success" | "error" | "info">;
 
 type ToastOptions = {
   /** A button or link after the text: "Undo", or a link with `href`. */
-  action?: { label: string; onAction?: () => unknown; href?: string } | undefined;
+  /**
+   * `onAction` gets ui-sdk's event and `{ source }`: a Promise it returns keeps the action pending, and what it changes
+   * after an await goes in `withSource(source, …)` (`@ui-sdk/react/observe`), so an agent's Undo stays the agent's.
+   */
+  action?:
+    | { label: string; onAction?: (event: Event | undefined, details: ToastActionDetails) => unknown; href?: string }
+    | undefined;
   /**
    * What the toast is about, as ui-sdk's toast `type` names it (AVE-151). `success`, the default: done, timed.
    * `error`: a failure. It stays until the user dismisses it and is announced at once.

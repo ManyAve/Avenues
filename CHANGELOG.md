@@ -4,6 +4,30 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.49.0 (2026-11-21)
+
+- **An agent's changes can be undone as a whole** (AVE-214). An app that turns on ui-sdk's agent bridge and
+  `createHistory` can now take back everything the agent did with `undoSource("agent")`, including what Avenue's parts
+  change after the app's Promise resolves. Until now those changes ran after the agent's press was over and read
+  `"programmatic"`, so undoing the agent missed them. Now they keep the source of the press that started them:
+  - `FormDialog` (and `FormDialogRoot`): the close after a resolved `onSubmit`, or `FormDialogAlternate`'s `onClick`,
+    reaches `onOpenChange` with the submit's `details.source` (`"agent"` when an agent pressed Save);
+  - `PendingConfirmDialog` (and `PendingConfirmDialogRoot`): the close after a resolved `onConfirm` keeps Confirm's
+    source;
+  - `Composer`: emptying the field after a resolved `onSend` keeps the send's source (an app that controls the text
+    sees it in `onValueChange`'s details).
+  Nothing to change in the apps; `details.source` reads `"agent"`, or the person's own source, where it read
+  `"programmatic"`.
+- **A toast action hears how it was pressed.** `useToast()`'s `action.onAction` is typed as ui-sdk calls it,
+  `(event, { source })`, so an Undo that awaits can wrap what it changes after the await in `withSource(source, …)`
+  (`@ui-sdk/react/observe`). Handlers that take no arguments still type-check.
+- **The message list shows to an agent only when it has something to do.** Its log is in the agent's snapshot while
+  the reader is scrolled up (Jump to latest) or earlier messages can load, and stays out of it at the end of a whole
+  thread (ui-sdk's agent key `shown`).
+- Foundations › Agents gains two stories: **History** (the agent fills the form, the person types over one field, and
+  "Undo the agent's changes" keeps the person's edit) and **Suggestion** (`stageChanges` tries the agent's values on
+  the real controls; `revert()` puts the old ones back).
+
 ## v0.48.0 (2026-11-21)
 
 - **A hero step at the top of the type scale** (AVE-189). New size `text-hero`: 48px on a 56px line, for the one big
