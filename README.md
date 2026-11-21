@@ -209,6 +209,12 @@ fictional data, so the whole Storybook is safe to publish; keep it that way.
 `docs/tokens.md` is the rule for tokens: the base, semantic and component tiers, when a token earns a place and when a
 value stays a literal, how to pick the token for a job, and how to add, change or remove one.
 
+## Undo or confirm
+
+`docs/undo-or-confirm.md` is the rule for a step that changes data: do it at once and offer Undo (`toast.undo()`) when it
+can be taken back exactly, hasn't left the app and has a way back that outlives the toast; confirm for money, sends,
+anything that leaves the app and anything with no way back (AVE-198).
+
 ## Spacing and corners
 
 Avenue follows AVE-2's rules. Spacing stays on Tailwind's 4px grid; components use the aliases `inline` (4),

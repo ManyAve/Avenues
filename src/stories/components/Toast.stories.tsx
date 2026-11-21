@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createAgent } from "@ui-sdk/react/agent";
-import { useState, type CSSProperties } from "react";
-import { expect, fn, screen, spyOn, userEvent, waitFor } from "storybook/test";
+import { useRef, useState, type CSSProperties } from "react";
+import { expect, fn, screen, spyOn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import {
   Drawer,
@@ -554,6 +554,251 @@ export const SwipeAway: Story = {
     // From where it was let go (60px down) to its own height further on.
     await expect(end?.["translate"]).toBe("0px calc(100% + 60px)");
     for (const animation of toast.getAnimations()) animation.finish();
+    await gone(2000);
+  },
+};
+
+// ---- Undo instead of asking first (AVE-198, docs/undo-or-confirm.md)
+
+const NOTICES = ["Pool hours", "Parking lot sweep", "Board meeting"];
+
+/**
+ * A notices list where Archive happens at once and offers Undo. Archived notices keep a Restore button, so the way back
+ * outlives the toast (AVE-41): that is where the toast's second line points.
+ */
+function NoticeBoard() {
+  const toast = useToast();
+  const [archived, setArchived] = useState<string[]>([]);
+  const restoreNotice = (name: string) => setArchived((now) => now.filter((n) => n !== name));
+  return (
+    <Rows>
+      <section aria-label="Notices" className="flex flex-col gap-controls">
+        {NOTICES.filter((name) => !archived.includes(name)).map((name) => (
+          <div key={name} className="flex items-center justify-between gap-controls">
+            <span>{name}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setArchived((now) => [...now, name]);
+                toast.undo({
+                  id: "archive-notice",
+                  title: (count) => (count === 1 ? "Notice archived" : `${count} notices archived`),
+                  elsewhere: (count) => `You can also restore ${count === 1 ? "it" : "them"} from Archived.`,
+                  onUndo: () => restoreNotice(name),
+                });
+              }}
+            >
+              Archive {name}
+            </Button>
+          </div>
+        ))}
+      </section>
+      <section aria-label="Archived" className="flex flex-col gap-controls">
+        <h3 className="font-heading">Archived</h3>
+        {archived.length === 0 && <p className="text-muted-foreground">Nothing archived.</p>}
+        {archived.map((name) => (
+          <div key={name} className="flex items-center justify-between gap-controls">
+            <span>{name}</span>
+            <Button variant="ghost" size="sm" onClick={() => restoreNotice(name)}>
+              Restore {name}
+            </Button>
+          </div>
+        ))}
+      </section>
+    </Rows>
+  );
+}
+
+const noticeBoard = () => (
+  <ToastProvider>
+    <NoticeBoard />
+  </ToastProvider>
+);
+const notices = () => screen.getByRole("region", { name: "Notices" });
+const archivedList = () => screen.getByRole("region", { name: "Archived" });
+
+/**
+ * Archive happens at once and the toast offers Undo, with where to undo later on its second line. F6 reaches Undo, and
+ * Enter puts the notice back.
+ */
+export const UndoOne: Story = {
+  render: noticeBoard,
+  play: async ({ canvas }) => {
+    canvas.getByRole("button", { name: "Archive Pool hours" }).focus();
+    await userEvent.keyboard("{Enter}");
+    const toast = await findToast();
+    await expect(toast).toHaveTextContent("Notice archived");
+    await expect(toast.querySelector("[data-slot=toast-description]")).toHaveTextContent(
+      "You can also restore it from Archived.",
+    );
+    await expect(archivedList()).toHaveTextContent("Pool hours");
+    await waitFor(() => expect(liveText("polite")).toContain("Notice archived"));
+
+    await userEvent.keyboard("{F6}");
+    const action = screen.getByRole("button", { name: "Undo" });
+    await waitFor(() => expect(toast.contains(document.activeElement)).toBe(true));
+    action.focus();
+    await userEvent.keyboard("{Enter}");
+    await gone(2000);
+    await expect(notices()).toHaveTextContent("Pool hours");
+    await expect(archivedList()).toHaveTextContent("Nothing archived.");
+  },
+};
+
+/**
+ * Three archives in a row stay one toast that counts them, never a stack (one toast at a time, AVE-8, AVE-41). Its Undo
+ * takes back all three. Ends with the counted toast showing and Undo focused, for comparing the look.
+ */
+export const UndoCountsARun: Story = {
+  render: noticeBoard,
+  play: async ({ canvas }) => {
+    for (const name of NOTICES) await userEvent.click(canvas.getByRole("button", { name: `Archive ${name}` }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("3 notices archived"));
+    await expect(toastEl()).toHaveTextContent("You can also restore them from Archived.");
+    await waitFor(() => expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1));
+    await waitFor(() => expect(liveText("polite")).toContain("3 notices archived"));
+    await expect(screen.getAllByRole("button", { name: "Undo" })).toHaveLength(1);
+
+    await userEvent.keyboard("{F6}");
+    screen.getByRole("button", { name: "Undo" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await gone(2000);
+    for (const name of NOTICES) await expect(notices()).toHaveTextContent(name);
+    await expect(archivedList()).toHaveTextContent("Nothing archived.");
+
+    // A new run starts at one again, and stays on screen with Undo focused.
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Pool hours" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("Notice archived"));
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Board meeting" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("2 notices archived"));
+    screen.getByRole("button", { name: "Undo" }).focus();
+  },
+};
+
+/** Any other toast ends a run: the next archive counts from one again. */
+export const UndoRunEndsOnAnotherToast: Story = {
+  render: () => (
+    <ToastProvider>
+      <NoticeBoard />
+      <Rows>
+        <Trigger label="Add household" text="Household added" />
+      </Rows>
+    </ToastProvider>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Pool hours" }));
+    await findToast();
+    await userEvent.click(canvas.getByRole("button", { name: "Add household" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("Household added"));
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Board meeting" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("Notice archived"));
+    await expect(toastEl()).not.toHaveTextContent("2 notices");
+    await waitFor(() => expect(document.querySelectorAll("[data-slot=toast]")).toHaveLength(1));
+  },
+};
+
+/**
+ * Undo after the toast has gone: it isn't on screen to press, and the toast said where to undo instead. After its 10s
+ * the notice is restored from Archived.
+ */
+export const UndoAfterTheToastIsGone: Story = {
+  render: noticeBoard,
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Parking lot sweep" }));
+    const toast = await findToast();
+    await expect(toast).toHaveTextContent("You can also restore it from Archived.");
+    await gone(12_000);
+    await expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+    await userEvent.click(within(archivedList()).getByRole("button", { name: "Restore Parking lot sweep" }));
+    await expect(notices()).toHaveTextContent("Parking lot sweep");
+  },
+};
+
+/**
+ * An agent presses Undo through ui-sdk's bridge, as a person would: the bridge lists the toast by its title with Undo
+ * among its buttons, and its `press` takes the button's name. Ends
+ * with a counted toast showing, for the agent test.
+ */
+export const UndoByAnAgent: Story = {
+  tags: ["agent"],
+  render: noticeBoard,
+  play: async ({ canvas }) => {
+    const agent = createAgent();
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Pool hours" }));
+    await findToast();
+    // The bridge lists the toast by its title, with Undo among its buttons; pressing takes the button's name.
+    const entry = agent.snapshot().find((e) => e.component === "toast");
+    await expect(entry).toMatchObject({ label: "Notice archived", buttons: ["Undo"] });
+    const result = await agent.act({ steps: [{ ref: "Notice archived", action: "press", args: ["Undo"] }] });
+    await expect(result.ok, result.error?.message).toBe(true);
+    await waitFor(() => expect(notices()).toHaveTextContent("Pool hours"));
+    await gone(2000);
+
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Pool hours" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Archive Board meeting" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("2 notices archived"));
+  },
+};
+
+/** A slow Undo stays pending, and one that fails keeps the toast; pressing again retries only what is left. */
+export const UndoFailsThenRetries: Story = {
+  render: () => {
+    function Flaky() {
+      const toast = useToast();
+      const [log, setLog] = useState<string[]>([]);
+      const fails = useRef(1);
+      return (
+        <Rows>
+          <Button
+            variant="outline"
+            onClick={() => {
+              for (const name of ["first", "second"]) {
+                toast.undo({
+                  id: "flaky",
+                  title: (count) => `${count} moved`,
+                  elsewhere: "You can also move them back from the list.",
+                  onUndo: () =>
+                    new Promise<void>((resolve, reject) =>
+                      setTimeout(() => {
+                        if (name === "first" && fails.current > 0) {
+                          fails.current = 0;
+                          reject(new Error("offline"));
+                          return;
+                        }
+                        setLog((now) => [...now, name]);
+                        resolve();
+                      }, 100),
+                    ),
+                });
+              }
+            }}
+          >
+            Move two
+          </Button>
+          <output aria-label="Undone">{log.join(", ")}</output>
+        </Rows>
+      );
+    }
+    return (
+      <ToastProvider>
+        <Flaky />
+      </ToastProvider>
+    );
+  },
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Move two" }));
+    await waitFor(() => expect(toastEl()).toHaveTextContent("2 moved"));
+    const action = screen.getByRole("button", { name: "Undo" });
+    action.focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(action).toHaveAttribute("data-pending"));
+    // The second (newest) is undone first, then the first fails: the toast stays.
+    await waitFor(() => expect(canvas.getByLabelText("Undone")).toHaveTextContent("second"));
+    await waitFor(() => expect(action).not.toHaveAttribute("data-pending"));
+    await expect(toastEl()).not.toBeNull();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(canvas.getByLabelText("Undone")).toHaveTextContent("second, first"));
     await gone(2000);
   },
 };

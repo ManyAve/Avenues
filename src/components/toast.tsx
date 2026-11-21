@@ -3,6 +3,7 @@ import {
   Toast as ToastPart,
   ToastAction,
   ToastClose,
+  ToastDescription,
   ToastRegion as ToastRegionPrimitive,
   ToastTitle,
   type ToastActionDetails,
@@ -38,6 +39,11 @@ import { cn } from "#avenue/lib/utils";
  * A page with something pinned to the bottom edge, such as a status bar, lifts the toast above it with
  * `--avenue-toast-bottom` (the gap under the toast, minus 8px; 16px plus the safe area by default), so a toast never
  * covers it (AVE-118).
+ *
+ * Undo instead of asking first (AVE-198, `docs/undo-or-confirm.md`): `toast.undo({ title, onUndo, elsewhere })` is the
+ * toast for something done at once that can be taken back. Several in a row with the same `id` stay one toast that
+ * counts them ("3 notices archived"), and its Undo takes back all of them, newest first. `elsewhere` says where to undo
+ * once the toast has gone, so the toast is never the only way back.
  */
 
 /** The ui-sdk toast types Avenue draws. */
@@ -68,7 +74,56 @@ type ToastOptions = {
   focus?: boolean | undefined;
 };
 
-type ShowToast = (text: string, options?: ToastOptions) => void;
+/** What `toast.undo()` takes (AVE-198). */
+type UndoToastOptions = {
+  /**
+   * What was done. A function gets how many are in the run, for the counted toast:
+   * `(count) => (count === 1 ? "Notice archived" : `${count} notices archived`)`.
+   */
+  title: string | ((count: number) => string);
+  /**
+   * Takes this one action back. It gets ui-sdk's event and `{ source }`, as a toast action's `onAction` does: a Promise
+   * it returns keeps Undo pending (a rejection keeps the toast, and pressing Undo again retries only what is left),
+   * and what it changes after an await goes in `withSource(details.source, …)`.
+   */
+  onUndo: (event: Event | undefined, details: ToastActionDetails) => unknown;
+  /**
+   * Where to undo once the toast has gone, shown under the title: "You can also restore it from Archived." The toast is
+   * a shortcut, never the only way back (AVE-41). A function gets the count, as `title` does ("…restore them…").
+   */
+  elsewhere: string | ((count: number) => string);
+  /**
+   * Names a run. Another `toast.undo()` with the same id while this toast shows (or waits behind an error) joins it:
+   * one toast, counted, its timer started again, and one Undo for all of them. Without an id each one replaces the last.
+   */
+  id?: string | undefined;
+  /** The button's text, "Undo" by default. */
+  label?: string | undefined;
+  /** As `ToastOptions.focus`: move focus to Undo, only when the control the person used is gone. */
+  focus?: boolean | undefined;
+};
+
+type ShowToast = ((text: string, options?: ToastOptions) => void) & {
+  /** Says something was done and offers Undo, counting a run of the same `id` (AVE-198). */
+  undo: (options: UndoToastOptions) => void;
+};
+
+/** A run of undoable actions shown as one toast. */
+type UndoRun = {
+  id: string | undefined;
+  undos: UndoToastOptions["onUndo"][];
+  count: number;
+  /** The ui-sdk toast's id once it shows; undefined while it waits behind an error. */
+  toastId: string | undefined;
+};
+
+type Shown = {
+  title: string;
+  action?: ToastOptions["action"];
+  description?: string | undefined;
+  focus: boolean;
+  onDismiss?: (() => void) | undefined;
+};
 
 const SUCCESS_MS = 4200;
 /** A success with an action: long enough to reach the action by F6, a switch or voice (AVE-41). */
@@ -79,34 +134,93 @@ function showWith(toaster: ToasterStore<ReactNode>): ShowToast {
   // The latest success that arrived while an error showed; it shows once the error is gone.
   let waiting: (() => void) | undefined;
   let replacingError = false;
+  // The undo run on screen or waiting behind an error. Any other toast ends it.
+  let run: UndoRun | undefined;
   toaster.subscribe(() => {
     if (!waiting || replacingError || showingError()) return;
     const next = waiting;
     waiting = undefined;
     next();
   });
-  // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
-  // contextual type into the destructured default (MANA-1118, TS7031 in Management).
-  return (text: string, { action, type = "success", focus = false }: ToastOptions = {}) => {
-    const options = action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {};
-    if (type === "error") {
-      // A success waiting behind the old error keeps waiting behind the new one.
-      replacingError = true;
-      toaster.dismiss();
-      toaster.error(text, { ...options, duration: Infinity });
-      replacingError = false;
-      return;
-    }
+
+  const optionsOf = ({ action, description, focus, onDismiss }: Omit<Shown, "title">) => ({
+    ...(action ? { action, ...(focus ? { data: { focusAction: true } } : {}) } : {}),
+    ...(description === undefined ? {} : { description }),
+    ...(onDismiss ? { onDismiss } : {}),
+  });
+
+  /** Shows a success or info toast now, or behind an error. `shown` is read when it shows, so a waiting run counts on. */
+  const present = (type: "success" | "info", shown: () => Shown, onShow?: (id: string) => void) => {
     const showNow = () => {
       toaster.dismiss();
+      const { title, ...rest } = shown();
       // An info toast (something under way) is announced politely and timed like a success (not `loading`, which
       // stays until it's updated).
       const show = type === "info" ? toaster.info : toaster.success;
-      show(text, { ...options, duration: action ? ACTION_MS : SUCCESS_MS });
+      const id = show(title, { ...optionsOf(rest), duration: rest.action ? ACTION_MS : SUCCESS_MS });
+      onShow?.(id);
     };
     if (showingError()) waiting = showNow;
     else showNow();
   };
+
+  // Typed in full, not only through ShowToast: an app's TypeScript reads this source and didn't carry the
+  // contextual type into the destructured default (MANA-1118, TS7031 in Management).
+  const show = (text: string, { action, type = "success", focus = false }: ToastOptions = {}) => {
+    if (type === "error") {
+      // A success waiting behind the old error keeps waiting behind the new one.
+      replacingError = true;
+      toaster.dismiss();
+      toaster.error(text, { ...optionsOf({ action, focus }), duration: Infinity });
+      replacingError = false;
+      return;
+    }
+    run = undefined;
+    present(type, () => ({ title: text, action, focus }));
+  };
+
+  const undo = ({ title, onUndo, elsewhere, id, label = "Undo", focus = false }: UndoToastOptions) => {
+    const titleOf = (count: number) => (typeof title === "function" ? title(count) : title);
+    const elsewhereOf = (count: number) => (typeof elsewhere === "function" ? elsewhere(count) : elsewhere);
+    if (id !== undefined && run?.id === id) {
+      run.undos.push(onUndo);
+      run.count += 1;
+      // Waiting behind an error: it shows with the new count. Showing: the same toast says the new count, is announced
+      // again and starts its timer over (ui-sdk restarts it on every update).
+      if (run.toastId === undefined) return;
+      if (toaster.update(run.toastId, { title: titleOf(run.count), description: elsewhereOf(run.count) })) return;
+    }
+    const mine: UndoRun = { id, undos: [onUndo], count: 1, toastId: undefined };
+    run = mine;
+    // Newest first, each once: a step that fails keeps the toast, and pressing Undo again retries only what is left.
+    const takeBack = (event: Event | undefined, details: ToastActionDetails): unknown => {
+      const next = mine.undos.at(-1);
+      if (!next) return undefined;
+      const result = next(event, details);
+      const done = () => {
+        mine.undos.pop();
+        return takeBack(event, details);
+      };
+      return result instanceof Promise ? result.then(done) : done();
+    };
+    present(
+      "success",
+      () => ({
+        title: titleOf(mine.count),
+        description: elsewhereOf(mine.count),
+        action: { label, onAction: takeBack },
+        focus,
+        onDismiss: () => {
+          if (run === mine) run = undefined;
+        },
+      }),
+      (toastId) => {
+        mine.toastId = toastId;
+      },
+    );
+  };
+
+  return Object.assign(show, { undo });
 }
 
 function focusOnMount(element: HTMLElement | null) {
@@ -118,15 +232,17 @@ function focusesAction(data: unknown) {
 }
 
 /** The toast with no ToastProvider above it: it shows nothing, and in development says so (AVE-140). */
-const noProvider: ShowToast = () =>
+const lost = () =>
   devError(
     "Avenue: a toast was shown with no <ToastProvider> above it, so nobody saw it. Wrap the app in one <ToastProvider>.",
   );
+const noProvider: ShowToast = Object.assign(lost, { undo: lost });
 
 const ToastContext = createContext<ShowToast>(noProvider);
 
 /**
- * `const toast = useToast(); toast("Household added")`.
+ * `const toast = useToast(); toast("Household added")`, or for something that can be taken back,
+ * `toast.undo({ id: "archive-notice", title, onUndo, elsewhere })` (AVE-198).
  *
  * Outside a ToastProvider the toast shows nothing. In development the first one logs a `console.error` naming
  * ToastProvider (once per page, and it throws in the story tests, which run ui-sdk strict); a production build stays
@@ -180,7 +296,16 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
           ) : (
             <CheckIcon className="size-4 shrink-0 text-success-subtle-foreground" aria-hidden />
           )}
-          <ToastTitle />
+          {item.description ? (
+            // Only an undo toast has a description: where to undo once it's gone (AVE-198). Without one the toast
+            // renders as before, title alone.
+            <div className="grid min-w-0 gap-0.5">
+              <ToastTitle />
+              <ToastDescription className="text-muted-foreground" />
+            </div>
+          ) : (
+            <ToastTitle />
+          )}
           {item.action && (
             <ToastAction
               // `focus: true` only: the control the person used is gone, so focus would fall to the page (AVE-118).
@@ -215,4 +340,15 @@ function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export { ToastProvider, ToastRegion, useToast, showWith, ACTION_MS, SUCCESS_MS, type ShowToast, type ToastOptions, type ToastType };
+export {
+  ToastProvider,
+  ToastRegion,
+  useToast,
+  showWith,
+  ACTION_MS,
+  SUCCESS_MS,
+  type ShowToast,
+  type ToastOptions,
+  type ToastType,
+  type UndoToastOptions,
+};
