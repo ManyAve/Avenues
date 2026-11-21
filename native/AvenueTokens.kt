@@ -321,6 +321,7 @@ object AvenueTokens {
         val title = AvenueTextStep(20.sp, 28.sp)
         val heading = AvenueTextStep(24.sp, 30.sp)
         val display = AvenueTextStep(32.sp, 40.sp)
+        val hero = AvenueTextStep(48.sp, 56.sp)
     }
 
     /** Corner radii. Pills use a fully rounded shape. */

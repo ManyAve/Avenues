@@ -90,7 +90,7 @@ export function readTints(avenue: Declaration[]): Record<string, [hue: number, k
 }
 
 /** The app type scale (tokens.css). The public-site display steps (--text-web-*) stay web only. */
-export const TEXT_STEPS = ["meta", "compact", "control", "post", "title", "heading", "display"] as const;
+export const TEXT_STEPS = ["meta", "compact", "control", "post", "title", "heading", "display", "hero"] as const;
 export const RADII = ["xs", "sm", "md", "lg", "xl"] as const;
 export const SPACING = [
   "inline",

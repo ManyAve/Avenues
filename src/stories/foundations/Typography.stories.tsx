@@ -6,6 +6,7 @@ import { DoDont, households, Rule, Rules, SeeTokens } from "./foundation-docs";
 // Switch "Type scale" in the toolbar (or open the Desktop story) to see the desktop app's scale.
 
 const roles = [
+  ["hero", "text-hero", "The hero line atop an expressive page, from sm up; phones take display", "Maple Row"],
   ["display", "text-display", "The one number or name a page is about", "Dues for 2026"],
   ["heading", "text-heading", "Page title", "Households"],
   ["title", "text-title", "Card, dialog and sheet titles", "Account summary"],
@@ -73,7 +74,7 @@ function TypeUse() {
       <SeeTokens>Tokens › Typography (sizes, line heights, fonts)</SeeTokens>
       <Section
         title={`Which step, where (${scale} scale)`}
-        note="Seven steps, one job each. The web scale is the published one. The desktop app loads desktop.css, which brings compact down to 14px and meta to 13px; control stays 14px on both."
+        note="Eight steps, one job each. The web scale is the published one. The desktop app loads desktop.css, which brings compact down to 14px and meta to 13px; control stays 14px on both."
       >
         <div ref={ref} className="max-w-5xl">
           {roles.map(([name, cls, use, sample]) => (
@@ -93,6 +94,10 @@ function TypeUse() {
           <Rule why="A cut amount or status is a wrong amount or status.">
             Never truncate or wrap money, status or button labels. Truncate the snippet first, then the owner, then the
             address; at large text, stack a row's parts instead.
+          </Rule>
+          <Rule why="At 48px a phone fits two or three words a line, so a hero there wraps into a wall; display carries it.">
+            Hero is for one line at the top of an expressive page (a hub, a profile, a marketing page), once per page,
+            from sm up: write text-display sm:text-hero. A code to read off, or an error number, isn't a hero.
           </Rule>
           <Rule why="Tabular figures keep columns of money lined up.">Money uses tabular-nums.</Rule>
           <Rule why="Shouting reads as a warning and is harder to scan.">

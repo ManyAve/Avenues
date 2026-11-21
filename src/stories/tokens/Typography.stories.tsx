@@ -7,6 +7,7 @@ import { Code, Page, Section, useComputed } from "./token-docs";
 // which drops compact to 14px and meta to 13px; control stays 14px on both.
 
 const steps = [
+  ["hero", "text-hero", "Maple Row"],
   ["display", "text-display", "Dues for 2026"],
   ["heading", "text-heading", "Maple Row households"],
   ["title", "text-title", "Account summary"],
@@ -37,7 +38,7 @@ function TypeScale() {
     <Page title="Type scale">
       <Section
         title={`App scale: ${scale}`}
-        note="Six steps with a 14px floor on the web. text-xs and text-sm follow meta and compact, so shadcn primitives use the app scale."
+        note="Eight steps with a 14px floor on the web. text-xs and text-sm follow meta and compact, so shadcn primitives use the app scale."
       >
         <div ref={ref}>
           {steps.map(([name, cls, sample]) => (

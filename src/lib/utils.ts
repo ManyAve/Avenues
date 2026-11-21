@@ -26,6 +26,7 @@ export const TEXT_SIZE_NAMES = [
   "title",
   "heading",
   "display",
+  "hero",
   "web-card",
   "web-section",
   "web-hero",

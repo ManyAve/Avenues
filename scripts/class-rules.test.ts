@@ -133,7 +133,7 @@ test("flags a typed-in colour, an arbitrary value a class already draws, and a l
 test("allows Avenue's named sizes, weights, shadows, layers and durations, and a local order", () => {
   expect(
     lint([
-      `"text-meta text-control text-compact text-post text-title text-heading text-display text-base md:text-field"`,
+      `"text-meta text-control text-compact text-post text-title text-heading text-display sm:text-hero text-base md:text-field"`,
       `"font-normal font-quiet font-medium font-emphasis font-semibold font-heading"`,
       `"shadow-none shadow-control shadow-card shadow-popover z-sticky z-overlay z-toast z-1 -z-1 focus:z-10"`,
       `"duration-fast duration-moderate duration-slow"`,
