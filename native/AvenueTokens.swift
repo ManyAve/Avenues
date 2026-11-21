@@ -350,6 +350,24 @@ public enum AvenueTokens {
 
     /// The smallest tap target, in points.
     public static let touchMinimum: Double = 44
+
+    /// A cubic-bezier curve's control points.
+    public struct Easing: Sendable, Equatable {
+        public let x1: Double
+        public let y1: Double
+        public let x2: Double
+        public let y2: Double
+    }
+
+    /// How things move (web: Foundations/Motion). Durations in seconds. `easeFade` is for a colour or opacity change,
+    /// `easeMove` for anything that moves or changes size; nothing runs longer than `slow`.
+    public enum Motion {
+        public static let fast: Double = 0.1
+        public static let moderate: Double = 0.15
+        public static let slow: Double = 0.2
+        public static let easeFade = Easing(x1: 0.2, y1: 0, x2: 0, y2: 1)
+        public static let easeMove = Easing(x1: 0.22, y1: 1, x2: 0.36, y2: 1)
+    }
 }
 
 #if canImport(SwiftUI) && canImport(UIKit)
@@ -367,6 +385,13 @@ public extension Color {
                 blue: CGFloat(hex & 0xFF) / 255,
                 alpha: 1)
         })
+    }
+}
+
+public extension Animation {
+    /// An Avenue easing over a duration, like `.avenue(AvenueTokens.Motion.easeMove, duration: AvenueTokens.Motion.slow)`.
+    static func avenue(_ easing: AvenueTokens.Easing, duration: Double) -> Animation {
+        .timingCurve(easing.x1, easing.y1, easing.x2, easing.y2, duration: duration)
     }
 }
 #endif

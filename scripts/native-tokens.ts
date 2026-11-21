@@ -9,7 +9,8 @@
  * Colours resolve the cascade the way a browser does (light = :root then :root:not(.dark); dark = :root, .dark, then
  * :root.dark) and convert OKLCH to sRGB with culori, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
  * which are points on iOS and dp (sp for text) on Android. Spacing takes the phone (coarse pointer) and narrow-screen
- * values, since that's where the apps run. A translucent role (dark border and input) is laid over the card. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
+ * values, since that's where the apps run. Durations are milliseconds (seconds in Swift) and easings are cubic-bezier
+ * control points, for SwiftUI's `timingCurve` and Compose's `CubicBezierEasing` (AVE-212). A translucent role (dark border and input) is laid over the card. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
  * phones draw elevation and selection with the platform's own.
  */
 import { resolve } from "node:path";
@@ -106,6 +107,24 @@ export const SPACING = [
   "control-md",
   "control-lg",
 ] as const;
+/** The duration steps (AVE-182) and the two easings (AVE-212), avenue.css's @theme. */
+export const DURATIONS = ["fast", "moderate", "slow"] as const;
+export const EASINGS = ["fade", "move"] as const;
+
+/** `150ms` or `0.15s` in milliseconds. */
+export function toMs(value: string): number {
+  if (value.endsWith("ms")) return Number.parseFloat(value);
+  if (value.endsWith("s")) return round(Number.parseFloat(value) * 1000);
+  throw new Error(`Not a duration: ${value}`);
+}
+
+/** `cubic-bezier(x1, y1, x2, y2)` as its four control points. */
+export function toBezier(value: string): [number, number, number, number] {
+  const args = /^cubic-bezier\(([^)]*)\)$/.exec(value.trim())?.[1]?.split(",").map((n) => Number.parseFloat(n));
+  if (args?.length !== 4 || args.some(Number.isNaN)) throw new Error(`Not a cubic-bezier: ${value}`);
+  return args as [number, number, number, number];
+}
+
 /** The smallest tap target on a phone (AVE-22, the `hit-area` utility). */
 export const TOUCH_MINIMUM = 44;
 
@@ -118,6 +137,11 @@ export interface NativeTokens {
   radius: Record<string, number>;
   spacing: Record<string, number>;
   touchMinimum: number;
+  /** Durations in milliseconds and the two easings as cubic-bezier control points (AVE-182, AVE-212). */
+  motion: {
+    duration: Record<string, number>;
+    easing: Record<string, [x1: number, y1: number, x2: number, y2: number]>;
+  };
 }
 
 /** The selectors of tokens.css's lifted surface blocks (AVE-115), as css-tokens writes their scope. */
@@ -266,12 +290,20 @@ export function buildTokens(tokensCss: string, avenueCss: string): NativeTokens 
   for (const r of RADII) radius[r] = length(`--radius-${r}`);
   const spacing: Record<string, number> = {};
   for (const s of SPACING) spacing[s] = length(`--spacing-${s}`);
+  const themed = (name: string) => {
+    const value = theme.get(name);
+    if (value === undefined) throw new Error(`avenue.css has no ${name} in @theme`);
+    return value;
+  };
+  const motion: NativeTokens["motion"] = { duration: {}, easing: {} };
+  for (const d of DURATIONS) motion.duration[d] = toMs(themed(`--transition-duration-${d}`));
+  for (const e of EASINGS) motion.easing[e] = toBezier(themed(`--ease-${e}`));
 
   return {
     light: colors(themes.light),
     dark: colors(themes.dark),
     lifted: { light: colors(themes.liftedLight), dark: colors(themes.liftedDark) },
-    text, radius, spacing, touchMinimum: TOUCH_MINIMUM };
+    text, radius, spacing, touchMinimum: TOUCH_MINIMUM, motion };
 }
 
 /** `card-foreground` → `cardForeground`, `chart-1` → `chart1`, `row-y` → `rowY`. */
@@ -344,6 +376,25 @@ ${Object.entries(t.spacing)
 
     /// The smallest tap target, in points.
     public static let touchMinimum: Double = ${num(t.touchMinimum)}
+
+    /// A cubic-bezier curve's control points.
+    public struct Easing: Sendable, Equatable {
+        public let x1: Double
+        public let y1: Double
+        public let x2: Double
+        public let y2: Double
+    }
+
+    /// How things move (web: Foundations/Motion). Durations in seconds. \`easeFade\` is for a colour or opacity change,
+    /// \`easeMove\` for anything that moves or changes size; nothing runs longer than \`slow\`.
+    public enum Motion {
+${Object.entries(t.motion.duration)
+  .map(([k, v]) => `        public static let ${camel(k)}: Double = ${num(v / 1000)}`)
+  .join("\n")}
+${Object.entries(t.motion.easing)
+  .map(([k, [x1, y1, x2, y2]]) => `        public static let ease${camel(`-${k}`)} = Easing(x1: ${num(x1)}, y1: ${num(y1)}, x2: ${num(x2)}, y2: ${num(y2)})`)
+  .join("\n")}
+    }
 }
 
 #if canImport(SwiftUI) && canImport(UIKit)
@@ -361,6 +412,13 @@ public extension Color {
                 blue: CGFloat(hex & 0xFF) / 255,
                 alpha: 1)
         })
+    }
+}
+
+public extension Animation {
+    /// An Avenue easing over a duration, like \`.avenue(AvenueTokens.Motion.easeMove, duration: AvenueTokens.Motion.slow)\`.
+    static func avenue(_ easing: AvenueTokens.Easing, duration: Double) -> Animation {
+        .timingCurve(easing.x1, easing.y1, easing.x2, easing.y2, duration: duration)
     }
 }
 #endif
@@ -381,6 +439,7 @@ export function renderKotlin(t: NativeTokens): string {
 
 package com.manyave.avenue
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -438,6 +497,19 @@ ${Object.entries(t.spacing)
 
     /** The smallest tap target. */
     val TouchMinimum: Dp = ${dp(t.touchMinimum)}
+
+    /**
+     * How things move (web: Foundations/Motion). Durations in milliseconds, for \`tween(durationMillis = …)\`. \`EaseFade\`
+     * is for a colour or alpha change, \`EaseMove\` for anything that moves or changes size; nothing runs longer than \`SLOW\`.
+     */
+    object Motion {
+${Object.entries(t.motion.duration)
+  .map(([k, v]) => `        const val ${k.toUpperCase()}: Int = ${num(v)}`)
+  .join("\n")}
+${Object.entries(t.motion.easing)
+  .map(([k, pts]) => `        val Ease${camel(`-${k}`)} = CubicBezierEasing(${pts.map((n) => `${num(n)}f`).join(", ")})`)
+  .join("\n")}
+    }
 }
 `;
 }

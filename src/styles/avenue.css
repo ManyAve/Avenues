@@ -168,6 +168,15 @@
    - duration-moderate (150ms): a small change in place: a disclosure chevron turning, a button fading in.
    - duration-slow (200ms): the longest anything moves: a toast arriving, a progress bar filling (AVE-183, was 300ms).
      Also the scale's ceiling, and Neighbors' four duration-200s move onto it.
+   Two easings, named for their job (AVE-212), so no transition picks its own curve:
+   - ease-fade, cubic-bezier(0.2, 0, 0, 1): a colour, background, border or opacity change. Starts at once and eases
+     in to rest. It is every transition's default, so `transition-colors` needs no ease class; pair it with
+     duration-moderate (or duration-fast for an overlay's fade).
+   - ease-move, cubic-bezier(0.22, 1, 0.36, 1): anything that moves or changes size: a transform, a translate or
+     scale, a width, a shadow. Fast out, long settle, so a thing arrives quickly and lands softly. Write it beside the
+     transition (`transition-transform duration-moderate ease-move`), on duration-slow or shorter.
+   Tailwind's ease-in, ease-out, ease-in-out and ease-linear stay defined for the apps' screens, but the class rules
+   flag them and any typed-in curve (lint/classes.mjs).
    Layers are the page-level stack, lowest first. Inside one component, a small local order (a focused item over its
    neighbour, a fill behind a bar) keeps Tailwind's numbers under `isolate`; these are for things that stack against
    the rest of the page.
@@ -189,6 +198,9 @@
   --transition-duration-fast: 100ms;
   --transition-duration-moderate: 150ms;
   --transition-duration-slow: 200ms; /* kept: the duration scale's ceiling */
+  --ease-fade: cubic-bezier(0.2, 0, 0, 1);
+  --ease-move: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-timing-function: var(--ease-fade); /* kept: Tailwind's default ease, set to the colour curve */
   --z-index-sticky-group: 5; /* kept: a step in the layer scale */
   --z-index-sticky: 10;
   --z-index-sticky-bar: 20; /* kept: a step in the layer scale; its five uses are in the apps */
@@ -323,6 +335,29 @@
     &::after {
       width: max(100%, 2.75rem);
       height: max(100%, 2.75rem);
+    }
+  }
+}
+
+/* Press (AVE-212): a Button or a pressable card (ChoiceCard, a card that is one link) shrinks to 98% while it is
+   pressed and its shadow settles flat, so a press feels physical. Colours fade on ease-fade and the scale and shadow
+   move on ease-move, all on duration-moderate. A public utility, like `hit-area`, and the control's transition: it
+   replaces `transition-all` / `transition-colors` (cn treats it as a transition, so a `transition-colors` passed in
+   turns the press off). Only Button and pressable cards press: menu items, chips, toggles, table rows and toolbar
+   buttons don't, because in a dense row or a list the motion reads as a jiggle. Nothing presses that is disabled or
+   opens a popup (the popup's motion is the feedback), and nothing presses under Reduce motion. */
+@utility press {
+  transition-property:
+    color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow,
+    scale;
+  transition-timing-function:
+    var(--ease-fade), var(--ease-fade), var(--ease-fade), var(--ease-fade), var(--ease-fade), var(--ease-fade),
+    var(--ease-fade), var(--ease-fade), var(--ease-move), var(--ease-move);
+  transition-duration: var(--transition-duration-moderate);
+  @media (prefers-reduced-motion: no-preference) {
+    &:active:not(:disabled, [data-disabled], [aria-disabled="true"], [aria-haspopup], :has(:disabled, [data-disabled])) {
+      scale: 0.98;
+      --tw-shadow: 0 0 #0000; /* kept: Tailwind's shadow slot, emptied so the focus ring stays */
     }
   }
 }

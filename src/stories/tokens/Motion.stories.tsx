@@ -33,6 +33,35 @@ function Duration({ name, cls, use, moved }: { name: string; cls: string; use: s
   );
 }
 
+// AVE-212: the two easings. ease-fade is every transition's default; ease-move is written beside a transition that moves.
+const easings = [
+  ["fade", "ease-fade", "cubic-bezier(0.2, 0, 0, 1)", "Colour, background, border, opacity. The default: transition-colors needs no ease class"],
+  ["move", "ease-move", "cubic-bezier(0.22, 1, 0.36, 1)", "Transform, translate, scale, width, shadow. Fast out, soft landing"],
+] as const;
+
+function Easing({ name, cls, use, moved }: { name: string; cls: string; use: string; moved: boolean }) {
+  // The token's own value: under test and in captures, transitions are switched off, which resets the element's curve.
+  const [ref, curve] = useComputed<HTMLDivElement>((s) => s.getPropertyValue(`--ease-${name}`));
+  return (
+    <div className="grid grid-cols-[7rem_16rem_10rem_1fr] items-center gap-4 border-b py-row-y">
+      <Code className="text-foreground">{cls}</Code>
+      <Code>{curve}</Code>
+      <div className="h-control-sm w-40 rounded-md bg-muted">
+        <div
+          ref={ref}
+          data-ease={name}
+          className={cn(
+            "size-control-sm rounded-md bg-primary transition-transform duration-slow motion-reduce:transition-none",
+            cls,
+            moved && "translate-x-33",
+          )}
+        />
+      </div>
+      <span className="text-meta text-muted-foreground">{use}</span>
+    </div>
+  );
+}
+
 function DurationScale() {
   const [moved, setMoved] = useState(false);
   return (
@@ -52,6 +81,16 @@ function DurationScale() {
           </div>
         </div>
       </Section>
+      <Section
+        title="Two easings"
+        note="One curve per job. Use the name, never ease-in, ease-out or ease-[cubic-bezier(...)]; the class rules flag them."
+      >
+        <div className="w-full">
+          {easings.map(([name, cls, , use]) => (
+            <Easing key={name} name={name} cls={cls} use={use} moved={moved} />
+          ))}
+        </div>
+      </Section>
     </Page>
   );
 }
@@ -69,6 +108,10 @@ export const Durations: StoryObj<typeof meta> = {
     for (const [name, , time] of durations) {
       const el = canvasElement.querySelector(`[data-duration="${name}"]`);
       await expect(el && getComputedStyle(el).getPropertyValue("--tw-duration"), name).toBe(time);
+    }
+    for (const [name, , curve] of easings) {
+      const el = canvasElement.querySelector(`[data-ease="${name}"]`);
+      await expect(el && getComputedStyle(el).transitionTimingFunction, name).toBe(curve);
     }
   },
 };

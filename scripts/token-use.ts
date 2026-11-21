@@ -29,6 +29,7 @@ const SPACING_PREFIX =
 const NAMESPACES: [namespace: string, classes: (name: string) => string][] = [
   ["transition-duration", (n) => `duration-${n}`],
   ["font-weight", (n) => `font-${n}`],
+  ["ease", (n) => `ease-${n}`],
   ["breakpoint", (n) => `(?:max-)?${n}:`],
   ["container", (n) => `(?:max-|min-)?w-${n}`],
   ["z-index", (n) => `-?z-${n}`],

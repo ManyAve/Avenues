@@ -7,14 +7,16 @@ import { DoDont, households, Rule, Rules } from "./foundation-docs";
 
 // How things move. The app's overlays (menus, popovers, dialogs, tooltips) open with tw-animate-css at 100ms:
 // fade-in-0 plus zoom-in-95, from the trigger's side. Toasts slide up 8px. Hover and focus use transition-colors.
+// AVE-212: colour fades on ease-fade (every transition's default), movement on ease-move, and Button presses.
 // Avenue's stylesheet honours prefers-reduced-motion on every surface, as the desktop app's desktop.css does.
 
 const patterns = [
   ["Menu, popover, tooltip", "100ms fade and zoom from 95%, from the side it opens on", "data-open:animate-in fade-in-0 zoom-in-95 duration-fast"],
   ["Dialog", "100ms fade and zoom; the backdrop fades", "data-open:animate-in fade-in-0 zoom-in-95 duration-fast"],
   ["Toast", "Fades in and slides up 8px", "animate-in fade-in slide-in-from-bottom-2 duration-slow"],
-  ["Hover, focus, press", "Colour change only; buttons drop 1px when pressed", "transition-colors"],
-  ["Disclosure chevron", "Turns 180° as the section opens", "transition-transform duration-moderate rotate-180"],
+  ["Hover, focus", "Colour change only, on the colour curve", "transition-colors"],
+  ["Press", "A Button or a pressable card shrinks to 98% and its shadow settles; menu items, chips, toggles and rows don't", "press"],
+  ["Disclosure chevron", "Turns as the section opens, on the movement curve", "transition-transform duration-moderate ease-move"],
 ] as const;
 
 function useReducedMotion() {
@@ -125,6 +127,15 @@ function MotionUse() {
           <Rule why="A board member doing one quick job shouldn't wait for the interface.">
             Overlays open in 100ms. Nothing animates for longer than 200ms. Name the step: duration-fast (100ms),
             duration-moderate (150ms) or duration-slow (200ms), never a number (Tokens/Motion).
+          </Rule>
+          <Rule why="One curve per job makes the whole app feel like one thing, the way one type scale does.">
+            Colour, background and border changes fade on ease-fade, which every transition uses unless told
+            otherwise. Anything that moves or changes size (a transform, a shadow, a width) takes ease-move: it starts
+            fast and settles softly. Never ease-in, ease-out or a typed-in cubic-bezier (Tokens/Motion).
+          </Rule>
+          <Rule why="A press that gives a little feels physical; a list of rows that all give reads as a jiggle.">
+            Only a Button and a card that is one control (ChoiceCard, a tile link) press, with the `press` utility.
+            Under Reduce motion nothing presses.
           </Rule>
           <Rule why="Motion that isn't triggered by the person pulls their eye away from the task.">
             Nothing moves on its own. No counting-up numbers, looping pulses or animated page changes; a spinner is the

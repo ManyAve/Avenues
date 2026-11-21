@@ -136,3 +136,35 @@ export const AsHeading: Story = {
     );
   },
 };
+
+/**
+ * A card that is one link, a tile (AVE-212): `render={<a />}` and the `press` utility, so a press shrinks it to 98%
+ * as a Button does. Hover takes the list's `bg-muted/50`, focus the shared ring. Only a whole card that does one
+ * thing presses; a card holding several controls doesn't.
+ */
+export const AsALink: Story = {
+  name: "As a link",
+  render: () => (
+    <Card
+      // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- labelled by the card's title and line
+      render={<a href="#annual-meeting" />}
+      className="press outline-none hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
+      <CardHeader>
+        <CardTitle>Annual meeting</CardTitle>
+        <CardDescription>Thursday, April 9, 7 pm, at the clubhouse.</CardDescription>
+      </CardHeader>
+    </Card>
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const link = canvas.getByRole("link", { name: /Annual meeting/ });
+    await expect(link).toHaveAttribute("data-slot", "card");
+    // The scale moves on ease-move, the colours fade on ease-fade (avenue.css, `press`).
+    const style = getComputedStyle(link);
+    await expect(style.transitionProperty).toContain("scale");
+    await expect(style.transitionTimingFunction).toContain("cubic-bezier(0.22, 1, 0.36, 1)");
+    await expect(style.transitionTimingFunction).toContain("cubic-bezier(0.2, 0, 0, 1)");
+    await userEvent.tab();
+    await expect(link).toHaveFocus();
+  },
+};

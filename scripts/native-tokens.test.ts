@@ -45,6 +45,9 @@ describe("native tokens (AVE-101)", () => {
     expect(tokens.spacing["control-xs"]).toBe(28);
     expect(tokens.touchMinimum).toBe(44);
     expect(tokens.radius.lg).toBe(10);
+    // Motion (AVE-212): the three durations and the two easings, as the web draws them.
+    expect(tokens.motion.duration).toEqual({ fast: 100, moderate: 150, slow: 200 });
+    expect(tokens.motion.easing).toEqual({ fade: [0.2, 0, 0, 1], move: [0.22, 1, 0.36, 1] });
   });
 
   test("a missing token fails instead of exporting a guess", () => {

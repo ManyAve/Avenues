@@ -356,6 +356,7 @@ message names the class to use:
 | `no-restricted-classes` | `shadow`, `shadow-xs` to `shadow-2xl` | `shadow-control`, `shadow-card`, `shadow-popover` |
 | `no-restricted-classes` | `z-20` and up, `z-[60]`, `-z-[1]` | a layer name; a local order under `isolate` keeps a bare number under 20 (`z-1`, `-z-1`, `focus:z-10`) |
 | `no-restricted-classes` | `duration-300`, `duration-[250ms]` | `duration-fast`, `duration-moderate`, `duration-slow` |
+| `no-restricted-classes` | `ease-in`, `ease-out`, `ease-in-out`, `ease-linear`, `ease-[cubic-bezier(…)]` | nothing for a colour change (`ease-fade` is the default), `ease-move` for anything that moves |
 | `no-hardcoded-colors` | `bg-[#fff]`, `shadow-[0_1px_2px_rgb(0_0_0/0.1)]`, a `#000` mask | a colour token; for a fading edge, Tailwind's mask utilities (`mask-r-from-[calc(100%-28px)]`) |
 | `no-unnecessary-arbitrary-value` | an arbitrary value a named class already draws | that class |
 | `prefer-scale-token` | a literal equal to a token or a whole 4px step (`w-[640px]`, `z-[5]`) | `w-160`, `z-sticky-group` (`w-[390px]`, between steps, stays) |
@@ -408,8 +409,8 @@ that read them.
 
 ## Weights, durations and layers
 
-Avenue names its font weights, durations, page layers and modal overlay (AVE-182), so a screen never writes the
-number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn` knows each one.
+Avenue names its font weights, durations, easings, page layers and modal overlay (AVE-182, AVE-212), so a screen never
+writes the number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn` knows each one.
 
 | Write this | For | Instead of |
 | --- | --- | --- |
@@ -420,6 +421,9 @@ number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn`
 | `duration-fast` | an overlay opening or closing (100ms) | `duration-100` |
 | `duration-moderate` | a small change in place: a chevron, a button fading in (150ms) | `duration-150`, `duration-120`, `duration-160` |
 | `duration-slow` | the longest anything moves: a toast (200ms) | `duration-200`, and anything longer |
+| `ease-fade` | a colour, background, border or opacity change; every transition's default, so `transition-colors` needs no ease class | `ease-in-out`, `ease-[cubic-bezier(0.4,0,0.2,1)]` |
+| `ease-move` | anything that moves or changes size: a transform, slide, scale, width or shadow (AVE-212) | `ease-out` on a slide or a width |
+| `press` | a Button-like control or a card that is one link: shrinks to 98% while pressed, its shadow settles; off under Reduce motion (AVE-212) | `active:scale-95`, `active:translate-y-px`, `transition-all` on that control |
 | `z-sticky-group` | a sticky group or day bar under the column header (5) | `z-[5]` |
 | `z-sticky` | a sticky column header (10) | `z-10` on a sticky header |
 | `z-sticky-bar` | a toolbar, tab bar or page header stuck to the top, above the sticky column headers (20) | `z-20` on a sticky bar, a sticky page header's `z-40` or `z-50` |
@@ -431,11 +435,15 @@ number. The names are Tailwind utilities from `@manyave/avenue/styles.css`; `cn`
 Pick by meaning, not by number: a sticky toolbar is not `z-sticky` because it happens to be 10, and a 550 that is a
 heading is `font-heading`. A weight used in one place (the top bar's 650 wordmark) stays a literal with a comment. A small order inside one component (a focused segment over its neighbour, a fill behind a
 bar) keeps Tailwind's numbers (`z-1`, `focus:z-10`) inside an `isolate` parent; the names are for things that stack
-against the page. Where an app has a weight or a layer none of these fits, ask for it on an AVE card with the screens
+against the page. Only Buttons and whole-card links press: a menu item, chip, toggle, table row or toolbar button
+doesn't (in a dense row the motion reads as a jiggle), and passing `transition-colors` to a Button turns its press off,
+as ToolbarButton does. Where an app has a weight or a layer none of these fits, ask for it on an AVE card with the screens
 that use it, rather than adding a one-off.
 
-In plain CSS the same values are `var(--font-weight-emphasis)`, `var(--transition-duration-fast)`,
-`var(--z-index-overlay)` and `var(--overlay)`.
+In plain CSS the same values are `var(--font-weight-emphasis)`, `var(--transition-duration-fast)`, `var(--ease-move)`,
+`var(--z-index-overlay)` and `var(--overlay)`. Phone apps get the durations and easings as `AvenueTokens.Motion`
+(Swift: `Animation.avenue(AvenueTokens.Motion.easeMove, duration: AvenueTokens.Motion.slow)`; Kotlin:
+`tween(AvenueTokens.Motion.SLOW, easing = AvenueTokens.Motion.EaseMove)`).
 
 ## Remember the theme (AVE-193)
 

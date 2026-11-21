@@ -199,7 +199,7 @@ function PullIndicator({ status }: { status: PullToRefreshStatus }) {
             className={cn(
               "size-4",
               status === "idle" &&
-                "rotate-0 transition-transform duration-fast group-data-armed/pull:rotate-180 motion-reduce:transition-none",
+                "rotate-0 transition-transform duration-fast ease-move group-data-armed/pull:rotate-180 motion-reduce:transition-none",
               status === "running" && "animate-spin motion-reduce:animate-none",
               status === "failed" && "text-destructive-subtle-foreground",
             )}
