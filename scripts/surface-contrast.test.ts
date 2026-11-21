@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { differenceCiede2000, parse, wcagContrast, type Color } from "culori";
+import { converter, differenceCiede2000, parse, wcagContrast, type Color } from "culori";
 import { readDeclarations } from "./css-tokens";
 import { merge, substitute, THEME_SCOPES } from "./native-tokens";
 
@@ -26,7 +26,8 @@ const PAIRS: Pair[] = [
   ["distinct", "card", "background", LIFT, "a card lifts off the page"],
   ["distinct", "muted", "background", REGION, "a field's fill is seen on the page"],
   ["distinct", "muted", "card", SURFACE, "a field's fill and an inset fill are seen on a card"],
-  ["distinct", "accent", "card", SURFACE, "a hover fill and a skeleton are seen on a card"],
+  ["distinct", "accent", "card", SURFACE, "a highlighted row is seen in a menu or list"],
+  ["distinct", "fill", "card", SURFACE, "a skeleton and a progress track are seen on a card"],
   ["distinct", "secondary", "card", SURFACE, "a secondary badge is seen on a card"],
   ["distinct", "border", "card", SURFACE, "a line inside a card renders"],
   ["distinct", "border", "background", SURFACE, "a line on the page renders"],
@@ -35,7 +36,8 @@ const PAIRS: Pair[] = [
   ["contrast", "muted-foreground", "background", BODY, "secondary text on the page"],
   ["contrast", "muted-foreground", "card", BODY, "secondary text on a card"],
   ["contrast", "muted-foreground", "muted", BODY, "secondary text and a placeholder on a muted fill"],
-  ["contrast", "accent-foreground", "accent", BODY, "text on a hovered row"],
+  ["contrast", "accent-foreground", "accent", BODY, "text on a highlighted row"],
+  ["contrast", "muted-foreground", "fill", BODY, "a quoted reply's text on its fill"],
   ["contrast", "placeholder", "foreground", HINT, "a placeholder reads dimmer than typed text (AVE-186)"],
   ["contrast", "placeholder", "muted", BODY, "a placeholder on a muted fill"],
   ["contrast", "placeholder", "card", BODY, "a placeholder in a field on a card"],
@@ -120,4 +122,25 @@ describe("control outlines (AVE-183)", () => {
     const theme = await Bun.file("src/styles/ui-sdk-theme.css").text();
     expect(theme).toMatch(/--ui-input:\s*var\(--control-outline\)/);
   });
+});
+
+/**
+ * AVE-209: the highlighted row (accent, a faint primary tint) sits beside the chosen look (primary-subtle, AVE-50) in a
+ * Select or Combobox, so it must never pass for it: clearly apart, and lighter in light and darker in dark, so the tint
+ * is always the quieter of the two. And the tint is a tint: it leans to primary's hue, not grey.
+ */
+describe("highlighted is never chosen (AVE-209)", () => {
+  const APART = 5;
+  for (const [theme, scopes] of Object.entries(THEME_SCOPES)) {
+    test(`${theme}: accent is ${APART} apart from primary-subtle and quieter than it`, () => {
+      const vars = merge(tokens, [...scopes]);
+      const ok = (role: string) => converter("oklch")(parse(substitute(`var(--${role})`, vars))!)!;
+      const [accent, chosen, surface] = [ok("accent"), ok("primary-subtle"), ok("popover")];
+      expect(ciede(accent, chosen)).toBeGreaterThan(APART);
+      // Quieter: nearer the popover's lightness than the chosen fill is.
+      expect(Math.abs(accent.l - surface.l)).toBeLessThan(Math.abs(chosen.l - surface.l));
+      expect(accent.c).toBeLessThan(chosen.c);
+      expect(Math.abs((accent.h ?? 0) - (ok("primary").h ?? 0))).toBeLessThan(15);
+    });
+  }
 });

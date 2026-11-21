@@ -69,7 +69,7 @@ const intendedAdditions: Record<string, string> = {
   "@media (min-width: 40rem) > :root :: --avenue-page-inset": `${AVE2_SPACING}: page inset from 640px`,
   [`${LIFTED_LIGHT} :: --background`]: `${AVE115}: the page steps down so a borderless card lifts off it`,
   [`${LIFTED_LIGHT} :: --muted`]: `${AVE115}: a field's fill shows on a card`,
-  [`${LIFTED_LIGHT} :: --accent`]: `${AVE115}: a hover or skeleton fill shows on a card`,
+  [`${LIFTED_LIGHT} :: --fill`]: `${AVE115}: a skeleton or progress track shows on a card`,
   [`${LIFTED_DARK} :: --muted`]: `${AVE115}: dark muted one step above the card instead of equal to it`,
 };
 

@@ -7,10 +7,9 @@ import { cn } from "#avenue/lib/utils";
  * Placeholder shapes shown while a card or page loads, and the region that says it is loading (AVE-128). Avenue's
  * own parts: ui-sdk 0.1 has no skeleton, and there is no behavior to take from it (nothing here is a control).
  *
- * Fill: `bg-accent`, as Neighbors draws them. The funnel chose `bg-muted` (AVE-128), but on the default dark surfaces
- * muted is the card's own colour (onyx-850), so a skeleton inside a dark card vanished. Accent is a step off both the
- * page and the card in light, dark and lifted surfaces; it is also the hover fill, but a skeleton is never hovered or
- * pressed, so the two can't be confused. The stories fail if a shape matches the surface under it. Corners follow what a shape stands for: text `rounded-sm`, a block `rounded-md`, an
+ * Fill: `bg-fill` (Neighbors draws them `bg-accent`, which was this grey until AVE-209 tinted it). The funnel chose `bg-muted` (AVE-128), but on the default dark surfaces
+ * muted is the card's own colour (onyx-850), so a skeleton inside a dark card vanished. Fill is a step off both the
+ * page and the card in light, dark and lifted surfaces, and neutral, so a skeleton never wears the highlight's tint. The stories fail if a shape matches the surface under it. Corners follow what a shape stands for: text `rounded-sm`, a block `rounded-md`, an
  * avatar `rounded-full`.
  *
  * Accessibility: every shape is `aria-hidden`. Wrap them in `Loading`, which marks the region `aria-busy` and gives
@@ -33,7 +32,7 @@ const shapes = {
 
 type SkeletonShape = keyof typeof shapes;
 
-const pulse = "animate-pulse bg-accent motion-reduce:animate-none";
+const pulse = "animate-pulse bg-fill motion-reduce:animate-none";
 
 /**
  * One placeholder shape. `shape="text"` is one line of the text it stands for (set its size with a text class, its

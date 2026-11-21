@@ -258,7 +258,7 @@ const STREET_BAR_PARTS: Allowance = {
 const BEHAVIOUR = (look: string) =>
   `Behaviour story: a play function presses keys or checks focus, so its end state isn't a resting look the app has a story for. Its look is compared through ${look}.`;
 const MESSAGE_LOOK =
-  "Management draws its bubbles inside ChatWindow (Chat/Board chat), with live data and a dock around them. Compared in Message / Beside Management, which renders Management's MessageRun and Bubble classes beside Avenue's and asserts the same fill, colour, corner, padding, type and size. The reply quote's fill is bg-accent, not Management's bg-muted, which is the popover's own colour in dark (as found on AVE-128).";
+  "Management draws its bubbles inside ChatWindow (Chat/Board chat), with live data and a dock around them. Compared in Message / Beside Management, which renders Management's MessageRun and Bubble classes beside Avenue's and asserts the same fill, colour, corner, padding, type and size. The reply quote's fill is bg-fill, not Management's bg-muted, which is the popover's own colour in dark (as found on AVE-128).";
 const NEW_IN_AVENUE = (what: string, look: string) =>
   `${what} is new in Avenue; the app has no component or story of its kind. Its parts are compared through ${look}.`;
 const STATE_ONLY = (state: string, look: string) =>
@@ -716,12 +716,12 @@ export const PAIRS: Record<string, PairEntry> = {
   ),
 
   // ---- Skeleton (AVE-128)
-  "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
-  "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
-  "components-skeleton--list-rows": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
-  "components-skeleton--full-page": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
-  "components-skeleton--phone": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
-  "components-skeleton--reduced-motion": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-accent) and the type scale its lines follow") },
+  "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
+  "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
+  "components-skeleton--list-rows": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
+  "components-skeleton--full-page": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
+  "components-skeleton--phone": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
+  "components-skeleton--reduced-motion": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
   "components-status-dot--tones": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
   "components-status-dot--over-an-icon": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },
   "components-status-dot--in-a-chip": { none: NEW_IN_AVENUE("The status dot (AVE-130)", "Status / Tones, whose pill draws the same dot") },

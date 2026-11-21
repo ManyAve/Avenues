@@ -10,7 +10,8 @@ const pairs = [
   ["Card, table frame", "bg-card text-card-foreground"],
   ["Menu, popover, dialog", "bg-popover text-popover-foreground"],
   ["Quiet fill, secondary text", "bg-muted text-muted-foreground"],
-  ["Hover and selected", "bg-accent text-accent-foreground"],
+  ["Highlighted item in a list", "bg-accent text-accent-foreground"],
+  ["Skeleton, progress track, quote", "bg-fill text-foreground"],
   ["Lines", "border-border, inputs border-input"],
   ["Focus", "ring-ring (outline at ring/50)"],
 ] as const;

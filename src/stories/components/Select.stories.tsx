@@ -302,6 +302,40 @@ export const Keyboard: Story = {
   },
 };
 
+/**
+ * AVE-209: the highlighted row (a faint brand tint, `accent`) beside the chosen one (its check). Cash is chosen; the
+ * arrow has moved on to Bank transfer. The tint is the only fill in the list, so it reads as "you're here", and the
+ * chosen row keeps the popover's own colour and its check, so the two never look alike. Captured open, light and dark.
+ */
+export const HighlightedAndChosen: Story = {
+  name: "Highlighted and chosen",
+  render: () => (
+    <Labelled label="Payment method">
+      <Select items={methods} defaultValue="cash" native="never" />
+    </Labelled>
+  ),
+  play: async ({ canvas }) => {
+    const trigger = canvas.getByRole("combobox", { name: "Payment method" });
+    trigger.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const list = await screen.findByRole("listbox");
+    const chosen = within(list).getByRole("option", { name: "Cash" });
+    await waitFor(() => expect(chosen).toHaveFocus());
+    await userEvent.keyboard("{ArrowDown}");
+    const highlighted = within(list).getByRole("option", { name: "Bank transfer" });
+    await waitFor(() => expect(highlighted).toHaveAttribute("data-highlighted"));
+    await expect(chosen).toHaveAttribute("aria-selected", "true");
+    await expect(chosen).not.toHaveAttribute("data-highlighted");
+    await expect(highlighted).toHaveAttribute("aria-selected", "false");
+    // The tint shows on the popover; the chosen row doesn't wear it.
+    const popup = list.closest<HTMLElement>("[data-slot=select-content]") ?? list;
+    const fill = (el: Element) => getComputedStyle(el).backgroundColor;
+    const surface = fill(popup);
+    await waitFor(() => expect(fill(highlighted)).not.toBe(surface));
+    await expect(fill(chosen)).not.toBe(fill(highlighted));
+  },
+};
+
 export const InvalidIsAnnounced: Story = {
   name: "Invalid wiring",
   render: () => (
