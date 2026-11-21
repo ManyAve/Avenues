@@ -4,6 +4,7 @@
    under `.dark`, so ui-sdk follows Avenue's theme switch, not the operating system's. web.css's
    `color-scheme: light dark` loses the same way, to tokens.css's per-theme color-scheme. */
 :root {
+  /* kept: ui-sdk's theme contract. Its stylesheet and parts read every --ui-* token. */
   --ui-background: var(--background);
   --ui-foreground: var(--foreground);
   --ui-muted: var(--muted);

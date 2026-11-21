@@ -31,7 +31,7 @@ function DuesCard({ before }: { before?: boolean }) {
           before ? "items-start pt-[6px] pr-[6px] pb-row-y" : "items-center pt-inset pb-row-y",
         )}
       >
-        <h3 className="m-0 text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+        <h3 className="m-0 text-meta font-emphasis tracking-wide text-muted-foreground uppercase">
           Dues
         </h3>
         <div className={cn("flex gap-group text-meta text-muted-foreground", before ? "items-start" : "items-center")}>

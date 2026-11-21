@@ -275,7 +275,7 @@ function RegisterGroupRow({
   const tint = { "data-tint": tintFor(name), style: { "--group-color": "var(--tint-solid)" } as CSSProperties };
   const bar = (
     <div {...tint} className="flex h-full items-center gap-2 rounded-xl px-2">
-      <div aria-hidden className={cn("absolute inset-0 -z-[1]", selectable ? "rounded-e-xl" : "rounded-xl", barFill)} />
+      <div aria-hidden className={cn("absolute inset-0 -z-1", selectable ? "rounded-e-xl" : "rounded-xl", barFill)} />
       <ButtonPrimitive
         aria-expanded={open}
         onClick={(event) => report(onOpenChange, !open, { reason: "trigger-press", event: event.nativeEvent })}
@@ -321,7 +321,7 @@ function RegisterGroupRow({
       className={cn("group/bar sticky top-9 z-sticky-group pointer-coarse:top-11", className)}
     >
       <parts.Cell id={`${row}:0`} row={row} col={0} control className={cn(barCell, "rounded-s-xl", ring)} {...tint}>
-        <div aria-hidden className={cn("absolute inset-0 -z-[1] rounded-s-xl", barStart)} />
+        <div aria-hidden className={cn("absolute inset-0 -z-1 rounded-s-xl", barStart)} />
         <Checkbox
           aria-label={`Select all on ${name}`}
           checked={checked}

@@ -19,7 +19,7 @@ function ReplyingTo({ yourself = false }: { yourself?: boolean }) {
   const quoted = yourself ? myNote : anaAsks;
   return (
     <>
-      Replying to <b className="font-[600]">{yourself ? "yourself" : anaName}</b>: {quoted.body}
+      Replying to <b className="font-semibold">{yourself ? "yourself" : anaName}</b>: {quoted.body}
     </>
   );
 }

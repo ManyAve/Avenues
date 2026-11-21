@@ -37,7 +37,7 @@ function DayItems({ date, day }: { date: string; day: Day }) {
         ))}
       </PopoverTrigger>
       <PopoverContent side="right" align="start" className="w-80">
-        <b className="text-compact font-[550]">{longDay(date)}</b>
+        <b className="text-compact font-emphasis">{longDay(date)}</b>
         <span className="text-meta text-muted-foreground">{day.summary}</span>
       </PopoverContent>
     </Popover>
@@ -48,7 +48,7 @@ function Month({ weeks: initialWeeks = 5 }: { weeks?: number }) {
   const [start, setStart] = useState("2026-11-01");
   const [weeks, setWeeks] = useState(initialWeeks);
   return (
-    <section className="h-[560px] max-w-[900px] overflow-y-auto px-4 pb-3" aria-label="Month scroll">
+    <section className="h-140 max-w-225 overflow-y-auto px-4 pb-3" aria-label="Month scroll">
       <MonthGrid
         aria-label="Month"
         locale="en-US"

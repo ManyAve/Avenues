@@ -98,7 +98,7 @@ function DuesSummary() {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle className="text-meta font-[550] tracking-wide text-muted-foreground uppercase">
+        <CardTitle className="text-meta font-emphasis tracking-wide text-muted-foreground uppercase">
           <h2>Dues</h2>
         </CardTitle>
         <CardAction className="gap-group text-meta text-muted-foreground">
@@ -116,10 +116,10 @@ function DuesSummary() {
           <Money cents={24000} />
         </div>
         <div className="flex items-center justify-between border-t pt-2">
-          <span className="flex items-center gap-2 font-[550]">
+          <span className="flex items-center gap-2 font-emphasis">
             Balance <Status tone="warning">Past due</Status>
           </span>
-          <Money cents={24000} className="font-[550]" />
+          <Money cents={24000} className="font-emphasis" />
         </div>
       </CardContent>
       <CardFooter className="justify-end">
@@ -426,7 +426,7 @@ function Collection() {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-semibold tabular-nums">{collected}%</span>
+          <span className="text-display font-semibold tabular-nums">{collected}%</span>
           <Status tone="success" filled>
             Up 6% on 2025
           </Status>
@@ -442,7 +442,7 @@ function Collection() {
           ].map((s) => (
             <div key={s.label}>
               <dt className="tracking-wide text-muted-foreground uppercase">{s.label}</dt>
-              <dd className="text-compact font-[550]">
+              <dd className="text-compact font-emphasis">
                 <Money cents={s.cents} />
               </dd>
             </div>
@@ -643,7 +643,7 @@ function People() {
             <li key={p.name} className="flex items-center gap-3 py-group not-last:border-b">
               <InitialsAvatar name={p.name} decorative size="md" />
               <div className="min-w-0 flex-1">
-                <p className="font-[550]">{p.name}</p>
+                <p className="font-emphasis">{p.name}</p>
                 <p className="text-meta text-muted-foreground">{p.role}</p>
               </div>
               {p.status}
@@ -834,7 +834,7 @@ function Overview() {
     <ToastProvider>
       <main className="min-h-screen bg-background p-inset text-foreground">
         <header className="mb-6 max-w-2xl">
-          <h1 id="overview-title" className="text-2xl font-semibold">
+          <h1 id="overview-title" className="text-heading font-semibold">
             Avenue at a glance
           </h1>
           <p className="mt-1 text-compact text-muted-foreground">

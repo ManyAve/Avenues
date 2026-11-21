@@ -17,7 +17,7 @@ Every value goes base → semantic → (rarely) component. A component reads the
 
 | Tier | Holds | Named by | Avenue today | Who reads it |
 | --- | --- | --- | --- | --- |
-| **Base** (Material: reference; Primer: base) | Raw values: the palette, the 4px grid, the corner base, type sizes in rem | What it **is**: `onyx-500`, `grape-600`, `--radius` | `--color-onyx-*`, `teal`, `slate`, `grape`, `--light-*`, `--tint-*` (`tokens.css`) | Only the semantic tier |
+| **Base** (Material: reference; Primer: base) | Raw values: the palette, the 4px grid, the corner base, type sizes in rem | What it **is**: `onyx-500`, `grape-600`, `--radius` | `--color-onyx-*`, `teal`, `slate`, `grape`, `--surface-white`, `--tint-*` (`tokens.css`) | Only the semantic tier |
 | **Semantic** (Material: system; Primer: functional) | Decisions: which base value does which job, per theme and surface | The **job**: `background`, `border`, `input`, `ring`, `destructive`, `text-meta`, `shadow-popover`, `gap-controls` | The colours in `tokens.css`; type, spacing aliases, corners, control heights, shadows and breakpoints in `avenue.css` | Components, composites, stories and apps |
 | **Component** | A knob one component exposes for apps to set | `--avenue-<component>-<property>` | `--avenue-toast-bottom` | That component, and the app setting it |
 
@@ -103,8 +103,26 @@ Add a semantic token only when **all** of these hold:
 - **Change a value**: change the semantic token's mapping, not every use. Prove the change with `bun run visual:diff`.
 - **Remove or rename**: the old name stays as a deprecated alias until both apps have moved off it (AVE-154), like a
   component prop.
-- **Every token earns its place**: the token-use test (AVE-184) fails on a token with no use outside its definition,
-  or with one, unless its definition carries the one-line reason above.
+- **Every token earns its place**: the token-use test (AVE-184, `scripts/token-use.test.ts`) fails on a token with
+  fewer than two users, unless its definition carries the reason above. A user is a component, lib or hook file, or one
+  declaration or rule in Avenue's stylesheets that reads it (a base step read by `--chart-3` has a user); stories,
+  tests and the token's own names reading each other don't count. A `-foreground` stays while its fill does. Write the
+  reason as a comment holding `kept:`, on the declaration's line or directly above its run of declarations:
+
+  ```css
+  --text-display: 2rem; /* kept: a step in the type scale, its top */
+
+  /* kept: shadcn's chart contract (its Chart reads chart-1 to chart-5). */
+  --chart-1: var(--color-grape-500);
+  --chart-2: var(--color-teal-600);
+  ```
+
+  `bun scripts/token-use.ts` prints every token with its count. Decided by the first run (2026-11-20): the toolbar
+  search's `field-filled` and `selection` had one user each and became literals; the `--light-*` values each fed one
+  state token and were folded into it; the `text-web-*` sizes are the public site's alone and are deprecated
+  (MANA-1243); `surface-white` stays, a base value five light surfaces read. The palette's unread steps, the type,
+  spacing, layer and duration scales' ends, the four states, shadcn's chart and sidebar, ui-sdk's `--ui-*`, the
+  tint formula and the keyframes carry `kept:` reasons.
 
 ## Sources
 

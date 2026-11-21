@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.46.0 (2026-11-20)
+## v0.47.0 (2026-11-21)
 
 - **A layer for a sticky toolbar, tab bar or page header** (AVE-187, AVE-188). New utility `z-sticky-bar` (20),
   between `z-sticky` (10) and `z-dock` (40): a toolbar, tab bar or page header stuck to the top, which the sticky
@@ -12,6 +12,30 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   announcement reader's tabs) at a hand-written `z-20`; write `z-sticky-bar` there instead (MANA-1241). Neighbors'
   hub and marketing site headers (`z-40`, `z-50`) take it too. `cn` knows it, and Tokens/Elevation "Layers" shows it.
   No Avenue component changes.
+
+## v0.46.0 (2026-11-20)
+
+- **The class rules reject raw values where Avenue has a name** (AVE-184; ADOPTING.md, "Raw values and tokens"). An app
+  that extends `@manyave/avenue/oxlint` now fails on: a colour typed into a class (`no-hardcoded-colors`), an arbitrary
+  value a named class already draws (`no-unnecessary-arbitrary-value`), a literal equal to a theme token or a whole 4px
+  step (`prefer-scale-token`; `w-[640px]` is `w-160`, `w-[390px]` stays), `bg-(--card)` for `bg-card`
+  (`prefer-theme-tokens`), and, each with its fix in the message, `text-[Npx]`, `text-lg` to `text-9xl`, `font-[NNN]`,
+  Tailwind's shadows (`shadow`, `shadow-xs` to `shadow-2xl`), page layers written as numbers (`z-20` and up, `z-[..]`)
+  and durations written as numbers. Management (about 320 hits) and Neighbors (about 126) fail today; MANA-1241 and
+  NEI-326 move them. Until a folder moves, an override can keep the old checks with the new export
+  `gridClassPatterns` (`scaleClassPatterns` holds the new ones; `restrictedClassPatterns` is both).
+- **Every token earns its place.** A new script test fails on a token in Avenue's stylesheets with fewer than two
+  users, unless a `kept:` comment beside its definition says why (docs/tokens.md). What it decided:
+  - `bg-field-filled` and `--color-selection` are gone: one use each (SearchInput's filled tint, the `::selection`
+    rule), now commented literals there. Neither app used them, and nothing moves.
+  - The twenty `--light-*` variables are gone: each fed one state token, which now holds the value. Nothing moves.
+  - **Deprecated: `text-web-hero`, `text-web-hero-narrow`, `text-web-section`, `text-web-card`, `text-web-glyph`.** Only
+    Management's public site draws them, so they belong in its own stylesheet as `site-*` sizes (MANA-1243);
+    deprecated, removed once both apps have moved off them.
+- Avenue's own fixes for the new rules: the phone fades on Chip and TopBar use Tailwind's mask utilities in place of a
+  `#000` gradient, Switch and Register write their sizes as steps, and stories moved onto the named weights, type
+  steps and `shadow-popover`. Stories only, these move pixels: the Overview's big figures (`text-display`,
+  `text-heading`), Select's balance figure (32px, was 28px), the day bar's date and "Today" (14px, was 12px and 11px).
 
 ## v0.45.0 (2026-11-20)
 

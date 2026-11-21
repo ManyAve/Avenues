@@ -129,7 +129,7 @@ function LongPage() {
         </TopBarNav>
         {help}
       </TopBar>
-      <div className="h-[2400px]" />
+      <div className="h-600" />
       <div className="px-page pb-inset">
         <button type="button" onClick={() => setCount((n) => n + 1)}>
           Add a household

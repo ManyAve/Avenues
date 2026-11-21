@@ -51,7 +51,7 @@ export const PhoneRow: Story = {
         <li key={item.title} className="flex items-start gap-row-y">
           <IconTile icon={item.icon} tone={item.tone} automatic={item.automatic} />
           <div className="min-w-0">
-            <p className="font-[550]">{item.title}</p>
+            <p className="font-emphasis">{item.title}</p>
             <p className="text-meta text-muted-foreground">{item.meta}</p>
           </div>
         </li>
