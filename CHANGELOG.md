@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.58.0 (2026-11-21)
+## v0.59.0 (2026-11-21)
 
 - **Menus and tooltips write a shortcut the way each computer does** (AVE-194). `MenuItem` takes ui-sdk's `shortcut`
   (`"mod+d"`): the row ends in ⌘D on a Mac and Ctrl+D elsewhere, hidden from screen readers, and the item gets
@@ -14,6 +14,24 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   yourself is unchanged, so no existing pixels move; to move to the new form, replace `<MenuShortcut>⌘E</MenuShortcut>`
   with `shortcut="mod+e"` on the item. `CommandShortcut` already used ui-sdk's formatting and is unchanged. New stories:
   Menu / Shortcuts on a Mac, Menu / Shortcuts elsewhere, Tooltip / With a shortcut.
+
+## v0.58.0 (2026-11-21)
+
+- **New components: DatePicker, DateInput and TimeInput** (AVE-202), on ui-sdk's date-picker, date-input and
+  time-input, in Input's look and inside a Field. `@manyave/avenue/components/date-picker` is a date typed in the
+  locale's order (paste works, Enter or leaving the field reads it) with Avenue's Calendar on demand, by the button or
+  Alt+Down; one tag, or ui-sdk's parts: `DatePickerGroup` (Avenue's field box, which never shrinks below a whole date,
+  so a row wraps before a date is cut off), `DatePickerInput`, `DatePickerClear`, `DatePickerTrigger` (named after its
+  field and the date, "Choose due date, Saturday, November 21, 2026"), `DatePickerHint`, `DatePickerContent` (a popover,
+  a bottom sheet on a small touch screen) and `DatePickerPreset`, with `mode="range"` for two dates.
+  `@manyave/avenue/components/date-input` and `/time-input` type a date or time one part at a time, each part a
+  spinbutton named by its part ("month") that reads its value ("11"); `DateInputSegment` and `TimeInputSegment` are
+  their parts. All three take `native` ("auto" by default): on touch-first devices the one-tag form is the phone's
+  own date or time picker. All three post the native input's string under their Field's name. `DatePickerError`,
+  `DateInputError` and `TimeInputError` are the field's one error line: on submit, an empty required field says
+  `missing`, and anything else refused asks for the locale's format ("Enter a date like 31/12/2026"). ADOPTING.md,
+  "Dates and times", has the swap from `type="date"`. `src/checks/touch-targets` now treats an open DatePicker sheet's
+  viewport as the modal layer it is, as it does Select's and Combobox's. No existing pixels change; the calendar's popup takes AVE-208's floating edge and shadow.
 
 ## v0.57.0 (2026-11-21)
 

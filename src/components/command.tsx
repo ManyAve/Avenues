@@ -2,11 +2,12 @@ import * as Ui from "@ui-sdk/react/command";
 import { createDialogController, DialogShortcut } from "@ui-sdk/react/dialog";
 import { withSource } from "@ui-sdk/react/observe";
 import { LoaderCircleIcon, SearchIcon } from "lucide-react";
-import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ComponentProps } from "react";
+import { createContext, useContext, useMemo, useState, type ComponentProps } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "#avenue/components/dialog";
 import { sourceOf } from "#avenue/lib/change";
 import { listSeparator } from "#avenue/lib/picker";
 import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
+import { useCoarsePointer } from "#avenue/lib/pointer";
 import { cn } from "#avenue/lib/utils";
 
 /**
@@ -214,19 +215,6 @@ function CommandShortcut({ className, ...props }: Loose<ComponentProps<typeof Ui
   );
 }
 
-const coarse = "(pointer: coarse)";
-function subscribe(onChange: () => void) {
-  const query = window.matchMedia(coarse);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-function useCoarsePointer() {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(coarse).matches,
-    () => false,
-  );
-}
 
 /**
  * The palette: Avenue's Dialog, which a command that runs closes (see `Command`). Open, close and `onOpenChange`
