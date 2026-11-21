@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "#avenue/components/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
+import { Card, CardContent, CardHeader, CardTitle } from "#avenue/components/card";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "#avenue/components/dialog";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "#avenue/components/field";
 import { SectionCard, SectionCardTitle } from "#avenue/components/section-card";
@@ -60,11 +60,6 @@ export const InASectionCard: Story = {
     <SectionCard>
       <CardHeader>
         <SectionCardTitle>Notices</SectionCardTitle>
-        <CardAction>
-          <Button size="sm" variant="outline">
-            Reset
-          </Button>
-        </CardAction>
       </CardHeader>
       <CardContent>
         <NoticeSettings />
@@ -152,6 +147,15 @@ export const InADialog: Story = {
     const dialog = await screen.findByRole("dialog", { name: "Notice settings" });
     const well = dialog.querySelector("[data-slot=well]")!;
     await expect(px(well, "border-top-left-radius")).toBe("10px");
-    await expect(within(dialog).getAllByRole("switch")).toHaveLength(3);
+    // Every switch by keyboard, then the close button.
+    for (const control of within(dialog).getAllByRole("switch")) {
+      const before = control.getAttribute("aria-checked");
+      control.focus();
+      await userEvent.keyboard(" ");
+      await waitFor(() => expect(control).not.toHaveAttribute("aria-checked", before ?? ""));
+    }
+    within(dialog).getByRole("button", { name: "Close" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
   },
 };

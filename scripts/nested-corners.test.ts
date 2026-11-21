@@ -31,18 +31,57 @@ describe("nestedCorner (AVE-2 section 4)", () => {
   });
 });
 
-const CONTAINERS: { file: string; outer: Corner; gap: number; variant?: string; why: string }[] = [
-  { file: "src/components/card.tsx", outer: "xl", gap: 16, why: "Card, 16px inset" },
-  { file: "src/components/card.tsx", outer: "xl", gap: 12, variant: "data-[size=sm]:", why: "Card size sm, 12px inset" },
-  { file: "src/lib/popup.ts", outer: "xl", gap: 16, why: "Dialog, Alert dialog and Drawer (modalSurface), p-inset" },
-  { file: "src/components/popover.tsx", outer: "lg", gap: 16, why: "Popover, p-inset" },
+/**
+ * Each container, with the classes in its own source that give its corner and its inset. A change to either (Card's
+ * inset from 16px to 12px, a popover going xl) fails here until the corner and the inset below, and with them the
+ * expected `--nested-corner`, are brought in line.
+ */
+const CONTAINERS: { files: string[]; outer: Corner; gap: number; shows: string[]; variant?: string; why: string }[] = [
+  {
+    files: ["src/components/card.tsx"],
+    outer: "xl",
+    gap: 16,
+    shows: ["rounded-xl", "[--card-spacing:--spacing(4)]"],
+    why: "Card: xl, 16px inset",
+  },
+  {
+    files: ["src/components/card.tsx"],
+    outer: "xl",
+    gap: 12,
+    shows: ["rounded-xl", "data-[size=sm]:[--card-spacing:--spacing(3)]"],
+    variant: "data-[size=sm]:",
+    why: "Card size sm: xl, 12px inset",
+  },
+  {
+    files: ["src/lib/popup.ts", "src/components/dialog.tsx", "src/components/alert-dialog.tsx", "src/components/drawer.tsx"],
+    outer: "xl",
+    gap: 16,
+    shows: ["p-inset"],
+    why: "Dialog, Alert dialog and Drawer (modalSurface): xl, 16px inset",
+  },
+  {
+    files: ["src/components/popover.tsx"],
+    outer: "lg",
+    gap: 16,
+    shows: ["rounded-lg", "p-inset"],
+    why: "Popover: lg, 16px inset",
+  },
 ];
 
 describe("containers set --nested-corner (AVE-211)", () => {
-  for (const { file, outer, gap, variant = "", why } of CONTAINERS) {
+  test("p-inset is 16px", async () => {
+    expect(await Bun.file("src/styles/avenue.css").text()).toContain("--spacing-inset: 1rem;");
+  });
+
+  for (const { files, outer, gap, shows, variant = "", why } of CONTAINERS) {
     test(why, async () => {
-      const source = await Bun.file(file).text();
-      expect(source).toContain(` ${variant}[--nested-corner:var(--radius-${nestedCorner(outer, gap)})]`.trimStart());
+      const sources = await Promise.all(files.map((file) => Bun.file(file).text()));
+      // The first file holds the inset (and the variable); each component file draws the corner (the modals each
+      // set their own, Drawer per side: rounded-r-xl).
+      for (const cls of shows.filter((c) => !c.startsWith("rounded-"))) expect(sources[0]).toContain(cls);
+      const drawers = sources.length > 1 ? sources.slice(1) : sources;
+      for (const source of drawers) expect(source).toMatch(new RegExp(`rounded(?:-[a-z]{1,2})?-${outer}\\b`));
+      expect(sources[0]).toContain(`${variant}[--nested-corner:var(--radius-${nestedCorner(outer, gap)})]`);
     });
   }
 });
