@@ -55,6 +55,7 @@ import type * as selectionBar from "#avenue/components/selection-bar";
 import type * as skeleton from "#avenue/components/skeleton";
 import type * as statusBar from "#avenue/components/status-bar";
 import type * as status from "#avenue/components/status";
+import type * as swipeList from "#avenue/components/swipe-list";
 import type * as switchControl from "#avenue/components/switch";
 import type * as table from "#avenue/components/table";
 import type * as tableFilter from "#avenue/components/table-filter";
@@ -119,6 +120,7 @@ export type Modules = {
   "skeleton": typeof skeleton;
   "status-bar": typeof statusBar;
   "status": typeof status;
+  "swipe-list": typeof swipeList;
   "switch": typeof switchControl;
   "table": typeof table;
   "table-filter": typeof tableFilter;
