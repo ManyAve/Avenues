@@ -1,10 +1,10 @@
-// Avenue's own story tests run the checks in src/checks after each Components, Composites and Overview story
+// Avenue's own story tests run the checks in src/checks after each Components, Composites, Overview and Scenes story
 // (.storybook/preview.tsx). Apps call the same checks from their own tests (README, "Checks for apps").
 import { nameClashes, namedControls } from "#avenue/checks/name-clash";
 import { TOUCH_TARGET, fineTargetProblems, formatTouchProblems, touchTargetProblems } from "#avenue/checks/touch-targets";
 
 /** Story groups whose stories are measured: the components and the composites built from them. */
-export const MEASURED_TITLES = ["Components/", "Composites/", "Overview"];
+export const MEASURED_TITLES = ["Components/", "Composites/", "Overview", "Scenes"];
 
 /**
  * Runs after every story. In the four mouse projects it checks hit-area sizes (fineTargetProblems); in the `touch`

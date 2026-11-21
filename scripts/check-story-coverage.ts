@@ -13,6 +13,9 @@
  *    upstream ui-sdk component needs one tagged `agent`. The story tests run those checks
  *    (.storybook/pattern-check.ts).
  *
+ * 4. AVE-213: every part tag on the Scenes page (`part("Stat", "components-stat--default")` in
+ *    src/stories/Scenes.stories.tsx) names a story in the index, so a renamed story can't leave a dead link.
+ *
  *   bun run check:story-coverage [index.json]
  */
 import { basename, resolve } from "node:path";
@@ -96,6 +99,20 @@ export function parityMapProblems(index: Index, map: Record<string, PairEntry> =
   return [...mapProblems(map, avenue, appNamed), ...openGlyphs].map((p) => `${p} (scripts/parity-pairs.ts)`);
 }
 
+/** The story ids that `part(name, id)` calls in a stories file link to. */
+export function linkedStoryIds(source: string): string[] {
+  return [...source.matchAll(/\bpart\(\s*"[^"]*",\s*"([^"]+)"\s*\)/g)].map((m) => m[1]!);
+}
+
+/** Part tags on the Scenes page that name a story the index doesn't have. */
+export function sceneLinkProblems(source: string, index: Index): string[] {
+  const linked = linkedStoryIds(source);
+  if (linked.length === 0) return ["src/stories/Scenes.stories.tsx  links no parts; the check can't find its part() tags"];
+  return linked
+    .filter((id) => index.entries[id]?.type !== "story")
+    .map((id) => `${id}  is linked from a Scenes tag (src/stories/Scenes.stories.tsx) but isn't a story`);
+}
+
 if (import.meta.main) {
   const root = resolve(import.meta.dir, "..");
   const path = resolve(root, process.argv[2] ?? "storybook-static/index.json");
@@ -116,9 +133,12 @@ if (import.meta.main) {
   for (const p of problems) console.log(p);
   const parity = parityMapProblems(index);
   for (const p of parity) console.log(p);
+  const scenes = sceneLinkProblems(await Bun.file(resolve(root, "src/stories/Scenes.stories.tsx")).text(), index);
+  for (const p of scenes) console.log(p);
 
   console.log(`${stories} stories, ${missing.length} left out of the story tests.`);
   console.log(`${components.length} components, ${problems.length} pattern coverage problems.`);
   console.log(`${Object.keys(PAIRS).length} parity map entries, ${parity.length} parity map problems.`);
-  process.exit(missing.length + problems.length + parity.length > 0 ? 1 : 0);
+  console.log(`${linkedStoryIds(await Bun.file(resolve(root, "src/stories/Scenes.stories.tsx")).text()).length} Scenes part links, ${scenes.length} dead.`);
+  process.exit(missing.length + problems.length + parity.length + scenes.length > 0 ? 1 : 0);
 }
