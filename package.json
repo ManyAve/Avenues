@@ -51,6 +51,7 @@
     "visual:diff": "bun scripts/visual-diff.ts",
     "parity": "bun scripts/parity.ts",
     "ui-sdk:css": "bun scripts/ui-sdk-css.ts",
+    "ui-sdk:skill": "bun scripts/ui-sdk-skill.ts",
     "shadcn:css": "bun scripts/shadcn-css.ts",
     "deploy": "bun run build-storybook && bun scripts/stamp-version.ts && cf deploy storybook-static",
     "check": "bun run typecheck && bun run lint && bun run test:scripts && bun run test:stories && bun run build-storybook && bun run check:story-coverage"

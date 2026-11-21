@@ -21,8 +21,8 @@ points here.
 ## ui-sdk
 
 Before using ui-sdk, follow the ui-sdk skill (installed at `.agents/skills/ui-sdk`, linked into
-`.claude/skills`; the copy at `node_modules/@ui-sdk/core/skills/ui-sdk/SKILL.md` matches the installed
-version, so prefer it if the two ever differ), and read `node_modules/@ui-sdk/react/docs/llms.txt`,
+`.claude/skills`, a copy of the installed `@ui-sdk/core`'s `skills/ui-sdk`: after upgrading `@ui-sdk/core`, run
+`bun run ui-sdk:skill`; `bun run test:scripts` fails until you do), and read `node_modules/@ui-sdk/react/docs/llms.txt`,
 then the page of each component you use (`docs/components/<name>.md`). To build a new component, also
 search `node_modules/@ui-sdk/react/docs/core.md` by heading (it is over 300 KB; don't read it whole),
 and read `rendering.md` next to it. ui-sdk is a beta: trust the installed docs and `.d.ts` types over
@@ -163,7 +163,11 @@ After changing a patch or editing `node_modules/@ui-sdk` to try one, delete both
    `on<Key>Change` callbacks, not DOM listeners; what a popup shows comes from its payload or state,
    not a trigger's `onClick`; anything an agent must not do alone (delete, pay, send) carries
    `data-agent-confirm="<what it does>"`, and fields an agent may fill but not read carry
-   `data-agent-secret`. `Foundations/Agents` in Storybook is the worked example and its play function
+   `data-agent-secret` (ui-sdk already treats password, card and one-time-code fields as secret), and a region an agent
+   must not see or touch carries `data-agent-hidden`; an own primitive that only matters in some states says so with
+   the agent key's `shown` (a field wrapper only while it has errors); and a part whose handler awaits before changing
+   state wraps that change in `withSource(source, …)` from `@ui-sdk/react/observe`, so the change stays the agent's
+   (or the person's) and `createHistory`'s `undoSource("agent")` can take it back. `Foundations/Agents` in Storybook is the worked example and its play function
    is the agent test to copy. Avenue never creates the bridge itself (oxlint fails `@ui-sdk/react/agent` in
    `src/components`, `src/lib` and `src/hooks`); turning `createAgent` on in the ManyAve app is a later
    decision.
