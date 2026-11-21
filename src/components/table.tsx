@@ -15,7 +15,7 @@ function Table({ className, render, ...props }: OwnPartProps<"table">) {
     <div data-slot="table-container" className="relative w-full">
       {renderElement(
         "table",
-        mergeProps({ "data-slot": "table", className: cn("w-full caption-bottom text-sm", className) }, defined(props)),
+        mergeProps({ "data-slot": "table", className: cn("w-full caption-bottom text-sm tabular-nums", className) }, defined(props)),
         render,
       )}
     </div>

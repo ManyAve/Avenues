@@ -116,6 +116,8 @@ const SEARCH: Allowance[] = [
   { prop: "padding-right", app: "10px", avenue: "8px", because: GRID_10_TO_8 },
   { prop: "width", because: GRID_10_TO_8 },
   { prop: "border-*-radius", app: "3px", avenue: "4px", because: "AVE-2 §3: the shortcut hint's 3px literal becomes the xs corner, 4px" },
+  { prop: "font-family", because: "AVE-210: the shortcut hint is a Kbd, in the mono face" },
+  { prop: "border-*-color", because: "AVE-210: the shortcut hint is a Kbd, inside the faint border-floating edge (AVE-208)" },
 ];
 // AVE-99: in dark the app's outline button takes the page colour, darker than the card it sits on.
 const OUTLINE_DARK_FILL: Allowance = {
@@ -751,6 +753,13 @@ export const PAIRS: Record<string, PairEntry> = {
   ),
 
   // ---- Skeleton (AVE-128)
+  ...Object.fromEntries(
+    ["default", "signed-money", "hero", "hero-on-a-phone", "in-cards"].map((story) => [
+      `components-stat--${story}`,
+      { none: NEW_IN_AVENUE("The key figure, Stat (AVE-210)", "Money / Amounts and the type scale's display and hero steps") },
+    ]),
+  ),
+  "components-kbd--keys": { none: NEW_IN_AVENUE("Kbd, the key hint (AVE-210)", "Search input / With shortcut, where the app drew its one key hint") },
   "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
   "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
   "components-skeleton--list-rows": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },

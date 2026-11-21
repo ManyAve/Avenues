@@ -213,6 +213,8 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   },
   table: { none: "A static data table, not an interactive grid." },
   badge: { none: "Static text." },
+  stat: { none: "Static text: a figure, its unit and a label; the Stat stories test the reading order and that a Money figure keeps its spoken sign." },
+  kbd: { none: "Static text: a key hint, the kbd element." },
   money: { none: "Static text; the Money stories test that it never wraps or truncates." },
   "ask-admin": { none: "Static text that controls point aria-describedby at." },
   callout: { none: "Static text: a tinted note, not a live region." },

@@ -4,7 +4,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
-## v0.62.0 (2026-11-21)
+## v0.63.0 (2026-11-21)
 
 - **New component: NumberInput** (`@manyave/avenue/components/number-input`, AVE-204), ui-sdk's NumberInput in
   Input's look and inside a Field, for small counts typed or stepped: guests, copies, units. Minus and plus buttons sit
@@ -13,6 +13,24 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   the button is let go. `noun` names the buttons ("Increase guests"). It posts the plain number. Not for money, years,
   IDs or phone numbers, which stay text fields. Parts: `NumberInput`, `NumberInputGroup`, `NumberInputDecrement`,
   `NumberInputControl`, `NumberInputIncrement` and `NumberInputBound`. No existing component changes.
+
+## v0.62.0 (2026-11-21)
+
+- **New component: Stat** (AVE-210), for the key number that leads a page or a card: "$4,280 collected", "34 of 52
+  paid", "3 open requests". `@manyave/avenue/components/stat` is a root and parts: `Stat`, `StatValue` (the figure,
+  at `text-display` in the heading weight, tracked at −0.02em, tabular digits), `StatUnit` ("of 52": `text-compact`,
+  muted, on the figure's baseline) and `StatLabel` (below, `text-meta`, muted). `size="lg"` is a page's hero figure:
+  `text-hero` from the small breakpoint up, `text-display` on phones (AVE-189). A money figure is a `Money` inside
+  `StatValue`, so its sign and spoken name ("minus $120.00") stay Money's; there it draws in the text face rather
+  than mono. Money itself doesn't change.
+- **New component: Kbd** (`@manyave/avenue/components/kbd`), a key in a shortcut hint: the `kbd` element in the mono
+  face at `text-meta`, inside the faint `border-floating` edge (AVE-208). SearchInput's "/" hint is now a Kbd, so it
+  draws in mono with the floating edge instead of `border`. Menu and tooltip shortcuts (AVE-194) stay plain
+  text at the end of the row: a box around each key would crowd a menu row and sits badly on the dark tooltip.
+- **Numbers line up in columns**: Table, Register, DetailList and ListItem set `tabular-nums`, so digits in a column
+  keep one width (Money, Count, the Progress value and the Dock's badge already did). Digits in those parts shift by
+  a pixel or two (a 1 is as wide as an 8 now); nothing else moves.
+
 
 ## v0.61.0 (2026-11-21)
 
@@ -43,6 +61,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   and in any order ("court 3" marks both in "3 Quill Court"). For the eye only: the marks are plain spans, not
   `<mark>`, so each option's name is still its plain text. A list that hasn't been searched looks as before; a
   searched one now shows the marks, in Combobox, the one-tag multi-pick and TableFilters' long lists.
+
 ## v0.59.0 (2026-11-21)
 
 - **Menus and tooltips write a shortcut the way each computer does** (AVE-194). `MenuItem` takes ui-sdk's `shortcut`
