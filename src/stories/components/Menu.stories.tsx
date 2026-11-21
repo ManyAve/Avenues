@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { ChevronDownIcon, MailIcon, PrinterIcon, TrashIcon } from "lucide-react";
+import { useLayoutEffect, useState, type ReactNode } from "react";
+import { ariaKeyshortcuts, useShortcut } from "@ui-sdk/react/shortcuts";
+import { setPlatform } from "@ui-sdk/core/testing";
+import { ChevronDownIcon, CopyIcon, MailIcon, PrinterIcon, TrashIcon } from "lucide-react";
 import { expect, fn, screen, userEvent, waitFor } from "storybook/test";
 import { Button } from "#avenue/components/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#avenue/components/table";
@@ -211,6 +213,102 @@ export const ActionFromKeyboard: Story = {
     await expect(printed).toHaveBeenCalledTimes(4);
     await expect(status).toHaveTextContent("Printed statement, Printed statement, Emailed owner, Printed statement");
   },
+};
+
+type Platform = "apple" | "other";
+
+/**
+ * Draws its children as on a Mac or elsewhere: ui-sdk reads the platform for the whole page, so the story sets it
+ * before its menu renders and puts back what the browser said when it unmounts.
+ */
+function AsPlatform({ platform, children }: { platform: Platform; children: ReactNode }) {
+  const [was] = useState<Platform>(() => {
+    const detected = ariaKeyshortcuts("mod+a").startsWith("Meta") ? "apple" : "other";
+    setPlatform(platform);
+    return detected;
+  });
+  useLayoutEffect(() => () => setPlatform(was), [was]);
+  return children;
+}
+
+function DuplicateMenu() {
+  const [log, setLog] = useState<string[]>([]);
+  const record = (what: string) => setLog((entries) => [...entries, what]);
+  // A menu drawn from parts only shows its keys; the action binds them where it lives.
+  useShortcut("mod+d", () => record("Duplicated by keys"), { description: "Duplicate the household" });
+  return (
+    <div className="flex flex-col items-center gap-group">
+      <Menu>
+        <MenuTrigger render={<Button variant="outline" />}>
+          Household
+          <ChevronDownIcon aria-hidden data-icon="inline-end" />
+        </MenuTrigger>
+        <MenuContent className="w-56">
+          <MenuItem shortcut="mod+d" onSelect={() => record("Duplicated from the menu")}>
+            <CopyIcon aria-hidden />
+            Duplicate
+          </MenuItem>
+          <MenuItem shortcut="mod+shift+p" onSelect={() => record("Printed")}>
+            <PrinterIcon aria-hidden />
+            Print statement
+          </MenuItem>
+        </MenuContent>
+      </Menu>
+      <output className="block text-meta text-muted-foreground">
+        {log.length > 0 ? log.join(", ") : "No action yet"}
+      </output>
+    </div>
+  );
+}
+
+const ISOLATES = /[\u2066-\u2069]/g;
+
+/** Presses the shortcut, opens the menu by keyboard, and reads what each item shows and tells a screen reader. */
+const pressAndRead = (platform: Platform): NonNullable<Story["play"]> =>
+  async ({ canvas }) => {
+    const apple = platform === "apple";
+    const trigger = canvas.getByRole("button", { name: "Household" });
+    const status = canvas.getByRole("status");
+    await userEvent.tab();
+    await expect(trigger).toHaveFocus();
+    await userEvent.keyboard(apple ? "{Meta>}d{/Meta}" : "{Control>}d{/Control}");
+    await waitFor(() => expect(status).toHaveTextContent("Duplicated by keys"));
+
+    await userEvent.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu");
+    const duplicate = screen.getByRole("menuitem", { name: "Duplicate" });
+    await waitFor(() => expect(duplicate).toHaveFocus());
+    const print = screen.getByRole("menuitem", { name: "Print statement" });
+    await expect(duplicate).toHaveAttribute("aria-keyshortcuts", apple ? "Meta+D" : "Control+D");
+    await expect(print).toHaveAttribute("aria-keyshortcuts", apple ? "Meta+Shift+P" : "Control+Shift+P");
+    const keys = [...menu.querySelectorAll("[role=menuitem] > [aria-hidden]:not(svg)")];
+    await expect(keys.map((key) => key.textContent?.replace(ISOLATES, ""))).toEqual(
+      apple ? ["⌘D", "⌘⇧P"] : ["Ctrl+D", "Ctrl+Shift+P"],
+    );
+    for (const key of keys) await expect(key).toHaveAttribute("aria-hidden", "true");
+
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+    await expect(status).toHaveTextContent("Duplicated by keys, Duplicated from the menu");
+  };
+
+/**
+ * The same menu on a Mac (AVE-194): an item's `shortcut="mod+d"` reads ⌘D, and the item tells a screen reader
+ * Meta+D. ⌘D duplicates from anywhere on the page; the menu runs the same action.
+ */
+export const ShortcutsOnAMac: Story = {
+  tags: ["agent"],
+  decorators: [(Story) => <AsPlatform platform="apple">{Story()}</AsPlatform>],
+  render: () => <DuplicateMenu />,
+  play: pressAndRead("apple"),
+};
+
+/** The same menu off a Mac: Ctrl+D, and Control+D for a screen reader. */
+export const ShortcutsElsewhere: Story = {
+  tags: ["agent"],
+  decorators: [(Story) => <AsPlatform platform="other">{Story()}</AsPlatform>],
+  render: () => <DuplicateMenu />,
+  play: pressAndRead("other"),
 };
 
 /**

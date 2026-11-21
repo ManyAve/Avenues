@@ -52,6 +52,21 @@ function TooltipContent({
 }
 
 /**
+ * The keys of the trigger's action, inside the tooltip: give the Tooltip ui-sdk's `shortcut` (`"mod+s"`) and ui-sdk
+ * writes it the way the computer does (⌘S on a Mac, Ctrl+S elsewhere), hides it from screen readers and puts
+ * `aria-keyshortcuts` on the trigger (AVE-194). The tooltip only shows the keys: bind them with the trigger's own
+ * `shortcut` or ui-sdk's `useShortcut`. Its own `shortcut` shows other keys.
+ */
+function TooltipShortcut({ className, ...props }: Loose<ComponentProps<typeof TooltipPrimitive.TooltipShortcut>>) {
+  return (
+    <TooltipPrimitive.TooltipShortcut
+      className={cn("tracking-widest text-background/70", className)}
+      {...defined(props)}
+    />
+  );
+}
+
+/**
  * Help text for something that isn't itself a control, such as a status label. Renders a small focusable help
  * button that shows the text on hover, on keyboard focus and on a press or tap (pressing again closes it; Esc or a
  * press elsewhere closes it too). `label` is the button's accessible name and the tooltip describes it, so a screen
@@ -91,4 +106,4 @@ function InfoTip({
   );
 }
 
-export { InfoTip, Tooltip, TooltipContent, TooltipTrigger };
+export { InfoTip, Tooltip, TooltipContent, TooltipShortcut, TooltipTrigger };
