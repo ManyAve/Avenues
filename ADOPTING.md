@@ -546,6 +546,35 @@ behind the row and the row's menu:
 - Needs a `ToastProvider` above it. Set the rows' surface with `contentClassName` (`bg-card` inside a card).
 - Not yet checked on a device: whether VoiceOver's own swipes and the row's get in each other's way (AVE-199).
 
+## Pull a list down to refresh it (AVE-200)
+
+`@manyave/avenue/components/pull-to-refresh` lets a finger pull a list down from its top to reload it, which an app
+installed on a phone's home screen otherwise lacks. `onRefresh` returns the reload's Promise; the spinner, the Refresh
+button and the status line follow it:
+
+```tsx
+<PullToRefresh onRefresh={() => refetchNotices()}>
+  <header className="flex items-center justify-between">
+    <div>
+      <h1>Notices</h1>
+      <PullToRefreshStatus />
+    </div>
+    <PullToRefreshTrigger size="sm" />
+  </header>
+  <PullToRefreshContent>{/* the list */}</PullToRefreshContent>
+</PullToRefresh>
+```
+
+- **Keep the Refresh button.** It is the way for keyboards, screen readers, a mouse and agents, phones too. In a page
+  menu instead, call `usePullToRefresh().refresh()` from a `MenuItem` inside the `PullToRefresh`.
+- **Only a finger pulls, only from the top**: the list and the page must be scrolled to their top and the finger must
+  move down first, so a scroll is never caught. With a mouse nothing moves.
+- **The status line always says how it ended**: "Updated", or the sentence the Promise rejects with ("Couldn't refresh.
+  Try again." when it has none). Make it `className="sr-only"` if the screen has no room; don't leave it out.
+- Under reduced motion the list doesn't move or spring: a plain line along its top fills with the pull and shows the
+  loading.
+- Not yet checked on a device: an iPhone and an Android phone with the app installed (AVE-200).
+
 ## Dates and times (AVE-202)
 
 Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a
