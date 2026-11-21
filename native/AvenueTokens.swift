@@ -316,6 +316,7 @@ public enum AvenueTokens {
         public static let title = TextStep(size: 20, lineHeight: 28)
         public static let heading = TextStep(size: 24, lineHeight: 30)
         public static let display = TextStep(size: 32, lineHeight: 40)
+        public static let hero = TextStep(size: 48, lineHeight: 56)
     }
 
     /// Corner radii, in points. Pills use a capsule.

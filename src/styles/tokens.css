@@ -58,7 +58,7 @@
   --color-grape-900: oklch(19.62% 0.03 298.9);
   --color-grape-950: oklch(16.53% 0.023 300.57);
 
-  /* App UI type scale: six steps, 14px floor. */
+  /* App UI type scale: eight steps, 14px floor. */
   --text-meta: 0.875rem;
   --text-meta--line-height: 1.25rem;
   --text-compact: 1rem;
@@ -72,8 +72,12 @@
 
   --text-heading: 1.5rem; /* kept: a step in the type scale */
   --text-heading--line-height: 1.875rem;
-  --text-display: 2rem; /* kept: a step in the type scale, its top */
+  --text-display: 2rem; /* kept: a step in the type scale */
   --text-display--line-height: 2.5rem;
+  /* The one big line at the top of an expressive page (a hub's title, a profile's name, a marketing hero), from a
+     tablet up; on a phone the same line takes display. Tighter than display: big type needs less leading (AVE-189). */
+  --text-hero: 3rem; /* kept: a step in the type scale, its top; Neighbors' heroes read it, Avenue's components don't */
+  --text-hero--line-height: 3.5rem;
 
   /* Public-site preview (Georgia) keeps its own display scale; body and meta reuse the steps above.
      kept: deprecated (AVE-184). Only Management's public site draws these, so they belong there as its own site-* sizes

@@ -54,13 +54,13 @@ export const scaleClassPatterns = [
     // Type sizes come from the scale (tokens.css): a size typed in skips it, and 11px to 13px break the 14px floor.
     pattern: "(?:^|:)text-\\[\\d*\\.?\\d+(?:px|rem|em)\\](?:/\\S+)?!?$",
     message:
-      "a literal type size. Use a step: text-meta (14px), text-control (14px in controls), text-compact (16px), text-post (18px), text-title (20px), text-heading (24px), text-display (32px). Nothing goes under 14px (AVE-184).",
+      "a literal type size. Use a step: text-meta (14px), text-control (14px in controls), text-compact (16px), text-post (18px), text-title (20px), text-heading (24px), text-display (32px), text-hero (48px, a page's hero line from sm up). Nothing goes under 14px (AVE-184).",
   },
   {
     // Tailwind's sizes past text-base aren't Avenue's steps, even where one matches a step's size today (text-lg, text-post).
     pattern: "(?:^|:)text-(?:lg|[2-9]?xl)(?:/\\S+)?!?$",
     message:
-      "a Tailwind type size outside Avenue's scale. Use text-post (18px), text-title (20px), text-heading (24px) or text-display (32px) (AVE-184).",
+      "a Tailwind type size outside Avenue's scale. Use text-post (18px), text-title (20px), text-heading (24px), text-display (32px) or text-hero (48px, a page's hero line from sm up) (AVE-184, AVE-189).",
   },
   {
     pattern: "(?:^|:)font-\\[\\d+\\]!?$",

@@ -4,6 +4,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.48.0 (2026-11-21)
+
+- **A hero step at the top of the type scale** (AVE-189). New size `text-hero`: 48px on a 56px line, for the one big
+  line at the top of an expressive page, from a tablet up. On a phone that line takes `text-display` (32px), so write
+  `text-display sm:text-hero`. The class rules accept it, `cn` knows it, Tokens and Foundations › Typography show it,
+  and the native tokens export it (`TypeScale.hero`). No Avenue component uses it. ADOPTING.md, "Page heroes", has
+  what Neighbors moves (NEI-326's AVE-189 literals):
+  - the hub title and the pet profile name (36px, 48px from `sm`) and the neighbor profile name (36px) take
+    `text-display sm:text-hero` and drop `leading-tight`: 4px smaller on a phone, and the neighbor profile now grows
+    from `sm` like the pet profile;
+  - the Welcome hero (32px, 48px from `md`) takes `text-display md:text-hero`: the same sizes, on a 56px line (was 48px);
+  - the 404 and 401 numbers (60px) take `text-hero`, 48px;
+  - the door code (36px mono) is not a hero and keeps its commented literal, with its reason.
+
 ## v0.47.0 (2026-11-21)
 
 - **A layer for a sticky toolbar, tab bar or page header** (AVE-187, AVE-188). New utility `z-sticky-bar` (20),

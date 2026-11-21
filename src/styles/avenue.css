@@ -38,6 +38,8 @@
   --text-heading--line-height: var(--text-heading--line-height);
   --text-display: var(--text-display);
   --text-display--line-height: var(--text-display--line-height);
+  --text-hero: var(--text-hero);
+  --text-hero--line-height: var(--text-hero--line-height);
   /* Public-site preview (Georgia) display sizes (AVE-178). No line height of their own: each place sets its own
      (hero 1.1, card 1.35 or 1.4 in the app), so a class inherits it or takes a leading-* beside it.
      kept: deprecated (AVE-184, tokens.css); removed once both apps have moved off them. */

@@ -350,8 +350,8 @@ message names the class to use:
 
 | Rule | Fails on | Write instead |
 | --- | --- | --- |
-| `no-restricted-classes` | `text-[11px]`, `text-[1.75rem]` | a step of the type scale: `text-meta` (14px) to `text-display` (32px); nothing under 14px |
-| `no-restricted-classes` | `text-lg` to `text-9xl` | `text-post`, `text-title`, `text-heading`, `text-display` (`text-xs`, `text-sm` and `text-base` stay) |
+| `no-restricted-classes` | `text-[11px]`, `text-[1.75rem]` | a step of the type scale: `text-meta` (14px) to `text-display` (32px), and `text-hero` (48px) for a page's hero line; nothing under 14px |
+| `no-restricted-classes` | `text-lg` to `text-9xl` | `text-post`, `text-title`, `text-heading`, `text-display`, `text-hero` (`text-xs`, `text-sm` and `text-base` stay) |
 | `no-restricted-classes` | `font-[550]` and any `font-[NNN]` | the weights under "Weights, durations and layers" below |
 | `no-restricted-classes` | `shadow`, `shadow-xs` to `shadow-2xl` | `shadow-control`, `shadow-card`, `shadow-popover` |
 | `no-restricted-classes` | `z-20` and up, `z-[60]`, `-z-[1]` | a layer name; a local order under `isolate` keeps a bare number under 20 (`z-1`, `-z-1`, `focus:z-10`) |
@@ -363,6 +363,23 @@ message names the class to use:
 
 A deliberate exception (a story's "don't", a one-place value such as the top bar's 650 wordmark) keeps its literal
 with `// oxlint-disable-next-line <rule>` and a comment that says why.
+
+### Page heroes (AVE-189, v0.48.0)
+
+`text-hero` (48px on a 56px line) is the top of the type scale: the one big line at the top of an expressive page,
+once per page, from `sm` up. A phone draws that line at `text-display`. Neighbors' literals that pointed at AVE-189:
+
+| Where | Today | Write instead |
+| --- | --- | --- |
+| Hub page title | `text-4xl leading-tight sm:text-5xl` | `text-display sm:text-hero` |
+| Pet profile name | `text-4xl leading-tight sm:text-5xl` | `text-display sm:text-hero` |
+| Neighbor profile name | `text-4xl leading-tight` | `text-display sm:text-hero` (now grows from `sm`, like the pet profile) |
+| Welcome hero | `text-display md:text-5xl` | `text-display md:text-hero` |
+| 404 and 401 numbers | `text-6xl` | `text-hero` |
+| Door code | `font-mono text-4xl` | unchanged: one use, a code read off a phone or a flyer, not a hero. Keep the literal and its disable comment, with that reason. |
+
+Each move is an intended visual change: phones lose 4px on the hub and profile titles, the 404 and 401 numbers drop
+from 60px to 48px, and lines at 48px sit on 56px (was 60px under `leading-tight`, 48px under `text-5xl`).
 
 Both apps fail these today: a probe of Management's `main` and Neighbors' `production` on 2026-11-20 found about 320
 hits in Management (178 weights, 63 scale literals, 30 type sizes, 22 layers) and about 126 in Neighbors (76 Tailwind
