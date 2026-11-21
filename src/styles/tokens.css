@@ -123,10 +123,14 @@
      Combobox). Its own job, not secondary text, though light shares its grey: at least 2:1 from typed text and 4.5:1 on
      the field, page and card, in light, dark and lifted (scripts/surface-contrast.test.ts). */
   --placeholder: var(--color-onyx-700);
-  /* The highlighted or hovered item in a list (AVE-209): Menu, Select, Combobox and Calendar's days. Primary mixed 7% into
+  /* The highlighted or hovered item in a list (AVE-209): Menu, Select, Combobox and Calendar's days. Primary mixed into
      the popover in oklab, so the one colour in a list means "you're here"; its text stays neutral ink. Clearly lighter
-     than primary-subtle, the chosen look (AVE-50), which it must never pass for (ΔE 7.0 apart in light, 8.1 in dark). */
-  --accent: oklch(0.961 0.007 297.84);
+     than primary-subtle, the chosen look (AVE-50), which it must never pass for (ΔE 7.0 apart in light, 8.1 in dark).
+     Mixed into var(--popover), not a fixed white (AVE-215), so it follows the popover an app sets: on an off-white one
+     (Neighbors' onyx-25) a white-based tint sat under the 3.0 floor off the card. Declare --popover where --accent is
+     declared (:root, or the .dark element), since a custom property resolves its var()s there. 7.2%, not 7%: it draws
+     the pixels v0.53.0 shipped on white (its rounded literal); 7% is one step redder. */
+  --accent: color-mix(in oklab, var(--primary) 7.2%, var(--popover));
   --accent-foreground: var(--color-onyx-900);
   /* A quiet neutral shape a step off its surface (AVE-209): a skeleton, a progress track, a quoted reply, the composer's
      reply banner and an outline button's dark hover. accent's grey until AVE-209 tinted accent; these stay neutral.
@@ -226,7 +230,7 @@
   /* AVE-186: muted-foreground is only 1.72:1 from typed text here, so an example could pass for a value. */
   --placeholder: var(--color-onyx-400);
   /* 10% in dark, not 7%: at 7% the tint sat closer to the popover (ΔE 3.2) than the grey it replaces (4.2). */
-  --accent: oklch(0.268 0.022 289.71);
+  --accent: color-mix(in oklab, var(--primary) 10%, var(--popover));
   --accent-foreground: var(--color-onyx-100);
   --fill: var(--color-onyx-750);
 
