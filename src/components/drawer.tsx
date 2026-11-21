@@ -1,7 +1,7 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
 import * as DrawerPrimitive from "@ui-sdk/react/drawer";
 import { XIcon } from "lucide-react";
-import type { ComponentProps } from "react";
+import { createContext, use, type ComponentProps } from "react";
 import { Button } from "#avenue/components/button";
 import { modalCloseButton, modalDescription, modalSurface, modalTitle, sheetHandle } from "#avenue/lib/popup";
 import { cn } from "#avenue/lib/utils";
@@ -19,12 +19,25 @@ import { defined, type Loose, type NodeChildren, type OwnPartProps } from "#aven
  * Unsaved changes: cancel the close in `onOpenChange` while the form is dirty and ask "Discard changes?" in the sheet
  * (the Unsaved changes story). That covers the Close button too, which `dismissible={false}` alone does not.
  *
+ * Resting heights (AVE-191): pass ui-sdk's `snapPoints`, like `[0.25, 0.5, 1]` for peek, half and full, with
+ * `defaultSnapPoint` for where it opens. With more than one, a bottom sheet's handle becomes ui-sdk's `DrawerHandle`, a
+ * button named "Resize": a press moves to the next height, the arrow keys step, Home and End go to the ends. With one
+ * (the default, the sheet's own size) the handle stays a decorative bar, as ui-sdk advises. `modalAbove` leaves the page
+ * behind usable and undimmed while the sheet rests at or below that point, like a map under a sheet of results.
+ *
  * For a list of options on a phone, don't build a sheet: Select and Combobox present as this same bottom sheet on a phone
  * by themselves (`presentation`, AVE-39).
  */
 function Drawer({ side = "bottom", ...props }: Loose<ComponentProps<typeof DrawerPrimitive.Drawer>>) {
-  return <DrawerPrimitive.Drawer side={side} {...defined(props)} />;
+  return (
+    <Resizable value={(props.snapPoints?.length ?? 0) > 1}>
+      <DrawerPrimitive.Drawer side={side} {...defined(props)} />
+    </Resizable>
+  );
 }
+
+/** Whether the sheet has more than one resting height, so its handle is a control rather than decoration. */
+const Resizable = createContext(false);
 
 function DrawerTrigger(props: Loose<ComponentProps<typeof DrawerPrimitive.DrawerTrigger>>) {
   return <DrawerPrimitive.DrawerTrigger {...defined(props)} />;
@@ -46,7 +59,8 @@ function DrawerBackdrop({ className, ...props }: Loose<ComponentProps<typeof Dra
 
 /**
  * The sheet. A bottom sheet rounds only its top corners (xl, 14px) and shows a drag handle; a side sheet is full height
- * and rounds only its inner edge. The drawer owns `translate`, so nothing here animates it; with reduced motion the
+ * and rounds only its inner edge. With more than one snap point the handle is ui-sdk's `DrawerHandle`, drawn the same
+ * (see Drawer). The drawer owns `translate`, so nothing here animates it; with reduced motion the
  * drawer fades instead of sliding.
  */
 function DrawerContent({
@@ -55,6 +69,7 @@ function DrawerContent({
   showCloseButton = true,
   ...props
 }: NodeChildren<Loose<ComponentProps<typeof DrawerPrimitive.DrawerContent>>> & { showCloseButton?: boolean | undefined }) {
+  const resizable = use(Resizable);
   return (
     <>
       <DrawerBackdrop />
@@ -73,12 +88,23 @@ function DrawerContent({
         )}
         {...defined(props)}
       >
-        {/* Decorative: the drawer drags from anywhere on the sheet, and the Close button and Esc always close it. */}
-        <div
-          data-slot="sheet-handle"
-          aria-hidden
-          className={cn(sheetHandle, "hidden group-data-[side=bottom]/sheet:block")}
-        />
+        {resizable ? (
+          // Drawn as the bar below; its hit area reaches past it, and the ring shows only for the keyboard.
+          <DrawerPrimitive.DrawerHandle
+            aria-label="Resize"
+            className={cn(
+              sheetHandle,
+              "relative hit-area hidden outline-none group-data-[side=bottom]/sheet:block focus-visible:ring-3 focus-visible:ring-ring/50",
+            )}
+          />
+        ) : (
+          // Decorative: the drawer drags from anywhere on the sheet, and the Close button and Esc always close it.
+          <div
+            data-slot="sheet-handle"
+            aria-hidden
+            className={cn(sheetHandle, "hidden group-data-[side=bottom]/sheet:block")}
+          />
+        )}
         {children}
         {showCloseButton && (
           <DrawerPrimitive.DrawerClose

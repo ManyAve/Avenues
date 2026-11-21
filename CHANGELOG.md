@@ -4,6 +4,17 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.50.0 (2026-11-21)
+
+- **A bottom sheet can rest at peek, half and full** (AVE-191). Pass ui-sdk's `snapPoints` to `Drawer`, like
+  `[0.25, 0.5, 1]`, with `defaultSnapPoint` for where it opens; give `DrawerContent` a height (`h-[85dvh]`) when full
+  should mean the sheet's whole limit. With more than one snap point the handle is ui-sdk's `DrawerHandle`, a button
+  named "Resize": a press moves to the next height, the arrow keys step, Home and End go to the ends, and screen
+  readers on phones adjust it like a slider. `modalAbove` leaves the page behind usable and undimmed while the sheet
+  rests at or below that point. A sheet with one height (every sheet today) keeps the decorative bar, as ui-sdk
+  advises, so nothing changes for the apps until they pass `snapPoints`. Stories: Drawer › Resting heights, Page
+  usable at peek.
+
 ## v0.49.0 (2026-11-21)
 
 - **An agent's changes can be undone as a whole** (AVE-214). An app that turns on ui-sdk's agent bridge and
