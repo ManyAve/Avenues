@@ -9,11 +9,11 @@
  * Colours resolve the cascade the way a browser does (light = :root then :root:not(.dark); dark = :root, .dark, then
  * :root.dark) and convert OKLCH to sRGB with culori, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
  * which are points on iOS and dp (sp for text) on Android. Spacing takes the phone (coarse pointer) and narrow-screen
- * values, since that's where the apps run. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
+ * values, since that's where the apps run. A translucent role (dark border and input) is laid over the card. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
  * phones draw elevation and selection with the platform's own.
  */
 import { resolve } from "node:path";
-import { formatHex, interpolate, parse, type Color } from "culori";
+import { converter, formatHex, interpolate, parse, type Color } from "culori";
 import { readDeclarations, type Declaration } from "./css-tokens";
 
 export const root = resolve(import.meta.dir, "..");
@@ -179,12 +179,25 @@ export function toColour(value: string): Color {
     const weighted = first && /^(.*\S)\s+([\d.]+)%$/s.exec(first);
     if (!weighted?.[1] || !weighted[2] || !second) throw new Error(`Unsupported color-mix: ${value}`);
     const share = Number.parseFloat(weighted[2]) / 100;
+    // Mixed with transparent, a browser premultiplies: the colour itself at that alpha (dark border and input, AVE-211),
+    // not a blend toward transparent's black.
+    if (second === "transparent") return { ...toColour(weighted[1]), alpha: share };
     return interpolate([toColour(weighted[1]), toColour(second)], "oklab")(1 - share);
   }
   const color = parse(value);
   if (!color) throw new Error(`Not a colour: ${value}`);
   return color;
 }
+
+/** `top` over the opaque `under` in sRGB, as a browser paints a translucent colour. An opaque `top` comes back as it is. */
+export function over(top: Color, under: Color): Color {
+  const a = top.alpha ?? 1;
+  if (a >= 1) return top;
+  const [t, u] = [toRgbColour(top), toRgbColour(under)];
+  const mix = (k: "r" | "g" | "b") => a * t[k] + (1 - a) * u[k];
+  return { mode: "rgb", r: mix("r"), g: mix("g"), b: mix("b") };
+}
+const toRgbColour = converter("rgb");
 
 /** A CSS colour (`oklch(...)` or Avenue's `color-mix`) to sRGB `#rrggbb`, clipping each channel to the sRGB gamut as a browser does. */
 export function toHex(value: string): string {
@@ -214,7 +227,10 @@ export function buildTokens(tokensCss: string, avenueCss: string): NativeTokens 
   const tints = readTints(avenue);
   const colors = (vars: Vars) => {
     const out: Record<string, string> = {};
-    for (const role of COLOR_ROLES) out[role] = toHex(substitute(`var(--${role})`, vars));
+    // Phone colours are opaque. A translucent role (dark border and input, AVE-211) is laid over the card, where the
+    // phone apps draw their lines and fields.
+    const card = toColour(substitute("var(--card)", vars));
+    for (const role of COLOR_ROLES) out[role] = formatHex(over(toColour(substitute(`var(--${role})`, vars)), card));
     for (const [tint, [hue, k]] of Object.entries(tints)) {
       for (const part of ["bg", "fg", "solid"] as const) {
         const l = substitute(`var(--tint-${part}-l)`, vars);

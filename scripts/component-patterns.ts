@@ -212,6 +212,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   "section-card": { none: "Layout: a Card with a level-2 heading and one action." },
   "detail-list": { none: "A description list and list rows, static text." },
   card: { none: "Layout only." },
+  well: { none: "Layout: a fill that groups rows (AVE-211); its rows' controls carry their own proof." },
   "choice-card": {
     none: "Composition over Field and ui-sdk's Radio or Checkbox; it changes no keys or ARIA beyond naming the control by its title, which the Choice card stories assert.",
   },

@@ -13,6 +13,9 @@ import { cn } from "#avenue/lib/utils";
  *
  * The header keeps 8px between the title and its action where the app has 4px (AVE-57): AVE-2 section 1 keeps 4px
  * for an icon beside its own label, and separate things in a row sit 8px apart.
+ *
+ * Nested corners (AVE-211, src/lib/corners.ts): a part inside takes `rounded-nested-<corner>`, capped at xl here and at
+ * xs in an sm card (14px corner, 12px inset), so its curve runs parallel to the card's. A Well does this.
  */
 function Card({
   className,
@@ -30,7 +33,7 @@ function Card({
         "data-slot": "card",
         "data-size": scaleStep(size),
         className: cn(
-          "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-border [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+          "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-border [--card-spacing:--spacing(4)] [--nested-corner:var(--radius-xl)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:[--nested-corner:var(--radius-xs)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
           className,
         ),
       },

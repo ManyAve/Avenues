@@ -146,7 +146,8 @@
   --accent: color-mix(in oklab, var(--primary) 7.2%, var(--popover));
   --accent-foreground: var(--color-onyx-900);
   /* A quiet neutral shape a step off its surface (AVE-209): a skeleton, a progress track, a quoted reply, the composer's
-     reply banner and an outline button's dark hover. accent's grey until AVE-209 tinted accent; these stay neutral.
+     reply banner, an outline button's dark hover and a Well's grouped rows (AVE-211; not muted, which is the card's own
+     colour on a default dark card). accent's grey until AVE-209 tinted accent; these stay neutral.
      No -foreground of its own: text on it is the surface's (foreground, muted-foreground), held in surface-contrast. */
   --fill: var(--color-onyx-100);
 
@@ -324,13 +325,18 @@
   --shadow-control: 0 1px 1px 0 rgb(0 0 0 / 0.045);
 }
 
-/* Dark surfaces take the shadows and floating edge of .dark above, with quiet borders. */
+/* Dark surfaces take the shadows and floating edge of .dark above, with quiet borders.
+   border and input are white laid over whatever is under them (AVE-211), so a line reads the same on the page, a card,
+   a popover, a muted fill and a lifted surface: onyx-800 was 7.4 off the page but 4.2 off a card and 0 off lifted
+   muted. input at 15% keeps at least the contrast onyx-750 had on every surface (1.56:1 on the page, was 1.55; 1.60 on
+   a card, was 1.40), and its fills (bg-input/30, a switch's track) step the same way on a card as on the page. Floors
+   in scripts/surface-contrast.test.ts, composited as the browser paints them. */
 :root.dark {
   color-scheme: dark;
   --muted: var(--color-onyx-850);
   --fill: var(--color-onyx-800);
-  --border: var(--color-onyx-800);
-  --input: var(--color-onyx-750);
+  --border: color-mix(in oklab, white 10%, transparent);
+  --input: color-mix(in oklab, white 15%, transparent);
   --shadow-control: 0 1px 1px rgb(0 0 0 / 0.25);
 }
 

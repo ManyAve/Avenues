@@ -327,6 +327,14 @@
   }
 }
 
+/* Nested corners (AVE-211, AVE-2 section 4): `rounded-nested-lg` is a part's own corner (lg here), never rounder than
+   the container it sits in allows. Each rounded container sets `--nested-corner` to the largest corner its parts may
+   take, from its own corner and inset (src/lib/corners.ts works it out): Card xl (xs at size sm), Dialog, Alert dialog
+   and Drawer xl, Popover lg. On the page nothing sets it, so the part keeps its own corner. Adds no corner step. */
+@utility rounded-nested-* {
+  border-radius: min(--value(--radius-*), var(--nested-corner, --value(--radius-*)));
+}
+
 /* Chosen (AVE-50): the one look for a chosen thing, shared by Chip (`data-pressed:chosen`), a ToggleGroup's `choice`
    items (`data-checked:chosen`, `data-pressed:chosen`) and ChoiceCard (`has-data-checked:chosen`): the primary
    border, the primary-subtle fill and its text. A utility, like `hit-area`, so each part reaches it through its own
