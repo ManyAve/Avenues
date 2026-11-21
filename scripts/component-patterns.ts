@@ -122,6 +122,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     upstream: "time-input",
     note: "AVE-202: ui-sdk's TimeInput, segments in Avenue's look; the OS's time input on touch-first devices (native=\"auto\"). No testing-kit pattern; the Time input stories fill, step and choose AM or PM by keyboard and post with a form. Time input / Agent is its agent test.",
   },
+  "number-input": {
+    upstream: "number-input",
+    note: "AVE-204: ui-sdk's NumberInput in Avenue's look, with buttons named after what it counts, a bound line that says why a button is off, and the count announced once when a button is let go. No testing-kit spinbutton pattern; the Number input stories type, step by arrow and Page keys, press each button by keyboard, hold one to repeat, clamp at the bounds and post with a form. Number input / Agent is its agent test.",
+  },
   accordion: { upstream: "accordion" },
   tabs: { upstream: "tabs" },
   "radio-group": { upstream: "radio" },

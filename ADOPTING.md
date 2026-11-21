@@ -629,6 +629,32 @@ const households = useAsyncOptions(searchHouseholds, { debounce: 200 }); // (que
 - Every Combobox and Autocomplete now marks the typed words in its results, heavier, for the eye only; built from
   parts, an item with more than plain text marks its label with `ComboboxItemText`.
 
+## Counts (AVE-204)
+
+For a small count people type or step, such as guests at an event or copies of a mailed notice, use `NumberInput`
+(`@manyave/avenue/components/number-input`) in a `Field`, in place of `<Input type="number">`:
+
+```tsx
+<Field name="guests">
+  <FieldLabel>Guests</FieldLabel>
+  <NumberInput noun={{ one: "guest", other: "guests" }} min={1} max={10} defaultValue={2} />
+</Field>
+```
+
+- Typing always works. The minus and plus buttons are an extra; they stay out of the tab order, because the field's
+  arrow keys (and Page Up, Page Down, Home and End) do the same. A held button repeats after a pause.
+- `noun` names the buttons ("Increase guests", "Decrease guests"), so give two steppers on one screen different nouns
+  ("adults" and "children"). It also words the line that shows at a bound ("At most 10 guests") and what a screen
+  reader hears when a button is let go ("4 guests"). Pass it every time.
+- It posts the plain number under the Field's `name`. Save on `onValueCommit`, which runs once a press, a typed
+  number or a held button ends, not on `onValueChange`, which runs on every step.
+- **Not for money, years, IDs or phone numbers.** Those stay text fields (`Input` with `inputMode`), and money
+  follows the Money rules. Neighbors' post price field (`type="number"` with cents) is one of those: leave it as a
+  text field with `inputMode="decimal"`, not a NumberInput.
+- Built from parts: `NumberInputGroup` holding `NumberInputDecrement`, `NumberInputControl` and
+  `NumberInputIncrement`, then `NumberInputBound`, whose children can word the bound line as a function of `"min"` or
+  `"max"`.
+
 ## For the Avenue team
 
 Requests that arrive this way go through the `avenue-component-request` funnel before anyone builds them. Fixes in

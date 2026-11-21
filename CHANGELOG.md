@@ -4,6 +4,16 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.64.0 (2026-11-21)
+
+- **New component: NumberInput** (`@manyave/avenue/components/number-input`, AVE-204), ui-sdk's NumberInput in
+  Input's look and inside a Field, for small counts typed or stepped: guests, copies, units. Minus and plus buttons sit
+  `gap-controls` apart and are 44px on phones; a held button repeats after a pause; at the minimum or maximum that
+  button is disabled and a muted line says why ("At most 10 guests"); a screen reader hears the new count once, when
+  the button is let go. `noun` names the buttons ("Increase guests"). It posts the plain number. Not for money, years,
+  IDs or phone numbers, which stay text fields. Parts: `NumberInput`, `NumberInputGroup`, `NumberInputDecrement`,
+  `NumberInputControl`, `NumberInputIncrement` and `NumberInputBound`. No existing component changes.
+
 ## v0.63.0 (2026-11-21)
 
 - **New component: Pull to refresh** (AVE-200). `@manyave/avenue/components/pull-to-refresh`: pull a list down from its
@@ -32,6 +42,7 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 - **Numbers line up in columns**: Table, Register, DetailList and ListItem set `tabular-nums`, so digits in a column
   keep one width (Money, Count, the Progress value and the Dock's badge already did). Digits in those parts shift by
   a pixel or two (a 1 is as wide as an 8 now); nothing else moves.
+
 
 ## v0.61.0 (2026-11-21)
 

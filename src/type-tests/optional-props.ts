@@ -67,6 +67,7 @@ import type * as table from "#avenue/components/table";
 import type * as tableFilter from "#avenue/components/table-filter";
 import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
+import type * as numberInput from "#avenue/components/number-input";
 import type * as timeInput from "#avenue/components/time-input";
 import type * as toast from "#avenue/components/toast";
 import type * as toggleGroup from "#avenue/components/toggle-group";
@@ -139,6 +140,7 @@ export type Modules = {
   "table-filter": typeof tableFilter;
   "tabs": typeof tabs;
   "textarea": typeof textarea;
+  "number-input": typeof numberInput;
   "time-input": typeof timeInput;
   "toast": typeof toast;
   "toggle-group": typeof toggleGroup;
