@@ -545,6 +545,7 @@ behind the row and the row's menu:
   item only when it is `undo`; Delete and sends never run on a swipe. Items sit on the `end` side unless `side: "start"`.
 - Needs a `ToastProvider` above it. Set the rows' surface with `contentClassName` (`bg-card` inside a card).
 - Not yet checked on a device: whether VoiceOver's own swipes and the row's get in each other's way (AVE-199).
+
 ## Dates and times (AVE-202)
 
 Replace `<Input type="date">`, `type="time"` and `type="datetime-local"` with Avenue's date fields. Each sits in a
