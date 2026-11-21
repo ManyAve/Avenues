@@ -315,7 +315,7 @@ function ToastRegion({ toaster }: { toaster: ToasterStore<ReactNode> }) {
           ref={recover(item.id, focusDataOf(item.data))}
           data-slot="toast"
           className={cn(
-            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
+            "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-lg border border-border-floating bg-popover px-4 py-2 text-meta text-popover-foreground shadow-popover transition-[opacity,translate] duration-slow data-ending-style:opacity-0 data-starting-style:translate-y-2 data-starting-style:opacity-0 motion-reduce:transition-none",
             // A swipe moves the toast with the finger, mouse or pen (AVE-192). ui-sdk sets data-swiping and
             // --toast-swipe-x/y while it's dragged; letting go short of dismissing removes both, and the toast eases back.
             // The region sits at the bottom centre, so ui-sdk dismisses only a swipe down (an up or sideways drag only

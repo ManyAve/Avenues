@@ -6,6 +6,20 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## v0.56.0 (2026-11-21)
 
+- **Popups and raised cards float with a soft, deep shadow and a faint edge** (AVE-208), after the ui-sdk sink.
+  `shadow-popover` and `shadow-card` are now two layers tinted with the onyx ink: a tight contact shade and a long soft
+  one pulled in under the surface, so the shade sits below it, not around it. A card's throw is shorter than a popup's.
+  Dark mode uses black at a higher strength, so it keeps its depth on near-black. The values change; the names don't.
+- **New token `border-floating`** (`ring-border-floating`, `border-border-floating`): the faint edge of anything that
+  floats, about 11% ink in light and 10% white in dark, the same in lifted. Popover, Hover card, Menu, the Select and
+  Combobox lists, Dialog, AlertDialog, Drawer, Toast, Dock, Selection bar and SectionCard move onto it; flat cards and
+  fields keep `border`. Apps that draw their own popup with `ring-border` or `border` beside `shadow-popover` should
+  switch to `border-floating`. It is translucent, so it isn't in the native tokens (phones draw elevation their own
+  way).
+- **Dialog, AlertDialog and Drawer now carry `shadow-popover`**; they had only a ring before.
+- **Floating surfaces keep a real 1px border in forced-colours mode**, where browsers drop shadows and rings.
+  `floatingEdge` in `#avenue/lib/popup` is the shared class string.
+
 - **Focus stays in place when the focused thing is removed** (AVE-196), with ui-sdk's focus recovery. Removing a
   table filter by keyboard now lands focus on the filter that takes its place, or the one before it when it was the
   last, and on the Filter button when none is left; it used to jump back to the Filter button every time. Removing a

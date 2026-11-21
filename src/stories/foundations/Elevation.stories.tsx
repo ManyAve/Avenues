@@ -7,8 +7,8 @@ import { DoDont, households, Rule, Rules, SeeTokens } from "./foundation-docs";
 
 const levels = [
   ["shadow-control", "A raised part inside a control", "A selected segment. Fields and buttons are flat"],
-  ["shadow-card", "Groups content on the page", "Cards, table frames"],
-  ["shadow-popover", "Floats above everything until dismissed", "Menus, popovers, dialogs, toasts"],
+  ["shadow-card", "Lifts a card off the page", "A raised card: a short, soft shadow and the floating edge"],
+  ["shadow-popover", "Floats above everything until dismissed", "Menus, popovers, dialogs, toasts: a long, soft shadow and the floating edge"],
 ] as const;
 
 function Menu({ heavy }: { heavy?: boolean }) {
@@ -23,7 +23,7 @@ function Menu({ heavy }: { heavy?: boolean }) {
           "absolute top-12 right-4 flex w-44 flex-col rounded-lg bg-popover p-1",
           // The don't's shadow is deliberately a bespoke one, to show what not to invent.
           // oxlint-disable-next-line tailwindcss/no-hardcoded-colors
-          heavy ? "shadow-[0_24px_48px_-8px_rgb(0_0_0/0.45)]" : "border shadow-popover",
+          heavy ? "shadow-[0_24px_48px_-8px_rgb(0_0_0/0.45)]" : "border border-border-floating shadow-popover",
         )}
       >
         {["Record payment", "Send reminder", "Open ledger"].map((item) => (
@@ -74,7 +74,7 @@ function ElevationUse() {
       </Section>
       <Section title="Rules">
         <Rules>
-          <Rule why="The app's surfaces are white in light mode and lift with a close shadow; a big soft shadow looks like a different product.">
+          <Rule why="Each shadow is a tight contact shade plus a soft one pulled in under the surface, tinted with the page's ink, so things float without looking heavy. A hand-made shadow breaks that balance.">
             Use only the three shadows. No shadow-lg, shadow-2xl or hand-written shadows.
           </Rule>
           <Rule why="In dark mode a shadow barely shows, so each level is also a lighter onyx surface.">
@@ -84,15 +84,18 @@ function ElevationUse() {
           <Rule>
             Don't put a card in a card. Inside a card, separate items with a border or space, not another shadow.
           </Rule>
-          <Rule>Anything that floats (menu, popover, dialog, toast) takes shadow-popover and a border, in both themes.</Rule>
+          <Rule why="The faint edge melts into the shadow, and still shows where a white menu ends over a white card. Forced-colours mode drops shadows, so floating parts draw a real border there.">
+            Anything that floats (menu, popover, dialog, toast) takes shadow-popover and the border-floating edge, in both
+            themes. Flat cards and fields keep border.
+          </Rule>
         </Rules>
       </Section>
       <Section title="Do and don't">
         <DoDont
           good={<Menu />}
           bad={<Menu heavy />}
-          doCaption="A menu over a card: shadow-popover and a border, close to the surface."
-          dontCaption="A large, dark, hand-made shadow. It looks foreign next to the app's close shadows and is heavier still in dark mode."
+          doCaption="A menu over a card: shadow-popover and the border-floating edge."
+          dontCaption="A large, dark, hand-made shadow. It sits around the menu, not under it, and is heavier still in dark mode."
         />
         <DoDont
           good={<Nested />}

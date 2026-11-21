@@ -9,7 +9,7 @@
  * Colours resolve the cascade the way a browser does (light = :root then :root:not(.dark); dark = :root, .dark, then
  * :root.dark) and convert OKLCH to sRGB with culori, clipping each channel to the sRGB gamut. Sizes are CSS pixels at 1rem = 16px,
  * which are points on iOS and dp (sp for text) on Android. Spacing takes the phone (coarse pointer) and narrow-screen
- * values, since that's where the apps run. Shadows, the modal overlay and the colour-mix colours are left out:
+ * values, since that's where the apps run. Shadows, the modal overlay and the colour-mix colours (the floating edge, AVE-208) are left out:
  * phones draw elevation and selection with the platform's own.
  */
 import { resolve } from "node:path";
