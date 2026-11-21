@@ -47,6 +47,9 @@ const AVENUE_IN_APP = (part: string, story: string) =>
 
 // ---- Reasons shared by several pairs
 
+const AUTOCOMPLETE =
+  "AVE-207: neither app has a text field that suggests as you type; Autocomplete is new in Avenue, built on ui-sdk's Autocomplete. Its field is Combobox's without the chevron, compared through Combobox / Households.";
+
 const GRID_10_TO_8 = "AVE-2 §1: the app's off-grid 10px side padding inside a control becomes 8px";
 const GRID_10_TO_12_MD =
   "AVE-2 §1: the md button's off-grid 10px side padding moves onto the 4px grid; Avenue's md and lg buttons take 12px (AVE-6), not §1's 8, so the label keeps its room";
@@ -549,6 +552,15 @@ export const PAIRS: Record<string, PairEntry> = {
   "components-combobox--clear-on-phones": { none: BEHAVIOUR("Combobox / Households (the clear button is new in Avenue, phones only, AVE-93)") },
   "components-combobox--sheet-open": { none: SHEET("Combobox") },
   "components-combobox--selected-text": { none: BEHAVIOUR("Combobox / Households") },
+  "components-combobox--search-as-you-type": { none: "AVE-207: results loaded as you type are new in Avenue; neither app's pickers load from a source yet. The field is compared through Combobox / Households." },
+  "components-combobox--load-more": { none: "AVE-207: results loaded as you type are new in Avenue; neither app's pickers load from a source yet. The field is compared through Combobox / Households." },
+  "components-combobox--search-fails": { none: "AVE-207: results loaded as you type are new in Avenue; neither app's pickers load from a source yet. The field is compared through Combobox / Households." },
+  "components-combobox--search-as-you-type-on-phones": { none: "AVE-207: results loaded as you type are new in Avenue; neither app's pickers load from a source yet. The field is compared through Combobox / Households." },
+  "components-combobox--matched-letters": { none: "AVE-207: marking the typed words in results is new in Avenue; the app's pickers draw plain labels. The field is compared through Combobox / Households." },
+  "components-autocomplete--streets": { none: AUTOCOMPLETE },
+  "components-autocomplete--directory": { none: AUTOCOMPLETE },
+  "components-autocomplete--search-fails": { none: AUTOCOMPLETE },
+  "components-autocomplete--on-phones": { none: AUTOCOMPLETE },
   "components-select--icon-sizes": { none: "AVE-84: Select and Combobox side by side at md and sm, to show their icons follow the control size; the app has no story with both. Each is compared through Select / Default and Combobox / Time zone." },
   "components-combobox--sheet-keyboard": { none: BEHAVIOUR("Combobox / Sheet, open") },
   "components-combobox--sheet-swipe-to-close": { none: BEHAVIOUR("Combobox / Sheet, open") },

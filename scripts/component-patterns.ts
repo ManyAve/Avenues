@@ -76,6 +76,10 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
     note: "AVE-134: ui-sdk's Textarea (autoResize, submitShortcut enter) and Button, wired into a form. Its keys are ui-sdk's but Escape, which cancels a reply or edit banner only while one shows. The Composer stories send by Enter, by Tab and Enter on Send and by the pointer, and check focus stays in the field, a refused send keeps the text, and Escape; Composer / Typing is its agent test.",
   },
   dialog: { upstream: "dialog" },
+  autocomplete: {
+    upstream: "autocomplete",
+    note: "AVE-207: ui-sdk's Autocomplete, styled, with its keys, roles and ARIA unchanged. Avenue adds its own item text (marks the typed words in a span, never <mark>, so the option's name stays plain) and the status line's words. The Autocomplete stories type, move, choose and escape by keyboard, and check the status line's role and words while loading, empty and failed; Autocomplete / Search as you type is its agent test.",
+  },
   command: {
     upstream: "command",
     note: "AVE-197: ui-sdk's Command, styled, and in CommandDialog its Dialog, which a command that runs closes (after its Promise resolves). The Command stories search, move, run, drill into a page and go back by keyboard, and open the palette with ⌘K; Command / Palette is its agent test.",
