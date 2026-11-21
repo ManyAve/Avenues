@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, type ComponentProps } from "react";
 import { Input } from "#avenue/components/input";
+import { Kbd } from "#avenue/components/kbd";
 import { cn } from "#avenue/lib/utils";
 
 const editable = (target: EventTarget | null) =>
@@ -80,12 +81,9 @@ function SearchInput({
         {...props}
       />
       {kbd && (
-        <kbd
-          aria-hidden
-          className="pointer-events-none absolute end-2 rounded-xs border px-1 text-meta pointer-coarse:hidden"
-        >
+        <Kbd aria-hidden className="pointer-events-none absolute end-2 pointer-coarse:hidden">
           {kbd}
-        </kbd>
+        </Kbd>
       )}
     </div>
   );

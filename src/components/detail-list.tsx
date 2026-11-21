@@ -31,7 +31,7 @@ function DetailList({
     mergeProps(
       {
         "data-slot": "detail-list",
-        className: cn("grid gap-row-y", className),
+        className: cn("grid gap-row-y tabular-nums", className),
         children: (
           <>
             {items?.map((item) => (
@@ -100,7 +100,7 @@ function ListItem({ className, render, ...props }: Omit<OwnPartProps<"div">, "ti
     mergeProps(
       {
         "data-slot": "list-item",
-        className: cn("flex items-start justify-between gap-row-y py-group text-compact not-last:border-b", className),
+        className: cn("flex items-start justify-between gap-row-y py-group text-compact tabular-nums not-last:border-b", className),
       },
       defined(props),
     ),

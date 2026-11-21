@@ -61,7 +61,7 @@ function Register({
   return (
     <parts.Root
       data-density={density}
-      className={cn("group/register w-full table-fixed border-separate border-spacing-0 text-compact", rowHeight[density], className)}
+      className={cn("group/register w-full table-fixed border-separate border-spacing-0 text-compact tabular-nums", rowHeight[density], className)}
       {...defined(props)}
     />
   );
