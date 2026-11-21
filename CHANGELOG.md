@@ -102,9 +102,10 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 - **A dialog's middle can scroll on its own, keeping the title and the actions in view** (AVE-190). New part
   `DialogBody`: put everything between `DialogHeader` and `DialogFooter` in it, and when the content is taller than the
   screen only the body scrolls, so the title stays at the top and the footer's Save stays at the bottom. Before, the
-  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. Management's
-  `DetailDialog` (the board's new-event dialog, MANA-1271) wraps its children in `DialogBody`. `FormDialog` and
-  `Drawer` already did this with `FormDialogBody` and `DrawerBody`.
+  whole dialog scrolled and both went out of view. A dialog without `DialogBody` is unchanged. `FormDialog` and
+  `Drawer` already did this with `FormDialogBody` and `DrawerBody`. (Corrected: this entry first said Management's
+  `DetailDialog` wraps its children in `DialogBody`. It doesn't: it keeps its own scrolling body, which already holds
+  the title and footer in view, and swapping it in moved the dues reminder dialogs by half a pixel, MANA-1275.)
 
 ## v0.50.1 (2026-11-21)
 
