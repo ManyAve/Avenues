@@ -387,7 +387,7 @@ export function Select<T = string>(props: SelectProps<T>) {
             className={cn(
               fieldControl({ size }),
               "pe-8 data-placeholder:text-placeholder",
-              "peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+              "peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/20 forced-colors:peer-focus-visible:outline-2 forced-colors:peer-focus-visible:outline-offset-2 forced-colors:peer-focus-visible:outline-solid",
               "peer-aria-invalid:border-destructive peer-aria-invalid:ring-3 peer-aria-invalid:ring-destructive/20 dark:peer-aria-invalid:border-destructive/50 dark:peer-aria-invalid:ring-destructive/40",
               "peer-disabled:bg-input/50 peer-disabled:opacity-50 dark:peer-disabled:bg-input/80",
             )}

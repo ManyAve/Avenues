@@ -4,6 +4,25 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.53.0 (2026-11-21)
+
+- **The highlighted item in a list wears a faint tint of the brand colour, not grey** (AVE-209). `accent`, the
+  highlighted or hovered item in Menu, Select, Combobox and Calendar's days, is now primary mixed into the popover
+  (7% in light, 10% in dark, where 7% sat closer to the popover than the grey it replaces). Its text,
+  `accent-foreground`, stays neutral ink. It stays clearly lighter than `primary-subtle`, the chosen look (AVE-50), and
+  has no border, so a highlighted row never looks chosen; `scripts/surface-contrast.test.ts` holds that in every theme.
+  Table and Register row hover stay on `muted`. Intended pixel change in every open menu and list.
+- **New colour `fill`** (`bg-fill`) for a quiet neutral shape a step off its surface: Skeleton, Progress's track,
+  Message's quoted reply, the composer's reply banner in dark and an outline Button's hover in dark. These read
+  `accent` before, borrowing the hover's grey; they keep that grey under the new name, so none of them moves. Shown in
+  Foundations / Colors; the native tokens carry it. **Apps:** a skeleton, track or placeholder shape drawn with
+  `bg-accent` turns faintly purple with this release; move it to `bg-fill`. A hover on a list item stays on
+  `bg-accent`.
+- **A field's focus glow is softer** (AVE-209): Input, Textarea, Select and Combobox draw `ring-ring/20` around the
+  primary border, down from `/50`; the border stays the indicator. Under forced colours, where the glow disappears and
+  the border takes the system colour, a focused field now draws a 2px outline, which it didn't before.
+- New story Select / Highlighted and chosen: Cash chosen, Bank transfer highlighted.
+
 ## v0.52.0 (2026-11-21)
 
 - **The theme choice is remembered, with no flash** (AVE-193). New `@manyave/avenue/components/preferences`:

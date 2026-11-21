@@ -46,6 +46,7 @@ const fills = [
   ["secondary", "bg-secondary", "text-secondary-foreground"],
   ["muted", "bg-muted", "text-muted-foreground"],
   ["accent", "bg-accent", "text-accent-foreground"],
+  ["fill", "bg-fill", "text-foreground"],
   ["success", "bg-success", "text-success-foreground"],
   ["info", "bg-info", "text-info-foreground"],
   ["warning", "bg-warning", "text-warning-foreground"],

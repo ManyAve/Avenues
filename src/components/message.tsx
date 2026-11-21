@@ -264,7 +264,7 @@ function MessageQuote({
       {
         "data-slot": "message-quote",
         className: cn(
-          "max-w-full truncate rounded-xl bg-accent px-3 py-1 text-meta text-muted-foreground",
+          "max-w-full truncate rounded-xl bg-fill px-3 py-1 text-meta text-muted-foreground",
           className,
         ),
         children: (
