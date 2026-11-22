@@ -56,7 +56,12 @@ const FREEZE = `*,*::before,*::after{animation:none!important;transition:none!im
 // play function (a checkbox ticked by keyboard) can get edge pixels a channel value off from a full
 // raster, differently from run to run. A full raster of every tile gives the same pixels each time
 // (AVE-19: 7 of 72 repeat captures differed with partial raster, 0 of 72 without).
-const CHROMIUM_ARGS = ["--disable-partial-raster"];
+//
+// The capture context emulates Reduce motion, but Chromium doesn't pass that emulation into an SVG drawn by an
+// <img> or a CSS background (an image document of its own), so the neighborhood art's own
+// `@media (prefers-reduced-motion: reduce)` never matched and its lights, stars and fireflies kept moving: base and
+// head caught different frames (AVE-218). Forcing the preference for the whole browser reaches those documents too.
+const CHROMIUM_ARGS = ["--disable-partial-raster", "--force-prefers-reduced-motion"];
 
 const DEFAULT_VIEWPORT = { width: 1280, height: 800 };
 
