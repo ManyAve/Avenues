@@ -816,7 +816,7 @@ export const PAIRS: Record<string, PairEntry> = {
     ]),
   ),
   ...Object.fromEntries(
-    ["default", "funnel", "neutral"].map((story) => [
+    ["default", "funnel", "neutral", "columns"].map((story) => [
       `components-bar-list--${story}`,
       { none: NEW_IN_AVENUE("The bar list (AVE-219)", "Progress / Default, whose primary bar on a fill track it borrows") },
     ]),
@@ -827,6 +827,7 @@ export const PAIRS: Record<string, PairEntry> = {
       { none: NEW_IN_AVENUE("The timeline (AVE-219)", "Status dot / Tones for its dots and Section card / List rows for its title and meta text") },
     ]),
   ),
+  "components-sidebar--default": { none: NEW_IN_AVENUE("The sidebar (AVE-219)", "Top bar / Default, the app's other section list, and Tokens / Colour for the sidebar surface and accent") },
   "components-kbd--keys": { none: NEW_IN_AVENUE("Kbd, the key hint (AVE-210)", "Search input / With shortcut, where the app drew its one key hint") },
   "components-skeleton--text-lines": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },
   "components-skeleton--in-a-card": { none: NEW_IN_AVENUE("The loading skeleton (AVE-128)", "Tokens / Colour (bg-fill) and the type scale its lines follow") },

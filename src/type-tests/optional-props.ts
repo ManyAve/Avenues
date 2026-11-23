@@ -71,6 +71,7 @@ import type * as table from "#avenue/components/table";
 import type * as tableFilter from "#avenue/components/table-filter";
 import type * as tabs from "#avenue/components/tabs";
 import type * as textarea from "#avenue/components/textarea";
+import type * as sidebar from "#avenue/components/sidebar";
 import type * as timeline from "#avenue/components/timeline";
 import type * as numberInput from "#avenue/components/number-input";
 import type * as timeInput from "#avenue/components/time-input";
@@ -150,6 +151,7 @@ export type Modules = {
   "table-filter": typeof tableFilter;
   "tabs": typeof tabs;
   "textarea": typeof textarea;
+  "sidebar": typeof sidebar;
   "timeline": typeof timeline;
   "number-input": typeof numberInput;
   "time-input": typeof timeInput;

@@ -205,6 +205,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
 
   // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
+  sidebar: { none: "AVE-219. Layout: plain links in a named nav, grouped; ui-sdk ships no sidebar. The Sidebar story tests aria-current, the tab order, the named group and the phone row." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
   skeleton: {
     none: "Decorative shapes (aria-hidden) and a busy region with one polite status; no control and nothing to focus. The Skeleton stories check the status, the hidden shapes and that Tab passes by (AVE-128).",

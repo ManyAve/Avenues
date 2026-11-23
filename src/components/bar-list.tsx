@@ -18,7 +18,8 @@ import { cn } from "#avenue/lib/utils";
  *   BarList             the list; `max` is the amount a full bar stands for
  *   └── BarListItem     one row, a meter; `value` sets its bar's length
  *       ├── BarListLabel    what the row counts
- *       └── BarListValue    the amount, as people read it ("11", "45% of trials")
+ *       ├── BarListValue    the amount, as people read it ("11", "45% of trials")
+ *       └── BarListDescription   optional: a muted line under the bar ("3.1% of clicks")
  *
  * `valueText` on a row is what a screen reader hears for its value; it defaults to the number. Pass it whenever
  * BarListValue shows more than the number ("17, 45% of trials"), so everyone gets the same reading.
@@ -108,4 +109,19 @@ function BarListValue({ className, ...props }: Loose<ComponentProps<typeof Meter
   return <MeterValuePrimitive className={cn("font-emphasis whitespace-nowrap", className)} {...defined(props)} />;
 }
 
-export { BarList, BarListItem, BarListLabel, BarListValue, type BarListTone };
+/**
+ * A muted line under the row's bar: what the amount is a share of, or where it was read. Drawn after the bar
+ * whatever its place among the row's children.
+ */
+function BarListDescription({ className, render, ...props }: OwnPartProps<"span">) {
+  return renderElement(
+    "span",
+    mergeProps(
+      { "data-slot": "bar-list-description", className: cn("order-last col-span-full text-meta text-muted-foreground", className) },
+      defined(props),
+    ),
+    render,
+  );
+}
+
+export { BarList, BarListDescription, BarListItem, BarListLabel, BarListValue, type BarListTone };

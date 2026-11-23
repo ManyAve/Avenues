@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { BarList, BarListItem, BarListLabel, BarListValue } from "#avenue/components/bar-list";
+import { BarList, BarListDescription, BarListItem, BarListLabel, BarListValue } from "#avenue/components/bar-list";
 import { CardContent, CardHeader } from "#avenue/components/card";
 import { SectionCard, SectionCardTitle } from "#avenue/components/section-card";
 import { Rows } from "./story-kit";
@@ -140,5 +140,38 @@ export const Neutral: Story = {
     const bar = items[0]!.querySelector<HTMLElement>("[data-slot=meter-indicator]")!;
     await expect(getComputedStyle(bar).backgroundColor).not.toBe(getComputedStyle(primary).backgroundColor);
     primary.remove();
+  },
+};
+
+/** Stages side by side, as a dashboard card shows them: each row stacked into a column, with a line under its bar. */
+export const Columns: Story = {
+  args: { max: 100 },
+  render: (args) => (
+    <Rows>
+      <BarList {...args} aria-label="Funnel, last 30 days" className="max-w-reading grid-cols-4">
+        {[
+          { label: "Ad clicks", reads: "1,240", value: 100, note: "Start of the funnel" },
+          { label: "Trials started", reads: "38", value: 62, note: "3.1% of clicks" },
+          { label: "Activated", reads: "17", value: 38, note: "45% of trials" },
+          { label: "Paid", reads: "6", value: 18, note: "35% of activated" },
+        ].map((stage) => (
+          <BarListItem key={stage.label} value={stage.value} valueText={stage.reads} className="grid-cols-1">
+            <BarListLabel>{stage.label}</BarListLabel>
+            <BarListValue>{stage.reads}</BarListValue>
+            <BarListDescription>{stage.note}</BarListDescription>
+          </BarListItem>
+        ))}
+      </BarList>
+    </Rows>
+  ),
+  play: async ({ canvas }) => {
+    const items = canvas.getAllByRole("listitem");
+    // Four columns on one line.
+    await expect(items[1]!.getBoundingClientRect().left).toBeGreaterThan(items[0]!.getBoundingClientRect().right - 1);
+    // The description is drawn under the bar, whatever its place in the markup.
+    const note = within(items[2]!).getByText("45% of trials");
+    const track = items[2]!.querySelector<HTMLElement>("[data-slot=meter-track]")!;
+    await expect(note.getBoundingClientRect().top).toBeGreaterThan(track.getBoundingClientRect().bottom - 1);
+    await expect(canvas.getByRole("meter", { name: "Activated" })).toHaveAttribute("aria-valuetext", "17");
   },
 };

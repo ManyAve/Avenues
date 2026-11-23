@@ -25,7 +25,12 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
     length, such as a funnel's stages. `max` on the list is the amount a full bar stands for and `value` on a row sets
     its bar. Each row is ui-sdk's Meter, named by its label; pass `valueText` when the row shows more than the number
     ("17, 45% of trials"), so a screen reader hears the same. `tone="neutral"` for a second list on a page. Not
-    Progress, which reports how far one task has got.
+    Progress, which reports how far one task has got. `BarListDescription` adds a muted line under a row's bar, and a
+    row given `grid-cols-1` stacks into a column, for stages side by side.
+  - `Sidebar`, `SidebarHeader`, `SidebarGroup`, `SidebarGroupLabel`, `SidebarItem`, `SidebarFooter`
+    (`.../components/sidebar`): an app's sections down the side, for a tool with more sections than a TopBar's row
+    holds or with saved views beside them. Plain links in a navigation landmark: `current` on an item marks the page
+    you are on, `count` adds a number at its end. 224px wide from `md` up; narrower, one scrolling row along the top.
   - `Timeline`, `TimelineItem`, `TimelineMarker`, `TimelineConnector`, `TimelineTitle`, `TimelineTime`,
     `TimelineDescription` (`.../components/timeline`): what happened, in order, as ui-sdk's Timeline with its part
     names: a list with one tab stop and Up, Down, Home and End between entries, `status` on an item for a process, and
