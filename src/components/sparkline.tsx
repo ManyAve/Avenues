@@ -9,7 +9,8 @@ import { cn } from "#avenue/lib/utils";
  *
  * One part. `values` run oldest first; the lowest sits at the bottom and the highest at the top, so two sparklines
  * aren't comparable by height. `variant="bar"` draws separate counts (sign-ups per day) where `line` draws a level
- * over time.
+ * over time. Bars measure from zero, so a day of nothing is a stub and a run of nothing is a row of stubs; a line of
+ * one point is a dot.
  *
  * An image named by `label`, which says what the picture says ("Trials started, rising over 8 weeks"): a screen
  * reader and an agent get the label, not the points. Not a control: no focus, no touch target.
@@ -79,7 +80,13 @@ function Sparkline({
           >
             {variant === "line" ? (
               <polyline
-                points={values.map((value, index) => `${index * step},${y(value)}`).join(" ")}
+                // One point is a segment of no length, which its round caps draw as a dot at mid-width; a polyline
+                // of a single point draws nothing.
+                points={
+                  values.length === 1
+                    ? `${WIDTH / 2},${HEIGHT / 2} ${WIDTH / 2},${HEIGHT / 2}`
+                    : values.map((value, index) => `${index * step},${y(value)}`).join(" ")
+                }
                 stroke="currentColor"
                 strokeWidth={2}
                 strokeLinecap="round"
@@ -88,8 +95,9 @@ function Sparkline({
               />
             ) : (
               values.map((value, index) => {
-                // Every bar shows, the lowest too: a bar of no height reads as a missing day.
-                const height = Math.max(HEIGHT - y(value), PAD);
+                // Bars measure from zero, the tallest to the top. Every bar shows: a bar of no height reads as a missing
+                // day, so nothing is a 2-unit stub, in a run of nothing too.
+                const height = high > 0 ? Math.max((Math.max(value, 0) / high) * (HEIGHT - PAD), PAD) : PAD;
                 return (
                   <rect
                     // oxlint-disable-next-line react/no-array-index-key -- the points have no identity but their place

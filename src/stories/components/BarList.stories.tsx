@@ -100,13 +100,13 @@ export const Funnel: Story = {
 };
 
 const features = [
-  { label: "Dues and ledger", value: 92, reads: "Daily" },
-  { label: "Mailed statements", value: 64, reads: "Monthly" },
-  { label: "A long feature name that has to wrap onto a second line on a narrow card", value: 22, reads: "41 visits" },
-  { label: "Not used yet", value: 0, reads: "Never" },
+  { label: "Dues and ledger", value: 92, reads: "92%" },
+  { label: "Mailed statements", value: 64, reads: "64%" },
+  { label: "A long feature name that has to wrap onto a second line on a narrow card", value: 22, reads: "22%" },
+  { label: "Not used yet", value: 0, reads: "0%" },
 ];
 
-/** Neutral bars for a second list on a page, a label that wraps, and a row of nothing, which keeps its empty track. */
+/** Share of board visits by feature. Neutral bars for a second list on a page, a label that wraps, and a row of nothing, which keeps its empty track. */
 export const Neutral: Story = {
   args: { max: 100, tone: "neutral" },
   render: (args) => (
@@ -125,7 +125,7 @@ export const Neutral: Story = {
     const items = canvas.getAllByRole("listitem");
     await expect(share(items[3]!)).toBe(0);
     // A wrapped label keeps the value on its own, unbroken.
-    const value = within(items[2]!).getByText("41 visits");
+    const value = within(items[2]!).getByText("22%");
     await expect(value.getBoundingClientRect().height).toBeLessThan(30);
     const primary = document.createElement("span");
     primary.className = "bg-primary";

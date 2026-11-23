@@ -46,7 +46,10 @@ export const Default: Story = {
   },
 };
 
-/** Bars for separate counts, such as sign-ups per day; a line for a level over time. A flat run draws mid-height. */
+/**
+ * Bars for separate counts, such as sign-ups per day; a line for a level over time. A flat line draws mid-height,
+ * bars measure from zero, and one point is a dot.
+ */
 export const Variants: Story = {
   render: () => (
     <Rows>
@@ -59,6 +62,12 @@ export const Variants: Story = {
       <Row label="steady">
         <Sparkline values={[8, 8, 8, 8, 8]} label="Open requests, steady at 8 for 5 weeks" />
       </Row>
+      <Row label="nothing">
+        <Sparkline variant="bar" values={[0, 0, 0, 0, 0]} label="New trials per day, none in 5 days" />
+      </Row>
+      <Row label="one point">
+        <Sparkline values={[8]} label="Open requests, 8 in the first week" />
+      </Row>
       <Row label="wider">
         <Sparkline values={rising} label="Requests, rising over the last 7 days, drawn wider" className="h-6 w-40" />
       </Row>
@@ -70,6 +79,17 @@ export const Variants: Story = {
     const drawn = [...bars.querySelectorAll("rect")];
     await expect(drawn).toHaveLength(7);
     for (const bar of drawn) await expect(Number(bar.getAttribute("height"))).toBeGreaterThan(0);
+    // Bars measure from zero: the day with none is a stub, the best day the tallest.
+    const heights = drawn.map((bar) => Number(bar.getAttribute("height")));
+    await expect(heights[3]).toBe(2);
+    await expect(Math.max(...heights)).toBe(heights[6]);
+    // A run of nothing is a row of stubs, not bars at half height.
+    const none = [...canvas.getByRole("img", { name: /none in 5 days/ }).querySelectorAll("rect")];
+    await expect(none.map((bar) => bar.getAttribute("height"))).toEqual(["2", "2", "2", "2", "2"]);
+    // One point draws a dot: a segment of no length at mid-width, which the round caps make visible.
+    const one = canvas.getByRole("img", { name: /8 in the first week/ }).querySelector("polyline")!;
+    await expect(one.getAttribute("points")).toBe("50,12 50,12");
+    await expect(one.getAttribute("stroke-linecap")).toBe("round");
     // A flat run sits along the middle, not along the floor.
     const flat = canvas.getByRole("img", { name: /steady at 8/ }).querySelector("polyline")!;
     await expect(new Set(flat.getAttribute("points")!.split(" ").map((point) => point.split(",")[1]))).toEqual(new Set(["12"]));
