@@ -4,6 +4,23 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.70.0 (2026-11-23)
+
+- **Three new components for dashboards** (AVE-219), each a root and parts on semantic tokens, with nothing to rename
+  in an app:
+  - `Sparkline` (`@manyave/avenue/components/sparkline`): a small trend beside a figure or in a table cell, 80 by 20
+    pixels unless a class resizes it. `values` oldest first, `variant` `line` or `bar`, `tone` `neutral`, `primary`,
+    `success` or `destructive`. It is one image, and `label` is required: say what the picture shows ("Requests,
+    rising over the last 7 days"), because the number itself belongs in text beside it.
+  - `BarList`, `BarListItem`, `BarListLabel`, `BarListValue` (`.../components/bar-list`): a few amounts compared by
+    length, such as a funnel's stages. `max` on the list is the amount a full bar stands for and `value` on a row sets
+    its bar; the text carries every number and the bars are hidden from screen readers. `tone="neutral"` for a second
+    list on a page. Not Progress, which reports how far one task has got.
+  - `Timeline`, `TimelineItem`, `TimelineTitle`, `TimelineMeta` (`.../components/timeline`): what happened, in order,
+    as an ordered list of dots on a line. `tone` on an item colours its dot with StatusDot's tones; the words still
+    carry the meaning.
+- Nothing existing changes: visual:diff against main differs only by the new stories.
+
 ## v0.69.1 (2026-11-21)
 
 - **Scenes, Avenue in use** (AVE-213): a new Storybook page beside At a glance. Five finished board and neighbour
