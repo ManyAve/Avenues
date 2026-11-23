@@ -810,6 +810,12 @@ export const PAIRS: Record<string, PairEntry> = {
     ]),
   ),
   ...Object.fromEntries(
+    ["lines", "bars", "area-sized"].map((story) => [
+      `components-chart--${story}`,
+      { none: NEW_IN_AVENUE("The chart frame around Recharts (AVE-219)", "Tokens / Colour for the chart-1 to chart-5 palette, and Popover / Default for the tooltip's surface") },
+    ]),
+  ),
+  ...Object.fromEntries(
     ["default", "funnel", "neutral"].map((story) => [
       `components-bar-list--${story}`,
       { none: NEW_IN_AVENUE("The bar list (AVE-219)", "Progress / Default, whose primary bar on a fill track it borrows") },

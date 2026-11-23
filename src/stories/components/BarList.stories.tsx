@@ -21,13 +21,14 @@ const stops = [
 
 /** Bar length as a share of the list's `max`: the track's own width over the bar's. */
 function share(item: HTMLElement) {
-  const track = item.querySelector<HTMLElement>("[data-slot=bar-list-track]")!;
-  const bar = item.querySelector<HTMLElement>("[data-slot=bar-list-bar]")!;
+  const track = item.querySelector<HTMLElement>("[data-slot=meter-track]")!;
+  const bar = item.querySelector<HTMLElement>("[data-slot=meter-indicator]")!;
   return bar.getBoundingClientRect().width / track.getBoundingClientRect().width;
 }
 
-/** Where stalled trials stopped, largest first. The text carries each number; the bars make the comparison quick. */
+/** Where stalled trials stopped, largest first. Each row is a meter named by its label; the bars make the comparison quick. */
 export const Default: Story = {
+  tags: ["agent"],
   render: (args) => (
     <Rows>
       <SectionCard className="max-w-reading">
@@ -52,15 +53,19 @@ export const Default: Story = {
     await expect(items).toHaveLength(3);
     // Reading order: what the row counts, then its amount. The bar adds nothing to it.
     await expect(items[0]).toHaveTextContent(/^Household import11$/);
-    for (const item of items) {
-      await expect(item.querySelector("[data-slot=bar-list-track]")).toHaveAttribute("aria-hidden", "true");
-    }
+    // Each row is a meter: named by its label, with its value out of the list's max.
+    const meters = canvas.getAllByRole("meter");
+    await expect(meters).toHaveLength(3);
+    await expect(canvas.getByRole("meter", { name: "No dues schedule set" })).toHaveAttribute("aria-valuenow", "6");
+    await expect(meters[1]).toHaveAttribute("aria-valuemax", "11");
+    await expect(meters[1]).toHaveAttribute("aria-valuetext", "6");
+    await expect(meters[1]!.tabIndex).toBe(-1);
     // The largest row fills its track; the others are their share of it.
     await expect(share(items[0]!)).toBeCloseTo(1, 2);
     await expect(share(items[1]!)).toBeCloseTo(6 / 11, 2);
     await expect(share(items[2]!)).toBeCloseTo(4 / 11, 2);
     // The empty part of a bar shows: the track is a step off the card under it.
-    const track = items[1]!.querySelector<HTMLElement>("[data-slot=bar-list-track]")!;
+    const track = items[1]!.querySelector<HTMLElement>("[data-slot=meter-track]")!;
     const card = track.closest<HTMLElement>("[data-slot=card]")!;
     await expect(getComputedStyle(track).backgroundColor).not.toBe(getComputedStyle(card).backgroundColor);
   },
@@ -83,7 +88,7 @@ export const Funnel: Story = {
     <Rows>
       <BarList {...args} className="max-w-reading">
         {stages.map((stage) => (
-          <BarListItem key={stage.label} value={stage.value}>
+          <BarListItem key={stage.label} value={stage.value} valueText={stage.reads}>
             <BarListLabel>{stage.label}</BarListLabel>
             <BarListValue>{stage.reads}</BarListValue>
           </BarListItem>
@@ -96,6 +101,8 @@ export const Funnel: Story = {
     await expect(share(items[0]!)).toBeCloseTo(1, 2);
     await expect(share(items[1]!)).toBeCloseTo(1, 2);
     await expect(share(items[3]!)).toBeCloseTo(6 / 38, 2);
+    // A screen reader hears what the row shows, not the bare number.
+    await expect(canvas.getByRole("meter", { name: "Activated" })).toHaveAttribute("aria-valuetext", "17, 45% of trials");
   },
 };
 
@@ -113,7 +120,7 @@ export const Neutral: Story = {
     <Rows>
       <BarList {...args} className="max-w-xs">
         {features.map((feature) => (
-          <BarListItem key={feature.label} value={feature.value}>
+          <BarListItem key={feature.label} value={feature.value} valueText={feature.reads}>
             <BarListLabel>{feature.label}</BarListLabel>
             <BarListValue>{feature.reads}</BarListValue>
           </BarListItem>
@@ -130,7 +137,7 @@ export const Neutral: Story = {
     const primary = document.createElement("span");
     primary.className = "bg-primary";
     document.body.append(primary);
-    const bar = items[0]!.querySelector<HTMLElement>("[data-slot=bar-list-bar]")!;
+    const bar = items[0]!.querySelector<HTMLElement>("[data-slot=meter-indicator]")!;
     await expect(getComputedStyle(bar).backgroundColor).not.toBe(getComputedStyle(primary).backgroundColor);
     primary.remove();
   },

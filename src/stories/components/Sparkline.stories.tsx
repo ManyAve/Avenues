@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { Sparkline, type SparklineTone } from "#avenue/components/sparkline";
 import { Stat, StatLabel, StatValue } from "#avenue/components/stat";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#avenue/components/table";
@@ -14,6 +14,23 @@ const meta = {
 } satisfies Meta<typeof Sparkline>;
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+/** The line Recharts drew, once it has measured the picture. */
+async function curve(image: HTMLElement) {
+  await waitFor(() => expect(image.querySelector("path.recharts-line-curve")).not.toBeNull());
+  return image.querySelector<SVGPathElement>("path.recharts-line-curve")!;
+}
+
+/** The points of a straight-segment path ("M2,18L14.6,15…"), in the picture's own pixels. */
+function points(path: SVGPathElement) {
+  return [...path.getAttribute("d")!.matchAll(/[ML]([\d.-]+),([\d.-]+)/g)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
+}
+
+/** The bars Recharts drew, once it has measured the picture, as heights in pixels. */
+async function barHeights(image: HTMLElement, count: number) {
+  await waitFor(() => expect(image.querySelectorAll(".recharts-bar-rectangle")).toHaveLength(count));
+  return [...image.querySelectorAll(".recharts-bar-rectangle")].map((bar) => Math.round(bar.getBoundingClientRect().height * 10) / 10);
+}
 
 /** A trend beside the figure it belongs to: the number is text, and the picture only shows its direction. */
 export const Default: Story = {
@@ -31,18 +48,22 @@ export const Default: Story = {
   play: async ({ canvas, canvasElement }) => {
     // One image, named by what the picture says; the drawing inside is hidden from screen readers.
     const image = canvas.getByRole("img", { name: "Requests, rising over the last 7 days" });
-    await expect(image.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    const line = await curve(image);
+    await expect(image.querySelector("svg")!.closest("[aria-hidden]")).not.toBeNull();
     await expect(canvasElement.querySelectorAll("[role=img]")).toHaveLength(1);
-    // The height of a Badge, four times as wide, and never focusable.
+    // The height of a Badge, four times as wide, and nothing in it to focus.
     const box = image.getBoundingClientRect();
     await expect(box.height).toBe(20);
     await expect(box.width).toBe(80);
     await expect(image.tabIndex).toBe(-1);
+    await expect(image.querySelector("[tabindex]:not([tabindex='-1'])")).toBeNull();
     // Oldest first, lowest at the bottom: the last point is the highest, so it is drawn nearest the top.
-    const points = image.querySelector("polyline")!.getAttribute("points")!.split(" ");
-    const heights = points.map((point) => Number(point.split(",")[1]));
-    await expect(points).toHaveLength(rising.length);
+    const heights = points(line).map((point) => point.y);
+    await expect(heights).toHaveLength(rising.length);
     await expect(Math.min(...heights)).toBe(heights.at(-1));
+    await expect(Math.max(...heights)).toBe(heights[0]);
+    // The line takes the text colour of its tone.
+    await expect(getComputedStyle(line).stroke).toBe(getComputedStyle(image).color);
   },
 };
 
@@ -74,25 +95,24 @@ export const Variants: Story = {
     </Rows>
   ),
   play: async ({ canvas }) => {
-    const bars = canvas.getByRole("img", { name: /Sign-ups per day/ });
     // A day with no sign-ups still draws a bar, so it doesn't read as a missing day.
-    const drawn = [...bars.querySelectorAll("rect")];
-    await expect(drawn).toHaveLength(7);
-    for (const bar of drawn) await expect(Number(bar.getAttribute("height"))).toBeGreaterThan(0);
+    const heights = await barHeights(canvas.getByRole("img", { name: /Sign-ups per day/ }), 7);
+    for (const height of heights) await expect(height).toBeGreaterThan(0);
     // Bars measure from zero: the day with none is a stub, the best day the tallest.
-    const heights = drawn.map((bar) => Number(bar.getAttribute("height")));
     await expect(heights[3]).toBe(2);
     await expect(Math.max(...heights)).toBe(heights[6]);
+    await expect(heights[6]).toBe(16);
     // A run of nothing is a row of stubs, not bars at half height.
-    const none = [...canvas.getByRole("img", { name: /none in 5 days/ }).querySelectorAll("rect")];
-    await expect(none.map((bar) => bar.getAttribute("height"))).toEqual(["2", "2", "2", "2", "2"]);
-    // One point draws a dot: a segment of no length at mid-width, which the round caps make visible.
-    const one = canvas.getByRole("img", { name: /8 in the first week/ }).querySelector("polyline")!;
-    await expect(one.getAttribute("points")).toBe("50,12 50,12");
-    await expect(one.getAttribute("stroke-linecap")).toBe("round");
+    await expect(await barHeights(canvas.getByRole("img", { name: /none in 5 days/ }), 5)).toEqual([2, 2, 2, 2, 2]);
+    // One point draws a dot at mid-height.
+    const one = canvas.getByRole("img", { name: /8 in the first week/ });
+    await waitFor(() => expect(one.querySelector(".recharts-line-dot")).not.toBeNull());
+    const dot = one.querySelector(".recharts-line-dot")!.getBoundingClientRect();
+    const frame = one.getBoundingClientRect();
+    await expect(Math.abs(dot.top + dot.height / 2 - (frame.top + frame.height / 2))).toBeLessThanOrEqual(1);
     // A flat run sits along the middle, not along the floor.
-    const flat = canvas.getByRole("img", { name: /steady at 8/ }).querySelector("polyline")!;
-    await expect(new Set(flat.getAttribute("points")!.split(" ").map((point) => point.split(",")[1]))).toEqual(new Set(["12"]));
+    const flat = points(await curve(canvas.getByRole("img", { name: /steady at 8/ })));
+    await expect(new Set(flat.map((point) => point.y))).toEqual(new Set([10]));
   },
 };
 

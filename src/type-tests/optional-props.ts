@@ -13,6 +13,7 @@ import type * as badge from "#avenue/components/badge";
 import type * as barList from "#avenue/components/bar-list";
 import type * as button from "#avenue/components/button";
 import type * as card from "#avenue/components/card";
+import type * as chart from "#avenue/components/chart";
 import type * as calendar from "#avenue/components/calendar";
 import type * as callout from "#avenue/components/callout";
 import type * as checkbox from "#avenue/components/checkbox";
@@ -91,6 +92,7 @@ export type Modules = {
   "bar-list": typeof barList;
   "button": typeof button;
   "card": typeof card;
+  "chart": typeof chart;
   "calendar": typeof calendar;
   "callout": typeof callout;
   "checkbox": typeof checkbox;

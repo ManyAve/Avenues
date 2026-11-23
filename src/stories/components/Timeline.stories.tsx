@@ -1,9 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { Badge } from "#avenue/components/badge";
 import { CardContent, CardHeader } from "#avenue/components/card";
 import { SectionCard, SectionCardTitle } from "#avenue/components/section-card";
-import { Timeline, TimelineItem, TimelineMeta, TimelineTitle } from "#avenue/components/timeline";
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineDescription,
+  TimelineItem,
+  TimelineMarker,
+  TimelineTime,
+  TimelineTitle,
+} from "#avenue/components/timeline";
 import { Rows } from "./story-kit";
 
 const meta = {
@@ -21,8 +29,12 @@ const history = [
   { when: "2026-11-02", reads: "Nov 2", what: "The board voted to keep dues at $240 for 2027", where: "Board" },
 ];
 
-/** An association's recent history, newest first. The failed payments are the news, so their dot takes a tone. */
+/**
+ * An association's recent history, newest first. The failed payments are the news, so their dot takes a tone. One tab
+ * stop: Up, Down, Home and End move between entries.
+ */
 export const Default: Story = {
+  tags: ["agent"],
   render: () => (
     <Rows>
       <SectionCard className="max-w-reading">
@@ -32,12 +44,12 @@ export const Default: Story = {
         <CardContent>
           <Timeline aria-label="History, newest first">
             {history.map((entry) => (
-              <TimelineItem key={entry.when} tone={entry.tone}>
+              <TimelineItem key={entry.when}>
+                <TimelineMarker tone={entry.tone} />
+                <TimelineConnector />
                 <TimelineTitle>{entry.what}</TimelineTitle>
-                <TimelineMeta>
-                  <time dateTime={entry.when}>{entry.reads}</time>
-                  <span>{entry.where}</span>
-                </TimelineMeta>
+                <TimelineTime dateTime={entry.when}>{entry.reads}</TimelineTime>
+                <TimelineDescription>{entry.where}</TimelineDescription>
               </TimelineItem>
             ))}
           </Timeline>
@@ -46,25 +58,36 @@ export const Default: Story = {
     </Rows>
   ),
   play: async ({ canvas }) => {
-    // An ordered list: a screen reader hears four entries, in order.
+    // A list: a screen reader hears four entries, in order.
     const list = canvas.getByRole("list", { name: "History, newest first" });
-    await expect(list.tagName).toBe("OL");
     const items = within(list).getAllByRole("listitem");
     await expect(items).toHaveLength(4);
     await expect(items[0]).toHaveTextContent(/^The treasurer printed and mailed 62 statementsNov 21Board$/);
-    // Dots are decoration: hidden, with the words carrying the meaning.
+    await expect(within(items[0]!).getByText("Nov 21")).toHaveAttribute("datetime", "2026-11-21");
+    // Dots and lines are decoration: hidden, with the words carrying the meaning.
     for (const item of items) {
-      await expect(item.querySelector("[data-slot=status-dot]")).toHaveAttribute("aria-hidden", "true");
+      await expect(item.querySelector("[data-slot=timeline-marker]")).toHaveAttribute("aria-hidden", "true");
+      await expect(item.querySelector("[data-slot=timeline-connector]")).toHaveAttribute("aria-hidden", "true");
     }
-    await expect(items[2]).toHaveAttribute("data-tone", "destructive");
+    await expect(items[2]!.querySelector("[data-slot=timeline-marker]")).toHaveAttribute("data-tone", "destructive");
     // Each dot sits beside its title's first line.
     const dot = items[0]!.querySelector("[data-slot=status-dot]")!.getBoundingClientRect();
     const title = within(items[0]!).getByText(/printed and mailed/).getBoundingClientRect();
     await expect(Math.abs(dot.top + dot.height / 2 - (title.top + 12))).toBeLessThanOrEqual(1);
     // The line joins each dot to the next and stops at the last.
-    const line = (item: HTMLElement) => getComputedStyle(item, "::before").content;
-    await expect(line(items[0]!)).not.toBe("none");
-    await expect(line(items[3]!)).toBe("none");
+    const line = (item: HTMLElement) => item.querySelector<HTMLElement>("[data-slot=timeline-connector]")!;
+    await expect(line(items[0]!).getBoundingClientRect().height).toBeGreaterThan(20);
+    await expect(line(items[0]!).getBoundingClientRect().width).toBe(1);
+    await expect(getComputedStyle(line(items[3]!)).display).toBe("none");
+    // One tab stop, then the arrow keys.
+    await userEvent.tab();
+    await expect(items[0]).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(items[1]).toHaveFocus();
+    await userEvent.keyboard("{End}");
+    await expect(items[3]).toHaveFocus();
+    await userEvent.keyboard("{Home}");
+    await expect(items[0]).toHaveFocus();
   },
 };
 
@@ -80,12 +103,14 @@ export const Steps: Story = {
     <Rows>
       <Timeline aria-label="Steps, in the order they ran" className="max-w-sm">
         {steps.map((step) => (
-          <TimelineItem key={step.what} tone="primary">
+          <TimelineItem key={step.what}>
+            <TimelineMarker tone="primary" />
+            <TimelineConnector />
             <TimelineTitle>{step.what}</TimelineTitle>
-            <TimelineMeta>
+            <TimelineDescription>
               <Badge variant="outline">{step.where}</Badge>
               <span>{step.took}</span>
-            </TimelineMeta>
+            </TimelineDescription>
           </TimelineItem>
         ))}
       </Timeline>
@@ -96,7 +121,7 @@ export const Steps: Story = {
     await expect(items).toHaveLength(3);
     // The wrapped entry's text stays in its column, clear of the dot and the line.
     const marker = items[2]!.querySelector("[data-slot=timeline-marker]")!.getBoundingClientRect();
-    const content = items[2]!.querySelector("[data-slot=timeline-content]")!.getBoundingClientRect();
+    const content = items[2]!.querySelector("[data-slot=timeline-title]")!.getBoundingClientRect();
     await expect(content.left).toBeGreaterThan(marker.right);
     await expect(content.height).toBeGreaterThan(48);
   },
@@ -108,16 +133,16 @@ export const Single: Story = {
     <Rows>
       <Timeline aria-label="History">
         <TimelineItem>
+          <TimelineMarker />
+          <TimelineConnector />
           <TimelineTitle>Sunnydale Commons started its trial</TimelineTitle>
-          <TimelineMeta>
-            <time dateTime="2026-02-03">Feb 3</time>
-          </TimelineMeta>
+          <TimelineTime dateTime="2026-02-03">Feb 3</TimelineTime>
         </TimelineItem>
       </Timeline>
     </Rows>
   ),
   play: async ({ canvas }) => {
     const item = canvas.getByRole("listitem");
-    await expect(getComputedStyle(item, "::before").content).toBe("none");
+    await expect(getComputedStyle(item.querySelector("[data-slot=timeline-connector]")!).display).toBe("none");
   },
 };

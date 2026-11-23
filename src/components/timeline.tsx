@@ -1,99 +1,127 @@
-import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import {
+  Timeline as TimelinePrimitive,
+  TimelineConnector as TimelineConnectorPrimitive,
+  TimelineDescription as TimelineDescriptionPrimitive,
+  TimelineItem as TimelineItemPrimitive,
+  TimelineMarker as TimelineMarkerPrimitive,
+  TimelineTime as TimelineTimePrimitive,
+  TimelineTitle as TimelineTitlePrimitive,
+  createTimelineController,
+  type TimelineStatus,
+} from "@ui-sdk/react/timeline";
+import type { ComponentProps } from "react";
 import { StatusDot, type StatusDotTone } from "#avenue/components/status";
-import { defined, type OwnPartProps } from "#avenue/lib/props";
+import { defined, type Loose, type NodeChildren } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * What happened, in order (AVE-219): a household's or an association's history, the steps a job ran, an audit trail.
- * Each entry is a dot on a line, what happened, and a quiet line for when and where. An ordered list, so a screen
- * reader hears how many entries there are and their order.
+ * ui-sdk's Timeline supplies the list, one tab stop with Up, Down, Home and End between entries, `status` for a
+ * process, and `feed` for a list that loads more; Avenue draws it.
  *
- *   Timeline              the ordered list and its line
- *   └── TimelineItem      one entry; `tone` colours its dot
- *       ├── TimelineTitle     what happened
- *       ├── TimelineMeta      when, where, who: one muted line
- *       └── (anything else)   a note, a Badge row, a link, under the title
+ *   Timeline                      the list
+ *   └── TimelineItem              one entry
+ *       ├── TimelineMarker        the dot on the line; `tone` colours it
+ *       ├── TimelineConnector     the line to the next entry
+ *       ├── TimelineTitle         what happened
+ *       ├── TimelineTime          when; pass `dateTime`
+ *       └── TimelineDescription   where, who, a note, a Badge row
  *
  * Newest first for a history people check ("what changed?"), oldest first for steps that ran in order.
  *
- * The dot is a StatusDot. `neutral` (the default) for an ordinary entry; a state tone marks the entry that is the
- * news (a failed payment, a fix shipped), and the words still say so, because the dot is hidden from screen readers
- * and colour never carries a meaning alone. The line joins each dot to the next and stops at the last.
+ * Look: an 8px StatusDot beside the title's first line, a 1px `border` line from under it to the next dot, the title
+ * at `text-compact`, the time and description muted at `text-meta`. `tone` on the marker is `neutral` unless this
+ * entry is the news (a failed payment, a fix shipped); the words still say so, because ui-sdk hides the marker and
+ * the line from screen readers and colour never carries a meaning alone. Put an icon in the marker in place of the
+ * dot by giving it children.
  *
  * Not a ListItem: list rows are things (a document, a payment) divided by rules, with something at the row's end;
  * timeline entries are moments joined by a line. Not a MessageList either, which is a conversation.
  */
-function Timeline({ className, render, ...props }: OwnPartProps<"ol">) {
-  return renderElement(
-    "ol",
-    mergeProps({ "data-slot": "timeline", className: cn("grid text-compact", className) }, defined(props)),
-    render,
+function Timeline({ className, ...props }: Loose<ComponentProps<typeof TimelinePrimitive>>) {
+  return <TimelinePrimitive className={cn("grid text-compact", className)} {...defined(props)} />;
+}
+
+/** One entry: the marker and line in a narrow column, the title, time and description beside them. */
+function TimelineItem({ className, ...props }: Loose<ComponentProps<typeof TimelineItemPrimitive>>) {
+  return (
+    <TimelineItemPrimitive
+      className={cn(
+        "group/timeline-item relative grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-md pb-4 outline-none last:pb-0 focus-visible:ring-3 focus-visible:ring-ring/50",
+        className,
+      )}
+      {...defined(props)}
+    />
   );
 }
 
-/** One entry: its dot, then the title, meta line and anything else in a column beside it. */
-function TimelineItem({
+/** The dot on the line, as tall as the title's first line so it sits beside it whatever follows. */
+function TimelineMarker({
   tone = "neutral",
   className,
   children,
-  render,
   ...props
-}: OwnPartProps<"li"> & {
+}: NodeChildren<Loose<ComponentProps<typeof TimelineMarkerPrimitive>>> & {
   /** The dot's colour. Neutral unless this entry is the news; the words carry the meaning either way. */
   tone?: StatusDotTone | undefined;
 }) {
-  return renderElement(
-    "li",
-    mergeProps(
-      {
-        "data-slot": "timeline-item",
-        "data-tone": tone,
-        className: cn(
-          "relative grid grid-cols-[auto_1fr] gap-x-3 pb-4 last:pb-0",
-          // The line: from under this entry's dot to the next entry's, centred on the 8px dot column.
-          "not-last:before:absolute not-last:before:top-6 not-last:before:bottom-0 not-last:before:left-1 not-last:before:w-px not-last:before:-translate-x-1/2 not-last:before:bg-border",
-          className,
-        ),
-        children: (
-          <>
-            {/* As tall as the title's first line, so the dot sits beside it whatever follows. */}
-            <span data-slot="timeline-marker" className="flex h-6 w-2 items-center justify-center">
-              <StatusDot tone={tone} size="md" />
-            </span>
-            <div data-slot="timeline-content" className="grid min-w-0 gap-1">
-              {children}
-            </div>
-          </>
-        ),
-      },
-      defined(props),
-    ),
-    render,
+  return (
+    <TimelineMarkerPrimitive
+      data-tone={tone}
+      className={cn("col-start-1 row-start-1 flex h-6 w-2 items-center justify-center", className)}
+      {...defined(props)}
+    >
+      {children ?? <StatusDot tone={tone} size="md" />}
+    </TimelineMarkerPrimitive>
+  );
+}
+
+/** The line from under this entry's dot to the next entry's. The last entry draws none. */
+function TimelineConnector({ className, ...props }: Loose<ComponentProps<typeof TimelineConnectorPrimitive>>) {
+  return (
+    <TimelineConnectorPrimitive
+      className={cn(
+        "absolute top-6 bottom-0 left-1 w-px -translate-x-1/2 bg-border group-last/timeline-item:hidden group-data-last/timeline-item:hidden",
+        className,
+      )}
+      {...defined(props)}
+    />
   );
 }
 
 /** What happened. Wraps anywhere, so a long name doesn't widen the page. */
-function TimelineTitle({ className, render, ...props }: OwnPartProps<"p">) {
-  return renderElement(
-    "p",
-    mergeProps({ "data-slot": "timeline-title", className: cn("wrap-break-word", className) }, defined(props)),
-    render,
+function TimelineTitle({ className, ...props }: Loose<ComponentProps<typeof TimelineTitlePrimitive>>) {
+  return <TimelineTitlePrimitive className={cn("col-start-2 min-w-0 wrap-break-word", className)} {...defined(props)} />;
+}
+
+/** When it happened, muted. Pass `dateTime` so the date is machine readable while the text stays friendly. */
+function TimelineTime({ className, ...props }: Loose<ComponentProps<typeof TimelineTimePrimitive>>) {
+  return (
+    <TimelineTimePrimitive className={cn("col-start-2 text-meta text-muted-foreground", className)} {...defined(props)} />
   );
 }
 
-/** One muted line: when it happened, where it was recorded, who did it. Put the date in a `time` element. */
-function TimelineMeta({ className, render, ...props }: OwnPartProps<"p">) {
-  return renderElement(
-    "p",
-    mergeProps(
-      {
-        "data-slot": "timeline-meta",
-        className: cn("flex flex-wrap items-center gap-x-2 gap-y-1 text-meta text-muted-foreground", className),
-      },
-      defined(props),
-    ),
-    render,
+/** One muted line or more under the title: where it was recorded, who did it, a note, a Badge row. */
+function TimelineDescription({ className, ...props }: Loose<ComponentProps<typeof TimelineDescriptionPrimitive>>) {
+  return (
+    <TimelineDescriptionPrimitive
+      className={cn(
+        "col-start-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-meta text-muted-foreground",
+        className,
+      )}
+      {...defined(props)}
+    />
   );
 }
 
-export { Timeline, TimelineItem, TimelineMeta, TimelineTitle };
+export {
+  Timeline,
+  TimelineConnector,
+  TimelineDescription,
+  TimelineItem,
+  TimelineMarker,
+  TimelineTime,
+  TimelineTitle,
+  createTimelineController,
+  type TimelineStatus,
+};

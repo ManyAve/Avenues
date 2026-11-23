@@ -1,16 +1,18 @@
 import { mergeProps, renderElement } from "@ui-sdk/react/primitive";
+import { Bar, BarChart, Line, LineChart, YAxis } from "recharts";
 import { defined, type OwnPartProps } from "#avenue/lib/props";
 import { cn } from "#avenue/lib/utils";
 
 /**
  * The shape of a trend in the space of a word (AVE-219): beside a Stat's figure, or in a table cell, to show whether a
- * number is rising, falling or steady. It has no axis, no values and no hover, so it is never the only place a number
- * lives: put the figure that matters next to it as text, and use a real chart when people need to read values.
+ * number is rising, falling or steady. Drawn by Recharts, as Chart is, with everything but the line taken away: no
+ * axis, no values and no hover, so it is never the only place a number lives. Put the figure that matters next to it
+ * as text, and use Chart when people need to read values.
  *
- * One part. `values` run oldest first; the lowest sits at the bottom and the highest at the top, so two sparklines
- * aren't comparable by height. `variant="bar"` draws separate counts (sign-ups per day) where `line` draws a level
- * over time. Bars measure from zero, so a day of nothing is a stub and a run of nothing is a row of stubs; a line of
- * one point is a dot.
+ * One part. `values` run oldest first. A line runs from its lowest value at the bottom to its highest at the top, so
+ * two sparklines aren't comparable by height; a flat run draws along the middle, and one value is a dot.
+ * `variant="bar"` draws separate counts (sign-ups per day): bars measure from zero, and nothing is a 2px stub, so a
+ * day of nothing doesn't read as a missing day.
  *
  * An image named by `label`, which says what the picture says ("Trials started, rising over 8 weeks"): a screen
  * reader and an agent get the label, not the points. Not a control: no focus, no touch target.
@@ -19,7 +21,7 @@ import { cn } from "#avenue/lib/utils";
  * Use a state tone only when the trend itself is the news, and say so in the label, because colour never carries it
  * alone. There is no warning tone: its fill is under 3:1 on a light surface, too faint for a thin line.
  *
- * 80 by 20px, the height of a Badge. Size it with a class (`w-24`, `h-6`); the picture stretches to fill.
+ * 80 by 20px, the height of a Badge. Size it with a class (`w-24`, `h-6`); the picture fills it.
  */
 type SparklineTone = "neutral" | "primary" | "success" | "destructive";
 type SparklineVariant = "line" | "bar";
@@ -32,10 +34,9 @@ const tones: Record<SparklineTone, string> = {
   destructive: "text-destructive",
 };
 
-// The drawing's own units: the picture stretches, and its strokes keep their width (non-scaling-stroke).
-const WIDTH = 100;
-const HEIGHT = 24;
-const PAD = 2;
+// Room for the line's own width at the picture's edges, so a peak isn't clipped.
+const MARGIN = { top: 2, right: 2, bottom: 2, left: 2 };
+const FILL = { width: "100%", height: "100%" } as const;
 
 function Sparkline({
   values,
@@ -53,13 +54,9 @@ function Sparkline({
   variant?: SparklineVariant | undefined;
   tone?: SparklineTone | undefined;
 }) {
+  const data = values.map((value, index) => ({ index, value }));
   const low = Math.min(...values);
   const high = Math.max(...values);
-  const span = high - low || 1;
-  // A flat run draws along the middle, not along the floor.
-  const y = (value: number) => (high === low ? HEIGHT / 2 : HEIGHT - PAD - ((value - low) / span) * (HEIGHT - PAD * 2));
-  const step = values.length > 1 ? WIDTH / (values.length - 1) : 0;
-  const slot = WIDTH / Math.max(values.length, 1);
   return renderElement(
     "span",
     mergeProps(
@@ -71,47 +68,30 @@ function Sparkline({
         "aria-label": label,
         className: cn("inline-block h-5 w-20 shrink-0 align-middle", tones[tone], className),
         children: (
-          <svg
-            aria-hidden
-            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-            preserveAspectRatio="none"
-            className="block size-full overflow-visible"
-            fill="none"
-          >
+          // The picture is the span's: hidden, never focused, with Recharts' keyboard layer off.
+          <span aria-hidden className="block size-full">
             {variant === "line" ? (
-              <polyline
-                // One point is a segment of no length, which its round caps draw as a dot at mid-width; a polyline
-                // of a single point draws nothing.
-                points={
-                  values.length === 1
-                    ? `${WIDTH / 2},${HEIGHT / 2} ${WIDTH / 2},${HEIGHT / 2}`
-                    : values.map((value, index) => `${index * step},${y(value)}`).join(" ")
-                }
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
+              <LineChart responsive data={data} margin={MARGIN} accessibilityLayer={false} style={FILL}>
+                {/* A flat run gets a range around it, so it draws along the middle, not along the floor. */}
+                <YAxis hide domain={high === low ? [low - 1, high + 1] : [low, high]} />
+                <Line
+                  dataKey="value"
+                  type="linear"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  // One value has no line to draw: it is a dot.
+                  dot={values.length === 1 ? { r: 1.5, fill: "currentColor", stroke: "currentColor" } : false}
+                  activeDot={false}
+                  isAnimationActive={false}
+                />
+              </LineChart>
             ) : (
-              values.map((value, index) => {
-                // Bars measure from zero, the tallest to the top. Every bar shows: a bar of no height reads as a missing
-                // day, so nothing is a 2-unit stub, in a run of nothing too.
-                const height = high > 0 ? Math.max((Math.max(value, 0) / high) * (HEIGHT - PAD), PAD) : PAD;
-                return (
-                  <rect
-                    // oxlint-disable-next-line react/no-array-index-key -- the points have no identity but their place
-                    key={index}
-                    x={index * slot + slot * 0.15}
-                    y={HEIGHT - height}
-                    width={slot * 0.7}
-                    height={height}
-                    fill="currentColor"
-                  />
-                );
-              })
+              <BarChart responsive data={data} margin={MARGIN} barCategoryGap="15%" accessibilityLayer={false} style={FILL}>
+                <YAxis hide domain={[0, high > 0 ? high : 1]} />
+                <Bar dataKey="value" fill="currentColor" minPointSize={2} isAnimationActive={false} />
+              </BarChart>
             )}
-          </svg>
+          </span>
         ),
       },
       defined(props),
