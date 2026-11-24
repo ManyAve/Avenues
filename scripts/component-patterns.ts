@@ -205,6 +205,7 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
 
   // Plain markup.
   "top-bar": { none: "Layout: a home link, NavTab links in a named nav and the trailing actions; the Top bar stories test the order and aria-current." },
+  sidebar: { none: "AVE-219. Layout: plain links in a named nav, grouped; ui-sdk ships no sidebar. The Sidebar story tests aria-current, the tab order, the named group and the phone row." },
   "status-bar": { none: "Layout: a footer of static text and Money totals around the ModeToggle, which has its own proof." },
   skeleton: {
     none: "Decorative shapes (aria-hidden) and a busy region with one polite status; no control and nothing to focus. The Skeleton stories check the status, the hidden shapes and that Tab passes by (AVE-128).",
@@ -225,6 +226,16 @@ export const COMPONENT_PROOF: Record<string, Proof> = {
   badge: { none: "Static text." },
   stat: { none: "Static text: a figure, its unit and a label; the Stat stories test the reading order and that a Money figure keeps its spoken sign." },
   kbd: { none: "Static text: a key hint, the kbd element." },
+  chart: { none: "AVE-219: a frame, tooltip and legend around a Recharts chart; the drawing and its keyboard layer are Recharts' own. The Chart stories test the name, the series colours, and the tooltip moving by arrow key." },
+  sparkline: { none: "AVE-219: an image named by its label, drawn by Recharts with nothing to focus; the Sparkline stories test the name and that the picture is hidden behind it." },
+  "bar-list": {
+    upstream: "meter",
+    note: "AVE-219: ui-sdk's Meter, one per row, styled. The Bar list stories check each meter's name, value text and bar length, and that a row is never focused; Bar list / Default is its agent test.",
+  },
+  timeline: {
+    upstream: "timeline",
+    note: "AVE-219: ui-sdk's Timeline, styled. The Timeline stories check the list, the hidden dots and lines, and Tab, Down, End and Home between entries; Timeline / Default is its agent test.",
+  },
   money: { none: "Static text; the Money stories test that it never wraps or truncates." },
   "ask-admin": { none: "Static text that controls point aria-describedby at." },
   callout: { none: "Static text: a tinted note, not a live region." },

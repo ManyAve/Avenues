@@ -4,6 +4,40 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.70.0 (2026-11-23)
+
+- **Four new components for dashboards** (AVE-219), each a root and parts on semantic tokens, with nothing to rename
+  in an app. Avenue draws none of the charts itself: they are Recharts', and the bar list and timeline are ui-sdk's
+  Meter and Timeline.
+  - **New dependency: `recharts` 3.10.0.** Apps get it with Avenue; import its charts and their parts (`LineChart`,
+    `BarChart`, `AreaChart`, `Line`, `XAxis`, `CartesianGrid`) from `recharts` directly.
+  - `ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartLegend`, `ChartLegendContent`, and the type
+    `ChartConfig` (`@manyave/avenue/components/chart`): shadcn's Chart parts, which give a Recharts chart Avenue's
+    look. `config` maps each series' data key to its label and, optionally, a colour; colours default to `chart-1` to
+    `chart-5` in config order and reach the chart as `var(--color-<key>)`. `label` is required and names the chart.
+    Pass `responsive` and `accessibilityLayer` to the Recharts chart inside it: it fills the frame (16:9 unless a
+    class sizes it), and is one tab stop whose arrow keys move the tooltip point to point.
+  - `Sparkline` (`.../components/sparkline`): a small trend beside a figure or in a table cell, 80 by 20 pixels unless
+    a class resizes it, drawn by Recharts with no axis and no hover. `values` oldest first, `variant` `line` or `bar`,
+    `tone` `neutral`, `primary`, `success` or `destructive`. It is one image, and `label` is required: say what the
+    picture shows ("Requests, rising over the last 7 days"), because the number itself belongs in text beside it.
+  - `BarList`, `BarListItem`, `BarListLabel`, `BarListValue` (`.../components/bar-list`): a few amounts compared by
+    length, such as a funnel's stages. `max` on the list is the amount a full bar stands for and `value` on a row sets
+    its bar. Each row is ui-sdk's Meter, named by its label; pass `valueText` when the row shows more than the number
+    ("17, 45% of trials"), so a screen reader hears the same. `tone="neutral"` for a second list on a page. Not
+    Progress, which reports how far one task has got. `BarListDescription` adds a muted line under a row's bar, and a
+    row given `grid-cols-1` stacks into a column, for stages side by side.
+  - `Sidebar`, `SidebarHeader`, `SidebarGroup`, `SidebarGroupLabel`, `SidebarItem`, `SidebarFooter`
+    (`.../components/sidebar`): an app's sections down the side, for a tool with more sections than a TopBar's row
+    holds or with saved views beside them. Plain links in a navigation landmark: `current` on an item marks the page
+    you are on, `count` adds a number at its end. 224px wide from `md` up; narrower, one scrolling row along the top.
+  - `Timeline`, `TimelineItem`, `TimelineMarker`, `TimelineConnector`, `TimelineTitle`, `TimelineTime`,
+    `TimelineDescription` (`.../components/timeline`): what happened, in order, as ui-sdk's Timeline with its part
+    names: a list with one tab stop and Up, Down, Home and End between entries, `status` on an item for a process, and
+    `feed` for a list that loads more. `tone` on the marker colours its dot with StatusDot's tones; the words still
+    carry the meaning.
+- Nothing existing changes: visual:diff against main differs only by the new stories.
+
 ## v0.69.1 (2026-11-21)
 
 - **Scenes, Avenue in use** (AVE-213): a new Storybook page beside At a glance. Five finished board and neighbour
