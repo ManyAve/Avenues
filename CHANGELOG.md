@@ -14,7 +14,10 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   `SignatureFieldClear` empties it. The value is `null` while empty, otherwise `{ method: "drawn" | "typed", image,
   text? }`, where `image` is a PNG data URL in black ink on a transparent ground in every theme. Draw is the default on
   a touch screen and Type with a mouse; Type is the keyboard path. Callbacks take ui-sdk's details second. Put it in a
-  Field, whose label names the typed input. Nothing to rename in an app.
+  Field, whose label names the typed input. A `value` set from outside wins: `null` empties the pad and the input, a
+  typed value shows its name, and a saved drawn value shows its image until the next stroke. A change `onValueChange`
+  cancels leaves the signature showing. Strokes keep their place when the pad resizes, and a second finger is ignored
+  while the first draws. Nothing to rename in an app.
 - **Receipts with File field.** No new component: `FileField` with `capture="environment"` and an `accept` that
   includes `application/pdf` opens the back camera on a phone and takes a photo or a PDF. File field / Receipt shows it.
   A checklist of required items (a vendor's paperwork) is a `SectionCard` with `Status` rows; no new component either.

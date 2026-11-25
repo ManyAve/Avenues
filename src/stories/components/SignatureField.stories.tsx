@@ -132,3 +132,75 @@ export const Disabled: Story = {
     expect(canvas.getByRole("button", { name: "Clear" })).toBeDisabled();
   },
 };
+
+/**
+ * Controlled: a saved typed signature shows its name, Start over (outside the field) empties the input, and an
+ * `onValueChange` that refuses Clear leaves the signature showing.
+ */
+export const Controlled: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>({ method: "typed", text: "Dana Rivera", image: "" });
+    const [locked, setLocked] = useState(false);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField
+            defaultMode="type"
+            value={value}
+            onValueChange={(next, details) => {
+              if (locked && details.reason === "clear") details.cancel();
+              else setValue(next);
+            }}
+          >
+            <SignatureFieldClear />
+            <SignatureFieldInput />
+          </SignatureField>
+        </Field>
+        <div className="flex gap-controls">
+          <Button variant="outline" onClick={() => setValue(null)}>
+            Start over
+          </Button>
+          <Button variant="outline" onClick={() => setLocked(true)}>
+            Keep the signature
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas }) => {
+    const name = canvas.getByRole("textbox", { name: "Signature" });
+    await expect(name).toHaveValue("Dana Rivera");
+    await userEvent.click(canvas.getByRole("button", { name: "Start over" }));
+    await waitFor(() => expect(name).toHaveValue(""));
+    await userEvent.click(name);
+    await userEvent.keyboard("Sam Ortiz");
+    await waitFor(() => expect(name).toHaveValue("Sam Ortiz"));
+    await userEvent.click(canvas.getByRole("button", { name: "Keep the signature" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
+    await expect(name).toHaveValue("Sam Ortiz");
+  },
+};
+
+/** A second finger while the first draws is ignored: one stroke, from the first finger only. */
+export const SecondFinger: Story = {
+  render: () => <Signing defaultMode="draw" />,
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    const box = pad.getBoundingClientRect();
+    const at = (pointerId: number, x: number) => ({
+      clientX: box.left + x,
+      clientY: box.top + 60,
+      pointerId,
+      pointerType: "touch",
+      bubbles: true,
+    });
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(1, 20)));
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(2, 200)));
+    pad.dispatchEvent(new PointerEvent("pointerup", at(2, 200)));
+    expect(canvas.getByTestId("value")).toHaveTextContent("empty");
+    pad.dispatchEvent(new PointerEvent("pointermove", at(1, 60)));
+    pad.dispatchEvent(new PointerEvent("pointerup", at(1, 60)));
+    await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent("drawn"));
+  },
+};

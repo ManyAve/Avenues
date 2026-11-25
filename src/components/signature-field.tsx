@@ -45,6 +45,7 @@ export type SignatureChangeReason = "stroke" | "typed" | "clear" | "mode";
 export type SignatureChangeDetails = ChangeDetails<SignatureChangeReason>;
 export type SignatureModeChangeDetails = ChangeDetails<"mode">;
 
+/** A point as a fraction of the pad's width and height, so strokes keep their place when the pad resizes. */
 type Point = { x: number; y: number };
 type Stroke = Point[];
 
@@ -52,7 +53,8 @@ type SignatureContextValue = {
   mode: SignatureMode;
   setMode: (mode: SignatureMode) => void;
   value: SignatureValue | null;
-  setValue: (value: SignatureValue | null, reason: SignatureChangeReason) => void;
+  /** False when `onValueChange` cancelled the change; the caller then leaves what the field shows alone. */
+  setValue: (value: SignatureValue | null, reason: SignatureChangeReason) => boolean;
   strokes: Stroke[];
   setStrokes: (strokes: Stroke[]) => void;
   text: string;
@@ -86,7 +88,7 @@ function exportCanvas() {
   return { canvas, context };
 }
 
-/** The strokes, scaled from the pad's size into the export's, as a PNG data URL. */
+/** The strokes, at the pad's shape scaled into the export's, as a PNG data URL. */
 function strokesToImage(strokes: Stroke[], width: number, height: number) {
   const { canvas, context } = exportCanvas();
   if (!context || width === 0 || height === 0) return "";
@@ -95,7 +97,7 @@ function strokesToImage(strokes: Stroke[], width: number, height: number) {
   context.lineWidth = 2.5 * scale;
   context.lineCap = "round";
   context.lineJoin = "round";
-  for (const stroke of strokes) traceStroke(context, stroke, scale);
+  for (const stroke of strokes) traceStroke(context, stroke, width * scale, height * scale);
   return canvas.toDataURL("image/png");
 }
 
@@ -115,14 +117,15 @@ function textToImage(text: string) {
   return canvas.toDataURL("image/png");
 }
 
-function traceStroke(context: CanvasRenderingContext2D, stroke: Stroke, scale = 1) {
+/** Draws one stroke onto a `width` by `height` area. */
+function traceStroke(context: CanvasRenderingContext2D, stroke: Stroke, width: number, height: number) {
   const [first, ...rest] = stroke;
   if (!first) return;
   context.beginPath();
-  context.moveTo(first.x * scale, first.y * scale);
+  context.moveTo(first.x * width, first.y * height);
   // A single tap is a dot: a zero-length line with round caps.
-  if (rest.length === 0) context.lineTo(first.x * scale + 0.01, first.y * scale);
-  for (const point of rest) context.lineTo(point.x * scale, point.y * scale);
+  if (rest.length === 0) context.lineTo(first.x * width + 0.01, first.y * height);
+  for (const point of rest) context.lineTo(point.x * width, point.y * height);
   context.stroke();
 }
 
@@ -157,13 +160,28 @@ function SignatureField({
   const [ownValue, setOwnValue] = useState<SignatureValue | null>(defaultValue);
   const [ownMode, setOwnMode] = useState<SignatureMode>(() => defaultMode ?? (prefersTouch() ? "draw" : "type"));
   const [strokes, setStrokes] = useState<Stroke[]>([]);
-  const [text, setText] = useState(defaultValue?.text ?? "");
   const value = valueProp === undefined ? ownValue : valueProp;
+  const [text, setText] = useState(value?.text ?? "");
   const mode = modeProp ?? ownMode;
+
+  // A value set from outside (a reset, a saved signature) wins over what the pad or input holds: null empties both,
+  // and a typed value shows its name. A drawn value from outside has no strokes; the pad shows its image instead.
+  const [shown, setShown] = useState(value);
+  if (value !== shown) {
+    setShown(value);
+    if (value === null) {
+      setStrokes([]);
+      setText("");
+    } else if (value.method === "typed" && value.text !== undefined && value.text !== text.trim()) {
+      setText(value.text);
+    } else if (value.method === "drawn") setText("");
+  }
 
   const setValue = useCallback(
     (next: SignatureValue | null, reason: SignatureChangeReason) => {
-      if (report(onValueChange, next, { reason }) && valueProp === undefined) setOwnValue(next);
+      if (!report(onValueChange, next, { reason })) return false;
+      if (valueProp === undefined) setOwnValue(next);
+      return true;
     },
     [valueProp, onValueChange],
   );
@@ -171,10 +189,11 @@ function SignatureField({
     (next: SignatureMode) => {
       if (!report(onModeChange, next, { reason: "mode" })) return;
       if (modeProp === undefined) setOwnMode(next);
-      // Switching mode starts again: a signature is one method, never half drawn and half typed.
+      // Switching mode starts again: a signature is one method, never half drawn and half typed. A cancelled
+      // reset keeps the signature, and what the field shows of it.
+      if (!setValue(null, "mode")) return;
       setStrokes([]);
       setText("");
-      setValue(null, "mode");
     },
     [modeProp, onModeChange, setValue],
   );
@@ -252,9 +271,12 @@ function SignatureFieldPad(props: SignatureFieldPadProps) {
 }
 
 function Pad({ className, render, label, hint = "Sign above the line", ...props }: SignatureFieldPadProps) {
-  const { strokes, setStrokes, setValue, disabled, invalid } = useSignature("SignatureFieldPad");
+  const { value, strokes, setStrokes, setValue, disabled, invalid } = useSignature("SignatureFieldPad");
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef<Stroke | null>(null);
+  /** The stroke being drawn, and the one pointer drawing it: a second finger is ignored until the first lifts. */
+  const drawing = useRef<{ pointerId: number; stroke: Stroke } | null>(null);
+  // A drawn value with no strokes came from outside (a saved signature): the pad shows its image until a new stroke.
+  const restored = strokes.length === 0 && value?.method === "drawn" ? value.image : undefined;
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   // Keep the canvas's pixels matched to its drawn size and the screen's density, and redraw on resize.
@@ -285,7 +307,7 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
       context.lineWidth = 2.5;
       context.lineCap = "round";
       context.lineJoin = "round";
-      for (const stroke of list) traceStroke(context, stroke);
+      for (const stroke of list) traceStroke(context, stroke, size.width, size.height);
     },
     [size],
   );
@@ -294,31 +316,35 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
 
   const pointAt = (event: ReactPointerEvent<HTMLCanvasElement>): Point => {
     const box = event.currentTarget.getBoundingClientRect();
-    return { x: event.clientX - box.left, y: event.clientY - box.top };
+    return {
+      x: box.width ? (event.clientX - box.left) / box.width : 0,
+      y: box.height ? (event.clientY - box.top) / box.height : 0,
+    };
   };
 
   const onPointerDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (disabled || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (disabled || drawing.current || (event.pointerType === "mouse" && event.button !== 0)) return;
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
       // A pointer the browser no longer tracks can't be captured; the stroke still draws.
     }
-    drawing.current = [pointAt(event)];
-    paint([...strokes, drawing.current]);
+    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)] };
+    paint([...strokes, drawing.current.stroke]);
   };
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (!drawing.current) return;
-    drawing.current.push(pointAt(event));
-    paint([...strokes, drawing.current]);
+    if (drawing.current?.pointerId !== event.pointerId) return;
+    drawing.current.stroke.push(pointAt(event));
+    paint([...strokes, drawing.current.stroke]);
   };
-  const onPointerUp = () => {
-    const stroke = drawing.current;
+  const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    if (drawing.current?.pointerId !== event.pointerId) return;
+    const { stroke } = drawing.current;
     drawing.current = null;
-    if (!stroke) return;
     const next = [...strokes, stroke];
-    setStrokes(next);
-    setValue({ method: "drawn", image: strokesToImage(next, size.width, size.height) }, "stroke");
+    // Cancelled by onValueChange: the stroke goes, and the pad shows what the value still is.
+    if (setValue({ method: "drawn", image: strokesToImage(next, size.width, size.height) }, "stroke")) setStrokes(next);
+    else paint(strokes);
   };
 
   return renderElement(
@@ -335,6 +361,10 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
         children: (
         <>
           <span className="sr-only">{strokes.length === 0 ? `${label}, empty` : `${label}, drawn`}</span>
+          {restored && (
+            // The saved signature is black ink on transparent; dark:invert draws it in the page's ink.
+            <img alt="" src={restored} className="pointer-events-none absolute inset-0 size-full object-contain dark:invert" />
+          )}
           <canvas
             ref={canvasRef}
             aria-hidden
@@ -378,12 +408,12 @@ function SignatureFieldInput({ className, ...props }: SignatureFieldInputProps) 
         disabled={disabled}
         aria-invalid={invalid || undefined}
         onValueChange={(next: string) => {
-          setText(next);
           const trimmed = next.trim();
-          setValue(
+          const accepted = setValue(
             trimmed === "" ? null : { method: "typed", text: trimmed, image: textToImage(trimmed) },
             "typed",
           );
+          if (accepted) setText(next);
         }}
         className={className}
         {...defined(props)}
@@ -410,9 +440,9 @@ function SignatureFieldClear({ children = "Clear", ...props }: Loose<ComponentPr
       size="sm"
       disabled={disabled || value === null}
       onClick={() => {
+        if (!setValue(null, "clear")) return;
         setStrokes([]);
         setText("");
-        setValue(null, "clear");
       }}
       {...defined(props)}
     >
