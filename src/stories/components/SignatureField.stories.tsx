@@ -362,3 +362,55 @@ export const ReplacedMidStroke: Story = {
     await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
   },
 };
+
+/** The app putting the person's own earlier signature back during a stroke counts as from outside too: it stays. */
+export const OwnSignatureRestoredMidStroke: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    const [mine, setMine] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setValue}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <div className="flex gap-controls">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setMine(value);
+              setValue({ method: "drawn", image: SAVED });
+            }}
+          >
+            Use my saved signature
+          </Button>
+          <Button variant="outline" onClick={() => setValue(mine)}>
+            Put mine back
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    canvas.getByRole("button", { name: "Use my saved signature" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    const box = pad.getBoundingClientRect();
+    const at = (x: number) => ({ clientX: box.left + x, clientY: box.top + 40, pointerId: 1, pointerType: "touch", bubbles: true });
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(20)));
+    pad.dispatchEvent(new PointerEvent("pointermove", at(80)));
+    canvas.getByRole("button", { name: "Put mine back" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")?.getAttribute("src")).not.toBe(SAVED));
+    const restored = canvasElement.querySelector("img")?.getAttribute("src");
+    await expect(restored).toMatch(/^data:image\/png/);
+    pad.dispatchEvent(new PointerEvent("pointerup", at(80)));
+    // Give a kept stroke the render it would need to show, then check none did.
+    await new Promise((settle) => setTimeout(settle, 100));
+    await expect(canvasElement.querySelector("img")).toHaveAttribute("src", restored!);
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+  },
+};

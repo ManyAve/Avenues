@@ -181,7 +181,10 @@ function SignatureField({
   const [replaced, setReplaced] = useState(0);
   if (value !== shown) {
     setShown(value);
-    if (!sameSignature(value, local)) setReplaced(replaced + 1);
+    // An echo is used up once seen, so the app putting an older value of the field's back later counts as from outside.
+    const echo = sameSignature(value, local);
+    if (echo) setLocal(undefined);
+    else setReplaced(replaced + 1);
     if (value === null) {
       setStrokes([]);
       setText("");
@@ -189,7 +192,7 @@ function SignatureField({
       setText(value.text);
     } else if (value.method === "drawn") {
       setText("");
-      if (!sameSignature(value, local)) setStrokes([]);
+      if (!echo) setStrokes([]);
     }
   }
 
