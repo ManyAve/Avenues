@@ -129,6 +129,12 @@ function traceStroke(context: CanvasRenderingContext2D, stroke: Stroke, width: n
   context.stroke();
 }
 
+/** The same signature, even when a controlled parent hands back a copy of the one the field reported. */
+function sameSignature(a: SignatureValue | null | undefined, b: SignatureValue | null | undefined) {
+  if (!a || !b) return a === b;
+  return a.method === b.method && a.image === b.image && a.text === b.text;
+}
+
 function prefersTouch() {
   return typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true;
 }
@@ -179,30 +185,39 @@ function SignatureField({
       setText(value.text);
     } else if (value.method === "drawn") {
       setText("");
-      if (value !== local) setStrokes([]);
+      if (!sameSignature(value, local)) setStrokes([]);
     }
   }
 
+  const commitValue = useCallback(
+    (next: SignatureValue | null) => {
+      setLocal(next);
+      if (valueProp === undefined) setOwnValue(next);
+    },
+    [valueProp],
+  );
   const setValue = useCallback(
     (next: SignatureValue | null, reason: SignatureChangeReason) => {
       if (!report(onValueChange, next, { reason })) return false;
-      setLocal(next);
-      if (valueProp === undefined) setOwnValue(next);
+      commitValue(next);
       return true;
     },
-    [valueProp, onValueChange],
+    [onValueChange, commitValue],
   );
   const setMode = useCallback(
     (next: SignatureMode) => {
-      // Switching mode starts again: a signature is one method, never half drawn and half typed. The reset is asked
-      // first, so a cancelled reset keeps the signature, what the field shows of it, and the mode.
-      if (value !== null && !setValue(null, "mode")) return;
+      // Switching mode starts again: a signature is one method, never half drawn and half typed. Both are asked
+      // before either is kept: a cancelled reset keeps the signature and the mode, and a cancelled mode change keeps
+      // the signature (an uncontrolled field clears nothing; a controlled parent was told of the reset and decides).
+      const resetting = value !== null;
+      if (resetting && !report(onValueChange, null, { reason: "mode" })) return;
       if (!report(onModeChange, next, { reason: "mode" })) return;
+      if (resetting) commitValue(null);
       if (modeProp === undefined) setOwnMode(next);
       setStrokes([]);
       setText("");
     },
-    [modeProp, onModeChange, setValue, value],
+    [modeProp, onModeChange, onValueChange, commitValue, value],
   );
 
   return (
@@ -281,7 +296,8 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
   const { value, strokes, setStrokes, setValue, disabled, invalid } = useSignature("SignatureFieldPad");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   /** The stroke being drawn, and the one pointer drawing it: a second finger is ignored until the first lifts. */
-  const drawing = useRef<{ pointerId: number; stroke: Stroke } | null>(null);
+  // `from` is the value when the stroke began: a stroke that outlives a value set from outside is dropped, not kept.
+  const drawing = useRef<{ pointerId: number; stroke: Stroke; from: SignatureValue | null } | null>(null);
   // A drawn value with no strokes came from outside (a saved signature): the pad shows its image until a new stroke.
   const restored = strokes.length === 0 && value?.method === "drawn" ? value.image : undefined;
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -336,7 +352,7 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
     } catch {
       // A pointer the browser no longer tracks can't be captured; the stroke still draws.
     }
-    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)] };
+    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)], from: value };
     paint([...strokes, drawing.current.stroke]);
   };
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -346,8 +362,9 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
   };
   const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     if (drawing.current?.pointerId !== event.pointerId) return;
-    const { stroke } = drawing.current;
+    const { stroke, from } = drawing.current;
     drawing.current = null;
+    if (!sameSignature(from, value)) return paint(strokes);
     const next = [...strokes, stroke];
     // Cancelled by onValueChange: the stroke goes, and the pad shows what the value still is.
     if (setValue({ method: "drawn", image: strokesToImage(next, size.width, size.height) }, "stroke")) setStrokes(next);

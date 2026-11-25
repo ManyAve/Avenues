@@ -6,11 +6,13 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## v0.71.1 (2026-11-25)
 
-- **`SignatureField` fixes** (AVE-220). Two bugs are fixed:
+- **`SignatureField` fixes** (AVE-220). These bugs are fixed:
   - When the app passes in a saved drawn signature as `value`, the strokes already on the pad are cleared, so the pad shows the saved image and the next stroke starts on a blank pad. Before this, old strokes stayed on the pad, covered the image and were exported again with the next stroke.
-  - Switching between Draw and Type asks to clear the value first. If `onValueChange` cancels that, the mode stays as it was and `onModeChange` isn't called.
+  - Switching between Draw and Type asks to clear the value, then asks `onModeChange`, and keeps neither until both agree. If `onValueChange` cancels the clear, the mode stays as it was and `onModeChange` isn't called. If `onModeChange` cancels, an uncontrolled field keeps its signature.
+  - An app that stores a copy of each value (`setValue({ ...next })`) keeps the strokes on the pad. The field compares the signature itself, not the object, so the next stroke adds to the drawing instead of replacing it.
+  - A stroke still being drawn when the app sets a new value is dropped when the finger lifts, so it can't overwrite the new value.
 
-  Stories: Signature field / Replaced from outside, and Mode switch refused. Nothing to rename in an app.
+  Stories: Signature field / Replaced from outside, Mode switch refused, Copied by the app, and Mode change cancelled. Nothing to rename in an app.
 
 ## v0.71.0 (2026-11-25)
 

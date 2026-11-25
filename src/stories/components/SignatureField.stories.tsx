@@ -269,3 +269,54 @@ export const ModeSwitchRefused: Story = {
     await expect(canvas.getByRole("textbox", { name: "Signature" })).toHaveValue("Dana Rivera");
   },
 };
+
+/** An app that stores a copy of each value keeps the strokes: the pad keeps drawing, it doesn't flip to a saved image. */
+export const CopiedByTheApp: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    return (
+      <Field>
+        <FieldLabel>Signature</FieldLabel>
+        <SignatureField
+          defaultMode="draw"
+          value={value}
+          onValueChange={(next) => setValue(next && { ...next })}
+        >
+          <SignatureFieldPad label="Your signature" />
+        </SignatureField>
+      </Field>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    await expect(canvasElement.querySelector("img")).toBeNull();
+  },
+};
+
+/** When the app cancels the switch itself, nothing is lost: the mode and the typed name both stay. */
+export const ModeChangeCancelled: Story = {
+  render: () => (
+    <Field>
+      <FieldLabel>Signature</FieldLabel>
+      <SignatureField
+        defaultMode="type"
+        defaultValue={{ method: "typed", text: "Dana Rivera", image: "" }}
+        onModeChange={(_next, details) => details.cancel()}
+      >
+        <SignatureFieldModes />
+        <SignatureFieldPad label="Your signature" />
+        <SignatureFieldInput />
+      </SignatureField>
+    </Field>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const field = canvasElement.querySelector("[data-slot=signature-field]")!;
+    canvas.getByRole("radio", { name: "Draw" }).focus();
+    await userEvent.keyboard(" ");
+    await expect(field).toHaveAttribute("data-mode", "type");
+    await expect(field).not.toHaveAttribute("data-empty");
+    await expect(canvas.getByRole("textbox", { name: "Signature" })).toHaveValue("Dana Rivera");
+  },
+};
