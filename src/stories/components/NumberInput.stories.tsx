@@ -171,7 +171,9 @@ export const HoldToRepeat: Story = {
       const announcements = listenForAnnouncements();
       await userEvent.click(increase);
       await expect(field).toHaveValue("3");
-      await waitFor(() => expect(announcements.heard).toEqual(["3 guests"]));
+      // Only this story's counts: the page's one live region can still say the story before's last count ("10
+      // guests") when its late announcement lands after this listener starts, which failed about one run in four.
+      await waitFor(() => expect(announcements.heard.filter((text) => text !== "10 guests")).toEqual(["3 guests"]));
       announcements.stop();
     });
 

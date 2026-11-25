@@ -60,6 +60,7 @@ import type * as searchInput from "#avenue/components/search-input";
 import type * as sectionCard from "#avenue/components/section-card";
 import type * as select from "#avenue/components/select";
 import type * as selectionBar from "#avenue/components/selection-bar";
+import type * as signatureField from "#avenue/components/signature-field";
 import type * as skeleton from "#avenue/components/skeleton";
 import type * as sparkline from "#avenue/components/sparkline";
 import type * as stat from "#avenue/components/stat";
@@ -140,6 +141,7 @@ export type Modules = {
   "section-card": typeof sectionCard;
   "select": typeof select;
   "selection-bar": typeof selectionBar;
+  "signature-field": typeof signatureField;
   "skeleton": typeof skeleton;
   "sparkline": typeof sparkline;
   "stat": typeof stat;

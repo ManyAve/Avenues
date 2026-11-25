@@ -211,6 +211,28 @@ export const Phone: Story = {
   },
 };
 
+/**
+ * A receipt (AVE-220): on a phone the picker opens the camera (`capture="environment"`, the back camera), and a photo
+ * or a PDF is accepted. The board's expense sheet uses this; the native apps use their own document scanners.
+ */
+export const Receipt: Story = {
+  args: {
+    kind: "image",
+    noun: "receipt",
+    label: "Receipt",
+    hint: "A photo or PDF, up to 10 MB.",
+    capture: "environment",
+    accept: ["image/png", "image/jpeg", "image/webp", "image/heic", "application/pdf"],
+    maxSize: 10 * 1024 * 1024,
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole("button", { name: /receipt/i })).toBeInTheDocument();
+    const input = canvasElement.querySelector<HTMLInputElement>("input[type=file]")!;
+    await expect(input.getAttribute("capture")).toBe("environment");
+    await expect(input.accept).toContain("application/pdf");
+  },
+};
+
 /** The upload, the app's job, simulated: choose a file by keyboard, watch progress, fail, retry, then remove. */
 export const Upload: Story = {
   args: { label: "Pool rules", kind: "document", hint: documentHint, accept: [".pdf", ".docx", "image/*"] },
