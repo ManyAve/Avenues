@@ -804,6 +804,12 @@ export const PAIRS: Record<string, PairEntry> = {
     ]),
   ),
   ...Object.fromEntries(
+    ["drawn", "typed", "in-a-form", "disabled", "controlled", "second-finger"].map((story) => [
+      `components-signature-field--${story}`,
+      { none: NEW_IN_AVENUE("The signature, SignatureField (AVE-220)", "Toggle group / Variants for Draw and Type, and Input / Sizes for the typed name") },
+    ]),
+  ),
+  ...Object.fromEntries(
     ["default", "variants", "tones", "in-a-table"].map((story) => [
       `components-sparkline--${story}`,
       { none: NEW_IN_AVENUE("The trend line, Sparkline (AVE-219)", "Stat / Default, the figure it sits beside, and Status dot / Tones for its colours") },
@@ -952,7 +958,7 @@ export const PAIRS: Record<string, PairEntry> = {
 
   // ---- File field (AVE-35)
   ...Object.fromEntries(
-    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "disabled-retry", "phone", "parts", "dropped"].map((story) => [
+    ["upload", "document-states", "image-states", "long-name", "rejected", "disabled-with-reason", "disabled-retry", "phone", "parts", "dropped", "receipt"].map((story) => [
       `components-file-field--${story}`,
       { none: NEW_IN_AVENUE("The shared file and image field (AVE-35)", "Button / Sizes (its 28px buttons) and Field / Label and description") },
     ]),
