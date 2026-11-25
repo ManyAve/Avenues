@@ -59,6 +59,8 @@ type SignatureContextValue = {
   setStrokes: (strokes: Stroke[]) => void;
   text: string;
   setText: (text: string) => void;
+  /** Counts values set from outside, so a stroke can tell one arrived while it was drawn, even one set and undone. */
+  replaced: number;
   disabled: boolean;
   invalid: boolean;
 };
@@ -176,8 +178,10 @@ function SignatureField({
   // Any other drawn value (a saved signature) replaces them, so the pad shows its image and the next stroke starts clean.
   const [shown, setShown] = useState(value);
   const [local, setLocal] = useState<SignatureValue | null | undefined>(undefined);
+  const [replaced, setReplaced] = useState(0);
   if (value !== shown) {
     setShown(value);
+    if (!sameSignature(value, local)) setReplaced(replaced + 1);
     if (value === null) {
       setStrokes([]);
       setText("");
@@ -222,7 +226,7 @@ function SignatureField({
 
   return (
     <SignatureContext.Provider
-      value={{ mode, setMode, value, setValue, strokes, setStrokes, text, setText, disabled, invalid }}
+      value={{ mode, setMode, value, setValue, strokes, setStrokes, text, setText, replaced, disabled, invalid }}
     >
       {renderElement(
         "div",
@@ -293,11 +297,11 @@ function SignatureFieldPad(props: SignatureFieldPadProps) {
 }
 
 function Pad({ className, render, label, hint = "Sign above the line", ...props }: SignatureFieldPadProps) {
-  const { value, strokes, setStrokes, setValue, disabled, invalid } = useSignature("SignatureFieldPad");
+  const { value, strokes, setStrokes, setValue, replaced, disabled, invalid } = useSignature("SignatureFieldPad");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   /** The stroke being drawn, and the one pointer drawing it: a second finger is ignored until the first lifts. */
-  // `from` is the value when the stroke began: a stroke that outlives a value set from outside is dropped, not kept.
-  const drawing = useRef<{ pointerId: number; stroke: Stroke; from: SignatureValue | null } | null>(null);
+  // `from` counts the values set from outside when the stroke began: a stroke that outlives one is dropped, not kept.
+  const drawing = useRef<{ pointerId: number; stroke: Stroke; from: number } | null>(null);
   // A drawn value with no strokes came from outside (a saved signature): the pad shows its image until a new stroke.
   const restored = strokes.length === 0 && value?.method === "drawn" ? value.image : undefined;
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -352,7 +356,7 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
     } catch {
       // A pointer the browser no longer tracks can't be captured; the stroke still draws.
     }
-    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)], from: value };
+    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)], from: replaced };
     paint([...strokes, drawing.current.stroke]);
   };
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -364,7 +368,7 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
     if (drawing.current?.pointerId !== event.pointerId) return;
     const { stroke, from } = drawing.current;
     drawing.current = null;
-    if (!sameSignature(from, value)) return paint(strokes);
+    if (from !== replaced) return paint(strokes);
     const next = [...strokes, stroke];
     // Cancelled by onValueChange: the stroke goes, and the pad shows what the value still is.
     if (setValue({ method: "drawn", image: strokesToImage(next, size.width, size.height) }, "stroke")) setStrokes(next);

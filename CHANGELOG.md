@@ -10,9 +10,9 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
   - When the app passes in a saved drawn signature as `value`, the strokes already on the pad are cleared, so the pad shows the saved image and the next stroke starts on a blank pad. Before this, old strokes stayed on the pad, covered the image and were exported again with the next stroke.
   - Switching between Draw and Type asks to clear the value, then asks `onModeChange`, and keeps neither until both agree. If `onValueChange` cancels the clear, the mode stays as it was and `onModeChange` isn't called. If `onModeChange` cancels, an uncontrolled field keeps its signature.
   - An app that stores a copy of each value (`setValue({ ...next })`) keeps the strokes on the pad. The field compares the signature itself, not the object, so the next stroke adds to the drawing instead of replacing it.
-  - A stroke still being drawn when the app sets a new value is dropped when the finger lifts, so it can't overwrite the new value.
+  - A stroke still being drawn when the app sets a new value is dropped when the finger lifts, even if the app has put the old value back by then, so it can't overwrite what the app set.
 
-  Stories: Signature field / Replaced from outside, Mode switch refused, Copied by the app, and Mode change cancelled. Nothing to rename in an app.
+  Stories: Signature field / Replaced from outside, Mode switch refused, Copied by the app, Mode change cancelled, and Replaced mid stroke. Nothing to rename in an app.
 
 ## v0.71.0 (2026-11-25)
 
