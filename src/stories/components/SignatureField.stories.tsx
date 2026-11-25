@@ -204,3 +204,68 @@ export const SecondFinger: Story = {
     await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent("drawn"));
   },
 };
+
+/** A one-pixel ink PNG, standing in for a signature the app saved earlier. */
+const SAVED = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
+/** A saved signature from outside replaces what was drawn: the pad shows it, and the old strokes are gone. */
+export const ReplacedFromOutside: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setValue}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <Button variant="outline" onClick={() => setValue({ method: "drawn", image: SAVED })}>
+          Use my saved signature
+        </Button>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    await expect(canvasElement.querySelector("img")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Use my saved signature" }));
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+  },
+};
+
+/** When the app refuses to clear a signature, switching between Draw and Type leaves both the mode and the name. */
+export const ModeSwitchRefused: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>({ method: "typed", text: "Dana Rivera", image: "" });
+    return (
+      <Field>
+        <FieldLabel>Signature</FieldLabel>
+        <SignatureField
+          defaultMode="type"
+          value={value}
+          onValueChange={(next, details) => {
+            if (details.reason === "mode") details.cancel();
+            else setValue(next);
+          }}
+        >
+          <SignatureFieldModes />
+          <SignatureFieldPad label="Your signature" />
+          <SignatureFieldInput />
+        </SignatureField>
+      </Field>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const field = canvasElement.querySelector("[data-slot=signature-field]")!;
+    const draw = canvas.getByRole("radio", { name: "Draw" });
+    draw.focus();
+    await userEvent.keyboard(" ");
+    await expect(field).toHaveAttribute("data-mode", "type");
+    await expect(canvas.getByRole("radio", { name: "Type" })).toBeChecked();
+    await expect(canvas.getByRole("textbox", { name: "Signature" })).toHaveValue("Dana Rivera");
+  },
+};

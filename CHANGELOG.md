@@ -4,6 +4,14 @@ What changed for apps that install Avenue. See the README, "Versions", for what 
 
 ## Unreleased
 
+## v0.71.1 (2026-11-25)
+
+- **`SignatureField` fixes** (AVE-220). Two bugs are fixed:
+  - When the app passes in a saved drawn signature as `value`, the strokes already on the pad are cleared, so the pad shows the saved image and the next stroke starts on a blank pad. Before this, old strokes stayed on the pad, covered the image and were exported again with the next stroke.
+  - Switching between Draw and Type asks to clear the value first. If `onValueChange` cancels that, the mode stays as it was and `onModeChange` isn't called.
+
+  Stories: Signature field / Replaced from outside, and Mode switch refused. Nothing to rename in an app.
+
 ## v0.71.0 (2026-11-25)
 
 - **New: `SignatureField`** (AVE-220, `@manyave/avenue/components/signature-field`), for signing a work agreement or

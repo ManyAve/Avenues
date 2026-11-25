@@ -166,7 +166,10 @@ function SignatureField({
 
   // A value set from outside (a reset, a saved signature) wins over what the pad or input holds: null empties both,
   // and a typed value shows its name. A drawn value from outside has no strokes; the pad shows its image instead.
+  // `local` is the last value this field produced itself: when the parent echoes it back, the strokes that made it stay.
+  // Any other drawn value (a saved signature) replaces them, so the pad shows its image and the next stroke starts clean.
   const [shown, setShown] = useState(value);
+  const [local, setLocal] = useState<SignatureValue | null | undefined>(undefined);
   if (value !== shown) {
     setShown(value);
     if (value === null) {
@@ -174,12 +177,16 @@ function SignatureField({
       setText("");
     } else if (value.method === "typed" && value.text !== undefined && value.text !== text.trim()) {
       setText(value.text);
-    } else if (value.method === "drawn") setText("");
+    } else if (value.method === "drawn") {
+      setText("");
+      if (value !== local) setStrokes([]);
+    }
   }
 
   const setValue = useCallback(
     (next: SignatureValue | null, reason: SignatureChangeReason) => {
       if (!report(onValueChange, next, { reason })) return false;
+      setLocal(next);
       if (valueProp === undefined) setOwnValue(next);
       return true;
     },
@@ -187,15 +194,15 @@ function SignatureField({
   );
   const setMode = useCallback(
     (next: SignatureMode) => {
+      // Switching mode starts again: a signature is one method, never half drawn and half typed. The reset is asked
+      // first, so a cancelled reset keeps the signature, what the field shows of it, and the mode.
+      if (value !== null && !setValue(null, "mode")) return;
       if (!report(onModeChange, next, { reason: "mode" })) return;
       if (modeProp === undefined) setOwnMode(next);
-      // Switching mode starts again: a signature is one method, never half drawn and half typed. A cancelled
-      // reset keeps the signature, and what the field shows of it.
-      if (!setValue(null, "mode")) return;
       setStrokes([]);
       setText("");
     },
-    [modeProp, onModeChange, setValue],
+    [modeProp, onModeChange, setValue, value],
   );
 
   return (
