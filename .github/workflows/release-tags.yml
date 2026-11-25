@@ -41,9 +41,11 @@ jobs:
             [ "$version" != "$(version_at "$commit^")" ] || continue
             tag="v$version"
             # The version's CHANGELOG.md entry, from its heading to the next one, as the tag's commit has it.
-            git show "$commit:CHANGELOG.md" 2>/dev/null \
-              | awk -v h="## $tag " 'index($0, h) == 1 { on = 1; next } /^## / { on = 0 } on' > notes.md || true
-            if ! git show "$commit:CHANGELOG.md" 2>/dev/null | grep -q "^## $tag "; then
+            # Read into a file first: under pipefail, `git show | grep -q` fails whenever grep finds the heading and
+            # exits before git show has written the whole (130 KB) changelog, so a real entry read as missing.
+            git show "$commit:CHANGELOG.md" > changelog.md 2>/dev/null || : > changelog.md
+            awk -v h="## $tag " 'index($0, h) == 1 { on = 1; next } /^## / { on = 0 } on' changelog.md > notes.md
+            if ! grep -q "^## $tag " changelog.md; then
               echo "$tag at $commit has no CHANGELOG.md entry; not a release, so not tagged"
               continue
             fi
