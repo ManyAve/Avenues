@@ -59,6 +59,8 @@ type SignatureContextValue = {
   setStrokes: (strokes: Stroke[]) => void;
   text: string;
   setText: (text: string) => void;
+  /** Counts values set from outside, so a stroke can tell one arrived while it was drawn, even one set and undone. */
+  replaced: number;
   disabled: boolean;
   invalid: boolean;
 };
@@ -129,6 +131,12 @@ function traceStroke(context: CanvasRenderingContext2D, stroke: Stroke, width: n
   context.stroke();
 }
 
+/** The same signature, even when a controlled parent hands back a copy of the one the field reported. */
+function sameSignature(a: SignatureValue | null | undefined, b: SignatureValue | null | undefined) {
+  if (!a || !b) return a === b;
+  return a.method === b.method && a.image === b.image && a.text === b.text;
+}
+
 function prefersTouch() {
   return typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true;
 }
@@ -166,41 +174,63 @@ function SignatureField({
 
   // A value set from outside (a reset, a saved signature) wins over what the pad or input holds: null empties both,
   // and a typed value shows its name. A drawn value from outside has no strokes; the pad shows its image instead.
+  // `local` is the last value this field produced itself: when the parent echoes it back, the strokes that made it stay.
+  // Any other drawn value (a saved signature) replaces them, so the pad shows its image and the next stroke starts clean.
   const [shown, setShown] = useState(value);
+  const [local, setLocal] = useState<SignatureValue | null | undefined>(undefined);
+  const [replaced, setReplaced] = useState(0);
   if (value !== shown) {
     setShown(value);
+    // An echo counts only as the next value the app sets: once seen, or once another value comes first, the field's
+    // value is forgotten, so the app putting it back later counts as from outside.
+    const echo = sameSignature(value, local);
+    setLocal(undefined);
+    if (!echo) setReplaced(replaced + 1);
     if (value === null) {
       setStrokes([]);
       setText("");
     } else if (value.method === "typed" && value.text !== undefined && value.text !== text.trim()) {
       setText(value.text);
-    } else if (value.method === "drawn") setText("");
+    } else if (value.method === "drawn") {
+      setText("");
+      if (!echo) setStrokes([]);
+    }
   }
 
+  const commitValue = useCallback(
+    (next: SignatureValue | null) => {
+      setLocal(next);
+      if (valueProp === undefined) setOwnValue(next);
+    },
+    [valueProp],
+  );
   const setValue = useCallback(
     (next: SignatureValue | null, reason: SignatureChangeReason) => {
       if (!report(onValueChange, next, { reason })) return false;
-      if (valueProp === undefined) setOwnValue(next);
+      commitValue(next);
       return true;
     },
-    [valueProp, onValueChange],
+    [onValueChange, commitValue],
   );
   const setMode = useCallback(
     (next: SignatureMode) => {
+      // Switching mode starts again: a signature is one method, never half drawn and half typed. Both are asked
+      // before either is kept: a cancelled reset keeps the signature and the mode, and a cancelled mode change keeps
+      // the signature (an uncontrolled field clears nothing; a controlled parent was told of the reset and decides).
+      const resetting = value !== null;
+      if (resetting && !report(onValueChange, null, { reason: "mode" })) return;
       if (!report(onModeChange, next, { reason: "mode" })) return;
+      if (resetting) commitValue(null);
       if (modeProp === undefined) setOwnMode(next);
-      // Switching mode starts again: a signature is one method, never half drawn and half typed. A cancelled
-      // reset keeps the signature, and what the field shows of it.
-      if (!setValue(null, "mode")) return;
       setStrokes([]);
       setText("");
     },
-    [modeProp, onModeChange, setValue],
+    [modeProp, onModeChange, onValueChange, commitValue, value],
   );
 
   return (
     <SignatureContext.Provider
-      value={{ mode, setMode, value, setValue, strokes, setStrokes, text, setText, disabled, invalid }}
+      value={{ mode, setMode, value, setValue, strokes, setStrokes, text, setText, replaced, disabled, invalid }}
     >
       {renderElement(
         "div",
@@ -271,10 +301,11 @@ function SignatureFieldPad(props: SignatureFieldPadProps) {
 }
 
 function Pad({ className, render, label, hint = "Sign above the line", ...props }: SignatureFieldPadProps) {
-  const { value, strokes, setStrokes, setValue, disabled, invalid } = useSignature("SignatureFieldPad");
+  const { value, strokes, setStrokes, setValue, replaced, disabled, invalid } = useSignature("SignatureFieldPad");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   /** The stroke being drawn, and the one pointer drawing it: a second finger is ignored until the first lifts. */
-  const drawing = useRef<{ pointerId: number; stroke: Stroke } | null>(null);
+  // `from` counts the values set from outside when the stroke began: a stroke that outlives one is dropped, not kept.
+  const drawing = useRef<{ pointerId: number; stroke: Stroke; from: number } | null>(null);
   // A drawn value with no strokes came from outside (a saved signature): the pad shows its image until a new stroke.
   const restored = strokes.length === 0 && value?.method === "drawn" ? value.image : undefined;
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -329,7 +360,7 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
     } catch {
       // A pointer the browser no longer tracks can't be captured; the stroke still draws.
     }
-    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)] };
+    drawing.current = { pointerId: event.pointerId, stroke: [pointAt(event)], from: replaced };
     paint([...strokes, drawing.current.stroke]);
   };
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -339,8 +370,9 @@ function Pad({ className, render, label, hint = "Sign above the line", ...props 
   };
   const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     if (drawing.current?.pointerId !== event.pointerId) return;
-    const { stroke } = drawing.current;
+    const { stroke, from } = drawing.current;
     drawing.current = null;
+    if (from !== replaced) return paint(strokes);
     const next = [...strokes, stroke];
     // Cancelled by onValueChange: the stroke goes, and the pad shows what the value still is.
     if (setValue({ method: "drawn", image: strokesToImage(next, size.width, size.height) }, "stroke")) setStrokes(next);

@@ -804,7 +804,7 @@ export const PAIRS: Record<string, PairEntry> = {
     ]),
   ),
   ...Object.fromEntries(
-    ["drawn", "typed", "in-a-form", "disabled", "controlled", "second-finger"].map((story) => [
+    ["drawn", "typed", "in-a-form", "disabled", "controlled", "second-finger", "replaced-from-outside", "mode-switch-refused", "copied-by-the-app", "mode-change-cancelled", "replaced-mid-stroke", "own-signature-restored-mid-stroke", "held-signature-applied-mid-stroke"].map((story) => [
       `components-signature-field--${story}`,
       { none: NEW_IN_AVENUE("The signature, SignatureField (AVE-220)", "Toggle group / Variants for Draw and Type, and Input / Sizes for the typed name") },
     ]),

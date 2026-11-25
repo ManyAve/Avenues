@@ -204,3 +204,259 @@ export const SecondFinger: Story = {
     await waitFor(() => expect(canvas.getByTestId("value")).toHaveTextContent("drawn"));
   },
 };
+
+/** A one-pixel ink PNG, standing in for a signature the app saved earlier. */
+const SAVED = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
+/** A saved signature from outside replaces what was drawn: the pad shows it, and the old strokes are gone. */
+export const ReplacedFromOutside: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setValue}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <Button variant="outline" onClick={() => setValue({ method: "drawn", image: SAVED })}>
+          Use my saved signature
+        </Button>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    await expect(canvasElement.querySelector("img")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Use my saved signature" }));
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+  },
+};
+
+/** When the app refuses to clear a signature, switching between Draw and Type leaves both the mode and the name. */
+export const ModeSwitchRefused: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>({ method: "typed", text: "Dana Rivera", image: "" });
+    return (
+      <Field>
+        <FieldLabel>Signature</FieldLabel>
+        <SignatureField
+          defaultMode="type"
+          value={value}
+          onValueChange={(next, details) => {
+            if (details.reason === "mode") details.cancel();
+            else setValue(next);
+          }}
+        >
+          <SignatureFieldModes />
+          <SignatureFieldPad label="Your signature" />
+          <SignatureFieldInput />
+        </SignatureField>
+      </Field>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const field = canvasElement.querySelector("[data-slot=signature-field]")!;
+    const draw = canvas.getByRole("radio", { name: "Draw" });
+    draw.focus();
+    await userEvent.keyboard(" ");
+    await expect(field).toHaveAttribute("data-mode", "type");
+    await expect(canvas.getByRole("radio", { name: "Type" })).toBeChecked();
+    await expect(canvas.getByRole("textbox", { name: "Signature" })).toHaveValue("Dana Rivera");
+  },
+};
+
+/** An app that stores a copy of each value keeps the strokes: the pad keeps drawing, it doesn't flip to a saved image. */
+export const CopiedByTheApp: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    return (
+      <Field>
+        <FieldLabel>Signature</FieldLabel>
+        <SignatureField
+          defaultMode="draw"
+          value={value}
+          onValueChange={(next) => setValue(next && { ...next })}
+        >
+          <SignatureFieldPad label="Your signature" />
+        </SignatureField>
+      </Field>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    await expect(canvasElement.querySelector("img")).toBeNull();
+  },
+};
+
+/** When the app cancels the switch itself, nothing is lost: the mode and the typed name both stay. */
+export const ModeChangeCancelled: Story = {
+  render: () => (
+    <Field>
+      <FieldLabel>Signature</FieldLabel>
+      <SignatureField
+        defaultMode="type"
+        defaultValue={{ method: "typed", text: "Dana Rivera", image: "" }}
+        onModeChange={(_next, details) => details.cancel()}
+      >
+        <SignatureFieldModes />
+        <SignatureFieldPad label="Your signature" />
+        <SignatureFieldInput />
+      </SignatureField>
+    </Field>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const field = canvasElement.querySelector("[data-slot=signature-field]")!;
+    canvas.getByRole("radio", { name: "Draw" }).focus();
+    await userEvent.keyboard(" ");
+    await expect(field).toHaveAttribute("data-mode", "type");
+    await expect(field).not.toHaveAttribute("data-empty");
+    await expect(canvas.getByRole("textbox", { name: "Signature" })).toHaveValue("Dana Rivera");
+  },
+};
+
+/** A stroke begun before the app replaces the value, even one it then puts back, is dropped when the finger lifts. */
+export const ReplacedMidStroke: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setValue}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <div className="flex gap-controls">
+          <Button variant="outline" onClick={() => setValue({ method: "drawn", image: SAVED })}>
+            Use my saved signature
+          </Button>
+          <Button variant="outline" onClick={() => setValue(null)}>
+            Start over
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    const box = pad.getBoundingClientRect();
+    const at = (x: number) => ({ clientX: box.left + x, clientY: box.top + 60, pointerId: 1, pointerType: "touch", bubbles: true });
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(20)));
+    pad.dispatchEvent(new PointerEvent("pointermove", at(80)));
+    canvas.getByRole("button", { name: "Use my saved signature" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    canvas.getByRole("button", { name: "Start over" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")).toBeNull());
+    pad.dispatchEvent(new PointerEvent("pointerup", at(80)));
+    // Give a kept stroke the render it would need to show, then check none did.
+    await new Promise((settle) => setTimeout(settle, 100));
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+  },
+};
+
+/** The app putting the person's own earlier signature back during a stroke counts as from outside too: it stays. */
+export const OwnSignatureRestoredMidStroke: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    const [mine, setMine] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setValue}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <div className="flex gap-controls">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setMine(value);
+              setValue({ method: "drawn", image: SAVED });
+            }}
+          >
+            Use my saved signature
+          </Button>
+          <Button variant="outline" onClick={() => setValue(mine)}>
+            Put mine back
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    canvas.getByRole("button", { name: "Use my saved signature" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    const box = pad.getBoundingClientRect();
+    const at = (x: number) => ({ clientX: box.left + x, clientY: box.top + 40, pointerId: 1, pointerType: "touch", bubbles: true });
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(20)));
+    pad.dispatchEvent(new PointerEvent("pointermove", at(80)));
+    canvas.getByRole("button", { name: "Put mine back" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")?.getAttribute("src")).not.toBe(SAVED));
+    const restored = canvasElement.querySelector("img")?.getAttribute("src");
+    await expect(restored).toMatch(/^data:image\/png/);
+    pad.dispatchEvent(new PointerEvent("pointerup", at(80)));
+    // Give a kept stroke the render it would need to show, then check none did.
+    await new Promise((settle) => setTimeout(settle, 100));
+    await expect(canvasElement.querySelector("img")).toHaveAttribute("src", restored!);
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+  },
+};
+
+/** An app that holds the person's signature back, sets another, then applies the held one mid-stroke: it stays. */
+export const HeldSignatureAppliedMidStroke: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<SignatureValue | null>(null);
+    const [held, setHeld] = useState<SignatureValue | null>(null);
+    return (
+      <div className="flex flex-col gap-group">
+        <Field>
+          <FieldLabel>Signature</FieldLabel>
+          <SignatureField defaultMode="draw" value={value} onValueChange={setHeld}>
+            <SignatureFieldPad label="Your signature" />
+          </SignatureField>
+        </Field>
+        <div className="flex gap-controls">
+          <Button variant="outline" onClick={() => setValue({ method: "drawn", image: SAVED })}>
+            Use my saved signature
+          </Button>
+          <Button variant="outline" onClick={() => setValue(held)}>
+            Apply mine
+          </Button>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvas, canvasElement }) => {
+    const pad = canvasElement.querySelector("[data-slot=signature-field-canvas]")!;
+    stroke(pad);
+    await waitFor(() => expect(canvas.getByText("Your signature, drawn")).toBeInTheDocument());
+    canvas.getByRole("button", { name: "Use my saved signature" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")).toHaveAttribute("src", SAVED));
+    const box = pad.getBoundingClientRect();
+    const at = (x: number) => ({ clientX: box.left + x, clientY: box.top + 40, pointerId: 1, pointerType: "touch", bubbles: true });
+    pad.dispatchEvent(new PointerEvent("pointerdown", at(20)));
+    pad.dispatchEvent(new PointerEvent("pointermove", at(80)));
+    canvas.getByRole("button", { name: "Apply mine" }).click();
+    await waitFor(() => expect(canvasElement.querySelector("img")?.getAttribute("src")).not.toBe(SAVED));
+    const applied = canvasElement.querySelector("img")?.getAttribute("src");
+    await expect(applied).toMatch(/^data:image\/png/);
+    pad.dispatchEvent(new PointerEvent("pointerup", at(80)));
+    // Give a kept stroke the render it would need to show, then check none did.
+    await new Promise((settle) => setTimeout(settle, 100));
+    await expect(canvasElement.querySelector("img")).toHaveAttribute("src", applied!);
+    await expect(canvas.getByText("Your signature, empty")).toBeInTheDocument();
+  },
+};
