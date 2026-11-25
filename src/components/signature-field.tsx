@@ -181,10 +181,11 @@ function SignatureField({
   const [replaced, setReplaced] = useState(0);
   if (value !== shown) {
     setShown(value);
-    // An echo is used up once seen, so the app putting an older value of the field's back later counts as from outside.
+    // An echo counts only as the next value the app sets: once seen, or once another value comes first, the field's
+    // value is forgotten, so the app putting it back later counts as from outside.
     const echo = sameSignature(value, local);
-    if (echo) setLocal(undefined);
-    else setReplaced(replaced + 1);
+    setLocal(undefined);
+    if (!echo) setReplaced(replaced + 1);
     if (value === null) {
       setStrokes([]);
       setText("");
